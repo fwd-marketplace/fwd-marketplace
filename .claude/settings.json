@@ -1,0 +1,13 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(npm install *)",
+      "Bash(npx shadcn@latest init --yes)",
+      "Bash(npx shadcn@latest init --yes --base-color neutral)",
+      "Bash(npx shadcn@latest init --help)",
+      "Bash(npx shadcn@latest init -b radix --yes)",
+      "Bash(npx shadcn@latest init -b radix -d)",
+      "Bash(npx tsc *)"
+    ]
+  }
+}

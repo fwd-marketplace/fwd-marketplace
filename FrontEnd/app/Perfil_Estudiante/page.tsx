@@ -1,8 +1,12 @@
-export default function EstudianteProfile() {
+import PerfilUsuario from "@/components/CompPerfilEstudiante/PerfilUsuario";
+import { MOCK_PROFILE, MOCK_ACTIVITIES, MOCK_APPLICATIONS } from "@/app/Perfil_Estudiante/mock-data";
 
-    return (
-        <div>
-            <h1>Perfil Estudiante</h1>
-        </div>
-    );
+export default function EstudianteProfile() {
+  return (
+    <PerfilUsuario
+      initialProfile={MOCK_PROFILE}
+      initialActivities={MOCK_ACTIVITIES}
+      initialApplications={MOCK_APPLICATIONS}
+    />
+  );
 }
