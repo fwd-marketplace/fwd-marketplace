@@ -24,5 +24,13 @@ export interface Application {
   id: string;
   projectName: string;
   companyName: string;
-  status: "enviada" | "pendiente" | "aceptada" | "rechazada";
+  status: "enviada" | "vista" | "en_proceso" | "aceptada" | "rechazada";
+  relativeTime: string;
+  category: "ux" | "data" | "dev" | "design";
+}
+
+export interface ApplicationStats {
+  activeCount: number;
+  scheduledInterviews: number;
+  compatibilityIndex: number;
 }

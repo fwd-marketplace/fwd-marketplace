@@ -1,4 +1,4 @@
-import { StudentProfile, Activity, Application } from "./types";
+import { StudentProfile, Activity, Application, ApplicationStats } from "./types";
 
 export const MOCK_PROFILE: StudentProfile = {
   name: "María Rodríguez",
@@ -19,8 +19,8 @@ export const MOCK_PROFILE: StudentProfile = {
 export const MOCK_ACTIVITIES: Activity[] = [
   {
     id: "act-1",
-    description: "Postuló al proyecto 'Rediseño de Catálogo Digital'",
-    timestamp: "Hace 2 horas",
+    description: "Postuló al proyecto 'Senior UX Architect'",
+    timestamp: "Hace 2 días",
   },
   {
     id: "act-2",
@@ -37,20 +37,48 @@ export const MOCK_ACTIVITIES: Activity[] = [
 export const MOCK_APPLICATIONS: Application[] = [
   {
     id: "app-1",
-    projectName: "Rediseño de Catálogo Digital",
-    companyName: "Tienda El Sol",
+    projectName: "Senior UX Architect",
+    companyName: "TechFlow Systems",
     status: "enviada",
+    relativeTime: "Enviada hace 2 días",
+    category: "ux",
   },
   {
     id: "app-2",
-    projectName: "Panel de Monitoreo IoT",
-    companyName: "Logistics Pro",
-    status: "pendiente",
+    projectName: "Data Analyst Lead",
+    companyName: "Quantum Analytics",
+    status: "vista",
+    relativeTime: "Vista hace 4 horas",
+    category: "data",
   },
   {
     id: "app-3",
-    projectName: "Landing Page Campaña Solidaria",
-    companyName: "Fundación Esperanza",
+    projectName: "Fullstack Engineer",
+    companyName: "Nomad Digital",
     status: "aceptada",
+    relativeTime: "Aceptada ayer",
+    category: "dev",
+  },
+  {
+    id: "app-4",
+    projectName: "Visual Designer",
+    companyName: "Creative Pulse",
+    status: "rechazada",
+    relativeTime: "Rechazada hace 1 semana",
+    category: "design",
+  },
+  {
+    id: "app-5",
+    projectName: "React Developer",
+    companyName: "DevLabs Costa Rica",
+    status: "en_proceso",
+    relativeTime: "En proceso desde hace 3 días",
+    category: "dev",
   },
 ];
+
+export const MOCK_STATS: ApplicationStats = {
+  activeCount: 12,
+  scheduledInterviews: 3,
+  compatibilityIndex: 85,
+};
