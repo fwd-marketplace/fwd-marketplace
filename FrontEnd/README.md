@@ -4,6 +4,8 @@ Marketplace de proyectos freelance para juniors egresados de Fundación Forward 
 
 > Este frontend forma parte del ecosistema de [FWD Talent](https://jobs.fwdcostarica.com). El código debe poder integrarse al producto real desde el día 1.
 
+**Deploy:** [marketplace-de-proyectos-freelance.vercel.app](https://marketplace-de-proyectos-freelance.vercel.app)
+
 ---
 
 ## Stack técnico (no negociable)
