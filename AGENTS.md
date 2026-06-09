@@ -272,14 +272,20 @@ El "X factor" creativo (15 %). **El MVP siempre tiene prioridad.** Hosting del B
 
 ---
 
-## 10. Comandos (dos apps, dos terminales)
+## 10. Comandos
+
+Hay **tres** `package.json`: el de la **raíz** (solo tooling de commits) y el de cada app.
+Al clonar, **lo primero** es instalar en la raíz para que se activen los hooks de git:
 
 ```bash
+# --- Raíz del repo (una sola vez al clonar) ---
+npm install         # instala husky + commitlint y ACTIVA los hooks de commit
+npm run install:all # atajo opcional: instala raíz + FrontEnd + BackEnd
+
 # --- FrontEnd ---
 cd FrontEnd
 npm install
 npm run dev         # http://localhost:3000
-npm run typecheck   # sin errores
 npm run lint        # sin errores
 npm run test
 
@@ -291,14 +297,36 @@ npm run build       # compila a dist/
 npm run typecheck   # sin errores
 ```
 
+> Si no corrés `npm install` en la raíz, los hooks **no se activan** y tus commits no se
+> validan. Hacelo una vez por máquina.
+
 ---
 
 ## 11. Colaboración
 
-- **Cada miembro firma sus commits.** Si solo una persona commitea, se penaliza al equipo.
-- Conventional Commits obligatorio (lo valida commitlint).
+- **Cada miembro hace sus propios commits** (con su `git config user.name` / `user.email`).
+  Si solo una persona commitea, se penaliza al equipo. No es firma GPG: es autoría distribuida.
+- Conventional Commits obligatorio (lo valida commitlint, automáticamente).
 - Podés usar IA, pero **cualquiera del equipo debe poder explicar el código** en la demo.
 - Plagiar UI de otro equipo o de competidores (Workana, Upwork) **descalifica**. Inspirarse y citar, sí.
+
+### Validación automática de commits (husky)
+
+Hay hooks de git en la raíz (`.husky/`). Se activan con `npm install` en la raíz (ver §10) y
+aplican a FrontEnd y BackEnd:
+
+- **`pre-commit`** → `lint-staged`: corre el `lint` del FrontEnd o el `typecheck` del BackEnd
+  según qué tocaste, antes de dejarte commitear.
+- **`commit-msg`** → `commitlint`: **rechaza** el commit si el mensaje no cumple el formato.
+
+Formato: `tipo(alcance): descripción` (ej. `feat(frontend): …`, `fix(backend): …`).
+Tipos: `feat`, `fix`, `docs`, `style`, `refactor`, `perf`, `test`, `build`, `ci`, `chore`, `revert`.
+
+**Dos formas de commitear (misma regla):**
+
+- **Guiada (recomendada):** `git add .` y luego `npm run commit` → Commitizen te hace preguntas
+  y arma el mensaje correcto por vos.
+- **Manual:** `git commit -m "feat(frontend): descripción"`. Lo valida commitlint.
 
 ---
 

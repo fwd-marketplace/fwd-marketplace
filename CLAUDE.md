@@ -344,16 +344,21 @@ duration-[var(--duration-fast)] ease-[var(--ease-out)]
 
 ## 10. Comandos
 
-Cada app tiene su propio `package.json`. Se corren por separado (dos terminales).
+Hay **tres** `package.json`: el de la **raíz** (solo tooling de commits) y el de cada app.
+Al clonar el repo, **lo primero** es instalar en la raíz para activar los hooks de git:
 
 ```bash
+# --- Raíz del repo (una sola vez al clonar) ---
+npm install         # instala husky + commitlint y ACTIVA los hooks de commit
+# atajo opcional para instalar todo de una:
+npm run install:all # instala raíz + FrontEnd + BackEnd
+
 # --- FrontEnd ---
 cd FrontEnd
 npm install
 npm run dev         # http://localhost:3000
 npm run build
-npm run typecheck   # debe pasar sin errores
-npm run lint        # debe pasar sin errores
+npm run lint        # ESLint (debe pasar sin errores)
 npm run test        # Vitest
 
 # --- BackEnd ---
@@ -362,17 +367,43 @@ npm install
 npm run dev         # http://localhost:3001 (tsx watch)
 npm run build       # compila a dist/
 npm start           # node dist/server.js
-npm run typecheck   # debe pasar sin errores
+npm run typecheck   # tsc --noEmit (debe pasar sin errores)
 ```
+
+> Si no corrés `npm install` en la raíz, los hooks **no se activan** y tus commits no se
+> validan (pero los del resto del equipo sí). Hacelo una vez por máquina.
 
 ---
 
 ## 11. Reglas de colaboración
 
 - **Commits firmados por cada miembro** del equipo (si solo uno commitea, se penaliza).
+  Esto NO es firma GPG: cada quien configura su identidad de git (`git config user.name` /
+  `user.email`) para que el historial demuestre que todos participaron.
 - Conventional Commits obligatorio (validado por commitlint en `commit-msg`).
 - IA permitida, pero **cualquier miembro debe poder explicar el código** en la demo.
 - Plagiar UI de otro equipo o de competidores **descalifica**. Inspirarse y citar está bien.
+
+### Validación automática de commits (husky)
+
+El repo tiene hooks de git en la raíz (`.husky/`), configurados en el `package.json` raíz.
+Se activan al correr `npm install` en la raíz (ver §10). Funcionan para FrontEnd y BackEnd:
+
+- **`pre-commit`** → corre `lint-staged`: según qué tocaste, ejecuta el `lint` del FrontEnd o el
+  `typecheck` del BackEnd antes de dejar commitear (config en `.lintstagedrc.js`).
+- **`commit-msg`** → corre `commitlint`: **rechaza** el commit si el mensaje no cumple Conventional
+  Commits (config en `commitlint.config.js`).
+
+Formato del mensaje: `tipo(alcance): descripción` — ej. `feat(frontend): …`, `fix(backend): …`.
+Tipos válidos: `feat`, `fix`, `docs`, `style`, `refactor`, `perf`, `test`, `build`, `ci`,
+`chore`, `revert`.
+
+**Dos formas de commitear (la misma regla):**
+
+- **Guiada (recomendada para no memorizar el formato):** `git add .` y luego `npm run commit`
+  (Commitizen) → te hace preguntas (tipo, alcance, descripción) y arma el mensaje correcto solo.
+- **Manual:** `git commit -m "feat(frontend): descripción"`. Lo valida `commitlint`; si está mal,
+  lo rechaza y lo reescribís.
 
 ---
 
