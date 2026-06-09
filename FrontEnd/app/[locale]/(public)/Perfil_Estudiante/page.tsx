@@ -1,5 +1,5 @@
 import PerfilUsuario from "@/components/CompPerfilEstudiante/PerfilUsuario";
-import { MOCK_PROFILE, MOCK_ACTIVITIES, MOCK_APPLICATIONS, MOCK_STATS } from "@/app/Perfil_Estudiante/mock-data";
+import { MOCK_PROFILE, MOCK_ACTIVITIES, MOCK_APPLICATIONS, MOCK_STATS } from "@/app/[locale]/(public)/Perfil_Estudiante/mock-data";
 
 export default function EstudianteProfile() {
   return (

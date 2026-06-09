@@ -30,7 +30,7 @@ import {
   Eye,
   Compass,
 } from "lucide-react";
-import { StudentProfile, Activity, Application, ApplicationStats } from "@/app/Perfil_Estudiante/types";
+import { StudentProfile, Activity, Application, ApplicationStats } from "@/app/[locale]/(public)/Perfil_Estudiante/types";
 
 const GithubIcon = (props: React.SVGProps<SVGSVGElement>) => (
   <svg
@@ -197,7 +197,7 @@ export default function PerfilUsuario({
       bio: editBio,
     }));
     setIsEditingPersonal(false);
-    
+
     // Add activity log
     const newAct: Activity = {
       id: `act-${Date.now()}`,
@@ -224,7 +224,7 @@ export default function PerfilUsuario({
       ...prev,
       skills: prev.skills.filter((skill) => skill !== skillToRemove),
     }));
-    
+
     // Add activity log
     const newAct: Activity = {
       id: `act-${Date.now()}`,
@@ -351,7 +351,7 @@ export default function PerfilUsuario({
     <div className="min-h-screen bg-canvas text-ink flex flex-col font-sans transition-colors duration-200">
       {/* Container Principal */}
       <main className="w-full max-w-6xl mx-auto px-4 py-8 md:px-8 flex-grow space-y-8">
-        
+
         {/* HERO HEADER - Estilo Brand Expresivo Adaptado */}
         <section className="relative rounded-3xl overflow-hidden shadow-soft bg-gradient-to-r from-primary to-secondary p-8 md:p-12 text-white">
           {/* FwdGeoBackdrop decorativo de fondo */}
@@ -463,31 +463,28 @@ export default function PerfilUsuario({
         <nav className="flex border-b border-border gap-6 md:gap-8 overflow-x-auto pb-px scrollbar-none">
           <button
             onClick={() => setActiveTab("perfil")}
-            className={`border-b-2 py-4 px-1 text-sm md:text-base transition-all flex items-center gap-2 cursor-pointer ${
-              activeTab === "perfil"
-                ? "border-primary text-ink-strong font-semibold"
-                : "border-transparent text-ink-muted hover:text-ink"
-            }`}
+            className={`border-b-2 py-4 px-1 text-sm md:text-base transition-all flex items-center gap-2 cursor-pointer ${activeTab === "perfil"
+              ? "border-primary text-ink-strong font-semibold"
+              : "border-transparent text-ink-muted hover:text-ink"
+              }`}
           >
             Mi perfil
           </button>
           <button
             onClick={() => setActiveTab("trabajo")}
-            className={`border-b-2 py-4 px-1 text-sm md:text-base transition-all flex items-center gap-2 cursor-pointer ${
-              activeTab === "trabajo"
-                ? "border-primary text-ink-strong font-semibold"
-                : "border-transparent text-ink-muted hover:text-ink"
-            }`}
+            className={`border-b-2 py-4 px-1 text-sm md:text-base transition-all flex items-center gap-2 cursor-pointer ${activeTab === "trabajo"
+              ? "border-primary text-ink-strong font-semibold"
+              : "border-transparent text-ink-muted hover:text-ink"
+              }`}
           >
             Mi trabajo
           </button>
           <button
             onClick={() => setActiveTab("postulaciones")}
-            className={`border-b-2 py-4 px-1 text-sm md:text-base transition-all flex items-center gap-2 cursor-pointer ${
-              activeTab === "postulaciones"
-                ? "border-primary text-ink-strong font-semibold"
-                : "border-transparent text-ink-muted hover:text-ink"
-            }`}
+            className={`border-b-2 py-4 px-1 text-sm md:text-base transition-all flex items-center gap-2 cursor-pointer ${activeTab === "postulaciones"
+              ? "border-primary text-ink-strong font-semibold"
+              : "border-transparent text-ink-muted hover:text-ink"
+              }`}
           >
             Postulaciones
             <span className="px-2 py-0.5 text-xs font-bold rounded-full bg-surface-sunken text-ink-muted border border-border">
@@ -496,11 +493,10 @@ export default function PerfilUsuario({
           </button>
           <button
             onClick={() => setActiveTab("notificaciones")}
-            className={`border-b-2 py-4 px-1 text-sm md:text-base transition-all flex items-center gap-2 cursor-pointer ${
-              activeTab === "notificaciones"
-                ? "border-primary text-ink-strong font-semibold"
-                : "border-transparent text-ink-muted hover:text-ink"
-            }`}
+            className={`border-b-2 py-4 px-1 text-sm md:text-base transition-all flex items-center gap-2 cursor-pointer ${activeTab === "notificaciones"
+              ? "border-primary text-ink-strong font-semibold"
+              : "border-transparent text-ink-muted hover:text-ink"
+              }`}
           >
             Notificaciones
             <span className="px-2 py-0.5 text-xs font-bold rounded-full bg-surface-sunken text-ink-muted border border-border">
@@ -509,11 +505,10 @@ export default function PerfilUsuario({
           </button>
           <button
             onClick={() => setActiveTab("sugeridos")}
-            className={`border-b-2 py-4 px-1 text-sm md:text-base transition-all flex items-center gap-2 cursor-pointer ${
-              activeTab === "sugeridos"
-                ? "border-primary text-ink-strong font-semibold"
-                : "border-transparent text-ink-muted hover:text-ink"
-            }`}
+            className={`border-b-2 py-4 px-1 text-sm md:text-base transition-all flex items-center gap-2 cursor-pointer ${activeTab === "sugeridos"
+              ? "border-primary text-ink-strong font-semibold"
+              : "border-transparent text-ink-muted hover:text-ink"
+              }`}
           >
             Proyectos sugeridos
             <span className="px-2 py-0.5 text-xs font-bold rounded-full bg-surface-sunken text-ink-muted border border-border">
@@ -525,10 +520,10 @@ export default function PerfilUsuario({
         {/* CONTENIDO SEGÚN TAB ACTIVO */}
         {activeTab === "perfil" && (
           <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
-            
+
             {/* COLUMNA IZQUIERDA (INFORMACION GENERAL Y STACK) */}
             <div className="lg:col-span-2 space-y-8">
-              
+
               {/* CARD: INFORMACIÓN PERSONAL */}
               <section className="bg-surface rounded-2xl border border-border shadow-soft p-6 md:p-8 space-y-6">
                 <div className="flex justify-between items-center">
@@ -711,7 +706,7 @@ export default function PerfilUsuario({
                 <h2 className="text-xl font-bold text-ink-strong">
                   Enlaces del Talento
                 </h2>
-                
+
                 <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                   {profile.links.github && (
                     <a
@@ -779,7 +774,7 @@ export default function PerfilUsuario({
 
             {/* COLUMNA DERECHA (SIDEBAR: ACTIVIDADES Y POSTULACIONES RESUMIDAS) */}
             <div className="space-y-8">
-              
+
               {/* CARD: ACTIVIDAD RECIENTE */}
               <section className="bg-surface rounded-2xl border border-border shadow-soft p-6 space-y-6">
                 <div className="flex items-center gap-2">
@@ -1042,7 +1037,7 @@ export default function PerfilUsuario({
               </div>
 
               {/* Proyecto 4: Agregar Proyecto (Dashed Card) */}
-              <div 
+              <div
                 onClick={() => alert("Función para agregar proyecto en desarrollo")}
                 className="bg-surface border-2 border-dashed border-border hover:border-primary/50 transition-colors flex flex-col items-center justify-center p-8 text-center cursor-pointer min-h-[260px] rounded-2xl group"
               >
@@ -1088,11 +1083,10 @@ export default function PerfilUsuario({
                   <button
                     key={filter.value}
                     onClick={() => setFilterStatus(filter.value as "todas" | Application["status"])}
-                    className={`px-4 py-1.5 rounded-full text-xs font-medium border transition-colors cursor-pointer ${
-                      isActive
-                        ? "bg-primary border-primary text-white"
-                        : "bg-surface-sunken border-border text-ink-muted hover:bg-border/30 hover:text-ink"
-                    }`}
+                    className={`px-4 py-1.5 rounded-full text-xs font-medium border transition-colors cursor-pointer ${isActive
+                      ? "bg-primary border-primary text-white"
+                      : "bg-surface-sunken border-border text-ink-muted hover:bg-border/30 hover:text-ink"
+                      }`}
                   >
                     {filter.label}
                   </button>
@@ -1431,7 +1425,7 @@ export default function PerfilUsuario({
                         {project.match} Match
                       </span>
                     </div>
-                    
+
                     <p className="text-xs text-ink leading-relaxed line-clamp-3">
                       {project.description}
                     </p>
@@ -1445,7 +1439,7 @@ export default function PerfilUsuario({
                         </span>
                       ))}
                     </div>
-                    
+
                     <div className="flex justify-between items-center pt-1 border-t border-border/60">
                       <span className="text-xs text-ink-muted font-medium">Duración: {project.duration}</span>
                       <button
