@@ -11,10 +11,73 @@
     "registrarse": "Registrarse"
   },
   "landing": {
-    "eyebrow": "FWD Marketplace",
-    "title": "Tu primer proyecto",
-    "description": "Encontrá un proyecto corto, pagado y real. Empezá a construir tu carrera de verdad.",
-    "cta_proyectos": "Ver proyectos",
-    "cta_empresa": "Soy empresa"
+    "hero": {
+      "eyebrow": "MARKETPLACE DE TALENTO FWD",
+      "title": "Conseguí tu primer proyecto profesional",
+      "description": "Empresas reales publican proyectos de corta duración para talento egresado de Fundación Forward Costa Rica. Construí experiencia, fortalecé tu portafolio y empezá tu carrera profesional.",
+      "cta_projects": "Explorar proyectos",
+      "cta_company": "Soy empresa",
+      "card_eyebrow": "PROYECTO DESTACADO",
+      "card_title": "Plataforma de gestión educativa",
+      "card_company": "EduCore",
+      "card_duration": "Duración",
+      "card_duration_val": "8 semanas",
+      "card_modality": "Modalidad",
+      "card_modality_val": "Remoto",
+      "card_budget": "Presupuesto",
+      "card_budget_val": "$900 USD",
+      "card_match": "Match",
+      "card_link": "Ver detalles del proyecto"
+    },
+    "how_it_works": {
+      "eyebrow": "CÓMO FUNCIONA",
+      "title": "Tres pasos para impulsar tu carrera",
+      "step1_title": "Completá tu perfil",
+      "step1_desc": "Mostrá tu stack, disponibilidad y experiencia para que las empresas puedan conocerte.",
+      "step2_title": "Encontrá proyectos",
+      "step2_desc": "Explorá oportunidades alineadas a tu perfil y filtrá por tecnología, modalidad y duración.",
+      "step3_title": "Postulá y crecé",
+      "step3_desc": "Conectate con empresas reales, desarrollá proyectos y obtené experiencia profesional."
+    },
+    "featured_projects": {
+      "eyebrow": "PROYECTOS DESTACADOS",
+      "title": "Oportunidades para vos",
+      "badge_featured": "DESTACADO",
+      "match": "Match",
+      "duration": "semanas",
+      "link_all": "Ver todos los proyectos"
+    },
+    "value_prop": {
+      "talents_title": "Para talentos FWD",
+      "talents_items": [
+        "Primer proyecto profesional en tu carrera",
+        "Empresas verificadas y confiables",
+        "Matching inteligente según tu perfil",
+        "Construcción de portafolio real"
+      ],
+      "companies_title": "Para empresas",
+      "companies_items": [
+        "Talento validado por FWD",
+        "Contratación rápida y sencilla",
+        "Costos accesibles y transparentes",
+        "Acceso a nuevos profesionales"
+      ]
+    },
+    "stats": {
+      "stat1_val": "+500",
+      "stat1_label": "Egresados FWD",
+      "stat2_val": "+100",
+      "stat2_label": "Proyectos publicados",
+      "stat3_val": "+50",
+      "stat3_label": "Empresas participantes",
+      "stat4_val": "90%",
+      "stat4_label": "Satisfacción de empresas"
+    },
+    "cta": {
+      "title": "Tu próxima oportunidad empieza hoy",
+      "description": "Sumate al marketplace creado para impulsar el talento tecnológico emergente.",
+      "cta_projects": "Explorar proyectos",
+      "cta_register": "Registrar empresa"
+    }
   }
 }
