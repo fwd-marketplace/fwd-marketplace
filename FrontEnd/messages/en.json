@@ -1,0 +1,20 @@
+{
+  "site": {
+    "name": "FWD Marketplace",
+    "description": "Freelance project marketplace for junior graduates of Fundación Forward Costa Rica."
+  },
+  "nav": {
+    "marketplace": "Marketplace",
+    "metodologia": "Methodology",
+    "empresas": "Companies",
+    "ingresar": "Sign in",
+    "registrarse": "Sign up"
+  },
+  "landing": {
+    "eyebrow": "FWD Marketplace",
+    "title": "Your first project",
+    "description": "Find a short, paid, real project. Start building your career for real.",
+    "cta_proyectos": "View projects",
+    "cta_empresa": "I'm a company"
+  }
+}

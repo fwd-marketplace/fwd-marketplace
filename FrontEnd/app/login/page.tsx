@@ -1,7 +1,5 @@
-export default function LoginPage() {
-    return (
-        <div>
-            <h1>Login Page actualizado</h1>
-        </div>
-    );
+import { redirect } from "next/navigation";
+
+export default function OldLoginPage() {
+  redirect("/es/login");
 }

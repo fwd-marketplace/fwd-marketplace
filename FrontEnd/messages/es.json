@@ -1,0 +1,20 @@
+{
+  "site": {
+    "name": "FWD Marketplace",
+    "description": "Marketplace de proyectos freelance para juniors egresados de Fundación Forward Costa Rica."
+  },
+  "nav": {
+    "marketplace": "Marketplace",
+    "metodologia": "Metodología",
+    "empresas": "Empresas",
+    "ingresar": "Ingresar",
+    "registrarse": "Registrarse"
+  },
+  "landing": {
+    "eyebrow": "FWD Marketplace",
+    "title": "Tu primer proyecto",
+    "description": "Encontrá un proyecto corto, pagado y real. Empezá a construir tu carrera de verdad.",
+    "cta_proyectos": "Ver proyectos",
+    "cta_empresa": "Soy empresa"
+  }
+}
