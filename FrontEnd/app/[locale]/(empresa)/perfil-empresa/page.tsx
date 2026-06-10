@@ -5,7 +5,7 @@ interface Props {
   params: Promise<{ locale: string }>;
 }
 
-export default async function EmpresaDashboardPage({ params }: Props) {
+export default async function EmpresaProfilePage({ params }: Props) {
   const { locale } = await params;
   setRequestLocale(locale);
 

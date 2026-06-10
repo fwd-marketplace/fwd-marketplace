@@ -6,9 +6,17 @@ import { cn } from "@/lib/utils";
 
 const NAV_ITEMS = [
   { label: "Mis proyectos", href: "/empresa/dashboard" },
-  { label: "Matches", href: "/empresa/matches" },
-  { label: "Postulaciones", href: "/empresa/postulaciones" },
-  { label: "Mi empresa", href: "/empresa/perfil" },
+  {
+    label: "Matches",
+    href: "/empresa/matches",
+    badge: { count: 18, variant: "warning" },
+  },
+  {
+    label: "Postulaciones",
+    href: "/empresa/postulaciones",
+    badge: { count: 48, variant: "primary" },
+  },
+  { label: "Mi empresa", href: "/empresa/perfil-empresa" },
 ] as const;
 
 export function EmpresaSubnav() {
@@ -24,13 +32,23 @@ export function EmpresaSubnav() {
               key={item.href}
               href={item.href}
               className={cn(
-                "shrink-0 rounded-full px-3 py-1 font-body text-sm font-medium transition-colors duration-[var(--duration-fast)] ease-[var(--ease-out)]",
+                "flex shrink-0 items-center gap-1.5 rounded-full px-3 py-1 font-body text-sm font-medium transition-colors duration-[var(--duration-fast)] ease-[var(--ease-out)]",
                 isActive
                   ? "bg-primary/10 text-primary"
                   : "text-ink-muted hover:bg-surface-sunken hover:text-ink"
               )}
             >
-              {item.label}
+              <span>{item.label}</span>
+              {"badge" in item && item.badge && (
+                <span
+                  className={cn(
+                    "flex h-4 min-w-4 items-center justify-center rounded-full px-1 text-[10px] font-bold leading-none text-white",
+                    item.badge.variant === "warning" ? "bg-warning" : "bg-primary"
+                  )}
+                >
+                  {item.badge.count}
+                </span>
+              )}
             </Link>
           );
         })}

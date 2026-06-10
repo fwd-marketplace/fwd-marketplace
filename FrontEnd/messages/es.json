@@ -11,207 +11,239 @@
     "registrarse": "Registrarse"
   },
   "landing": {
+    "eyebrow": "FWD Marketplace",
+    "title": "Tu primer proyecto",
+    "description": "Encontrá un proyecto corto, pagado y real. Empezá a construir tu carrera de verdad.",
+    "cta_proyectos": "Ver proyectos",
+    "cta_empresa": "Soy empresa",
     "hero": {
-      "eyebrow": "MARKETPLACE DE TALENTO FWD",
-      "title": "Conseguí tu primer proyecto profesional",
-      "description": "Empresas reales publican proyectos de corta duración para talento egresado de Fundación Forward Costa Rica. Construí experiencia, fortalecé tu portafolio y empezá tu carrera profesional.",
-      "cta_projects": "Explorar proyectos",
+      "eyebrow": "Fundación Forward Costa Rica",
+      "title": "Tu primer proyecto freelance",
+      "description": "Conecta con empresas reales, construye tu portafolio y empieza tu carrera profesional.",
+      "cta_projects": "Ver proyectos",
       "cta_company": "Soy empresa",
-      "card_eyebrow": "PROYECTO DESTACADO",
-      "card_title": "Plataforma de gestión educativa",
-      "card_company": "EduCore",
+      "card_eyebrow": "Proyecto destacado",
+      "card_title": "Dashboard de Analítica",
+      "card_company": "TechFlow Systems",
       "card_duration": "Duración",
-      "card_duration_val": "8 semanas",
+      "card_duration_val": "4 semanas",
       "card_modality": "Modalidad",
       "card_modality_val": "Remoto",
       "card_budget": "Presupuesto",
-      "card_budget_val": "$900 USD",
-      "card_match": "Match",
-      "card_link": "Ver detalles del proyecto"
-    },
-    "how_it_works": {
-      "eyebrow": "CÓMO FUNCIONA",
-      "title": "Tres pasos para impulsar tu carrera",
-      "step1_title": "Completá tu perfil",
-      "step1_desc": "Mostrá tu stack, disponibilidad y experiencia para que las empresas puedan conocerte.",
-      "step2_title": "Encontrá proyectos",
-      "step2_desc": "Explorá oportunidades alineadas a tu perfil y filtrá por tecnología, modalidad y duración.",
-      "step3_title": "Postulá y crecé",
-      "step3_desc": "Conectate con empresas reales, desarrollá proyectos y obtené experiencia profesional."
-    },
-    "featured_projects": {
-      "eyebrow": "PROYECTOS DESTACADOS",
-      "title": "Oportunidades para vos",
-      "badge_featured": "DESTACADO",
-      "match": "Match",
-      "duration": "semanas",
-      "link_all": "Ver todos los proyectos"
-    },
-    "value_prop": {
-      "talents_title": "Para talentos FWD",
-      "talents_items": [
-        "Primer proyecto profesional en tu carrera",
-        "Empresas verificadas y confiables",
-        "Matching inteligente según tu perfil",
-        "Construcción de portafolio real"
-      ],
-      "companies_title": "Para empresas",
-      "companies_items": [
-        "Talento validado por FWD",
-        "Contratación rápida y sencilla",
-        "Costos accesibles y transparentes",
-        "Acceso a nuevos profesionales"
-      ]
-    },
-    "stats": {
-      "stat1_val": "+500",
-      "stat1_label": "Egresados FWD",
-      "stat2_val": "+100",
-      "stat2_label": "Proyectos publicados",
-      "stat3_val": "+50",
-      "stat3_label": "Empresas participantes",
-      "stat4_val": "90%",
-      "stat4_label": "Satisfacción de empresas"
+      "card_budget_val": "$800 USD",
+      "card_match": "98% de compatibilidad",
+      "card_link": "Ver proyecto"
     },
     "cta": {
-      "title": "Tu próxima oportunidad empieza hoy",
-      "description": "Sumate al marketplace creado para impulsar el talento tecnológico emergente.",
-      "cta_projects": "Explorar proyectos",
-      "cta_register": "Registrar empresa"
+      "title": "¿Listo para tu primer proyecto?",
+      "description": "Únete a cientos de talentos que ya construyen su carrera con proyectos reales y empresas que confían en FWD.",
+      "cta_projects": "Ver proyectos",
+      "cta_register": "Crear cuenta gratis"
+    },
+    "featured_projects": {
+      "eyebrow": "Proyectos",
+      "title": "Oportunidades disponibles",
+      "badge_featured": "Destacado",
+      "duration": "semanas",
+      "link_all": "Ver todos"
+    },
+    "value_prop": {
+      "talents_title": "Para talentos",
+      "talents_items": {
+        "0": "Proyectos reales con impacto medible",
+        "1": "Pago garantizado por entrega",
+        "2": "Mentoría y acompañamiento FWD",
+        "3": "Construye tu portafolio profesional"
+      },
+      "companies_title": "Para empresas",
+      "companies_items": {
+        "0": "Talentos validados por FWD",
+        "1": "Proyectos cortos y ágiles",
+        "2": "Precio justo y transparente",
+        "3": "Impacto social con cada contrato"
+      }
+    },
+    "stats": {
+      "stat1_val": "500+",
+      "stat1_label": "Talentos activos",
+      "stat2_val": "120+",
+      "stat2_label": "Proyectos publicados",
+      "stat3_val": "85%",
+      "stat3_label": "Tasa de éxito",
+      "stat4_val": "30+",
+      "stat4_label": "Empresas aliadas"
+    },
+    "how_it_works": {
+      "eyebrow": "Cómo funciona",
+      "title": "En 3 pasos simples",
+      "step1_title": "Crea tu perfil",
+      "step1_desc": "Completa tu perfil con tus habilidades, stack tecnológico y disponibilidad.",
+      "step2_title": "Encuentra proyectos",
+      "step2_desc": "Explora proyectos reales de empresas que buscan exactamente tu perfil.",
+      "step3_title": "Entrega y cobra",
+      "step3_desc": "Trabaja en el proyecto, entrega a tiempo y recibe tu pago seguro."
     }
   },
+  "login": {
+    "eyebrow": "Bienvenido de vuelta",
+    "title": "Ingresar",
+    "description": "Accede a tu cuenta FWD Marketplace",
+    "continue_google": "Continuar con Google",
+    "continue_github": "Continuar con GitHub",
+    "or_divider": "O continúa con",
+    "email_label": "Correo electrónico",
+    "email_placeholder": "tu@correo.com",
+    "password_label": "Contraseña",
+    "forgot_password": "¿Olvidaste tu contraseña?",
+    "password_placeholder": "Tu contraseña",
+    "show_password": "Mostrar contraseña",
+    "hide_password": "Ocultar contraseña",
+    "submit": "Ingresar",
+    "terms_prefix": "Al ingresar aceptas los",
+    "terms_link": "Términos de Servicio",
+    "terms_connector": "y la",
+    "privacy_link": "Política de Privacidad",
+    "no_account": "¿No tienes cuenta?",
+    "register_link": "Regístrate aquí"
+  },
   "register": {
-    "brand": "FWD Talent",
-    "brand_suffix": "*",
+    "brand": "FWD",
+    "brand_suffix": "Talent",
     "nav": {
-      "back": "Atrás",
-      "next": "Siguiente",
-      "finish": "Finalizar",
-      "step_counter": "Paso {current} de {total}"
+      "step_counter": "Paso {current} de {total}",
+      "back": "Volver",
+      "next": "Continuar",
+      "finish": "Finalizar"
+    },
+    "role": {
+      "eyebrow": "Empieza aquí",
+      "title": "¿Quién eres?",
+      "description": "Selecciona el perfil que mejor te describe para personalizar tu experiencia.",
+      "junior_label": "Talento Junior",
+      "junior_description": "Egresado FWD buscando proyectos freelance reales",
+      "empresa_label": "Empresa",
+      "empresa_description": "Publico proyectos para conectar con talentos juniors",
+      "emprendedor_label": "Emprendedor",
+      "emprendedor_description": "Tengo una startup o idea y necesito apoyo técnico",
+      "continue": "Continuar"
     },
     "auth": {
-      "eyebrow": "BIENVENIDA/O",
-      "title": "Adelante",
-      "description": "Accedé a tu plataforma de empleabilidad.",
+      "eyebrow": "Crea tu cuenta",
+      "title": "Registro",
+      "description": "Únete a la comunidad FWD Marketplace",
       "continue_google": "Continuar con Google",
       "continue_github": "Continuar con GitHub",
-      "terms_prefix": "Al continuar aceptás los",
-      "terms_link": "términos de uso",
-      "terms_connector": "y la",
-      "privacy_link": "política de privacidad",
-      "amcham_badge": "Premio AMCHAM 2025 — Negocios Sostenibles",
-      "or_divider": "o",
+      "or_divider": "O continúa con",
       "email_label": "Correo electrónico",
       "email_placeholder": "tu@correo.com",
       "password_label": "Contraseña",
       "password_placeholder": "Mínimo 8 caracteres",
-      "confirm_password_label": "Confirmá tu contraseña",
-      "confirm_password_placeholder": "Repetí tu contraseña",
-      "submit": "Crear cuenta",
+      "confirm_password_label": "Confirmar contraseña",
+      "confirm_password_placeholder": "Repite tu contraseña",
       "show_password": "Mostrar contraseña",
-      "hide_password": "Ocultar contraseña"
-    },
-    "role": {
-      "eyebrow": "TU CUENTA",
-      "title": "¿Cómo vas a usar FWD?",
-      "description": "Elegí el perfil que mejor te describe.",
-      "continue": "Continuar",
-      "junior_label": "Soy desarrollador/a junior",
-      "junior_description": "Busco proyectos reales para crecer y sumar experiencia.",
-      "empresa_label": "Represento una empresa",
-      "empresa_description": "Quiero publicar proyectos y trabajar con talento FWD.",
-      "emprendedor_label": "Tengo un emprendimiento",
-      "emprendedor_description": "Busco apoyo técnico para hacer crecer mi proyecto."
+      "hide_password": "Ocultar contraseña",
+      "submit": "Crear cuenta",
+      "terms_prefix": "Al registrarte aceptas los",
+      "terms_link": "Términos de Servicio",
+      "terms_connector": "y la",
+      "privacy_link": "Política de Privacidad",
+      "amcham_badge": "Avalado por AmCham Costa Rica"
     },
     "junior": {
+      "done": {
+        "eyebrow": "¡Todo listo!",
+        "title": "Tu perfil junior está completo",
+        "description": "Revisa el marketplace y postúlate a tu primer proyecto real.",
+        "cta": "Ver proyectos"
+      },
       "step1": {
-        "eyebrow": "EMPECEMOS",
-        "title": "¿Cómo te llamás?",
-        "description": "Usamos tu nombre para personalizar tu experiencia.",
+        "eyebrow": "Primero lo primero",
+        "title": "¿Cuál es tu nombre?",
+        "description": "Así te mostraremos a las empresas del marketplace.",
         "label": "Nombre completo",
-        "placeholder": "Tu nombre completo"
+        "placeholder": "Ej. María García"
       },
       "step2": {
-        "eyebrow": "SOBRE VOS",
-        "title": "¿En qué área te especializás?",
-        "description": "Elegí la que mejor describe tu perfil actual.",
+        "eyebrow": "Tu especialización",
+        "title": "¿En qué área te especializas?",
+        "description": "Elige la que mejor describe tu perfil técnico.",
         "group_label": "Área de especialización",
-        "frontend_label": "Frontend",
-        "frontend_description": "Interfaces y experiencia de usuario",
-        "backend_label": "Backend",
-        "backend_description": "APIs, bases de datos y servidores",
-        "fullstack_label": "Fullstack",
-        "fullstack_description": "Front y back en igual medida",
-        "ia_label": "IA / Datos",
-        "ia_description": "Modelos, pipelines y análisis"
+        "frontend_label": "Frontend Developer",
+        "frontend_description": "HTML, CSS, React, interfaces de usuario",
+        "backend_label": "Backend Developer",
+        "backend_description": "APIs, bases de datos, servidores",
+        "fullstack_label": "Fullstack Developer",
+        "fullstack_description": "Frontend y backend combinados",
+        "ia_label": "IA & Data",
+        "ia_description": "Machine learning, análisis y ciencia de datos"
       },
       "step3": {
-        "eyebrow": "TU PREFERENCIA",
-        "title": "¿Cómo preferís trabajar?",
-        "description": "Podés elegir más de una.",
-        "group_label": "Modalidades de trabajo",
+        "eyebrow": "Tu modalidad",
+        "title": "¿Cómo prefieres trabajar?",
+        "description": "Selecciona la modalidad que más te acomoda.",
+        "group_label": "Modalidad de trabajo",
         "remote": "Remoto",
         "hybrid": "Híbrido",
         "onsite": "Presencial"
       },
       "step4": {
-        "eyebrow": "TU DISPONIBILIDAD",
-        "title": "¿Cuándo podés empezar?",
-        "description": "Esto se muestra en tu perfil público.",
-        "group_label": "Disponibilidad para empezar",
-        "immediate": "Inmediata",
+        "eyebrow": "Tu disponibilidad",
+        "title": "¿Cuándo puedes empezar?",
+        "description": "Sé honesto, esto ayuda a las empresas a planificar sus proyectos.",
+        "group_label": "Disponibilidad",
+        "immediate": "Inmediatamente",
         "two_weeks": "En 2 semanas",
-        "one_month": "En 1 mes",
-        "unavailable": "No disponible por ahora"
+        "one_month": "En un mes",
+        "unavailable": "No disponible ahora"
       },
       "step5": {
-        "eyebrow": "TU STACK",
-        "title": "¿Qué tecnologías manejás?",
-        "description": "Seleccioná todas las que apliquen. Podés editarlo después.",
+        "eyebrow": "Tu stack",
+        "title": "¿Con qué tecnologías trabajas?",
+        "description": "Selecciona todas las que dominas o estás aprendiendo.",
         "search_label": "Buscar tecnología",
         "search_placeholder": "Buscar tecnología...",
-        "group_label": "Tecnologías disponibles",
-        "no_results": "Sin resultados.",
-        "selected_count": "{count, plural, one {# seleccionada} other {# seleccionadas}}"
+        "group_label": "Stack tecnológico",
+        "no_results": "Sin resultados para tu búsqueda.",
+        "selected_count": "{count} seleccionadas"
       },
       "step6": {
-        "eyebrow": "TU PORTAFOLIO",
-        "title": "¿Dónde podemos ver tu trabajo?",
-        "description": "Todos los campos son opcionales. Podés agregarlos después desde tu perfil.",
+        "eyebrow": "Opcional",
+        "title": "¿Tienes portafolio o proyectos?",
+        "description": "Agrega enlaces para mostrar tu trabajo. Puedes completar esto después.",
         "github_label": "GitHub",
         "github_placeholder": "github.com/tu-usuario",
         "linkedin_label": "LinkedIn",
         "linkedin_placeholder": "linkedin.com/in/tu-usuario",
-        "portfolio_label": "Portfolio",
+        "portfolio_label": "Portafolio",
         "portfolio_placeholder": "tu-sitio.com"
       },
       "step7": {
-        "eyebrow": "PARA CERRAR",
-        "title": "Contanos un poco sobre vos.",
-        "description": "Una descripción corta que las empresas verán en tu perfil.",
-        "label": "Descripción",
-        "placeholder": "Ej: Desarrolladora Frontend con enfoque en React y diseño de interfaces. Egresada FWD 2025, apasionada por el código limpio y los productos con impacto real."
-      },
-      "done": {
-        "eyebrow": "YA ESTÁ",
-        "title": "Tu perfil está listo.",
-        "description": "Ahora encontrá tu primer proyecto y empezá a construir tu carrera.",
-        "cta": "Explorar proyectos"
+        "eyebrow": "Opcional",
+        "title": "Cuéntanos sobre ti",
+        "description": "Una breve descripción de tu perfil profesional y lo que buscas.",
+        "label": "Biografía",
+        "placeholder": "Describe tu perfil, experiencia y lo que buscas en un proyecto..."
       }
     },
     "empresa": {
+      "done": {
+        "eyebrow": "¡Todo listo!",
+        "title": "Tu perfil de empresa está completo",
+        "description": "Ya puedes publicar proyectos y empezar a conectar con talentos juniors FWD.",
+        "cta": "Ir al dashboard"
+      },
       "step1": {
-        "eyebrow": "EMPECEMOS",
+        "eyebrow": "Tu empresa",
         "title": "¿Cómo se llama tu empresa?",
-        "description": "Usá el nombre comercial o razón social.",
+        "description": "Este nombre aparecerá en tu perfil y en los proyectos que publiques.",
         "label": "Nombre de la empresa",
-        "placeholder": "Nombre comercial o razón social"
+        "placeholder": "Ej. Acme Technologies S.A."
       },
       "step2": {
-        "eyebrow": "TU EMPRESA",
-        "title": "¿En qué sector opera?",
-        "description": "Podés elegir más de uno.",
-        "group_label": "Sectores",
+        "eyebrow": "Tu sector",
+        "title": "¿En qué sector opera tu empresa?",
+        "description": "Selecciona la industria principal de tu organización.",
+        "group_label": "Sector de la empresa",
         "tech": "Tecnología",
         "fintech": "Fintech",
         "health": "Salud",
@@ -224,134 +256,285 @@
         "other": "Otro"
       },
       "step3": {
-        "eyebrow": "TU EMPRESA",
+        "eyebrow": "Descripción",
         "title": "¿A qué se dedica tu empresa?",
-        "description": "Esta descripción aparece en tu perfil público y en los proyectos que publiques.",
-        "label": "Descripción de la empresa",
-        "placeholder": "Ej: Somos una empresa de software enfocada en soluciones logísticas para el sector retail en Centroamérica."
+        "description": "Una descripción breve que ayude a los talentos a conocerte.",
+        "label": "Descripción",
+        "placeholder": "Describe el enfoque, propósito y cultura de tu empresa..."
       },
       "step4": {
-        "eyebrow": "VERIFICACIÓN",
-        "title": "Necesitamos verificar tu empresa.",
-        "description": "Esta información es confidencial y solo se usa para validar tu cuenta.",
+        "eyebrow": "Datos de contacto",
+        "title": "Información legal y web",
+        "description": "Necesitamos estos datos para verificar y completar tu perfil.",
         "website_label": "Sitio web",
-        "website_placeholder": "https://tu-empresa.com",
-        "cedula_label": "Cédula jurídica CR",
+        "website_placeholder": "https://tuempresa.com",
+        "cedula_label": "Cédula jurídica",
         "cedula_placeholder": "3-101-XXXXXX"
       },
       "step5": {
-        "eyebrow": "LO QUE BUSCÁS",
-        "title": "¿Qué tipo de proyectos querés publicar?",
-        "description": "Esto nos ayuda a mostrarte el talento más adecuado.",
-        "group_label": "Tipos de proyectos",
+        "eyebrow": "Tipo de proyectos",
+        "title": "¿Qué tipo de proyectos publicarás?",
+        "description": "Selecciona los tipos de trabajo que necesitas del marketplace.",
+        "group_label": "Tipo de proyectos",
         "web": "Desarrollo Web",
-        "mobile": "Desarrollo Mobile",
+        "mobile": "Desarrollo Móvil",
         "ai": "Inteligencia Artificial",
         "automation": "Automatización",
         "dashboards": "Dashboards y Reportes",
         "integrations": "Integraciones",
-        "ux": "Diseño UX/UI",
+        "ux": "UX / UI Design",
         "data": "Análisis de Datos",
         "other": "Otro"
       },
       "step6": {
-        "eyebrow": "CASI LISTO",
-        "title": "Agregá el logo de tu empresa.",
-        "description": "Opcional. JPG o PNG, máximo 5 MB. Podés subirlo después desde tu perfil.",
-        "drop_hint": "Arrastrá tu logo aquí",
-        "loaded": "Logo cargado",
-        "select_file": "Seleccionar archivo",
+        "eyebrow": "Opcional",
+        "title": "Logo de tu empresa",
+        "description": "Sube el logo de tu empresa para personalizar tu perfil (opcional).",
+        "upload_label": "Subir logo",
+        "loaded": "Logo cargado correctamente",
+        "drop_hint": "Arrastra o haz clic para subir",
         "change_file": "Cambiar archivo",
-        "upload_label": "Subir logo de la empresa"
-      },
-      "done": {
-        "eyebrow": "YA ESTÁ",
-        "title": "Tu empresa está registrada.",
-        "description": "Un admin de FWD revisará tu cuenta en las próximas 24 hs. Te avisamos cuando estés listo para publicar proyectos.",
-        "cta": "Ir al dashboard"
+        "select_file": "Seleccionar archivo"
       }
     },
     "emprendedor": {
+      "done": {
+        "eyebrow": "¡Listo para conectar!",
+        "title": "Tu perfil de emprendedor está completo",
+        "description": "Ahora podés explorar el marketplace y conectar con los mejores talentos juniors de FWD.",
+        "cta": "Explorar marketplace"
+      },
       "step1": {
-        "eyebrow": "EMPECEMOS",
-        "title": "¿Cómo se llama tu emprendimiento?",
-        "description": "Usá el nombre con el que lo conoce tu audiencia.",
-        "label": "Nombre del emprendimiento",
-        "placeholder": "Ej: AppCR, EcoLogik, FoodieLab..."
+        "eyebrow": "Tu proyecto",
+        "title": "¿Cómo se llama tu proyecto?",
+        "description": "El nombre de tu startup, producto o idea que querés desarrollar.",
+        "label": "Nombre del proyecto",
+        "placeholder": "Ej. EcoTrack App"
       },
       "step2": {
-        "eyebrow": "TU PROYECTO",
-        "title": "¿En qué etapa está?",
-        "description": "Esto nos ayuda a conectarte con el talento más adecuado.",
-        "group_label": "Etapa del emprendimiento",
+        "eyebrow": "Etapa del proyecto",
+        "title": "¿En qué etapa estás?",
+        "description": "Sé honesto, esto nos ayuda a conectarte con el talento adecuado.",
+        "group_label": "Etapa actual",
         "idea_label": "Idea",
-        "idea_description": "Todavía estoy definiendo el concepto",
+        "idea_description": "Tengo una idea sin desarrollo técnico aún",
         "mvp_label": "MVP",
-        "mvp_description": "Tengo un prototipo o versión inicial",
+        "mvp_description": "Tengo un producto mínimo viable funcionando",
         "validating_label": "Validando",
-        "validating_description": "Ya tengo usuarios y quiero crecer",
+        "validating_description": "Estoy probando con usuarios reales",
         "scaling_label": "Escalando",
-        "scaling_description": "Quiero llevar el producto al siguiente nivel"
+        "scaling_description": "Tengo tracción y necesito crecer el producto"
       },
       "step3": {
-        "eyebrow": "LO QUE NECESITÁS",
-        "title": "¿Qué tipo de apoyo técnico buscás?",
-        "description": "Podés elegir más de uno.",
-        "group_label": "Tipos de apoyo técnico",
-        "web": "App Web",
-        "mobile": "App Mobile",
+        "eyebrow": "Apoyo técnico",
+        "title": "¿Qué apoyo técnico necesitás?",
+        "description": "Selecciona todas las áreas donde buscás colaboración.",
+        "group_label": "Áreas de apoyo técnico",
+        "web": "Desarrollo Web",
+        "mobile": "Desarrollo Móvil",
         "backend": "Backend / APIs",
-        "ai": "Inteligencia Artificial",
-        "ux": "Diseño UX/UI",
+        "ai": "IA & Machine Learning",
+        "ux": "UX / UI Design",
         "data": "Análisis de Datos",
         "automation": "Automatización",
         "other": "Otro"
       },
       "step4": {
-        "eyebrow": "TU PRESUPUESTO",
-        "title": "¿Con qué presupuesto contás?",
-        "description": "Es orientativo, podés ajustarlo al publicar tu proyecto.",
+        "eyebrow": "Presupuesto",
+        "title": "¿Cuál es tu presupuesto estimado?",
+        "description": "Esto ayuda a los talentos a entender el alcance del proyecto.",
         "group_label": "Rango de presupuesto",
         "under_500": "Menos de $500",
         "range_500_1000": "$500 – $1,000",
         "range_1000_2500": "$1,000 – $2,500",
-        "flexible": "Flexible / a conversar"
+        "flexible": "Flexible / por definir"
       },
       "step5": {
-        "eyebrow": "PARA CERRAR",
-        "title": "Contanos sobre tu proyecto.",
-        "description": "Una descripción que el talento verá antes de postularse. Opcional, podés completarla después.",
+        "eyebrow": "Opcional",
+        "title": "¿Más detalles sobre tu proyecto?",
+        "description": "Una descripción que ayude a los talentos a entender tu visión y el problema que resolvés.",
         "label": "Descripción del proyecto",
-        "placeholder": "Ej: Estamos construyendo una app para conectar productores locales con consumidores. Necesitamos un dev que ayude con el frontend en React y la integración con nuestra API."
-      },
-      "done": {
-        "eyebrow": "YA ESTÁ",
-        "title": "Tu perfil está listo.",
-        "description": "Podés empezar a explorar el talento disponible y publicar tu primer proyecto.",
-        "cta": "Explorar talentos"
+        "placeholder": "Describe tu proyecto, el problema que resuelve y tu visión a largo plazo..."
       }
     }
   },
-  "login": {
-    "eyebrow": "TU CUENTA",
-    "title": "Bienvenida/o",
-    "description": "Ingresá con la cuenta que usaste al registrarte.",
-    "continue_google": "Continuar con Google",
-    "continue_github": "Continuar con GitHub",
-    "or_divider": "o",
-    "email_label": "Correo electrónico",
-    "email_placeholder": "tu@correo.com",
-    "password_label": "Contraseña",
-    "password_placeholder": "Tu contraseña",
-    "submit": "Ingresar",
-    "forgot_password": "¿Olvidaste tu contraseña?",
-    "show_password": "Mostrar contraseña",
-    "hide_password": "Ocultar contraseña",
-    "terms_prefix": "Al continuar aceptás los",
-    "terms_link": "términos de uso",
-    "terms_connector": "y la",
-    "privacy_link": "política de privacidad",
-    "no_account": "¿Todavía no tenés cuenta?",
-    "register_link": "Registrarse"
+  "empresa_dashboard": {
+    "title": "Panel de empresa",
+    "stats": {
+      "active_projects": "Proyectos activos",
+      "applications": "Postulaciones",
+      "reviewed": "Revisadas",
+      "pending_match": "Match pendiente"
+    },
+    "projects": {
+      "title": "Tus proyectos",
+      "new_btn": "Nuevo",
+      "paused": "Pausado",
+      "published_days": "Publicado hace {days} días",
+      "label_applied": "Aplicaron"
+    },
+    "compatibility": {
+      "title": "Compatibilidad de candidatos",
+      "subtitle": "Selecciona un proyecto para filtrar",
+      "match_total": "Match total",
+      "tech_stack": "Stack técnico",
+      "availability": "Disponibilidad",
+      "modality": "Modalidad",
+      "empty_state": "No hay candidatos recomendados para este proyecto aún."
+    },
+    "applications": {
+      "title": "Quiénes se postularon",
+      "empty_state": "No hay postulaciones registradas.",
+      "table": {
+        "junior": "Talento",
+        "project": "Proyecto",
+        "match": "Match",
+        "status": "Estado",
+        "actions": "Acciones"
+      },
+      "status": {
+        "reviewed": "Revisada",
+        "pending": "Pendiente",
+        "interview": "Entrevista",
+        "accepted": "Aceptado",
+        "rejected": "Rechazado"
+      },
+      "actions": {
+        "view": "Ver perfil",
+        "accept": "Aceptar",
+        "reject": "Rechazar",
+        "completed": "Completado"
+      }
+    },
+    "new_project_modal": {
+      "title": "Nuevo proyecto",
+      "name_label": "Nombre del proyecto",
+      "placeholder": "Ej. E-commerce Mobile Sync",
+      "status_label": "Estado inicial",
+      "active": "Activo",
+      "paused": "Pausado",
+      "cancel": "Cancelar",
+      "submit": "Crear proyecto",
+      "success_message": "Proyecto creado exitosamente."
+    },
+    "notifications": {
+      "accepted": "{name} ha sido aceptado al proyecto.",
+      "rejected": "Se ha notificado a {name} que no fue seleccionado."
+    }
+  },
+  "perfil_junior": {
+    "tabs": {
+      "nav_label": "Navegación de perfil",
+      "perfil": "Mi perfil",
+      "trabajo": "Mi trabajo",
+      "postulaciones": "Postulaciones",
+      "notificaciones": "Notificaciones",
+      "sugeridos": "Proyectos sugeridos"
+    },
+    "hero": {
+      "edit_profile": "Editar perfil",
+      "role_label": "Rol",
+      "program_label": "Programa / Cohorte",
+      "save": "Guardar",
+      "cancel": "Cancelar"
+    },
+    "personal": {
+      "title": "Información Personal",
+      "edit": "Editar",
+      "location_field": "Ubicación",
+      "email_field": "Correo Electrónico",
+      "bio_field": "Biografía profesional",
+      "location_display": "Ubicación",
+      "email_display": "Contacto",
+      "bio_heading": "Sobre Mí",
+      "save_changes": "Guardar cambios",
+      "cancel": "Cancelar"
+    },
+    "stack": {
+      "title": "Mi Stack Tecnológico",
+      "add": "Agregar",
+      "placeholder": "Ej. Node.js, GraphQL, PostgreSQL...",
+      "add_btn": "Añadir",
+      "cancel_btn": "Cancelar",
+      "remove_skill": "Quitar {skill}",
+      "empty": "No hay tecnologías agregadas aún."
+    },
+    "links": {
+      "title": "Enlaces del Talento",
+      "github": "GitHub",
+      "linkedin": "LinkedIn",
+      "portfolio": "Portafolio"
+    },
+    "activity": {
+      "title": "Actividad Reciente",
+      "view_all": "Ver todo el historial",
+      "just_now": "Hace un momento",
+      "updated_personal": "Actualizó su información personal de contacto",
+      "removed_skill": "Eliminó la habilidad '{skill}' de su stack",
+      "added_skill": "Agregó la habilidad '{skill}' a su stack"
+    },
+    "applications_sidebar": {
+      "title": "Postulaciones",
+      "manage": "Gestionar postulaciones"
+    },
+    "work": {
+      "title": "Mi trabajo",
+      "description": "Gestioná y exhibí tus desarrollos más impactantes. Visualizá tus productos terminados y añadí nuevas piezas a tu portafolio profesional.",
+      "badge_product": "Product",
+      "add_title": "Agregar proyecto",
+      "add_formats": "Formatos soportados: Link, Figma, GitHub"
+    },
+    "applications": {
+      "title": "Mis postulaciones",
+      "description": "Gestioná y hacé seguimiento en tiempo real de tus procesos de selección abiertos y finalizados.",
+      "filter_label": "Filtrar por:",
+      "filter": {
+        "all": "Todas",
+        "sent": "Enviadas",
+        "seen": "Vistas",
+        "in_process": "En proceso",
+        "accepted": "Aceptadas",
+        "rejected": "Rechazadas"
+      },
+      "empty": "No se encontraron postulaciones con este estado.",
+      "stats": {
+        "active": "Postulaciones Activas",
+        "interviews": "Entrevistas Programadas",
+        "compatibility": "Índice de Compatibilidad"
+      },
+      "opportunities_title": "Otras oportunidades para ti",
+      "opportunities_description": "Proyectos que podrían encajar con tu trayectoria profesional.",
+      "view_details": "Ver detalles",
+      "explore_routes": "Explora nuevas rutas"
+    },
+    "notifications": {
+      "activity_title": "Actividad Reciente",
+      "mark_all_read": "Marcar todas como leídas",
+      "today": "Hoy",
+      "yesterday": "Ayer",
+      "older_empty": "No hay notificaciones más antiguas."
+    },
+    "suggested": {
+      "title": "Proyectos Sugeridos",
+      "badge": "IA Matcher",
+      "description": "Proyectos freelance recomendados automáticamente basándose en tu stack tecnológico.",
+      "duration_prefix": "Duración:",
+      "match_label": "Match",
+      "apply": "Postularme"
+    },
+    "status": {
+      "enviada": "Enviada",
+      "vista": "Vista",
+      "en_proceso": "En proceso",
+      "aceptada": "Aceptada",
+      "rechazada": "Rechazada",
+      "unknown": "Desconocido"
+    },
+    "footer": {
+      "copyright": "© 2026 FWD Talent. Todos los derechos reservados.",
+      "terms": "Términos de Servicio",
+      "privacy": "Política de Privacidad",
+      "support": "Soporte"
+    }
   }
 }
