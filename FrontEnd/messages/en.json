@@ -536,5 +536,26 @@
       "privacy": "Privacy Policy",
       "support": "Support"
     }
+  },
+  "marketplace_page": {
+    "eyebrow": "MARKETPLACE",
+    "title": "Available projects",
+    "search_label": "Search by name or technology",
+    "search_placeholder": "e.g. React, Figma, Backend...",
+    "specialty_label": "Specialty",
+    "specialty_all": "All areas",
+    "active_filters": "ACTIVE FILTERS:",
+    "clear_all": "Clear all",
+    "budget": "BUDGET",
+    "duration": "DURATION",
+    "experience": "EXPERIENCE",
+    "hourly_rate": "HOURLY RATE",
+    "view_project": "View project",
+    "badges": {
+      "urgent": "URGENT",
+      "full_time": "FULL-TIME",
+      "project": "PROJECT",
+      "part_time": "PART-TIME"
+    }
   }
 }
