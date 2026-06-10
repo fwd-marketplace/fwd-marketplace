@@ -2,22 +2,25 @@
 
 import { useState, useRef } from "react";
 import { useRouter, useParams } from "next/navigation";
+import { useTranslations } from "next-intl";
 import { ArrowRight, Upload } from "lucide-react";
 import { FwdGeoBackdrop } from "@/components/ui/fwd-geo-backdrop";
 
 const TOTAL_STEPS = 6;
+const OPTIONAL_STEPS = new Set([6]);
+const MAX_LOGO_FILE_SIZE_BYTES = 5 * 1_024 * 1_024;
 
 /* ── Progress dots ───────────────────────────────────────── */
 function ProgressDots({ current, total }: { current: number; total: number }) {
   return (
     <div className="flex items-center gap-1.5">
       {Array.from({ length: total }, (_, i) => {
-        const step = i + 1;
-        const isCompleted = step < current;
-        const isCurrent = step === current;
+        const stepNumber = i + 1;
+        const isCompleted = stepNumber < current;
+        const isCurrent = stepNumber === current;
         return (
           <span
-            key={step}
+            key={stepNumber}
             className={[
               "block transition-all duration-[--duration-base]",
               isCurrent
@@ -35,25 +38,28 @@ function ProgressDots({ current, total }: { current: number; total: number }) {
 
 /* ── Step 1 — Nombre empresa ─────────────────────────────── */
 function Step1({ onChange }: { onChange: (val: string) => void }) {
-  const [value, setValue] = useState("");
+  const t = useTranslations("register.empresa.step1");
+  const [nameValue, setNameValue] = useState("");
+
   return (
     <div className="flex flex-col gap-6">
       <div>
         <p className="mb-2 font-heading text-[0.65rem] font-bold uppercase tracking-[0.2em] text-ink-muted">
-          Empecemos
+          {t("eyebrow")}
         </p>
         <h2 className="font-heading text-4xl font-extrabold tracking-tight text-ink-strong">
-          ¿Cómo se llama tu empresa?
+          {t("title")}
         </h2>
-        <p className="mt-2 font-body text-sm text-ink-muted">
-          Usá el nombre comercial o razón social.
-        </p>
+        <p className="mt-2 font-body text-sm text-ink-muted">{t("description")}</p>
       </div>
+
+      <label htmlFor="empresa-name" className="sr-only">{t("label")}</label>
       <input
+        id="empresa-name"
         type="text"
-        value={value}
-        onChange={(e) => { setValue(e.target.value); onChange(e.target.value); }}
-        placeholder="Nombre comercial o razón social"
+        value={nameValue}
+        onChange={(e) => { setNameValue(e.target.value); onChange(e.target.value); }}
+        placeholder={t("placeholder")}
         autoFocus
         className="w-full rounded-2xl bg-surface-sunken px-5 py-4 font-body text-sm text-ink-strong placeholder:text-ink-subtle outline-none focus:ring-2 focus:ring-primary/40"
       />
@@ -63,43 +69,55 @@ function Step1({ onChange }: { onChange: (val: string) => void }) {
 }
 
 /* ── Step 2 — Sector ─────────────────────────────────────── */
-const SECTORS = [
-  "Tecnología", "Fintech", "Salud", "Logística", "Educación",
-  "Energía", "Retail", "Manufactura", "Consultoría", "Otro",
-];
+type Sector = "tech" | "fintech" | "health" | "logistics" | "education" | "energy" | "retail" | "manufacturing" | "consulting" | "other";
 
-function Step2({ onChange }: { onChange: (val: string[]) => void }) {
-  const [selected, setSelected] = useState<string[]>([]);
+function Step2({ onChange }: { onChange: (val: Sector[]) => void }) {
+  const t = useTranslations("register.empresa.step2");
+  const [selectedSectors, setSelectedSectors] = useState<Sector[]>([]);
 
-  function toggle(item: string) {
-    const next = selected.includes(item)
-      ? selected.filter((s) => s !== item)
-      : [...selected, item];
-    setSelected(next);
-    onChange(next);
+  const SECTOR_LABELS: Record<Sector, string> = {
+    tech:          t("tech"),
+    fintech:       t("fintech"),
+    health:        t("health"),
+    logistics:     t("logistics"),
+    education:     t("education"),
+    energy:        t("energy"),
+    retail:        t("retail"),
+    manufacturing: t("manufacturing"),
+    consulting:    t("consulting"),
+    other:         t("other"),
+  };
+
+  function toggleSector(sector: Sector) {
+    const nextSelection = selectedSectors.includes(sector)
+      ? selectedSectors.filter((s) => s !== sector)
+      : [...selectedSectors, sector];
+    setSelectedSectors(nextSelection);
+    onChange(nextSelection);
   }
 
   return (
     <div className="flex flex-col gap-6">
       <div>
         <p className="mb-2 font-heading text-[0.65rem] font-bold uppercase tracking-[0.2em] text-ink-muted">
-          Tu empresa
+          {t("eyebrow")}
         </p>
         <h2 className="font-heading text-4xl font-extrabold tracking-tight text-ink-strong">
-          ¿En qué sector opera?
+          {t("title")}
         </h2>
-        <p className="mt-2 font-body text-sm text-ink-muted">
-          Podés elegir más de uno.
-        </p>
+        <p className="mt-2 font-body text-sm text-ink-muted">{t("description")}</p>
       </div>
-      <div className="flex flex-wrap gap-2.5">
-        {SECTORS.map((item) => {
-          const isSelected = selected.includes(item);
+
+      <div role="group" aria-label={t("group_label")} className="flex flex-wrap gap-2.5">
+        {(Object.keys(SECTOR_LABELS) as Sector[]).map((sector) => {
+          const isSelected = selectedSectors.includes(sector);
           return (
             <button
-              key={item}
+              key={sector}
               type="button"
-              onClick={() => toggle(item)}
+              role="checkbox"
+              aria-checked={isSelected}
+              onClick={() => toggleSector(sector)}
               className={[
                 "rounded-full border px-5 py-2 font-body text-sm font-medium transition-colors duration-[--duration-fast]",
                 isSelected
@@ -107,7 +125,7 @@ function Step2({ onChange }: { onChange: (val: string[]) => void }) {
                   : "border-border bg-surface text-ink-strong hover:border-border-strong hover:bg-surface-sunken",
               ].join(" ")}
             >
-              {item}
+              {SECTOR_LABELS[sector]}
             </button>
           );
         })}
@@ -118,44 +136,47 @@ function Step2({ onChange }: { onChange: (val: string[]) => void }) {
 }
 
 /* ── Step 3 — Descripción ────────────────────────────────── */
-const DESC_MAX = 300;
+const DESC_MAX_CHARS = 300;
 
 function Step3({ onChange }: { onChange: (val: string) => void }) {
-  const [value, setValue] = useState("");
-  const remaining = DESC_MAX - value.length;
+  const t = useTranslations("register.empresa.step3");
+  const [descriptionValue, setDescriptionValue] = useState("");
+  const remainingChars = DESC_MAX_CHARS - descriptionValue.length;
 
   return (
     <div className="flex flex-col gap-6">
       <div>
         <p className="mb-2 font-heading text-[0.65rem] font-bold uppercase tracking-[0.2em] text-ink-muted">
-          Tu empresa
+          {t("eyebrow")}
         </p>
         <h2 className="font-heading text-4xl font-extrabold tracking-tight text-ink-strong">
-          ¿A qué se dedica tu empresa?
+          {t("title")}
         </h2>
-        <p className="mt-2 font-body text-sm text-ink-muted">
-          Esta descripción aparece en tu perfil público y en los proyectos que publiques.
-        </p>
+        <p className="mt-2 font-body text-sm text-ink-muted">{t("description")}</p>
       </div>
+
       <div className="relative">
+        <label htmlFor="empresa-description" className="sr-only">{t("label")}</label>
         <textarea
-          value={value}
+          id="empresa-description"
+          value={descriptionValue}
           onChange={(e) => {
-            const v = e.target.value.slice(0, DESC_MAX);
-            setValue(v);
-            onChange(v);
+            const nextValue = e.target.value.slice(0, DESC_MAX_CHARS);
+            setDescriptionValue(nextValue);
+            onChange(nextValue);
           }}
-          placeholder="Ej: Somos una empresa de software enfocada en soluciones logísticas para el sector retail en Centroamérica."
+          placeholder={t("placeholder")}
           rows={5}
           className="w-full resize-none rounded-2xl bg-surface-sunken px-5 py-4 font-body text-sm text-ink-strong placeholder:text-ink-subtle outline-none focus:ring-2 focus:ring-primary/40"
         />
         <span
+          aria-live="polite"
           className={[
             "absolute bottom-3 right-4 font-body text-xs tabular-nums",
-            remaining <= 50 ? "text-warning" : "text-ink-subtle",
+            remainingChars <= 50 ? "text-warning" : "text-ink-subtle",
           ].join(" ")}
         >
-          {remaining}
+          {remainingChars}
         </span>
       </div>
     </div>
@@ -163,45 +184,53 @@ function Step3({ onChange }: { onChange: (val: string) => void }) {
 }
 
 /* ── Step 4 — Datos legales ──────────────────────────────── */
-function Step4({ onChange }: { onChange: (val: { web: string; cedula: string }) => void }) {
-  const [web, setWeb] = useState("");
-  const [cedula, setCedula] = useState("");
+type LegalData = { websiteUrl: string; cedulaJuridica: string };
 
-  function update(nextWeb: string, nextCedula: string) {
-    onChange({ web: nextWeb, cedula: nextCedula });
+function Step4({ onChange }: { onChange: (val: LegalData) => void }) {
+  const t = useTranslations("register.empresa.step4");
+  const [websiteUrl, setWebsiteUrl] = useState("");
+  const [cedulaJuridica, setCedulaJuridica] = useState("");
+
+  function notifyChange(nextWebsite: string, nextCedula: string) {
+    onChange({ websiteUrl: nextWebsite, cedulaJuridica: nextCedula });
   }
 
   return (
     <div className="flex flex-col gap-6">
       <div>
         <p className="mb-2 font-heading text-[0.65rem] font-bold uppercase tracking-[0.2em] text-ink-muted">
-          Verificación
+          {t("eyebrow")}
         </p>
         <h2 className="font-heading text-4xl font-extrabold tracking-tight text-ink-strong">
-          Necesitamos verificar tu empresa.
+          {t("title")}
         </h2>
-        <p className="mt-2 font-body text-sm text-ink-muted">
-          Esta información es confidencial y solo se usa para validar tu cuenta.
-        </p>
+        <p className="mt-2 font-body text-sm text-ink-muted">{t("description")}</p>
       </div>
+
       <div className="space-y-3">
         <div className="flex flex-col gap-1.5">
-          <label className="font-body text-xs font-semibold text-ink-muted">Sitio web</label>
+          <label htmlFor="empresa-website" className="font-body text-xs font-semibold text-ink-muted">
+            {t("website_label")}
+          </label>
           <input
+            id="empresa-website"
             type="url"
-            value={web}
-            onChange={(e) => { setWeb(e.target.value); update(e.target.value, cedula); }}
-            placeholder="https://tu-empresa.com"
+            value={websiteUrl}
+            onChange={(e) => { setWebsiteUrl(e.target.value); notifyChange(e.target.value, cedulaJuridica); }}
+            placeholder={t("website_placeholder")}
             className="w-full rounded-2xl bg-surface-sunken px-5 py-3.5 font-body text-sm text-ink-strong placeholder:text-ink-subtle outline-none focus:ring-2 focus:ring-primary/40"
           />
         </div>
         <div className="flex flex-col gap-1.5">
-          <label className="font-body text-xs font-semibold text-ink-muted">Cédula jurídica CR</label>
+          <label htmlFor="empresa-cedula" className="font-body text-xs font-semibold text-ink-muted">
+            {t("cedula_label")}
+          </label>
           <input
+            id="empresa-cedula"
             type="text"
-            value={cedula}
-            onChange={(e) => { setCedula(e.target.value); update(web, e.target.value); }}
-            placeholder="3-101-XXXXXX"
+            value={cedulaJuridica}
+            onChange={(e) => { setCedulaJuridica(e.target.value); notifyChange(websiteUrl, e.target.value); }}
+            placeholder={t("cedula_placeholder")}
             className="w-full rounded-2xl bg-surface-sunken px-5 py-3.5 font-body text-sm text-ink-strong placeholder:text-ink-subtle outline-none focus:ring-2 focus:ring-primary/40"
           />
         </div>
@@ -211,44 +240,54 @@ function Step4({ onChange }: { onChange: (val: { web: string; cedula: string }) 
 }
 
 /* ── Step 5 — Tipos de proyectos ─────────────────────────── */
-const PROJECT_TYPES = [
-  "Desarrollo Web", "Desarrollo Mobile", "Inteligencia Artificial",
-  "Automatización", "Dashboards y Reportes", "Integraciones",
-  "Diseño UX/UI", "Análisis de Datos", "Otro",
-];
+type ProjectType = "web" | "mobile" | "ai" | "automation" | "dashboards" | "integrations" | "ux" | "data" | "other";
 
-function Step5({ onChange }: { onChange: (val: string[]) => void }) {
-  const [selected, setSelected] = useState<string[]>([]);
+function Step5({ onChange }: { onChange: (val: ProjectType[]) => void }) {
+  const t = useTranslations("register.empresa.step5");
+  const [selectedProjectTypes, setSelectedProjectTypes] = useState<ProjectType[]>([]);
 
-  function toggle(item: string) {
-    const next = selected.includes(item)
-      ? selected.filter((s) => s !== item)
-      : [...selected, item];
-    setSelected(next);
-    onChange(next);
+  const PROJECT_TYPE_LABELS: Record<ProjectType, string> = {
+    web:          t("web"),
+    mobile:       t("mobile"),
+    ai:           t("ai"),
+    automation:   t("automation"),
+    dashboards:   t("dashboards"),
+    integrations: t("integrations"),
+    ux:           t("ux"),
+    data:         t("data"),
+    other:        t("other"),
+  };
+
+  function toggleProjectType(projectType: ProjectType) {
+    const nextSelection = selectedProjectTypes.includes(projectType)
+      ? selectedProjectTypes.filter((pt) => pt !== projectType)
+      : [...selectedProjectTypes, projectType];
+    setSelectedProjectTypes(nextSelection);
+    onChange(nextSelection);
   }
 
   return (
     <div className="flex flex-col gap-6">
       <div>
         <p className="mb-2 font-heading text-[0.65rem] font-bold uppercase tracking-[0.2em] text-ink-muted">
-          Lo que buscás
+          {t("eyebrow")}
         </p>
         <h2 className="font-heading text-4xl font-extrabold tracking-tight text-ink-strong">
-          ¿Qué tipo de proyectos querés publicar?
+          {t("title")}
         </h2>
-        <p className="mt-2 font-body text-sm text-ink-muted">
-          Esto nos ayuda a mostrarte el talento más adecuado.
-        </p>
+        <p className="mt-2 font-body text-sm text-ink-muted">{t("description")}</p>
       </div>
-      <div className="flex flex-wrap gap-2.5">
-        {PROJECT_TYPES.map((item) => {
-          const isSelected = selected.includes(item);
+
+      <div role="group" aria-label={t("group_label")} className="flex flex-wrap gap-2.5">
+        {(Object.keys(PROJECT_TYPE_LABELS) as ProjectType[]).map((projectType) => {
+          const isSelected = selectedProjectTypes.includes(projectType);
           return (
             <button
-              key={item}
+              key={projectType}
               type="button"
-              onClick={() => toggle(item)}
+              role="checkbox"
+              aria-checked={isSelected}
+              onClick={() => toggleProjectType(projectType)}
               className={[
                 "rounded-full border px-5 py-2 font-body text-sm font-medium transition-colors duration-[--duration-fast]",
                 isSelected
@@ -256,7 +295,7 @@ function Step5({ onChange }: { onChange: (val: string[]) => void }) {
                   : "border-border bg-surface text-ink-strong hover:border-border-strong hover:bg-surface-sunken",
               ].join(" ")}
             >
-              {item}
+              {PROJECT_TYPE_LABELS[projectType]}
             </button>
           );
         })}
@@ -268,81 +307,78 @@ function Step5({ onChange }: { onChange: (val: string[]) => void }) {
 
 /* ── Step 6 — Logo ───────────────────────────────────────── */
 function Step6() {
-  const [preview, setPreview] = useState<string | null>(null);
-  const inputRef = useRef<HTMLInputElement>(null);
-  const [isDragging, setIsDragging] = useState(false);
+  const t = useTranslations("register.empresa.step6");
+  const [logoPreviewUrl, setLogoPreviewUrl] = useState<string | null>(null);
+  const [isDraggingOver, setIsDraggingOver] = useState(false);
+  const fileInputRef = useRef<HTMLInputElement>(null);
 
-  function handleFile(file: File) {
+  function processLogoFile(file: File) {
     if (!file.type.startsWith("image/")) return;
-    if (file.size > 5 * 1024 * 1024) return;
-    const url = URL.createObjectURL(file);
-    setPreview(url);
+    if (file.size > MAX_LOGO_FILE_SIZE_BYTES) return;
+    setLogoPreviewUrl(URL.createObjectURL(file));
   }
 
-  function onInputChange(e: React.ChangeEvent<HTMLInputElement>) {
+  function handleFileInputChange(e: React.ChangeEvent<HTMLInputElement>) {
     const file = e.target.files?.[0];
-    if (file) handleFile(file);
+    if (file) processLogoFile(file);
   }
 
-  function onDrop(e: React.DragEvent) {
+  function handleDrop(e: React.DragEvent) {
     e.preventDefault();
-    setIsDragging(false);
+    setIsDraggingOver(false);
     const file = e.dataTransfer.files?.[0];
-    if (file) handleFile(file);
+    if (file) processLogoFile(file);
   }
 
   return (
     <div className="flex flex-col gap-6">
       <div>
         <p className="mb-2 font-heading text-[0.65rem] font-bold uppercase tracking-[0.2em] text-ink-muted">
-          Casi listo
+          {t("eyebrow")}
         </p>
         <h2 className="font-heading text-4xl font-extrabold tracking-tight text-ink-strong">
-          Agregá el logo de tu empresa.
+          {t("title")}
         </h2>
-        <p className="mt-2 font-body text-sm text-ink-muted">
-          Opcional. JPG o PNG, máximo 5 MB. Podés subirlo después desde tu perfil.
-        </p>
+        <p className="mt-2 font-body text-sm text-ink-muted">{t("description")}</p>
       </div>
 
       <div
-        onDragOver={(e) => { e.preventDefault(); setIsDragging(true); }}
-        onDragLeave={() => setIsDragging(false)}
-        onDrop={onDrop}
+        role="button"
+        tabIndex={0}
+        aria-label={t("upload_label")}
+        onDragOver={(e) => { e.preventDefault(); setIsDraggingOver(true); }}
+        onDragLeave={() => setIsDraggingOver(false)}
+        onDrop={handleDrop}
+        onKeyDown={(e) => e.key === "Enter" && fileInputRef.current?.click()}
         className={[
           "flex flex-col items-center justify-center gap-3 rounded-2xl border-2 border-dashed px-6 py-10 transition-colors duration-[--duration-fast]",
-          isDragging ? "border-primary bg-primary/5" : "border-border bg-surface-sunken",
+          isDraggingOver ? "border-primary bg-primary/5" : "border-border bg-surface-sunken",
         ].join(" ")}
       >
-        {preview ? (
-          <img
-            src={preview}
-            alt="Logo preview"
-            className="h-20 w-20 rounded-xl object-contain"
-          />
+        {logoPreviewUrl ? (
+          <img src={logoPreviewUrl} alt="" className="h-20 w-20 rounded-xl object-contain" />
         ) : (
-          <Upload size={28} className="text-ink-subtle" strokeWidth={1.5} />
+          <Upload size={28} className="text-ink-subtle" strokeWidth={1.5} aria-hidden="true" />
         )}
-
         <p className="font-body text-sm text-ink-muted">
-          {preview ? "Logo cargado" : "Arrastrá tu logo aquí"}
+          {logoPreviewUrl ? t("loaded") : t("drop_hint")}
         </p>
-
         <button
           type="button"
-          onClick={() => inputRef.current?.click()}
+          onClick={() => fileInputRef.current?.click()}
           className="rounded-full border border-border-strong px-5 py-2 font-body text-xs font-medium text-ink-strong transition-colors hover:bg-surface-sunken"
         >
-          {preview ? "Cambiar archivo" : "Seleccionar archivo"}
+          {logoPreviewUrl ? t("change_file") : t("select_file")}
         </button>
       </div>
 
       <input
-        ref={inputRef}
+        ref={fileInputRef}
         type="file"
         accept="image/jpeg,image/png"
-        onChange={onInputChange}
-        className="hidden"
+        onChange={handleFileInputChange}
+        className="sr-only"
+        aria-hidden="true"
       />
     </div>
   );
@@ -350,6 +386,7 @@ function Step6() {
 
 /* ── Shell ───────────────────────────────────────────────── */
 export default function EmpresaOnboardingPage() {
+  const t = useTranslations("register");
   const params = useParams();
   const router = useRouter();
   const locale = params.locale as string;
@@ -371,27 +408,24 @@ export default function EmpresaOnboardingPage() {
     }
   }
 
-  const OPTIONAL_STEPS = [6];
-  const canContinue = OPTIONAL_STEPS.includes(currentStep) || Boolean(pendingValue);
+  const canContinue = OPTIONAL_STEPS.has(currentStep) || Boolean(pendingValue);
 
   return (
     <div className="relative flex min-h-[100dvh] flex-col bg-secondary">
       <FwdGeoBackdrop />
 
-      {/* Header */}
-      <header className="relative flex items-center justify-between px-8 py-6">
+      <header className="relative flex items-center justify-between px-4 py-5 sm:px-8 sm:py-6">
         <span className="font-heading text-base font-extrabold text-secondary-foreground">
-          FWD Talent
-          <span className="text-highlight">*</span>
+          {t("brand")}
+          <span className="text-highlight">{t("brand_suffix")}</span>
         </span>
         <span className="font-body text-xs font-medium uppercase tracking-widest text-secondary-foreground/60">
-          Paso {currentStep} de {TOTAL_STEPS}
+          {t("nav.step_counter", { current: currentStep, total: TOTAL_STEPS })}
         </span>
       </header>
 
-      {/* Card */}
       <div className="relative flex flex-1 items-center justify-center px-4">
-        <div className="w-full max-w-md rounded-[2rem] bg-surface px-10 py-10 shadow-elevated">
+        <div className="w-full max-w-md rounded-[2rem] bg-surface px-6 py-8 shadow-elevated sm:px-10 sm:py-10">
           {currentStep === 1 && (
             <Step1 onChange={(val) => setPendingValue(val.trim() || null)} />
           )}
@@ -402,7 +436,9 @@ export default function EmpresaOnboardingPage() {
             <Step3 onChange={(val) => setPendingValue(val.trim() || null)} />
           )}
           {currentStep === 4 && (
-            <Step4 onChange={(val) => setPendingValue(val.web.trim() && val.cedula.trim() ? val : null)} />
+            <Step4 onChange={(val) => setPendingValue(
+              val.websiteUrl.trim() && val.cedulaJuridica.trim() ? val : null
+            )} />
           )}
           {currentStep === 5 && (
             <Step5 onChange={(val) => setPendingValue(val.length > 0 ? val : null)} />
@@ -411,15 +447,14 @@ export default function EmpresaOnboardingPage() {
         </div>
       </div>
 
-      {/* Footer nav */}
-      <footer className="relative flex items-center justify-between px-8 py-6">
+      <footer className="relative flex items-center justify-between px-4 py-5 sm:px-8 sm:py-6">
         {currentStep > 1 ? (
           <button
             type="button"
             onClick={handleBack}
             className="font-body text-sm font-medium text-secondary-foreground/70 transition-opacity hover:opacity-80"
           >
-            Atrás
+            {t("nav.back")}
           </button>
         ) : (
           <div />
@@ -431,9 +466,9 @@ export default function EmpresaOnboardingPage() {
           type="button"
           onClick={handleNext}
           disabled={!canContinue}
-          className="flex items-center gap-2 rounded-full bg-primary px-6 py-2.5 font-body text-sm font-semibold text-white transition-opacity duration-[--duration-fast] hover:opacity-90 disabled:cursor-not-allowed disabled:opacity-40"
+          className="flex items-center gap-2 rounded-full bg-primary px-5 py-2.5 font-body text-sm font-semibold text-white transition-opacity duration-[--duration-fast] hover:opacity-90 disabled:cursor-not-allowed disabled:opacity-40 sm:px-6"
         >
-          {currentStep === TOTAL_STEPS ? "Finalizar" : "Siguiente"}
+          {currentStep === TOTAL_STEPS ? t("nav.finish") : t("nav.next")}
           <ArrowRight size={15} strokeWidth={2.5} />
         </button>
       </footer>

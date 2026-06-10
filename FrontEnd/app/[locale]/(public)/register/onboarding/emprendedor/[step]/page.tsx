@@ -6,17 +6,9 @@ import { useTranslations } from "next-intl";
 import { ArrowRight } from "lucide-react";
 import { FwdGeoBackdrop } from "@/components/ui/fwd-geo-backdrop";
 
-const TOTAL_STEPS = 7;
-const OPTIONAL_STEPS = new Set([6, 7]);
-
-const ALL_TECHS = [
-  "React", "Vue", "Angular", "Next.js", "Tailwind", "TypeScript",
-  "Node.js", "Python", "PHP", "Java", "Go", "PostgreSQL",
-  "MySQL", "MongoDB", "Supabase", "Redis", "Docker", "Git",
-  "AWS", "Figma", "GraphQL", "Prisma",
-];
-
-const BIO_MAX_CHARS = 500;
+const TOTAL_STEPS = 5;
+const OPTIONAL_STEPS = new Set([5]);
+const DESC_MAX_CHARS = 400;
 
 /* ── Progress dots ───────────────────────────────────────── */
 function ProgressDots({ current, total }: { current: number; total: number }) {
@@ -44,9 +36,9 @@ function ProgressDots({ current, total }: { current: number; total: number }) {
   );
 }
 
-/* ── Step 1 — Nombre ─────────────────────────────────────── */
+/* ── Step 1 — Nombre del emprendimiento ──────────────────── */
 function Step1({ onChange }: { onChange: (val: string) => void }) {
-  const t = useTranslations("register.junior.step1");
+  const t = useTranslations("register.emprendedor.step1");
   const [nameValue, setNameValue] = useState("");
 
   return (
@@ -61,9 +53,9 @@ function Step1({ onChange }: { onChange: (val: string) => void }) {
         <p className="mt-2 font-body text-sm text-ink-muted">{t("description")}</p>
       </div>
 
-      <label htmlFor="junior-name" className="sr-only">{t("label")}</label>
+      <label htmlFor="emprendedor-name" className="sr-only">{t("label")}</label>
       <input
-        id="junior-name"
+        id="emprendedor-name"
         type="text"
         value={nameValue}
         onChange={(e) => { setNameValue(e.target.value); onChange(e.target.value); }}
@@ -76,23 +68,23 @@ function Step1({ onChange }: { onChange: (val: string) => void }) {
   );
 }
 
-/* ── Step 2 — Especialización ────────────────────────────── */
-type Specialization = "frontend" | "backend" | "fullstack" | "ia";
+/* ── Step 2 — Etapa ──────────────────────────────────────── */
+type StartupStage = "idea" | "mvp" | "validating" | "scaling";
 
-function Step2({ onChange }: { onChange: (val: Specialization) => void }) {
-  const t = useTranslations("register.junior.step2");
-  const [selectedSpecialization, setSelectedSpecialization] = useState<Specialization | null>(null);
+function Step2({ onChange }: { onChange: (val: StartupStage) => void }) {
+  const t = useTranslations("register.emprendedor.step2");
+  const [selectedStage, setSelectedStage] = useState<StartupStage | null>(null);
 
-  const SPECIALIZATION_OPTIONS: { id: Specialization; label: string; description: string }[] = [
-    { id: "frontend",  label: t("frontend_label"),  description: t("frontend_description") },
-    { id: "backend",   label: t("backend_label"),   description: t("backend_description") },
-    { id: "fullstack", label: t("fullstack_label"), description: t("fullstack_description") },
-    { id: "ia",        label: t("ia_label"),        description: t("ia_description") },
+  const STAGE_OPTIONS: { id: StartupStage; label: string; description: string }[] = [
+    { id: "idea",       label: t("idea_label"),       description: t("idea_description") },
+    { id: "mvp",        label: t("mvp_label"),        description: t("mvp_description") },
+    { id: "validating", label: t("validating_label"), description: t("validating_description") },
+    { id: "scaling",    label: t("scaling_label"),    description: t("scaling_description") },
   ];
 
-  function selectSpecialization(specId: Specialization) {
-    setSelectedSpecialization(specId);
-    onChange(specId);
+  function selectStage(stage: StartupStage) {
+    setSelectedStage(stage);
+    onChange(stage);
   }
 
   return (
@@ -108,15 +100,15 @@ function Step2({ onChange }: { onChange: (val: Specialization) => void }) {
       </div>
 
       <div role="radiogroup" aria-label={t("group_label")} className="space-y-2.5">
-        {SPECIALIZATION_OPTIONS.map((spec) => {
-          const isSelected = selectedSpecialization === spec.id;
+        {STAGE_OPTIONS.map((stageOption) => {
+          const isSelected = selectedStage === stageOption.id;
           return (
             <button
-              key={spec.id}
+              key={stageOption.id}
               type="button"
               role="radio"
               aria-checked={isSelected}
-              onClick={() => selectSpecialization(spec.id)}
+              onClick={() => selectStage(stageOption.id)}
               className={[
                 "flex w-full items-center gap-4 rounded-2xl border px-5 py-3.5 text-left transition-colors duration-[--duration-fast]",
                 isSelected
@@ -134,8 +126,8 @@ function Step2({ onChange }: { onChange: (val: Specialization) => void }) {
                 {isSelected && <span className="h-2.5 w-2.5 rounded-full bg-primary" />}
               </span>
               <span className="flex flex-col gap-0.5">
-                <span className="font-body text-sm font-semibold text-ink-strong">{spec.label}</span>
-                <span className="font-body text-xs text-ink-muted">{spec.description}</span>
+                <span className="font-body text-sm font-semibold text-ink-strong">{stageOption.label}</span>
+                <span className="font-body text-xs text-ink-muted">{stageOption.description}</span>
               </span>
             </button>
           );
@@ -145,24 +137,29 @@ function Step2({ onChange }: { onChange: (val: Specialization) => void }) {
   );
 }
 
-/* ── Step 3 — Modalidad ──────────────────────────────────── */
-type Modality = "remote" | "hybrid" | "onsite";
+/* ── Step 3 — Apoyo técnico ──────────────────────────────── */
+type TechSupport = "web" | "mobile" | "backend" | "ai" | "ux" | "data" | "automation" | "other";
 
-function Step3({ onChange }: { onChange: (val: Modality[]) => void }) {
-  const t = useTranslations("register.junior.step3");
-  const [selectedModalities, setSelectedModalities] = useState<Modality[]>([]);
+function Step3({ onChange }: { onChange: (val: TechSupport[]) => void }) {
+  const t = useTranslations("register.emprendedor.step3");
+  const [selectedSupport, setSelectedSupport] = useState<TechSupport[]>([]);
 
-  const MODALITY_LABELS: Record<Modality, string> = {
-    remote:  t("remote"),
-    hybrid:  t("hybrid"),
-    onsite:  t("onsite"),
+  const TECH_SUPPORT_LABELS: Record<TechSupport, string> = {
+    web:        t("web"),
+    mobile:     t("mobile"),
+    backend:    t("backend"),
+    ai:         t("ai"),
+    ux:         t("ux"),
+    data:       t("data"),
+    automation: t("automation"),
+    other:      t("other"),
   };
 
-  function toggleModality(modality: Modality) {
-    const nextSelection = selectedModalities.includes(modality)
-      ? selectedModalities.filter((m) => m !== modality)
-      : [...selectedModalities, modality];
-    setSelectedModalities(nextSelection);
+  function toggleSupport(support: TechSupport) {
+    const nextSelection = selectedSupport.includes(support)
+      ? selectedSupport.filter((s) => s !== support)
+      : [...selectedSupport, support];
+    setSelectedSupport(nextSelection);
     onChange(nextSelection);
   }
 
@@ -179,15 +176,15 @@ function Step3({ onChange }: { onChange: (val: Modality[]) => void }) {
       </div>
 
       <div role="group" aria-label={t("group_label")} className="flex flex-wrap gap-2.5">
-        {(Object.keys(MODALITY_LABELS) as Modality[]).map((modality) => {
-          const isSelected = selectedModalities.includes(modality);
+        {(Object.keys(TECH_SUPPORT_LABELS) as TechSupport[]).map((support) => {
+          const isSelected = selectedSupport.includes(support);
           return (
             <button
-              key={modality}
+              key={support}
               type="button"
               role="checkbox"
               aria-checked={isSelected}
-              onClick={() => toggleModality(modality)}
+              onClick={() => toggleSupport(support)}
               className={[
                 "rounded-full border px-5 py-2 font-body text-sm font-medium transition-colors duration-[--duration-fast]",
                 isSelected
@@ -195,7 +192,7 @@ function Step3({ onChange }: { onChange: (val: Modality[]) => void }) {
                   : "border-border bg-surface text-ink-strong hover:border-border-strong hover:bg-surface-sunken",
               ].join(" ")}
             >
-              {MODALITY_LABELS[modality]}
+              {TECH_SUPPORT_LABELS[support]}
             </button>
           );
         })}
@@ -205,23 +202,23 @@ function Step3({ onChange }: { onChange: (val: Modality[]) => void }) {
   );
 }
 
-/* ── Step 4 — Disponibilidad ─────────────────────────────── */
-type Availability = "immediate" | "two_weeks" | "one_month" | "unavailable";
+/* ── Step 4 — Presupuesto ────────────────────────────────── */
+type BudgetRange = "under_500" | "range_500_1000" | "range_1000_2500" | "flexible";
 
-function Step4({ onChange }: { onChange: (val: Availability) => void }) {
-  const t = useTranslations("register.junior.step4");
-  const [selectedAvailability, setSelectedAvailability] = useState<Availability | null>(null);
+function Step4({ onChange }: { onChange: (val: BudgetRange) => void }) {
+  const t = useTranslations("register.emprendedor.step4");
+  const [selectedBudget, setSelectedBudget] = useState<BudgetRange | null>(null);
 
-  const AVAILABILITY_LABELS: Record<Availability, string> = {
-    immediate:   t("immediate"),
-    two_weeks:   t("two_weeks"),
-    one_month:   t("one_month"),
-    unavailable: t("unavailable"),
+  const BUDGET_LABELS: Record<BudgetRange, string> = {
+    under_500:       t("under_500"),
+    range_500_1000:  t("range_500_1000"),
+    range_1000_2500: t("range_1000_2500"),
+    flexible:        t("flexible"),
   };
 
-  function selectAvailability(availability: Availability) {
-    setSelectedAvailability(availability);
-    onChange(availability);
+  function selectBudget(budget: BudgetRange) {
+    setSelectedBudget(budget);
+    onChange(budget);
   }
 
   return (
@@ -237,15 +234,15 @@ function Step4({ onChange }: { onChange: (val: Availability) => void }) {
       </div>
 
       <div role="radiogroup" aria-label={t("group_label")} className="space-y-2.5">
-        {(Object.keys(AVAILABILITY_LABELS) as Availability[]).map((availability) => {
-          const isSelected = selectedAvailability === availability;
+        {(Object.keys(BUDGET_LABELS) as BudgetRange[]).map((budget) => {
+          const isSelected = selectedBudget === budget;
           return (
             <button
-              key={availability}
+              key={budget}
               type="button"
               role="radio"
               aria-checked={isSelected}
-              onClick={() => selectAvailability(availability)}
+              onClick={() => selectBudget(budget)}
               className={[
                 "flex w-full items-center gap-4 rounded-2xl border px-5 py-3.5 text-left transition-colors duration-[--duration-fast]",
                 isSelected
@@ -263,7 +260,7 @@ function Step4({ onChange }: { onChange: (val: Availability) => void }) {
                 {isSelected && <span className="h-2.5 w-2.5 rounded-full bg-primary" />}
               </span>
               <span className="font-body text-sm font-medium text-ink-strong">
-                {AVAILABILITY_LABELS[availability]}
+                {BUDGET_LABELS[budget]}
               </span>
             </button>
           );
@@ -273,127 +270,11 @@ function Step4({ onChange }: { onChange: (val: Availability) => void }) {
   );
 }
 
-/* ── Step 5 — Stack ──────────────────────────────────────── */
-function Step5({ onChange }: { onChange: (val: string[]) => void }) {
-  const t = useTranslations("register.junior.step5");
-  const [selectedTechs, setSelectedTechs] = useState<string[]>([]);
-  const [searchQuery, setSearchQuery] = useState("");
-
-  const filteredTechs = searchQuery.trim()
-    ? ALL_TECHS.filter((tech) => tech.toLowerCase().includes(searchQuery.toLowerCase()))
-    : ALL_TECHS;
-
-  function toggleTech(tech: string) {
-    const nextSelection = selectedTechs.includes(tech)
-      ? selectedTechs.filter((t) => t !== tech)
-      : [...selectedTechs, tech];
-    setSelectedTechs(nextSelection);
-    onChange(nextSelection);
-  }
-
-  return (
-    <div className="flex flex-col gap-5">
-      <div>
-        <p className="mb-2 font-heading text-[0.65rem] font-bold uppercase tracking-[0.2em] text-ink-muted">
-          {t("eyebrow")}
-        </p>
-        <h2 className="font-heading text-4xl font-extrabold tracking-tight text-ink-strong">
-          {t("title")}
-        </h2>
-        <p className="mt-2 font-body text-sm text-ink-muted">{t("description")}</p>
-      </div>
-
-      <label htmlFor="tech-search" className="sr-only">{t("search_label")}</label>
-      <input
-        id="tech-search"
-        type="search"
-        value={searchQuery}
-        onChange={(e) => setSearchQuery(e.target.value)}
-        placeholder={t("search_placeholder")}
-        className="w-full rounded-xl bg-surface-sunken px-4 py-2.5 font-body text-sm text-ink-strong placeholder:text-ink-subtle outline-none focus:ring-2 focus:ring-primary/40"
-      />
-
-      <div role="group" aria-label={t("group_label")} className="flex max-h-48 flex-wrap gap-2 overflow-y-auto pr-1">
-        {filteredTechs.map((tech) => {
-          const isSelected = selectedTechs.includes(tech);
-          return (
-            <button
-              key={tech}
-              type="button"
-              role="checkbox"
-              aria-checked={isSelected}
-              onClick={() => toggleTech(tech)}
-              className={[
-                "rounded-full border px-4 py-1.5 font-body text-xs font-medium transition-colors duration-[--duration-fast]",
-                isSelected
-                  ? "border-primary bg-primary text-white"
-                  : "border-border bg-surface text-ink-strong hover:border-border-strong hover:bg-surface-sunken",
-              ].join(" ")}
-            >
-              {tech}
-            </button>
-          );
-        })}
-        {filteredTechs.length === 0 && (
-          <p className="font-body text-xs text-ink-subtle">{t("no_results")}</p>
-        )}
-      </div>
-
-      {selectedTechs.length > 0 && (
-        <p className="font-body text-xs text-ink-muted">
-          {t("selected_count", { count: selectedTechs.length })}
-        </p>
-      )}
-    </div>
-  );
-}
-
-/* ── Step 6 — Links ──────────────────────────────────────── */
-function Step6() {
-  const t = useTranslations("register.junior.step6");
-
-  const LINK_FIELDS = [
-    { key: "github",    labelKey: "github_label",    placeholderKey: "github_placeholder" },
-    { key: "linkedin",  labelKey: "linkedin_label",  placeholderKey: "linkedin_placeholder" },
-    { key: "portfolio", labelKey: "portfolio_label", placeholderKey: "portfolio_placeholder" },
-  ] as const;
-
-  return (
-    <div className="flex flex-col gap-6">
-      <div>
-        <p className="mb-2 font-heading text-[0.65rem] font-bold uppercase tracking-[0.2em] text-ink-muted">
-          {t("eyebrow")}
-        </p>
-        <h2 className="font-heading text-4xl font-extrabold tracking-tight text-ink-strong">
-          {t("title")}
-        </h2>
-        <p className="mt-2 font-body text-sm text-ink-muted">{t("description")}</p>
-      </div>
-
-      <div className="space-y-3">
-        {LINK_FIELDS.map(({ key, labelKey, placeholderKey }) => (
-          <div key={key} className="flex flex-col gap-1.5">
-            <label htmlFor={`link-${key}`} className="font-body text-xs font-semibold text-ink-muted">
-              {t(labelKey)}
-            </label>
-            <input
-              id={`link-${key}`}
-              type="url"
-              placeholder={t(placeholderKey)}
-              className="w-full rounded-2xl bg-surface-sunken px-5 py-3.5 font-body text-sm text-ink-strong placeholder:text-ink-subtle outline-none focus:ring-2 focus:ring-primary/40"
-            />
-          </div>
-        ))}
-      </div>
-    </div>
-  );
-}
-
-/* ── Step 7 — Bio ────────────────────────────────────────── */
-function Step7() {
-  const t = useTranslations("register.junior.step7");
-  const [bioValue, setBioValue] = useState("");
-  const remainingChars = BIO_MAX_CHARS - bioValue.length;
+/* ── Step 5 — Descripción ────────────────────────────────── */
+function Step5() {
+  const t = useTranslations("register.emprendedor.step5");
+  const [descriptionValue, setDescriptionValue] = useState("");
+  const remainingChars = DESC_MAX_CHARS - descriptionValue.length;
 
   return (
     <div className="flex flex-col gap-6">
@@ -408,11 +289,11 @@ function Step7() {
       </div>
 
       <div className="relative">
-        <label htmlFor="junior-bio" className="sr-only">{t("label")}</label>
+        <label htmlFor="emprendedor-description" className="sr-only">{t("label")}</label>
         <textarea
-          id="junior-bio"
-          value={bioValue}
-          onChange={(e) => setBioValue(e.target.value.slice(0, BIO_MAX_CHARS))}
+          id="emprendedor-description"
+          value={descriptionValue}
+          onChange={(e) => setDescriptionValue(e.target.value.slice(0, DESC_MAX_CHARS))}
           placeholder={t("placeholder")}
           rows={5}
           className="w-full resize-none rounded-2xl bg-surface-sunken px-5 py-4 font-body text-sm text-ink-strong placeholder:text-ink-subtle outline-none focus:ring-2 focus:ring-primary/40"
@@ -432,7 +313,7 @@ function Step7() {
 }
 
 /* ── Shell ───────────────────────────────────────────────── */
-export default function JuniorOnboardingPage() {
+export default function EmprendedorOnboardingPage() {
   const t = useTranslations("register");
   const params = useParams();
   const router = useRouter();
@@ -443,15 +324,15 @@ export default function JuniorOnboardingPage() {
 
   function handleNext() {
     if (currentStep < TOTAL_STEPS) {
-      router.push(`/${locale}/register/onboarding/junior/${currentStep + 1}`);
+      router.push(`/${locale}/register/onboarding/emprendedor/${currentStep + 1}`);
     } else {
-      router.push(`/${locale}/register/onboarding/junior/done`);
+      router.push(`/${locale}/register/onboarding/emprendedor/done`);
     }
   }
 
   function handleBack() {
     if (currentStep > 1) {
-      router.push(`/${locale}/register/onboarding/junior/${currentStep - 1}`);
+      router.push(`/${locale}/register/onboarding/emprendedor/${currentStep - 1}`);
     }
   }
 
@@ -485,11 +366,7 @@ export default function JuniorOnboardingPage() {
           {currentStep === 4 && (
             <Step4 onChange={(val) => setPendingValue(val)} />
           )}
-          {currentStep === 5 && (
-            <Step5 onChange={(val) => setPendingValue(val.length > 0 ? val : null)} />
-          )}
-          {currentStep === 6 && <Step6 />}
-          {currentStep === 7 && <Step7 />}
+          {currentStep === 5 && <Step5 />}
         </div>
       </div>
 

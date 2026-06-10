@@ -11,10 +11,347 @@
     "registrarse": "Sign up"
   },
   "landing": {
-    "eyebrow": "FWD Marketplace",
-    "title": "Your first project",
-    "description": "Find a short, paid, real project. Start building your career for real.",
-    "cta_proyectos": "View projects",
-    "cta_empresa": "I'm a company"
+    "hero": {
+      "eyebrow": "FWD TALENT MARKETPLACE",
+      "title": "Get your first professional project",
+      "description": "Real companies post short-term projects for junior talent from Fundación Forward Costa Rica. Build experience, strengthen your portfolio, and start your professional career.",
+      "cta_projects": "Explore projects",
+      "cta_company": "I'm a company",
+      "card_eyebrow": "FEATURED PROJECT",
+      "card_title": "Educational management platform",
+      "card_company": "EduCore",
+      "card_duration": "Duration",
+      "card_duration_val": "8 weeks",
+      "card_modality": "Modality",
+      "card_modality_val": "Remote",
+      "card_budget": "Budget",
+      "card_budget_val": "$900 USD",
+      "card_match": "Match",
+      "card_link": "View project details"
+    },
+    "how_it_works": {
+      "eyebrow": "HOW IT WORKS",
+      "title": "Three steps to boost your career",
+      "step1_title": "Complete your profile",
+      "step1_desc": "Show your stack, availability, and experience so companies can get to know you.",
+      "step2_title": "Find projects",
+      "step2_desc": "Explore opportunities aligned with your profile and filter by technology, modality, and duration.",
+      "step3_title": "Apply and grow",
+      "step3_desc": "Connect with real companies, develop projects, and gain professional experience."
+    },
+    "featured_projects": {
+      "eyebrow": "FEATURED PROJECTS",
+      "title": "Opportunities for you",
+      "badge_featured": "FEATURED",
+      "match": "Match",
+      "duration": "weeks",
+      "link_all": "View all projects"
+    },
+    "value_prop": {
+      "talents_title": "For FWD talents",
+      "talents_items": [
+        "First professional project in your career",
+        "Verified and reliable companies",
+        "Smart matching based on your profile",
+        "Real portfolio building"
+      ],
+      "companies_title": "For companies",
+      "companies_items": [
+        "Talent validated by FWD",
+        "Quick and easy hiring",
+        "Accessible and transparent costs",
+        "Access to new professionals"
+      ]
+    },
+    "stats": {
+      "stat1_val": "+500",
+      "stat1_label": "FWD Graduates",
+      "stat2_val": "+100",
+      "stat2_label": "Published projects",
+      "stat3_val": "+50",
+      "stat3_label": "Participating companies",
+      "stat4_val": "90%",
+      "stat4_label": "Company satisfaction"
+    },
+    "cta": {
+      "title": "Your next opportunity starts today",
+      "description": "Join the marketplace created to boost emerging tech talent.",
+      "cta_projects": "Explore projects",
+      "cta_register": "Register company"
+    }
+  },
+  "register": {
+    "brand": "FWD Talent",
+    "brand_suffix": "*",
+    "nav": {
+      "back": "Back",
+      "next": "Next",
+      "finish": "Finish",
+      "step_counter": "Step {current} of {total}"
+    },
+    "auth": {
+      "eyebrow": "WELCOME",
+      "title": "Forward",
+      "description": "Access your employment platform.",
+      "continue_google": "Continue with Google",
+      "continue_github": "Continue with GitHub",
+      "terms_prefix": "By continuing you accept our",
+      "terms_link": "terms of use",
+      "terms_connector": "and our",
+      "privacy_link": "privacy policy",
+      "amcham_badge": "AMCHAM 2025 Award — Sustainable Business",
+      "or_divider": "or",
+      "email_label": "Email address",
+      "email_placeholder": "you@email.com",
+      "password_label": "Password",
+      "password_placeholder": "At least 8 characters",
+      "confirm_password_label": "Confirm your password",
+      "confirm_password_placeholder": "Repeat your password",
+      "submit": "Create account",
+      "show_password": "Show password",
+      "hide_password": "Hide password"
+    },
+    "role": {
+      "eyebrow": "YOUR ACCOUNT",
+      "title": "How will you use FWD?",
+      "description": "Choose the profile that best describes you.",
+      "continue": "Continue",
+      "junior_label": "I'm a junior developer",
+      "junior_description": "Looking for real projects to grow and gain experience.",
+      "empresa_label": "I represent a company",
+      "empresa_description": "I want to publish projects and work with FWD talent.",
+      "emprendedor_label": "I have a startup",
+      "emprendedor_description": "Looking for technical support to grow my project."
+    },
+    "junior": {
+      "step1": {
+        "eyebrow": "LET'S START",
+        "title": "What's your name?",
+        "description": "We use your name to personalize your experience.",
+        "label": "Full name",
+        "placeholder": "Your full name"
+      },
+      "step2": {
+        "eyebrow": "ABOUT YOU",
+        "title": "What's your specialization?",
+        "description": "Choose the one that best describes your current profile.",
+        "group_label": "Area of specialization",
+        "frontend_label": "Frontend",
+        "frontend_description": "Interfaces and user experience",
+        "backend_label": "Backend",
+        "backend_description": "APIs, databases and servers",
+        "fullstack_label": "Fullstack",
+        "fullstack_description": "Equal parts front and back",
+        "ia_label": "AI / Data",
+        "ia_description": "Models, pipelines and analysis"
+      },
+      "step3": {
+        "eyebrow": "YOUR PREFERENCE",
+        "title": "How do you prefer to work?",
+        "description": "You can choose more than one.",
+        "group_label": "Work modalities",
+        "remote": "Remote",
+        "hybrid": "Hybrid",
+        "onsite": "On-site"
+      },
+      "step4": {
+        "eyebrow": "YOUR AVAILABILITY",
+        "title": "When can you start?",
+        "description": "This is shown on your public profile.",
+        "group_label": "Availability to start",
+        "immediate": "Immediately",
+        "two_weeks": "In 2 weeks",
+        "one_month": "In 1 month",
+        "unavailable": "Not available right now"
+      },
+      "step5": {
+        "eyebrow": "YOUR STACK",
+        "title": "What technologies do you know?",
+        "description": "Select all that apply. You can edit this later.",
+        "search_label": "Search technology",
+        "search_placeholder": "Search technology...",
+        "group_label": "Available technologies",
+        "no_results": "No results.",
+        "selected_count": "{count, plural, one {# selected} other {# selected}}"
+      },
+      "step6": {
+        "eyebrow": "YOUR PORTFOLIO",
+        "title": "Where can we see your work?",
+        "description": "All fields are optional. You can add them later from your profile.",
+        "github_label": "GitHub",
+        "github_placeholder": "github.com/your-username",
+        "linkedin_label": "LinkedIn",
+        "linkedin_placeholder": "linkedin.com/in/your-username",
+        "portfolio_label": "Portfolio",
+        "portfolio_placeholder": "your-site.com"
+      },
+      "step7": {
+        "eyebrow": "TO WRAP UP",
+        "title": "Tell us a bit about yourself.",
+        "description": "A short description that companies will see on your profile.",
+        "label": "Description",
+        "placeholder": "E.g.: Frontend developer focused on React and interface design. FWD 2025 graduate, passionate about clean code and products with real impact."
+      },
+      "done": {
+        "eyebrow": "ALL DONE",
+        "title": "Your profile is ready.",
+        "description": "Now find your first project and start building your career.",
+        "cta": "Explore projects"
+      }
+    },
+    "empresa": {
+      "step1": {
+        "eyebrow": "LET'S START",
+        "title": "What's your company's name?",
+        "description": "Use the commercial or legal name.",
+        "label": "Company name",
+        "placeholder": "Commercial or legal name"
+      },
+      "step2": {
+        "eyebrow": "YOUR COMPANY",
+        "title": "What sector does it operate in?",
+        "description": "You can choose more than one.",
+        "group_label": "Company sectors",
+        "tech": "Technology",
+        "fintech": "Fintech",
+        "health": "Healthcare",
+        "logistics": "Logistics",
+        "education": "Education",
+        "energy": "Energy",
+        "retail": "Retail",
+        "manufacturing": "Manufacturing",
+        "consulting": "Consulting",
+        "other": "Other"
+      },
+      "step3": {
+        "eyebrow": "YOUR COMPANY",
+        "title": "What does your company do?",
+        "description": "This description appears on your public profile and in the projects you publish.",
+        "label": "Company description",
+        "placeholder": "E.g.: We are a software company focused on logistics solutions for the retail sector in Central America."
+      },
+      "step4": {
+        "eyebrow": "VERIFICATION",
+        "title": "We need to verify your company.",
+        "description": "This information is confidential and only used to validate your account.",
+        "website_label": "Website",
+        "website_placeholder": "https://your-company.com",
+        "cedula_label": "CR Legal ID",
+        "cedula_placeholder": "3-101-XXXXXX"
+      },
+      "step5": {
+        "eyebrow": "WHAT YOU NEED",
+        "title": "What type of projects do you want to publish?",
+        "description": "This helps us show you the most suitable talent.",
+        "group_label": "Project types",
+        "web": "Web Development",
+        "mobile": "Mobile Development",
+        "ai": "Artificial Intelligence",
+        "automation": "Automation",
+        "dashboards": "Dashboards & Reports",
+        "integrations": "Integrations",
+        "ux": "UX/UI Design",
+        "data": "Data Analysis",
+        "other": "Other"
+      },
+      "step6": {
+        "eyebrow": "ALMOST DONE",
+        "title": "Add your company logo.",
+        "description": "Optional. JPG or PNG, maximum 5 MB. You can upload it later from your profile.",
+        "drop_hint": "Drag your logo here",
+        "loaded": "Logo loaded",
+        "select_file": "Select file",
+        "change_file": "Change file",
+        "upload_label": "Upload company logo"
+      },
+      "done": {
+        "eyebrow": "ALL DONE",
+        "title": "Your company is registered.",
+        "description": "An FWD admin will review your account in the next 24 hours. We'll notify you when you're ready to publish projects.",
+        "cta": "Go to dashboard"
+      }
+    },
+    "emprendedor": {
+      "step1": {
+        "eyebrow": "LET'S START",
+        "title": "What's your startup called?",
+        "description": "Use the name your audience knows it by.",
+        "label": "Startup name",
+        "placeholder": "E.g.: AppCR, EcoLogik, FoodieLab..."
+      },
+      "step2": {
+        "eyebrow": "YOUR PROJECT",
+        "title": "What stage is it at?",
+        "description": "This helps us connect you with the most suitable talent.",
+        "group_label": "Startup stage",
+        "idea_label": "Idea",
+        "idea_description": "I'm still defining the concept",
+        "mvp_label": "MVP",
+        "mvp_description": "I have a prototype or initial version",
+        "validating_label": "Validating",
+        "validating_description": "I have users and want to grow",
+        "scaling_label": "Scaling",
+        "scaling_description": "I want to take the product to the next level"
+      },
+      "step3": {
+        "eyebrow": "WHAT YOU NEED",
+        "title": "What type of technical support are you looking for?",
+        "description": "You can choose more than one.",
+        "group_label": "Types of technical support",
+        "web": "Web App",
+        "mobile": "Mobile App",
+        "backend": "Backend / APIs",
+        "ai": "Artificial Intelligence",
+        "ux": "UX/UI Design",
+        "data": "Data Analysis",
+        "automation": "Automation",
+        "other": "Other"
+      },
+      "step4": {
+        "eyebrow": "YOUR BUDGET",
+        "title": "What's your budget range?",
+        "description": "This is a guide — you can adjust it when publishing your project.",
+        "group_label": "Budget range",
+        "under_500": "Under $500",
+        "range_500_1000": "$500 – $1,000",
+        "range_1000_2500": "$1,000 – $2,500",
+        "flexible": "Flexible / open to discussion"
+      },
+      "step5": {
+        "eyebrow": "TO WRAP UP",
+        "title": "Tell us about your project.",
+        "description": "A description that talent will see before applying. Optional — you can complete it later.",
+        "label": "Project description",
+        "placeholder": "E.g.: We're building an app to connect local producers with consumers. We need a dev to help with the frontend in React and integration with our API."
+      },
+      "done": {
+        "eyebrow": "ALL DONE",
+        "title": "Your profile is ready.",
+        "description": "You can start exploring available talent and publish your first project.",
+        "cta": "Explore talent"
+      }
+    }
+  },
+  "login": {
+    "eyebrow": "YOUR ACCOUNT",
+    "title": "Welcome back",
+    "description": "Sign in with the account you used to register.",
+    "continue_google": "Continue with Google",
+    "continue_github": "Continue with GitHub",
+    "or_divider": "or",
+    "email_label": "Email address",
+    "email_placeholder": "you@email.com",
+    "password_label": "Password",
+    "password_placeholder": "Your password",
+    "submit": "Sign in",
+    "forgot_password": "Forgot your password?",
+    "show_password": "Show password",
+    "hide_password": "Hide password",
+    "terms_prefix": "By continuing you accept our",
+    "terms_link": "terms of use",
+    "terms_connector": "and our",
+    "privacy_link": "privacy policy",
+    "no_account": "Don't have an account yet?",
+    "register_link": "Register"
   }
 }

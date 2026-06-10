@@ -1,3 +1,8 @@
+"use client";
+
+import { useState } from "react";
+import { useTranslations } from "next-intl";
+import { Eye, EyeOff } from "lucide-react";
 import { FwdGeoBackdrop } from "@/components/ui/fwd-geo-backdrop";
 
 function GoogleIcon() {
@@ -33,18 +38,16 @@ function GitHubIcon() {
 
 function AmchamBadge() {
   return (
+    /* SVG brand asset — colors are fixed per AMCHAM branding, not design tokens */
     <svg width="52" height="52" viewBox="0 0 52 52" aria-hidden="true" fill="none">
       <circle cx="26" cy="26" r="25" stroke="#FFCB05" strokeWidth="1.5" opacity="0.6" />
       <circle cx="26" cy="26" r="19" stroke="#FFCB05" strokeWidth="1" opacity="0.4" />
-      {/* Left laurel */}
       <path d="M14 26 Q11 22 13 18 Q15 22 14 26Z" fill="#FFCB05" opacity="0.8" />
       <path d="M15 29 Q11 26 12 22 Q15 25 15 29Z" fill="#FFCB05" opacity="0.8" />
       <path d="M17 32 Q13 30 13 26 Q16 28 17 32Z" fill="#FFCB05" opacity="0.8" />
-      {/* Right laurel */}
       <path d="M38 26 Q41 22 39 18 Q37 22 38 26Z" fill="#FFCB05" opacity="0.8" />
       <path d="M37 29 Q41 26 40 22 Q37 25 37 29Z" fill="#FFCB05" opacity="0.8" />
       <path d="M35 32 Q39 30 39 26 Q36 28 35 32Z" fill="#FFCB05" opacity="0.8" />
-      {/* Star */}
       <path
         d="M26 16 L27.2 20.4 L31.8 20.4 L28.3 23 L29.5 27.4 L26 24.8 L22.5 27.4 L23.7 23 L20.2 20.4 L24.8 20.4Z"
         fill="#FFCB05"
@@ -54,33 +57,45 @@ function AmchamBadge() {
 }
 
 export default function RegisterPage() {
+  const t = useTranslations("register.auth");
+  const [isPasswordVisible, setIsPasswordVisible] = useState(false);
+  const [isConfirmPasswordVisible, setIsConfirmPasswordVisible] = useState(false);
+
+  function togglePasswordVisibility() {
+    setIsPasswordVisible((prev) => !prev);
+  }
+
+  function toggleConfirmPasswordVisibility() {
+    setIsConfirmPasswordVisible((prev) => !prev);
+  }
+
   return (
-    <>
+    <div className="bg-secondary">
       <FwdGeoBackdrop />
 
-      <div className="relative flex min-h-[100dvh] flex-col items-center justify-center px-4">
-        {/* Card */}
-        <div className="w-full max-w-sm rounded-[2rem] bg-surface px-10 py-12 shadow-elevated">
+      <div className="relative flex min-h-[100dvh] flex-col items-center justify-center px-4 py-10">
+        <div className="w-full max-w-md rounded-[2rem] bg-surface px-6 py-8 shadow-elevated sm:px-10 sm:py-12">
           <p className="mb-3 text-center font-heading text-[0.65rem] font-bold uppercase tracking-[0.2em] text-ink-muted">
-            Bienvenida/o
+            {t("eyebrow")}
           </p>
 
           <h1 className="mb-2 text-center font-heading text-5xl font-extrabold tracking-tight text-ink-strong">
-            Adelante
+            {t("title")}
             <span className="text-primary" aria-hidden="true">.</span>
           </h1>
 
           <p className="mb-8 text-center font-body text-sm text-ink-muted">
-            Accedé a tu plataforma de empleabilidad.
+            {t("description")}
           </p>
 
+          {/* OAuth */}
           <div className="space-y-3">
             <button
               type="button"
               className="flex w-full items-center justify-center gap-3 rounded-full border border-border-strong bg-surface px-6 py-3 font-body text-sm font-medium text-ink-strong transition-colors duration-[--duration-fast] hover:bg-surface-sunken"
             >
               <GoogleIcon />
-              Continuar con Google
+              {t("continue_google")}
             </button>
 
             <button
@@ -88,31 +103,112 @@ export default function RegisterPage() {
               className="flex w-full items-center justify-center gap-3 rounded-full bg-ink-strong px-6 py-3 font-body text-sm font-medium text-white transition-opacity duration-[--duration-fast] hover:opacity-90"
             >
               <GitHubIcon />
-              Continuar con GitHub
+              {t("continue_github")}
             </button>
           </div>
 
+          {/* Divider */}
+          <div className="my-6 flex items-center gap-3">
+            <span className="h-px flex-1 bg-border" />
+            <span className="font-body text-xs text-ink-subtle">{t("or_divider")}</span>
+            <span className="h-px flex-1 bg-border" />
+          </div>
+
+          {/* Email + password form */}
+          <form className="space-y-3" onSubmit={(e) => e.preventDefault()}>
+            <div className="flex flex-col gap-1.5">
+              <label htmlFor="register-email" className="font-body text-xs font-semibold text-ink-muted">
+                {t("email_label")}
+              </label>
+              <input
+                id="register-email"
+                type="email"
+                autoComplete="email"
+                placeholder={t("email_placeholder")}
+                className="w-full rounded-2xl bg-surface-sunken px-5 py-3.5 font-body text-sm text-ink-strong placeholder:text-ink-subtle outline-none focus:ring-2 focus:ring-primary/40"
+              />
+            </div>
+
+            <div className="flex flex-col gap-1.5">
+              <label htmlFor="register-password" className="font-body text-xs font-semibold text-ink-muted">
+                {t("password_label")}
+              </label>
+              <div className="relative">
+                <input
+                  id="register-password"
+                  type={isPasswordVisible ? "text" : "password"}
+                  autoComplete="new-password"
+                  placeholder={t("password_placeholder")}
+                  className="w-full rounded-2xl bg-surface-sunken px-5 py-3.5 pr-12 font-body text-sm text-ink-strong placeholder:text-ink-subtle outline-none focus:ring-2 focus:ring-primary/40"
+                />
+                <button
+                  type="button"
+                  onClick={togglePasswordVisibility}
+                  aria-label={isPasswordVisible ? t("hide_password") : t("show_password")}
+                  className="absolute right-4 top-1/2 -translate-y-1/2 text-ink-subtle transition-colors hover:text-ink-muted"
+                >
+                  {isPasswordVisible
+                    ? <EyeOff size={16} strokeWidth={2} aria-hidden="true" />
+                    : <Eye size={16} strokeWidth={2} aria-hidden="true" />
+                  }
+                </button>
+              </div>
+            </div>
+
+            <div className="flex flex-col gap-1.5">
+              <label htmlFor="register-confirm-password" className="font-body text-xs font-semibold text-ink-muted">
+                {t("confirm_password_label")}
+              </label>
+              <div className="relative">
+                <input
+                  id="register-confirm-password"
+                  type={isConfirmPasswordVisible ? "text" : "password"}
+                  autoComplete="new-password"
+                  placeholder={t("confirm_password_placeholder")}
+                  className="w-full rounded-2xl bg-surface-sunken px-5 py-3.5 pr-12 font-body text-sm text-ink-strong placeholder:text-ink-subtle outline-none focus:ring-2 focus:ring-primary/40"
+                />
+                <button
+                  type="button"
+                  onClick={toggleConfirmPasswordVisibility}
+                  aria-label={isConfirmPasswordVisible ? t("hide_password") : t("show_password")}
+                  className="absolute right-4 top-1/2 -translate-y-1/2 text-ink-subtle transition-colors hover:text-ink-muted"
+                >
+                  {isConfirmPasswordVisible
+                    ? <EyeOff size={16} strokeWidth={2} aria-hidden="true" />
+                    : <Eye size={16} strokeWidth={2} aria-hidden="true" />
+                  }
+                </button>
+              </div>
+            </div>
+
+            <button
+              type="submit"
+              className="mt-1 flex w-full items-center justify-center rounded-full bg-primary px-6 py-3 font-body text-sm font-semibold text-white transition-opacity duration-[--duration-fast] hover:opacity-90"
+            >
+              {t("submit")}
+            </button>
+          </form>
+
           <p className="mt-6 text-center font-body text-xs text-ink-subtle">
-            Al continuar aceptás los{" "}
+            {t("terms_prefix")}{" "}
             <a href="#" className="underline underline-offset-2 hover:text-ink-muted">
-              términos de uso
+              {t("terms_link")}
             </a>{" "}
-            y la{" "}
+            {t("terms_connector")}{" "}
             <a href="#" className="underline underline-offset-2 hover:text-ink-muted">
-              política de privacidad
+              {t("privacy_link")}
             </a>
             .
           </p>
         </div>
 
-        {/* AMCHAM badge */}
         <div className="mt-10 flex flex-col items-center gap-2">
           <AmchamBadge />
           <p className="font-body text-xs tracking-wide text-secondary-foreground/50">
-            Premio AMCHAM 2025 — Negocios Sostenibles
+            {t("amcham_badge")}
           </p>
         </div>
       </div>
-    </>
+    </div>
   );
 }
