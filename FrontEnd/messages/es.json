@@ -16,5 +16,64 @@
     "description": "Encontrá un proyecto corto, pagado y real. Empezá a construir tu carrera de verdad.",
     "cta_proyectos": "Ver proyectos",
     "cta_empresa": "Soy empresa"
+  },
+  "empresa_dashboard": {
+    "title": "Gestión de proyectos",
+    "stats": {
+      "active_projects": "PROYECTOS ACTIVOS",
+      "applications": "POSTULACIONES",
+      "reviewed": "REVISADOS",
+      "pending_match": "PENDIENTES DE MATCH"
+    },
+    "projects": {
+      "title": "Tus proyectos",
+      "new_btn": "+ Nuevo",
+      "published_days": "Publicado hace {days} días",
+      "paused": "Pausado",
+      "applied_count": "{count} postulados",
+      "label_applied": "POSTULADOS"
+    },
+    "compatibility": {
+      "title": "Compatibilidad",
+      "subtitle": "Mostrando matches automáticos",
+      "match_total": "MATCH TOTAL",
+      "tech_stack": "Stack técnico",
+      "availability": "Disponibilidad",
+      "modality": "Modalidad"
+    },
+    "applications": {
+      "title": "Quiénes se postularon",
+      "table": {
+        "junior": "JUNIOR",
+        "project": "PROYECTO",
+        "match": "MATCH",
+        "status": "ESTADO",
+        "actions": "ACCIONES"
+      },
+      "status": {
+        "reviewed": "Revisado",
+        "pending": "Pendiente",
+        "interview": "En Entrevista"
+      },
+      "actions": {
+        "view": "Ver",
+        "accept": "Aceptar",
+        "reject": "Rechazar"
+      }
+    },
+    "new_project_modal": {
+      "title": "Crear Nuevo Proyecto",
+      "name_label": "Nombre del Proyecto",
+      "status_label": "Estado Inicial",
+      "active": "Activo",
+      "paused": "Pausado",
+      "submit": "Crear Proyecto",
+      "cancel": "Cancelar",
+      "success_message": "¡Proyecto creado con éxito!"
+    },
+    "notifications": {
+      "accepted": "Has aceptado la postulación de {name}",
+      "rejected": "Has rechazado la postulación de {name}"
+    }
   }
 }

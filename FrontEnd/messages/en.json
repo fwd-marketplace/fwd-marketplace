@@ -16,5 +16,64 @@
     "description": "Find a short, paid, real project. Start building your career for real.",
     "cta_proyectos": "View projects",
     "cta_empresa": "I'm a company"
+  },
+  "empresa_dashboard": {
+    "title": "Project Management",
+    "stats": {
+      "active_projects": "ACTIVE PROJECTS",
+      "applications": "APPLICATIONS",
+      "reviewed": "REVIEWED",
+      "pending_match": "PENDING MATCH"
+    },
+    "projects": {
+      "title": "Your projects",
+      "new_btn": "+ New",
+      "published_days": "Published {days} days ago",
+      "paused": "Paused",
+      "applied_count": "{count} candidates",
+      "label_applied": "APPLICATIONS"
+    },
+    "compatibility": {
+      "title": "Compatibility",
+      "subtitle": "Showing automatic matches",
+      "match_total": "MATCH TOTAL",
+      "tech_stack": "Technical stack",
+      "availability": "Availability",
+      "modality": "Modality"
+    },
+    "applications": {
+      "title": "Who applied",
+      "table": {
+        "junior": "JUNIOR",
+        "project": "PROJECT",
+        "match": "MATCH",
+        "status": "STATUS",
+        "actions": "ACTIONS"
+      },
+      "status": {
+        "reviewed": "Reviewed",
+        "pending": "Pending",
+        "interview": "In Interview"
+      },
+      "actions": {
+        "view": "View",
+        "accept": "Accept",
+        "reject": "Reject"
+      }
+    },
+    "new_project_modal": {
+      "title": "Create New Project",
+      "name_label": "Project Name",
+      "status_label": "Initial Status",
+      "active": "Active",
+      "paused": "Paused",
+      "submit": "Create Project",
+      "cancel": "Cancel",
+      "success_message": "Project created successfully!"
+    },
+    "notifications": {
+      "accepted": "You have accepted the application from {name}",
+      "rejected": "You have rejected the application from {name}"
+    }
   }
 }
