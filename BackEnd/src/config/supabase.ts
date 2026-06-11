@@ -18,3 +18,22 @@ export const supabase = createClient<Database>(env.supabaseUrl, env.supabaseKey,
     autoRefreshToken: false,
   },
 });
+
+/**
+ * Cliente Supabase con la identidad de un usuario concreto.
+ *
+ * Reenvía el `access_token` del usuario en cada petición, de modo que
+ * `auth.uid()` resuelve dentro de Postgres y las políticas RLS aplican
+ * por usuario. Usar en los services para cualquier consulta protegida.
+ */
+export function supabaseForToken(accessToken: string) {
+  return createClient<Database>(env.supabaseUrl, env.supabaseKey, {
+    global: {
+      headers: { Authorization: `Bearer ${accessToken}` },
+    },
+    auth: {
+      persistSession: false,
+      autoRefreshToken: false,
+    },
+  });
+}
