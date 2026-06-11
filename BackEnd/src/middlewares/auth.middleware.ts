@@ -15,5 +15,8 @@ export const authenticate = asyncHandler(async (req, _res, next) => {
 
   const token = header.slice("Bearer ".length).trim();
   req.user = await getUserFromToken(token);
+  // Guardamos el token para que los services puedan crear un cliente Supabase
+  // con la identidad del usuario (necesario para que el RLS aplique por usuario).
+  req.accessToken = token;
   next();
 });

@@ -8,6 +8,9 @@ declare global {
   namespace Express {
     interface Request {
       user?: User;
+      // access_token validado del usuario; lo usa el cliente Supabase por
+      // petición para que las políticas RLS resuelvan auth.uid() correctamente.
+      accessToken?: string;
     }
   }
 }
