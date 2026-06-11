@@ -15,7 +15,7 @@ interface SkyProps {
 
 function dashFor(pathStyle: Tweaks["pathStyle"], kind: "traced" | "active" | "locked"): string {
   if (pathStyle === "dashed") return "10 9";
-  if (pathStyle === "dotted") return "2 8";
+  if (pathStyle === "dotted") return "1 13";
   if (pathStyle === "solid") return "none";
   return kind === "locked" ? "2 9" : kind === "active" ? "9 8" : "none";
 }

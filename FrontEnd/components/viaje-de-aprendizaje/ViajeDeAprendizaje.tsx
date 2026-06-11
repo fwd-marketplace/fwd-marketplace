@@ -19,7 +19,7 @@ import { Celebration } from "./ui/Celebration";
 
 const TWEAKS = {
   starShape: "diamond",
-  pathStyle: "dashed",
+  pathStyle: "dotted",
   stateStyle: "multicolor",
   density: "rich",
 } as const;

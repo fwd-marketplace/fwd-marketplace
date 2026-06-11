@@ -19,9 +19,19 @@ const ALL_TECHS = [
 
 const BIO_MAX_CHARS = 500;
 
-function Step1({ onChange }: { onChange: (val: string) => void }) {
+type Step1Value = { nombre: string; apellido1: string; apellido2: string; cedula: string };
+
+function Step1({ onChange }: { onChange: (val: Step1Value) => void }) {
   const t = useTranslations("register.junior.step1");
-  const [nameValue, setNameValue] = useState("");
+  const [fields, setFields] = useState<Step1Value>({ nombre: "", apellido1: "", apellido2: "", cedula: "" });
+
+  function update(key: keyof Step1Value, value: string) {
+    const next = { ...fields, [key]: value };
+    setFields(next);
+    onChange(next);
+  }
+
+  const inputClass = "w-full rounded-2xl bg-surface-sunken px-5 py-4 font-body text-sm text-ink-strong placeholder:text-ink-subtle outline-none focus:ring-2 focus:ring-primary/40";
 
   return (
     <div className="flex flex-col gap-6">
@@ -35,16 +45,45 @@ function Step1({ onChange }: { onChange: (val: string) => void }) {
         <p className="mt-2 font-body text-sm text-ink-muted">{t("description")}</p>
       </div>
 
-      <label htmlFor="junior-name" className="sr-only">{t("label")}</label>
-      <input
-        id="junior-name"
-        type="text"
-        value={nameValue}
-        onChange={(e) => { setNameValue(e.target.value); onChange(e.target.value); }}
-        placeholder={t("placeholder")}
-        autoFocus
-        className="w-full rounded-2xl bg-surface-sunken px-5 py-4 font-body text-sm text-ink-strong placeholder:text-ink-subtle outline-none focus:ring-2 focus:ring-primary/40"
-      />
+      <div className="flex flex-col gap-3">
+        <label htmlFor="junior-nombre" className="sr-only">{t("label_nombre")}</label>
+        <input
+          id="junior-nombre"
+          type="text"
+          value={fields.nombre}
+          onChange={(e) => update("nombre", e.target.value)}
+          placeholder={t("placeholder_nombre")}
+          autoFocus
+          className={inputClass}
+        />
+        <label htmlFor="junior-apellido1" className="sr-only">{t("label_apellido1")}</label>
+        <input
+          id="junior-apellido1"
+          type="text"
+          value={fields.apellido1}
+          onChange={(e) => update("apellido1", e.target.value)}
+          placeholder={t("placeholder_apellido1")}
+          className={inputClass}
+        />
+        <label htmlFor="junior-apellido2" className="sr-only">{t("label_apellido2")}</label>
+        <input
+          id="junior-apellido2"
+          type="text"
+          value={fields.apellido2}
+          onChange={(e) => update("apellido2", e.target.value)}
+          placeholder={t("placeholder_apellido2")}
+          className={inputClass}
+        />
+        <label htmlFor="junior-cedula" className="sr-only">{t("label_cedula")}</label>
+        <input
+          id="junior-cedula"
+          type="text"
+          value={fields.cedula}
+          onChange={(e) => update("cedula", e.target.value)}
+          placeholder={t("placeholder_cedula")}
+          className={inputClass}
+        />
+      </div>
       <div className="h-2" />
     </div>
   );
@@ -441,7 +480,10 @@ export function JuniorOnboarding() {
       <div className="relative flex flex-1 items-center justify-center px-4">
         <div className="w-full max-w-md rounded-[2rem] bg-surface px-6 py-8 shadow-elevated sm:px-10 sm:py-10">
           {currentStep === 1 && (
-            <Step1 onChange={(val) => setPendingValue(val.trim() || null)} />
+            <Step1 onChange={(val) => {
+              const filled = val.nombre.trim() && val.apellido1.trim() && val.apellido2.trim() && val.cedula.trim();
+              setPendingValue(filled ? val : null);
+            }} />
           )}
           {currentStep === 2 && (
             <Step2 onChange={(val) => setPendingValue(val)} />

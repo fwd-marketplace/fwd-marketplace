@@ -151,17 +151,23 @@
     },
     "junior": {
       "done": {
-        "eyebrow": "All set!",
-        "title": "Your junior profile is complete",
-        "description": "Check the marketplace and apply for your first real project.",
-        "cta": "View projects"
+        "eyebrow": "Request received",
+        "title": "Your account is under review",
+        "description": "The FWD team will review your profile and notify you by email once your account is approved. This usually takes 24 to 48 hours.",
+        "cta": "Back to home"
       },
       "step1": {
         "eyebrow": "First things first",
         "title": "What is your name?",
         "description": "This is how companies will see you on the marketplace.",
-        "label": "Full name",
-        "placeholder": "e.g. María García"
+        "label_nombre": "First name",
+        "placeholder_nombre": "e.g. María",
+        "label_apellido1": "First surname",
+        "placeholder_apellido1": "e.g. García",
+        "label_apellido2": "Second surname",
+        "placeholder_apellido2": "e.g. López",
+        "label_cedula": "ID number",
+        "placeholder_cedula": "e.g. 1-1234-5678"
       },
       "step2": {
         "eyebrow": "Your specialization",
@@ -227,10 +233,10 @@
     },
     "empresa": {
       "done": {
-        "eyebrow": "All set!",
-        "title": "Your company profile is complete",
-        "description": "You can now post projects and start connecting with FWD junior talents.",
-        "cta": "Go to dashboard"
+        "eyebrow": "Request received",
+        "title": "Your account is under review",
+        "description": "The FWD team will review your company and notify you by email once your account is approved. This usually takes 24 to 48 hours.",
+        "cta": "Back to home"
       },
       "step1": {
         "eyebrow": "Your company",
@@ -299,10 +305,10 @@
     },
     "emprendedor": {
       "done": {
-        "eyebrow": "Ready to connect!",
-        "title": "Your entrepreneur profile is complete",
-        "description": "You can now explore the marketplace and connect with the best FWD junior talents.",
-        "cta": "Explore marketplace"
+        "eyebrow": "Request received",
+        "title": "Your account is under review",
+        "description": "The FWD team will review your profile and notify you by email once your account is approved. This usually takes 24 to 48 hours.",
+        "cta": "Back to home"
       },
       "step1": {
         "eyebrow": "Your project",
