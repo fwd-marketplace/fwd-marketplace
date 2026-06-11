@@ -92,11 +92,12 @@
   --radius-xl: calc(var(--radius) * 1.4);
 }
 
-@layer base {
+/* @layer base {
   * {
     @apply border-border outline-ring/50;
   }
+
   body {
     @apply bg-canvas text-ink;
   }
-}
+} */

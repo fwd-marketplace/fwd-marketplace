@@ -1,25 +1,6 @@
 {
-  "name": "fwd-marketplace",
-  "version": "1.0.0",
-  "private": true,
-  "description": "Monorepo FWD Marketplace (FrontEnd Next.js + BackEnd Express). Este package.json raíz solo gestiona el tooling de commits (husky + commitlint + commitizen) compartido por todo el equipo.",
-  "scripts": {
-    "prepare": "husky",
-    "install:all": "npm install && npm --prefix FrontEnd install && npm --prefix BackEnd install",
-    "commit": "cz",
-    "commitlint": "commitlint --edit"
-  },
-  "config": {
-    "commitizen": {
-      "path": "cz-conventional-changelog"
-    }
-  },
-  "devDependencies": {
-    "@commitlint/cli": "^21.0.2",
-    "@commitlint/config-conventional": "^21.0.2",
-    "commitizen": "^4.3.1",
-    "cz-conventional-changelog": "^3.3.0",
-    "husky": "^9.1.7",
-    "lint-staged": "^17.0.7"
+  "dependencies": {
+    "eslint-config-next": "^15.5.19",
+    "next": "^15.5.19"
   }
 }
