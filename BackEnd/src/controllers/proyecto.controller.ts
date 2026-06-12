@@ -2,6 +2,7 @@ import type { Request, Response } from "express";
 import { z } from "zod";
 import * as projectService from "../services/proyecto.service";
 import { ApiError } from "../utils/ApiError";
+import { CreateProjectSchema } from "../validations/project";
 
 /** Filtros aceptados en GET /api/projects (query string). */
 const listQuerySchema = z.object({
@@ -43,4 +44,18 @@ export async function detail(req: Request, res: Response) {
 
   const project = await projectService.getProjectById(readToken(req), parsed.data);
   res.status(200).json({ project });
+}
+
+/** POST /api/projects (ruta protegida — empresa) */
+export async function create(req: Request, res: Response) {
+  if (!req.user) {
+    throw new ApiError(401, "No autenticado");
+  }
+  const parsed = CreateProjectSchema.safeParse(req.body);
+  if (!parsed.success) {
+    throw new ApiError(400, parsed.error.issues[0]?.message ?? "Datos inválidos");
+  }
+
+  const project = await projectService.createProject(readToken(req), req.user.id, parsed.data);
+  res.status(201).json({ project });
 }

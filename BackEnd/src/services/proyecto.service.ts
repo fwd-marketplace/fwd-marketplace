@@ -1,5 +1,6 @@
 import { supabaseForToken } from "../config/supabase";
 import { ApiError } from "../utils/ApiError";
+import type { CreateProjectInput } from "../validations/project";
 
 /** Filtros opcionales del listado de proyectos. */
 export type ProjectFilters = {
@@ -95,4 +96,90 @@ export async function getProjectById(accessToken: string, id: string) {
     throw new ApiError(404, "Proyecto no encontrado");
   }
   return data;
+}
+
+/**
+ * Crea un proyecto en nombre de una empresa APROBADA. Si `publicar` es true,
+ * queda visible (en_recepcion) con fechas calculadas; si no, queda en borrador.
+ * El RLS garantiza además que la empresa pertenezca al usuario.
+ */
+export async function createProject(
+  accessToken: string,
+  userId: string,
+  input: CreateProjectInput,
+) {
+  const client = supabaseForToken(accessToken);
+
+  // 1. La cuenta debe estar aprobada.
+  const { data: cuenta, error: cuentaError } = await client
+    .from("users")
+    .select("estado_cuenta")
+    .eq("id", userId)
+    .maybeSingle();
+  if (cuentaError) throw new ApiError(500, cuentaError.message);
+  if (cuenta?.estado_cuenta !== "activa") {
+    throw new ApiError(403, "Tu cuenta debe estar aprobada para publicar proyectos");
+  }
+
+  // 2. El usuario debe tener perfil de empresa/emprendedor.
+  const { data: empresario, error: empError } = await client
+    .from("empresario")
+    .select("id")
+    .eq("id_usuario", userId)
+    .maybeSingle();
+  if (empError) throw new ApiError(500, empError.message);
+  if (!empresario) {
+    throw new ApiError(403, "Solo las empresas pueden publicar proyectos");
+  }
+
+  // 3. Resolver el estado destino (borrador o en_recepcion).
+  const estadoNombre = input.publicar ? "en_recepcion" : "borrador";
+  const { data: estado, error: estadoError } = await client
+    .from("estado_proyecto")
+    .select("id")
+    .eq("nombre", estadoNombre)
+    .maybeSingle();
+  if (estadoError) throw new ApiError(500, estadoError.message);
+  if (!estado) throw new ApiError(500, `Falta el estado '${estadoNombre}' (seeds no aplicados)`);
+
+  // 4. Fechas: solo al publicar. fecha_cierre = publicacion + plazo_dias.
+  let fechaPublicacion: string | null = null;
+  let fechaCierre: string | null = null;
+  if (input.publicar) {
+    const ahora = new Date();
+    fechaPublicacion = ahora.toISOString();
+    const cierre = new Date(ahora);
+    cierre.setDate(cierre.getDate() + input.plazo_dias);
+    fechaCierre = cierre.toISOString();
+  }
+
+  // 5. Crear el proyecto.
+  const { data: proyecto, error: insertError } = await client
+    .from("proyecto")
+    .insert({
+      id_empresario: empresario.id,
+      id_area_negocio: input.id_area_negocio,
+      id_estado: estado.id,
+      titulo: input.titulo,
+      descripcion: input.descripcion,
+      usa_ia: input.usa_ia ?? false,
+      plazo_dias: input.plazo_dias,
+      fecha_publicacion: fechaPublicacion,
+      fecha_cierre: fechaCierre,
+    })
+    .select("id, titulo, estado:estado_proyecto(nombre)")
+    .single();
+  if (insertError) throw new ApiError(400, insertError.message);
+
+  // 6. Vincular skills requeridas (si llegaron).
+  if (input.skills && input.skills.length > 0) {
+    const rows = [...new Set(input.skills)].map((id_skill) => ({
+      id_proyecto: proyecto.id,
+      id_skill,
+    }));
+    const { error: skillsError } = await client.from("project_skills").insert(rows);
+    if (skillsError) throw new ApiError(400, skillsError.message);
+  }
+
+  return proyecto;
 }
