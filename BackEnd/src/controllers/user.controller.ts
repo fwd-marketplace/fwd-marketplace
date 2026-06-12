@@ -32,6 +32,11 @@ export async function login(req: Request, res: Response) {
 
 /** GET /api/users/me (ruta protegida) */
 export async function me(req: Request, res: Response) {
-  // `req.user` lo inyecta el middleware de autenticación tras validar el token.
-  res.status(200).json({ user: req.user });
+  // `req.user` y `req.accessToken` los inyecta el middleware de autenticación.
+  if (!req.accessToken || !req.user) {
+    throw new ApiError(401, "No autenticado");
+  }
+  // `profile` es null si la cuenta existe en Auth pero aún no hizo onboarding.
+  const profile = await userService.getMyProfile(req.accessToken, req.user.id);
+  res.status(200).json({ user: req.user, profile });
 }

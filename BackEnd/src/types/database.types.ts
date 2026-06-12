@@ -123,6 +123,7 @@ export type Database = {
           apoyo_tecnico_necesario: string | null
           cedula_juridica: string | null
           descripcion: string | null
+          direccion: string | null
           etapa: string | null
           id: string
           id_usuario: string
@@ -137,6 +138,7 @@ export type Database = {
           apoyo_tecnico_necesario?: string | null
           cedula_juridica?: string | null
           descripcion?: string | null
+          direccion?: string | null
           etapa?: string | null
           id?: string
           id_usuario: string
@@ -151,6 +153,7 @@ export type Database = {
           apoyo_tecnico_necesario?: string | null
           cedula_juridica?: string | null
           descripcion?: string | null
+          direccion?: string | null
           etapa?: string | null
           id?: string
           id_usuario?: string
@@ -297,8 +300,8 @@ export type Database = {
           modalidad_preferida: string | null
           reputacion: number | null
           titulo_fwd: string | null
-          url_github: string
-          url_linkedin: string
+          url_github: string | null
+          url_linkedin: string | null
           url_portfolio: string | null
         }
         Insert: {
@@ -311,8 +314,8 @@ export type Database = {
           modalidad_preferida?: string | null
           reputacion?: number | null
           titulo_fwd?: string | null
-          url_github: string
-          url_linkedin: string
+          url_github?: string | null
+          url_linkedin?: string | null
           url_portfolio?: string | null
         }
         Update: {
@@ -949,9 +952,9 @@ export type Database = {
       }
       users: {
         Row: {
-          apellido1: string
+          apellido1: string | null
           apellido2: string | null
-          cedula: string
+          cedula: string | null
           correo: string
           estado_cuenta: string
           fecha_registro: string
@@ -962,9 +965,9 @@ export type Database = {
           updated_at: string
         }
         Insert: {
-          apellido1: string
+          apellido1?: string | null
           apellido2?: string | null
-          cedula: string
+          cedula?: string | null
           correo: string
           estado_cuenta?: string
           fecha_registro?: string

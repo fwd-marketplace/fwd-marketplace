@@ -17,7 +17,13 @@ export function errorHandler(
   _next: NextFunction,
 ): void {
   if (err instanceof ApiError) {
-    res.status(err.statusCode).json({ error: err.message });
+    // Blinda contra códigos inválidos (ej. status 0 de un error de Supabase),
+    // que harían que res.status() lance un RangeError y ocultara el error real.
+    const status =
+      Number.isInteger(err.statusCode) && err.statusCode >= 100 && err.statusCode <= 599
+        ? err.statusCode
+        : 500;
+    res.status(status).json({ error: err.message });
     return;
   }
 
