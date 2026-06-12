@@ -557,5 +557,67 @@
       "project": "PROYECTO",
       "part_time": "PART-TIME"
     }
+  },
+  "bienvenida": {
+    "hero": {
+      "welcome": "¡BIENVENIDO A FWD TALENT!",
+      "greeting": "Buenos días",
+      "description": "Tu perfil ya está conectado con oportunidades reales.\nExplorá proyectos creados por empresas que buscan talento como el tuyo.",
+      "btn_explore": "Explorar oportunidades",
+      "btn_edit": "Editar mi perfil",
+      "stack_center": "Tu stack",
+      "stack_frontend": "Frontend",
+      "stack_backend": "Backend",
+      "stack_ux": "UX / UI",
+      "stack_mobile": "Mobile",
+      "stack_ai": "IA y Datos"
+    },
+    "stats": {
+      "projects": "Proyectos compatibles",
+      "match": "Match promedio",
+      "match_desc": "Excelente compatibilidad",
+      "companies": "Nuevas empresas",
+      "companies_desc": "Esta semana",
+      "applications": "Postulaciones activas",
+      "view_all": "Ver todos",
+      "view_applications": "Ver mis postulaciones"
+    },
+    "recommended": {
+      "title": "Recomendados para vos",
+      "view_all": "Ver todos los proyectos",
+      "badges": {
+        "urgent": "URGENTE",
+        "high_match": "MATCH ALTO",
+        "new": "NUEVO"
+      },
+      "weeks": "semanas",
+      "match": "Match alto"
+    },
+    "progress": {
+      "title": "Tu progreso en FWD",
+      "step1_title": "Perfil completado",
+      "step1_desc": "¡Excelente! Tu perfil está al 100%.",
+      "step2_title": "Stack definido",
+      "step2_desc": "Definiste tus tecnologías principales.",
+      "step3_title": "Disponibilidad definida",
+      "step3_desc": "Disponibilidad inmediata configurada.",
+      "step4_title": "Primer proyecto",
+      "step4_desc": "Postulate a tu primera oportunidad.",
+      "step5_title": "Primera contratación",
+      "step5_desc": "Completá tu primer proyecto.",
+      "card_title": "Vas por excelente camino",
+      "card_desc": "Seguí explorando y construyendo tu futuro.",
+      "btn_profile": "Ver mi perfil"
+    },
+    "companies": {
+      "title": "Empresas interesadas",
+      "view_all": "Ver todas",
+      "active": "ACTIVA",
+      "btn_all": "Ver todas las empresas"
+    },
+    "activity": {
+      "title": "Actividad reciente",
+      "view_all": "Ver toda la actividad"
+    }
   }
 }
