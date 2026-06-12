@@ -1,4 +1,4 @@
-import { supabase } from "../config/supabase";
+import { supabase, supabaseForToken } from "../config/supabase";
 import { ApiError } from "../utils/ApiError";
 
 type RegisterInput = { email: string; password: string; name?: string };
@@ -50,4 +50,23 @@ export async function getUserFromToken(accessToken: string) {
   }
 
   return data.user;
+}
+
+/**
+ * Devuelve el perfil del usuario en la BD (fila `users` + nombre del rol),
+ * o `null` si todavía no completó el onboarding. Usa el cliente con la
+ * identidad del usuario para que el RLS resuelva `auth.uid()`.
+ */
+export async function getMyProfile(accessToken: string, userId: string) {
+  const client = supabaseForToken(accessToken);
+  const { data, error } = await client
+    .from("users")
+    .select(
+      "id, nombre, apellido1, apellido2, cedula, correo, estado_cuenta, fecha_registro, role:roles(nombre)",
+    )
+    .eq("id", userId)
+    .maybeSingle();
+
+  if (error) throw new ApiError(500, error.message);
+  return data;
 }
