@@ -86,6 +86,13 @@ Postgres detecta la recursión y aborta. Lo mismo aplica a las demás políticas
 `SECURITY DEFINER` (p. ej. `public.is_admin()`) que evite la recursión, o usar
 los claims del JWT (`auth.jwt()`), y revisar todas las políticas de tipo "admin".
 
+**RESUELTO (2026-06-12):** aplicado en la migración `0009_fix_rls_recursion_and_grants.sql`.
+Se creó `public.is_admin()` (SECURITY DEFINER) y se reescribió la política de `users`.
+Al re-probar, apareció además un segundo problema (`permission denied for table ...`)
+por faltar los GRANT de tabla a los roles `anon`/`authenticated`; se otorgaron en la
+misma migración. Verificación final: `GET /api/users/me` y `GET /api/projects` devuelven
+**200** con un access_token válido.
+
 ---
 
 ## Notas de seguridad (cómo se hicieron las pruebas)
