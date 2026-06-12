@@ -1,9 +1,11 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useTransition } from "react";
 import { useTranslations } from "next-intl";
+import { useParams, useRouter } from "next/navigation";
 import { Eye, EyeOff } from "lucide-react";
 import { FwdGeoBackdrop } from "@/components/ui/fwd-geo-backdrop";
+import { registerUser } from "@/lib/actions/auth";
 
 function GoogleIcon() {
   return (
@@ -58,15 +60,36 @@ function AmchamBadge() {
 
 export function RegisterForm() {
   const t = useTranslations("register.auth");
+  const params = useParams();
+  const router = useRouter();
+  const locale = params.locale as string;
+
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
+  const [confirmPassword, setConfirmPassword] = useState("");
   const [isPasswordVisible, setIsPasswordVisible] = useState(false);
   const [isConfirmPasswordVisible, setIsConfirmPasswordVisible] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+  const [isPending, startTransition] = useTransition();
 
-  function togglePasswordVisibility() {
-    setIsPasswordVisible((prev) => !prev);
-  }
+  function togglePasswordVisibility() { setIsPasswordVisible((p) => !p); }
+  function toggleConfirmPasswordVisibility() { setIsConfirmPasswordVisible((p) => !p); }
 
-  function toggleConfirmPasswordVisibility() {
-    setIsConfirmPasswordVisible((prev) => !prev);
+  function handleSubmit(e: React.FormEvent) {
+    e.preventDefault();
+    setError(null);
+    if (password !== confirmPassword) {
+      setError(t("passwords_mismatch"));
+      return;
+    }
+    startTransition(async () => {
+      const result = await registerUser({ email, password });
+      if (result.ok) {
+        router.push(`/${locale}/register/role`);
+      } else {
+        setError(result.error);
+      }
+    });
   }
 
   return (
@@ -112,7 +135,7 @@ export function RegisterForm() {
             <span className="h-px flex-1 bg-border" />
           </div>
 
-          <form className="space-y-3" onSubmit={(e) => e.preventDefault()}>
+          <form className="space-y-3" onSubmit={handleSubmit}>
             <div className="flex flex-col gap-1.5">
               <label htmlFor="register-email" className="font-body text-xs font-semibold text-ink-muted">
                 {t("email_label")}
@@ -121,6 +144,9 @@ export function RegisterForm() {
                 id="register-email"
                 type="email"
                 autoComplete="email"
+                required
+                value={email}
+                onChange={(e) => setEmail(e.target.value)}
                 placeholder={t("email_placeholder")}
                 className="w-full rounded-2xl bg-surface-sunken px-5 py-3.5 font-body text-sm text-ink-strong placeholder:text-ink-subtle outline-none focus:ring-2 focus:ring-primary/40"
               />
@@ -135,19 +161,14 @@ export function RegisterForm() {
                   id="register-password"
                   type={isPasswordVisible ? "text" : "password"}
                   autoComplete="new-password"
+                  required
+                  value={password}
+                  onChange={(e) => setPassword(e.target.value)}
                   placeholder={t("password_placeholder")}
                   className="w-full rounded-2xl bg-surface-sunken px-5 py-3.5 pr-12 font-body text-sm text-ink-strong placeholder:text-ink-subtle outline-none focus:ring-2 focus:ring-primary/40"
                 />
-                <button
-                  type="button"
-                  onClick={togglePasswordVisibility}
-                  aria-label={isPasswordVisible ? t("hide_password") : t("show_password")}
-                  className="absolute right-4 top-1/2 -translate-y-1/2 text-ink-subtle transition-colors hover:text-ink-muted"
-                >
-                  {isPasswordVisible
-                    ? <EyeOff size={16} strokeWidth={2} aria-hidden="true" />
-                    : <Eye size={16} strokeWidth={2} aria-hidden="true" />
-                  }
+                <button type="button" onClick={togglePasswordVisibility} aria-label={isPasswordVisible ? t("hide_password") : t("show_password")} className="absolute right-4 top-1/2 -translate-y-1/2 text-ink-subtle transition-colors hover:text-ink-muted">
+                  {isPasswordVisible ? <EyeOff size={16} strokeWidth={2} aria-hidden="true" /> : <Eye size={16} strokeWidth={2} aria-hidden="true" />}
                 </button>
               </div>
             </div>
@@ -161,28 +182,28 @@ export function RegisterForm() {
                   id="register-confirm-password"
                   type={isConfirmPasswordVisible ? "text" : "password"}
                   autoComplete="new-password"
+                  required
+                  value={confirmPassword}
+                  onChange={(e) => setConfirmPassword(e.target.value)}
                   placeholder={t("confirm_password_placeholder")}
                   className="w-full rounded-2xl bg-surface-sunken px-5 py-3.5 pr-12 font-body text-sm text-ink-strong placeholder:text-ink-subtle outline-none focus:ring-2 focus:ring-primary/40"
                 />
-                <button
-                  type="button"
-                  onClick={toggleConfirmPasswordVisibility}
-                  aria-label={isConfirmPasswordVisible ? t("hide_password") : t("show_password")}
-                  className="absolute right-4 top-1/2 -translate-y-1/2 text-ink-subtle transition-colors hover:text-ink-muted"
-                >
-                  {isConfirmPasswordVisible
-                    ? <EyeOff size={16} strokeWidth={2} aria-hidden="true" />
-                    : <Eye size={16} strokeWidth={2} aria-hidden="true" />
-                  }
+                <button type="button" onClick={toggleConfirmPasswordVisibility} aria-label={isConfirmPasswordVisible ? t("hide_password") : t("show_password")} className="absolute right-4 top-1/2 -translate-y-1/2 text-ink-subtle transition-colors hover:text-ink-muted">
+                  {isConfirmPasswordVisible ? <EyeOff size={16} strokeWidth={2} aria-hidden="true" /> : <Eye size={16} strokeWidth={2} aria-hidden="true" />}
                 </button>
               </div>
             </div>
 
+            {error && (
+              <p role="alert" className="font-body text-xs text-red-500">{error}</p>
+            )}
+
             <button
               type="submit"
-              className="mt-1 flex w-full items-center justify-center rounded-full bg-primary px-6 py-3 font-body text-sm font-semibold text-white transition-opacity duration-[--duration-fast] hover:opacity-90"
+              disabled={isPending}
+              className="mt-1 flex w-full items-center justify-center rounded-full bg-primary px-6 py-3 font-body text-sm font-semibold text-white transition-opacity duration-[--duration-fast] hover:opacity-90 disabled:opacity-60"
             >
-              {t("submit")}
+              {isPending ? t("submitting") : t("submit")}
             </button>
           </form>
 

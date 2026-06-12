@@ -1,11 +1,13 @@
 "use client";
 
-import { useState, useRef } from "react";
+import { useState, useRef, useTransition } from "react";
 import { useRouter, useParams } from "next/navigation";
 import { useTranslations } from "next-intl";
 import { ArrowRight, Upload } from "lucide-react";
 import { FwdGeoBackdrop } from "@/components/ui/fwd-geo-backdrop";
 import { ProgressDots } from "@/components/onboarding/ProgressDots";
+import { saveStep, getOnboarding, clearOnboarding } from "@/lib/onboarding-storage";
+import { saveEmpresaProfile } from "@/lib/actions/auth";
 
 const TOTAL_STEPS = 6;
 const OPTIONAL_STEPS = new Set([6]);
@@ -155,15 +157,15 @@ function Step3({ onChange }: { onChange: (val: string) => void }) {
   );
 }
 
-type LegalData = { websiteUrl: string; cedulaJuridica: string };
+type LegalData = { direccion: string; cedulaJuridica: string };
 
 function Step4({ onChange }: { onChange: (val: LegalData) => void }) {
   const t = useTranslations("register.empresa.step4");
-  const [websiteUrl, setWebsiteUrl] = useState("");
+  const [direccion, setDireccion] = useState("");
   const [cedulaJuridica, setCedulaJuridica] = useState("");
 
-  function notifyChange(nextWebsite: string, nextCedula: string) {
-    onChange({ websiteUrl: nextWebsite, cedulaJuridica: nextCedula });
+  function notifyChange(nextDireccion: string, nextCedula: string) {
+    onChange({ direccion: nextDireccion, cedulaJuridica: nextCedula });
   }
 
   return (
@@ -180,15 +182,15 @@ function Step4({ onChange }: { onChange: (val: LegalData) => void }) {
 
       <div className="space-y-3">
         <div className="flex flex-col gap-1.5">
-          <label htmlFor="empresa-website" className="font-body text-xs font-semibold text-ink-muted">
-            {t("website_label")}
+          <label htmlFor="empresa-direccion" className="font-body text-xs font-semibold text-ink-muted">
+            {t("direccion_label")}
           </label>
           <input
-            id="empresa-website"
-            type="url"
-            value={websiteUrl}
-            onChange={(e) => { setWebsiteUrl(e.target.value); notifyChange(e.target.value, cedulaJuridica); }}
-            placeholder={t("website_placeholder")}
+            id="empresa-direccion"
+            type="text"
+            value={direccion}
+            onChange={(e) => { setDireccion(e.target.value); notifyChange(e.target.value, cedulaJuridica); }}
+            placeholder={t("direccion_placeholder")}
             className="w-full rounded-2xl bg-surface-sunken px-5 py-3.5 font-body text-sm text-ink-strong placeholder:text-ink-subtle outline-none focus:ring-2 focus:ring-primary/40"
           />
         </div>
@@ -200,7 +202,7 @@ function Step4({ onChange }: { onChange: (val: LegalData) => void }) {
             id="empresa-cedula"
             type="text"
             value={cedulaJuridica}
-            onChange={(e) => { setCedulaJuridica(e.target.value); notifyChange(websiteUrl, e.target.value); }}
+            onChange={(e) => { setCedulaJuridica(e.target.value); notifyChange(direccion, e.target.value); }}
             placeholder={t("cedula_placeholder")}
             className="w-full rounded-2xl bg-surface-sunken px-5 py-3.5 font-body text-sm text-ink-strong placeholder:text-ink-subtle outline-none focus:ring-2 focus:ring-primary/40"
           />
@@ -361,13 +363,39 @@ export function EmpresaOnboarding() {
   const currentStep = Number(params.step) || 1;
 
   const [pendingValue, setPendingValue] = useState<unknown>(null);
+  const [submitError, setSubmitError] = useState<string | null>(null);
+  const [isSubmitting, startTransition] = useTransition();
 
   function handleNext() {
+    setSubmitError(null);
+    saveStep("empresa", currentStep, pendingValue);
+
     if (currentStep < TOTAL_STEPS) {
       router.push(`/${locale}/register/onboarding/empresa/${currentStep + 1}`);
-    } else {
-      router.push(`/${locale}/register/onboarding/empresa/done`);
+      return;
     }
+
+    const stored = getOnboarding("empresa");
+    const step4 = stored.step4 as { direccion: string; cedulaJuridica: string } | undefined;
+    const raw = {
+      companyName:    stored.step1 as string,
+      sectors:        stored.step2,
+      description:    stored.step3 as string,
+      cedulaJuridica: step4?.cedulaJuridica ?? "",
+      direccion:      step4?.direccion ?? "",
+      projectTypes:   stored.step5,
+      logoUrl:        "",
+    };
+
+    startTransition(async () => {
+      const result = await saveEmpresaProfile(raw);
+      if (result.ok) {
+        clearOnboarding("empresa");
+        router.push(`/${locale}/register/onboarding/empresa/done`);
+      } else {
+        setSubmitError(result.error);
+      }
+    });
   }
 
   function handleBack() {
@@ -376,7 +404,7 @@ export function EmpresaOnboarding() {
     }
   }
 
-  const canContinue = OPTIONAL_STEPS.has(currentStep) || Boolean(pendingValue);
+  const canContinue = !isSubmitting && (OPTIONAL_STEPS.has(currentStep) || Boolean(pendingValue));
 
   return (
     <div className="relative flex min-h-[100dvh] flex-col bg-secondary">
@@ -405,7 +433,7 @@ export function EmpresaOnboarding() {
           )}
           {currentStep === 4 && (
             <Step4 onChange={(val) => setPendingValue(
-              val.websiteUrl.trim() && val.cedulaJuridica.trim() ? val : null
+              val.direccion.trim() && val.cedulaJuridica.trim() ? val : null
             )} />
           )}
           {currentStep === 5 && (
@@ -415,30 +443,38 @@ export function EmpresaOnboarding() {
         </div>
       </div>
 
-      <footer className="relative flex items-center justify-between px-4 py-5 sm:px-8 sm:py-6">
-        {currentStep > 1 ? (
+      <footer className="relative flex flex-col items-center gap-2 px-4 py-5 sm:px-8 sm:py-6">
+        {submitError && (
+          <p role="alert" className="w-full max-w-md text-center font-body text-xs text-red-500">
+            {submitError}
+          </p>
+        )}
+        <div className="flex w-full items-center justify-between">
+          {currentStep > 1 ? (
+            <button
+              type="button"
+              onClick={handleBack}
+              disabled={isSubmitting}
+              className="font-body text-sm font-medium text-secondary-foreground/70 transition-opacity hover:opacity-80 disabled:opacity-40"
+            >
+              {t("nav.back")}
+            </button>
+          ) : (
+            <div />
+          )}
+
+          <ProgressDots current={currentStep} total={TOTAL_STEPS} />
+
           <button
             type="button"
-            onClick={handleBack}
-            className="font-body text-sm font-medium text-secondary-foreground/70 transition-opacity hover:opacity-80"
+            onClick={handleNext}
+            disabled={!canContinue}
+            className="flex items-center gap-2 rounded-full bg-primary px-5 py-2.5 font-body text-sm font-semibold text-white transition-opacity duration-[--duration-fast] hover:opacity-90 disabled:cursor-not-allowed disabled:opacity-40 sm:px-6"
           >
-            {t("nav.back")}
+            {isSubmitting ? t("nav.finishing") : currentStep === TOTAL_STEPS ? t("nav.finish") : t("nav.next")}
+            {!isSubmitting && <ArrowRight size={15} strokeWidth={2.5} />}
           </button>
-        ) : (
-          <div />
-        )}
-
-        <ProgressDots current={currentStep} total={TOTAL_STEPS} />
-
-        <button
-          type="button"
-          onClick={handleNext}
-          disabled={!canContinue}
-          className="flex items-center gap-2 rounded-full bg-primary px-5 py-2.5 font-body text-sm font-semibold text-white transition-opacity duration-[--duration-fast] hover:opacity-90 disabled:cursor-not-allowed disabled:opacity-40 sm:px-6"
-        >
-          {currentStep === TOTAL_STEPS ? t("nav.finish") : t("nav.next")}
-          <ArrowRight size={15} strokeWidth={2.5} />
-        </button>
+        </div>
       </footer>
     </div>
   );
