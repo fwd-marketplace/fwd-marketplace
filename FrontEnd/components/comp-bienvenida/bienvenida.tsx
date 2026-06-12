@@ -15,11 +15,11 @@ import {
   BarChart,
   Flag,
   Check,
-  Code2,
-  Database,
-  Smartphone,
-  BrainCircuit,
-  PenTool,
+  Compass,
+  BookOpen,
+  Mountain,
+  Sparkles,
+  Trophy,
   Eye,
   Gift,
   Star
@@ -109,7 +109,7 @@ export function BienvenidaDashboard() {
       <section className="relative overflow-hidden bg-secondary px-6 py-16 md:px-10 lg:px-16 text-white lg:py-24">
         <FwdGeoBackdrop />
         <div className="relative z-10 mx-auto max-w-7xl flex flex-col lg:flex-row gap-12 lg:gap-24 items-center">
-          
+
           {/* Left Column */}
           <div className="flex-1 space-y-8">
             <div>
@@ -123,7 +123,7 @@ export function BienvenidaDashboard() {
                 {t('hero.description')}
               </p>
             </div>
-            
+
             <div className="flex flex-col sm:flex-row gap-4">
               <Link
                 href="/marketplace"
@@ -141,72 +141,123 @@ export function BienvenidaDashboard() {
             </div>
           </div>
 
-          {/* Right Column (Stack Graph Simulation) */}
+          {/* Right Column (Constellation Network Simulation) */}
           <div className="hidden lg:flex flex-1 relative h-[400px] w-full items-center justify-center">
-            {/* Center Node */}
-            <div className="absolute z-20 flex h-32 w-32 flex-col items-center justify-center rounded-full border border-white/20 bg-secondary/80 backdrop-blur-md shadow-[0_0_40px_rgba(102,45,145,0.5)]">
-              <span className="text-xl font-bold">{t('hero.stack_center')}</span>
+            
+            {/* Background Stars */}
+            <div className="absolute inset-0 z-0 overflow-hidden pointer-events-none">
+              {[...Array(30)].map((_, i) => (
+                <div 
+                  key={i} 
+                  className="absolute rounded-full bg-white"
+                  style={{
+                    width: Math.random() * 3 + 1 + 'px',
+                    height: Math.random() * 3 + 1 + 'px',
+                    top: Math.random() * 100 + '%',
+                    left: Math.random() * 100 + '%',
+                    opacity: Math.random() * 0.5 + 0.1,
+                    animation: `pulse ${Math.random() * 3 + 2}s infinite ${Math.random() * 2}s`
+                  }}
+                />
+              ))}
             </div>
 
-            {/* Orbit paths */}
-            <div className="absolute h-[250px] w-[250px] rounded-full border border-white/10" />
-            <div className="absolute h-[350px] w-[350px] rounded-full border border-white/5" />
+            {/* Center Node (Enhanced with double ring and glow) */}
+            <div className="absolute z-30 flex h-36 w-36 items-center justify-center rounded-full border border-primary/40 bg-secondary/80 backdrop-blur-md shadow-[0_0_60px_rgba(102,45,145,0.7)]">
+              <div className="absolute inset-0 rounded-full border border-white/20 scale-[0.85]" />
+              <div className="absolute inset-0 rounded-full border border-magenta/30 scale-[1.15]" />
+              <span className="text-xl font-bold bg-clip-text text-transparent bg-gradient-to-br from-white to-white/70">Tu Progreso</span>
+            </div>
+
+            {/* Orbit paths with depth */}
+            <div className="absolute h-[250px] w-[250px] rounded-full border border-white/10 shadow-[0_0_20px_rgba(255,255,255,0.05)] z-10" />
+            <div className="absolute h-[350px] w-[350px] rounded-full border border-white/5 shadow-[0_0_30px_rgba(255,255,255,0.02)] z-10" />
 
             {/* Nodes */}
-            {/* Frontend */}
-            <div className="absolute -top-4 left-1/2 -translate-x-1/2 flex items-center gap-3">
-              <div className="flex h-12 w-12 items-center justify-center rounded-full bg-primary text-white shadow-lg shadow-primary/30 z-20">
-                <Code2 className="h-6 w-6" />
+            {/* El Llamado */}
+            <div className="absolute -top-4 left-1/2 -translate-x-1/2 flex items-center gap-3 z-30 transition-transform duration-300 hover:scale-110 cursor-pointer">
+              <div className="flex h-12 w-12 items-center justify-center rounded-full bg-primary text-white shadow-[0_0_20px_rgba(0,188,212,0.5)] border border-white/20">
+                <Compass className="h-6 w-6" />
               </div>
-              <span className="font-medium bg-secondary/50 px-2 py-1 rounded backdrop-blur-sm z-20">{t('hero.stack_frontend')}</span>
+              <span className="font-medium text-sm bg-secondary/60 border border-white/10 px-3 py-1.5 rounded backdrop-blur-md shadow-lg">El Llamado</span>
             </div>
 
-            {/* Backend */}
-            <div className="absolute top-1/4 right-0 flex flex-col items-center gap-2">
-              <div className="flex h-12 w-12 items-center justify-center rounded-full bg-secondary border border-white/20 text-white shadow-lg z-20">
-                <Database className="h-5 w-5" />
+            {/* La Preparación */}
+            <div className="absolute top-1/4 right-0 flex flex-col items-center gap-2 z-30 transition-transform duration-300 hover:scale-110 cursor-pointer">
+              <div className="flex h-12 w-12 items-center justify-center rounded-full bg-secondary border border-white/30 text-white shadow-[0_0_20px_rgba(102,45,145,0.5)]">
+                <BookOpen className="h-5 w-5" />
               </div>
-              <span className="font-medium text-sm bg-secondary/50 px-2 py-1 rounded backdrop-blur-sm z-20">{t('hero.stack_backend')}</span>
+              <span className="font-medium text-sm bg-secondary/60 border border-white/10 px-3 py-1.5 rounded backdrop-blur-md shadow-lg">La Preparación</span>
             </div>
 
-            {/* Mobile */}
-            <div className="absolute bottom-4 right-1/4 flex flex-col items-center gap-2">
-              <div className="flex h-12 w-12 items-center justify-center rounded-full bg-primary text-white shadow-lg shadow-primary/30 z-20">
-                <Smartphone className="h-5 w-5" />
+            {/* El Desafío */}
+            <div className="absolute bottom-4 right-1/4 flex flex-col items-center gap-2 z-30 transition-transform duration-300 hover:scale-110 cursor-pointer">
+              <div className="flex h-12 w-12 items-center justify-center rounded-full bg-primary text-white shadow-[0_0_20px_rgba(0,188,212,0.5)] border border-white/20">
+                <Mountain className="h-5 w-5" />
               </div>
-              <span className="font-medium text-sm bg-secondary/50 px-2 py-1 rounded backdrop-blur-sm z-20">{t('hero.stack_mobile')}</span>
+              <span className="font-medium text-sm bg-secondary/60 border border-white/10 px-3 py-1.5 rounded backdrop-blur-md shadow-lg">El Desafío</span>
             </div>
 
-            {/* IA y Datos */}
-            <div className="absolute bottom-10 left-1/4 flex flex-col items-center gap-2">
-              <div className="flex h-12 w-12 items-center justify-center rounded-full bg-accent text-white shadow-lg shadow-accent/30 z-20">
-                <BrainCircuit className="h-6 w-6" />
+            {/* La Transformación */}
+            <div className="absolute bottom-10 left-1/4 flex flex-col items-center gap-2 z-30 transition-transform duration-300 hover:scale-110 cursor-pointer">
+              <div className="flex h-12 w-12 items-center justify-center rounded-full bg-accent text-white shadow-[0_0_20px_rgba(255,107,107,0.5)] border border-white/20">
+                <Sparkles className="h-6 w-6" />
               </div>
-              <span className="font-medium text-sm bg-secondary/50 px-2 py-1 rounded backdrop-blur-sm z-20">{t('hero.stack_ai')}</span>
+              <span className="font-medium text-sm bg-secondary/60 border border-white/10 px-3 py-1.5 rounded backdrop-blur-md shadow-lg">La Transformación</span>
             </div>
 
-            {/* UX / UI */}
-            <div className="absolute top-1/3 left-4 flex flex-col items-center gap-2">
-              <div className="flex h-12 w-12 items-center justify-center rounded-full bg-magenta text-white shadow-lg shadow-magenta/30 z-20">
-                <PenTool className="h-5 w-5" />
+            {/* El Reconocimiento */}
+            <div className="absolute top-1/3 left-4 flex flex-col items-center gap-2 z-30 transition-transform duration-300 hover:scale-110 cursor-pointer">
+              <div className="flex h-12 w-12 items-center justify-center rounded-full bg-magenta text-white shadow-[0_0_20px_rgba(236,0,140,0.5)] border border-white/20">
+                <Trophy className="h-5 w-5" />
               </div>
-              <span className="font-medium text-sm bg-secondary/50 px-2 py-1 rounded backdrop-blur-sm z-20">{t('hero.stack_ux')}</span>
+              <span className="font-medium text-sm bg-secondary/60 border border-white/10 px-3 py-1.5 rounded backdrop-blur-md shadow-lg">El Reconocimiento</span>
             </div>
-            
-            {/* Lines connecting (simulated with SVGs) */}
-            <svg className="absolute inset-0 h-full w-full pointer-events-none" style={{ zIndex: 10 }}>
-              <line x1="50%" y1="10%" x2="50%" y2="50%" stroke="rgba(255,255,255,0.2)" strokeWidth="1" strokeDasharray="4 4" />
-              <line x1="15%" y1="35%" x2="50%" y2="50%" stroke="rgba(255,255,255,0.2)" strokeWidth="1" strokeDasharray="4 4" />
-              <line x1="25%" y1="80%" x2="50%" y2="50%" stroke="rgba(255,255,255,0.2)" strokeWidth="1" strokeDasharray="4 4" />
-              <line x1="75%" y1="85%" x2="50%" y2="50%" stroke="rgba(255,255,255,0.2)" strokeWidth="1" strokeDasharray="4 4" />
-              <line x1="85%" y1="35%" x2="50%" y2="50%" stroke="rgba(255,255,255,0.2)" strokeWidth="1" strokeDasharray="4 4" />
+
+            {/* Lines connecting (Astronomical Constellation style) */}
+            <style>{`
+              @keyframes constellationPulse {
+                0%, 100% { opacity: 0.3; filter: drop-shadow(0 0 2px rgba(255,255,255,0.4)); }
+                50% { opacity: 1; filter: drop-shadow(0 0 8px rgba(255,255,255,0.9)); }
+              }
+              .constellation-line {
+                animation: constellationPulse 3s ease-in-out infinite;
+                stroke-dasharray: 1 6;
+                stroke-linecap: round;
+              }
+              .secondary-line {
+                stroke-dasharray: 2 4;
+                opacity: 0.15;
+              }
+            `}</style>
+            <svg className="absolute inset-0 h-full w-full pointer-events-none" style={{ zIndex: 20 }}>
+              {/* Primary connections to center */}
+              <line x1="50%" y1="10%" x2="50%" y2="50%" stroke="rgba(255,255,255,0.7)" strokeWidth="1.5" className="constellation-line" />
+              <line x1="15%" y1="35%" x2="50%" y2="50%" stroke="rgba(255,255,255,0.7)" strokeWidth="1.5" className="constellation-line" style={{ animationDelay: '0.5s' }} />
+              <line x1="25%" y1="80%" x2="50%" y2="50%" stroke="rgba(255,255,255,0.7)" strokeWidth="1.5" className="constellation-line" style={{ animationDelay: '1s' }} />
+              <line x1="75%" y1="85%" x2="50%" y2="50%" stroke="rgba(255,255,255,0.7)" strokeWidth="1.5" className="constellation-line" style={{ animationDelay: '1.5s' }} />
+              <line x1="85%" y1="35%" x2="50%" y2="50%" stroke="rgba(255,255,255,0.7)" strokeWidth="1.5" className="constellation-line" style={{ animationDelay: '2s' }} />
+              
+              {/* Secondary connections (Network web) */}
+              <line x1="50%" y1="10%" x2="85%" y2="35%" stroke="rgba(255,255,255,0.5)" strokeWidth="1" className="secondary-line" />
+              <line x1="85%" y1="35%" x2="75%" y2="85%" stroke="rgba(255,255,255,0.5)" strokeWidth="1" className="secondary-line" />
+              <line x1="75%" y1="85%" x2="25%" y2="80%" stroke="rgba(255,255,255,0.5)" strokeWidth="1" className="secondary-line" />
+              <line x1="25%" y1="80%" x2="15%" y2="35%" stroke="rgba(255,255,255,0.5)" strokeWidth="1" className="secondary-line" />
+              <line x1="15%" y1="35%" x2="50%" y2="10%" stroke="rgba(255,255,255,0.5)" strokeWidth="1" className="secondary-line" />
+
+              {/* Luminous stars on the connection lines */}
+              <circle cx="50%" cy="30%" r="2" fill="white" className="constellation-line" />
+              <circle cx="32%" cy="42%" r="1.5" fill="white" className="constellation-line" style={{ animationDelay: '0.3s' }} />
+              <circle cx="37%" cy="65%" r="2" fill="white" className="constellation-line" style={{ animationDelay: '0.8s' }} />
+              <circle cx="62%" cy="67%" r="1.5" fill="white" className="constellation-line" style={{ animationDelay: '1.2s' }} />
+              <circle cx="67%" cy="42%" r="2" fill="white" className="constellation-line" style={{ animationDelay: '1.8s' }} />
             </svg>
           </div>
         </div>
       </section>
 
       <div className="mx-auto max-w-7xl px-6 md:px-10 lg:px-16 -mt-8 relative z-20 space-y-8">
-        
+
         {/* Stats Grid */}
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
           <div className="bg-surface rounded-xl p-6 shadow-soft flex items-center gap-4">
@@ -320,11 +371,11 @@ export function BienvenidaDashboard() {
           <div className="lg:col-span-2">
             <h2 className="text-xl font-bold text-ink-strong mb-4">{t('progress.title')}</h2>
             <div className="bg-surface rounded-xl p-6 shadow-soft border border-border flex flex-col md:flex-row gap-8 items-center">
-              
+
               <div className="flex-1 relative pl-6">
                 <div className="absolute left-2.5 top-2 bottom-6 w-0.5 bg-border z-0"></div>
                 <div className="absolute left-2.5 top-2 h-1/2 w-0.5 bg-accent z-0"></div>
-                
+
                 {[1, 2, 3, 4, 5].map((step) => {
                   const isCompleted = step <= 3;
                   const isActive = step === 4;
