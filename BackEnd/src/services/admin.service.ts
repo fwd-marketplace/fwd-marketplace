@@ -34,3 +34,46 @@ export async function approveUser(accessToken: string, targetUserId: string) {
   if (!data) throw new ApiError(404, "Usuario no encontrado");
   return data;
 }
+
+/**
+ * Lista todos los proyectos para moderación (incluye borradores).
+ * Solo admin (RLS: `proyecto_admin_ver`).
+ */
+export async function listAllProjects(accessToken: string) {
+  const client = supabaseForToken(accessToken);
+  const { data, error } = await client
+    .from("proyecto")
+    .select(
+      "id, titulo, fecha_publicacion, estado:estado_proyecto(nombre), empresa:empresario(nombre_comercial, tipo)",
+    )
+    .order("fecha_publicacion", { ascending: false, nullsFirst: false });
+
+  if (error) throw new ApiError(500, error.message);
+  return data;
+}
+
+/**
+ * Modera un proyecto cancelándolo: estado -> 'cancelado'. Solo admin
+ * (RLS: `proyecto_admin_moderar`). 404 si el proyecto no existe.
+ */
+export async function cancelProject(accessToken: string, projectId: string) {
+  const client = supabaseForToken(accessToken);
+
+  const { data: estado, error: estadoError } = await client
+    .from("estado_proyecto")
+    .select("id")
+    .eq("nombre", "cancelado")
+    .maybeSingle();
+  if (estadoError) throw new ApiError(500, estadoError.message);
+  if (!estado) throw new ApiError(500, "Falta el estado 'cancelado' (seeds no aplicados)");
+
+  const { data, error } = await client
+    .from("proyecto")
+    .update({ id_estado: estado.id })
+    .eq("id", projectId)
+    .select("id, estado:estado_proyecto(nombre)")
+    .maybeSingle();
+  if (error) throw new ApiError(400, error.message);
+  if (!data) throw new ApiError(404, "Proyecto no encontrado");
+  return data;
+}
