@@ -1,4 +1,4 @@
-import { supabase, supabaseForToken } from "../config/supabase";
+import { supabase, supabaseForToken, createEphemeralClient } from "../config/supabase";
 import { ApiError } from "../utils/ApiError";
 
 type RegisterInput = { email: string; password: string; name?: string };
@@ -39,6 +39,39 @@ export async function loginUser(input: LoginInput) {
   }
 
   return { user: data.user, session: data.session };
+}
+
+/**
+ * Renueva la sesión a partir de un `refresh_token` válido. Devuelve la misma
+ * forma que login (`user` + `session`) con un `access_token` nuevo. El FrontEnd
+ * la usa cuando el access_token expira (~1h) para no mandar al usuario a login.
+ */
+export async function refreshSession(refreshToken: string) {
+  const client = createEphemeralClient();
+  const { data, error } = await client.auth.refreshSession({ refresh_token: refreshToken });
+
+  if (error || !data.session) {
+    throw new ApiError(error?.status ?? 401, error?.message ?? "Refresh token inválido o expirado");
+  }
+
+  return { user: data.user, session: data.session };
+}
+
+/**
+ * Cierra la sesión revocando el `refresh_token` en Supabase Auth. Idempotente:
+ * si el token ya es inválido o expiró, no hay nada que revocar y se considera
+ * logout exitoso. El `access_token` es un JWT sin estado: expira por sí solo
+ * (~1h) y no se revoca aquí.
+ */
+export async function logoutUser(refreshToken: string) {
+  const client = createEphemeralClient();
+  const { data, error } = await client.auth.refreshSession({ refresh_token: refreshToken });
+
+  // Si no se pudo establecer sesión, ya no hay nada activo que cerrar.
+  if (error || !data.session) return;
+
+  // signOut revoca el refresh token de la sesión recién obtenida.
+  await client.auth.signOut();
 }
 
 /** Valida un access_token de Supabase y devuelve el usuario asociado. */

@@ -37,3 +37,18 @@ export function supabaseForToken(accessToken: string) {
     },
   });
 }
+
+/**
+ * Cliente Supabase efímero (anon, sin sesión) para operaciones de sesión como
+ * refresh y logout. Se usa una instancia nueva por llamada para no contaminar
+ * el cliente compartido `supabase` con estado de sesión en memoria entre
+ * peticiones concurrentes.
+ */
+export function createEphemeralClient() {
+  return createClient<Database>(env.supabaseUrl, env.supabaseKey, {
+    auth: {
+      persistSession: false,
+      autoRefreshToken: false,
+    },
+  });
+}

@@ -1,7 +1,11 @@
 # Contrato de API — Autenticación, Onboarding y Aprobación
 
+> **Última actualización:** 2026-06-12 · Fase 1 (auth + onboarding + aprobación) + sesión (refresh / logout).
+> Este archivo es la **fuente de verdad** del contrato. Si te pasan una versión nueva,
+> **reemplazá el archivo completo** — no fusiones a mano (evita arrastrar frases viejas).
+
 Para el equipo de FrontEnd. Define cómo consumir el BackEnd para registro, login,
-onboarding y el flujo de aprobación por admin. Implementado en la Fase 1.
+onboarding, manejo de sesión y el flujo de aprobación por admin.
 
 - **Base URL:** `NEXT_PUBLIC_API_URL` (ej. `http://localhost:3001/api`)
 - **Auth:** en rutas protegidas, enviar `Authorization: Bearer <access_token>`.
@@ -10,17 +14,32 @@ onboarding y el flujo de aprobación por admin. Implementado en la Fase 1.
 ## Flujo general
 
 ```
-1. register (email+password)      -> crea cuenta en Supabase Auth, devuelve sesión (token)
-2. /register/role  (solo UI)      -> el FE elige junior | empresa | emprendedor
-3. onboarding/{rol}  (Bearer)     -> crea el perfil en la BD; la cuenta queda 'pendiente'
-4. /done                          -> "Tu cuenta está en revisión"
-5. un admin aprueba               -> estado_cuenta = 'activa'
-6. login                          -> el FE lee estado_cuenta y rol para enrutar
+1. register (email+password)   -> crea cuenta en Supabase Auth, devuelve sesion (tokens)
+2. /register/role  (solo UI)   -> el FE elige junior | empresa | emprendedor
+3. onboarding/{rol}  (Bearer)  -> crea el perfil en la BD; la cuenta queda 'pendiente'
+4. /done                       -> "Tu cuenta esta en revision"
+5. un admin aprueba            -> estado_cuenta = 'activa'
+6. login                       -> el FE lee estado_cuenta y rol para enrutar
+   durante la sesion: refresh al expirar el token; logout al salir (ver "Manejo de sesion")
 ```
 
-**Sesión (httpOnly):** el BackEnd devuelve el `access_token` en el JSON. La cookie
-**httpOnly** la setea un **route handler de Next** (el JS del navegador no puede
-escribir httpOnly). En cada llamada, Next reenvía ese token como `Authorization: Bearer`.
+## Manejo de sesión (httpOnly) — leer con atención
+
+El BackEnd devuelve `session.access_token` y `session.refresh_token` en el JSON de
+`register` / `login` / `refresh`. El **route handler de Next** los guarda en cookies
+**httpOnly** (el JS del navegador no puede escribir httpOnly) y en cada llamada reenvía
+el `access_token` como `Authorization: Bearer <access_token>`.
+
+- **`access_token`**: JWT, dura ~1h, no se revoca (expira solo). Es el que va en `Bearer`.
+- **`refresh_token`**: sirve para pedir un `access_token` nuevo; se revoca en logout.
+
+**Ciclo recomendado** (evita mandar al usuario a login cada hora):
+1. Una llamada protegida responde `401` ("Token inválido o expirado").
+2. El route handler llama `POST /users/refresh` con el `refresh_token` de la cookie.
+3. Si `200` → reescribe **ambas** cookies con los tokens nuevos y **reintenta** la llamada original (una sola vez).
+4. Si `401` → el refresh ya no sirve → borrar cookies y mandar a `/login`.
+
+**Logout:** llamar `POST /users/logout` con el `refresh_token` y **borrar** las dos cookies.
 
 **Enrutado por estado/rol** (tras login o en `/me`):
 - `estado_cuenta = 'pendiente'` -> pantalla "cuenta en revisión".
@@ -47,6 +66,19 @@ Body: `{ "email": string, "password": string }`
 { "id": "...", "nombre": "...", "apellido1": "...", "cedula": "...",
   "correo": "...", "estado_cuenta": "pendiente", "role": { "nombre": "student" } }
 ```
+
+### POST /api/users/refresh
+Renueva la sesión cuando el `access_token` expiró (~1h). **No** lleva Bearer.
+Body: `{ "refresh_token": string }`
+→ `200 { user, session }` — `session` trae un `access_token` y un `refresh_token` nuevos.
+→ `401 { "error": "Refresh token inválido o expirado" }` si el refresh ya no sirve.
+Cuándo y cómo usarlo: ver **"Manejo de sesión"** arriba.
+
+### POST /api/users/logout
+Revoca el `refresh_token` en Supabase Auth. **No** lleva Bearer.
+Body: `{ "refresh_token": string }`
+→ `200 { "ok": true }` (idempotente: responde `200` aunque el token ya fuera inválido).
+El FE debe además **borrar las cookies** httpOnly. Ver **"Manejo de sesión"** arriba.
 
 ### POST /api/users/onboarding/junior  (Bearer)
 Crea `users` (estado `pendiente`) + `estudiante` + `student_skills`.

@@ -1,5 +1,8 @@
 # Contrato de API — Marketplace (catálogos, proyectos, postulaciones, admin)
 
+> **Última actualización:** 2026-06-12. Fuente de verdad del contrato del marketplace.
+> Si te pasan una versión nueva, **reemplazá el archivo completo** (no fusiones a mano).
+
 Complemento de `auth-contract.md` para el equipo de FrontEnd. Mismas reglas:
 - Base URL: `NEXT_PUBLIC_API_URL` (ej. `http://localhost:3001/api`).
 - Rutas protegidas: enviar `Authorization: Bearer <access_token>`.
@@ -98,4 +101,6 @@ Errores típicos: 409 si ya postuló o si el proyecto no está en recepción; 40
   - proyecto: `borrador, en_recepcion, en_evaluacion, adjudicado, en_desarrollo, cerrado, cancelado`.
   - oferta: `enviada, en_revision, adjudicada, no_seleccionada`.
 - **Expiración de sesión**: el `access_token` dura ~1h. Si una llamada devuelve `401`
-  ("Token inválido o expirado"), mandar al usuario a login (aún no hay endpoint de refresh).
+  ("Token inválido o expirado"), intentar `POST /api/users/refresh` con el `refresh_token`
+  y reintentar; si el refresh también da `401`, mandar al usuario a login. Detalle en
+  `auth-contract.md` (endpoints `refresh` y `logout`).
