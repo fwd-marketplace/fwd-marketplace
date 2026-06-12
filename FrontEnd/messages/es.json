@@ -371,7 +371,14 @@
     }
   },
   "empresa_dashboard": {
-    "title": "Panel de empresa",
+    "title": "GLOBAL TECH SOLUTIONS",
+    "company_desc": "Líder global en soluciones tecnológicas para la industria 4.0, enfocados en optimizar procesos productivos mediante talento especializado.",
+    "label_empresa": "Empresa",
+    "tag_socio": "Socio Industrial",
+    "tag_location": "Costa Rica",
+    "tag_size": "1-10 empleados",
+    "edit_profile_btn": "Editar perfil",
+    "view_projects_btn": "Ver proyectos",
     "stats": {
       "active_projects": "Proyectos activos",
       "applications": "Postulaciones",
@@ -433,6 +440,55 @@
       "accepted": "{name} ha sido aceptado al proyecto.",
       "rejected": "Se ha notificado a {name} que no fue seleccionado."
     }
+  },
+  "mis_proyectos": {
+    "published_on": "Publicado el {date}",
+    "modality_label": "Modalidad",
+    "level_label": "Nivel",
+    "budget_label": "Presupuesto",
+    "edit_btn": "Editar Proyecto",
+    "pause_btn": "Pausar Proyecto",
+    "reactivate_btn": "Reactivar Proyecto",
+    "status_active": "ACTIVO",
+    "status_paused": "PAUSADO",
+    "tabs": {
+      "project": "Proyecto",
+      "mockups": "Maquetas",
+      "applications": "Postulaciones"
+    },
+    "objective_title": "Objetivo del Proyecto",
+    "scope_title": "Alcance y Requerimientos",
+    "deliverables_title": "Entregables Esperados",
+    "stack_title": "STACK TECNOLÓGICO",
+    "metrics_title": "MÉTRICAS DE PROGRESO",
+    "metrics_talent_match": "Match de Talento",
+    "metrics_active_applicants": "Postulantes Activos",
+    "mockups_empty": "No hay maquetas cargadas para este proyecto.",
+    "applications_empty": "No hay postulaciones registradas aún.",
+    "edit_modal": {
+      "title": "Editar proyecto",
+      "name_label": "Nombre del proyecto",
+      "modality_label": "Modalidad",
+      "budget_label": "Presupuesto",
+      "cancel": "Cancelar",
+      "save": "Guardar cambios",
+      "success": "Proyecto actualizado exitosamente."
+    },
+    "notifications": {
+      "paused": "El proyecto ha sido pausado.",
+      "reactivated": "El proyecto ha sido reactivado."
+    }
+  },
+  "app_header": {
+    "notifications": "Notificaciones",
+    "user_menu": "Menú de usuario"
+  },
+  "empresa_subnav": {
+    "back": "Volver",
+    "mis_proyectos": "Mis proyectos",
+    "matches": "Matches",
+    "postulaciones": "Postulaciones",
+    "mi_empresa": "Mi empresa"
   },
   "perfil_junior": {
     "tabs": {
@@ -673,5 +729,29 @@
       "hybrid": "Híbrido",
       "onsite": "Presencial"
     }
+  },
+  "matches_empresa": {
+    "viewing_matches": "Viendo matches para:",
+    "filters_title": "Filtros",
+    "clear_btn": "Limpiar",
+    "specialty_label": "Especialidad",
+    "match_level_label": "Nivel de match",
+    "availability_label": "Disponibilidad",
+    "availability_immediate": "Inmediata",
+    "availability_agreed": "A convenir",
+    "modality_label": "Modalidad",
+    "modality_onsite": "Presencial",
+    "modality_remote": "Remoto",
+    "modality_hybrid": "Híbrido",
+    "showing_count": "Mostrando {count} candidatos automáticos para este perfil",
+    "sort_best": "Mayor match",
+    "invite_btn": "Invitar a postularse",
+    "invited_btn": "Invitado",
+    "view_profile": "Ver perfil",
+    "compare": "Comparar",
+    "load_more": "Cargar más matches",
+    "toast_invited": "Se ha invitado a {name} a postularse al proyecto.",
+    "toast_cleared": "Se han limpiado los filtros de búsqueda.",
+    "toast_profile_edit": "Funcionalidad de edición de perfil en desarrollo (Fase 3)."
   }
 }
