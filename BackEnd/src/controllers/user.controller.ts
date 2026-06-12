@@ -16,6 +16,17 @@ function readCredentials(body: unknown): { email: string; password: string; name
   return { email, password, name: typeof name === "string" ? name : undefined };
 }
 
+/** Lee y valida el `refresh_token` del body. */
+function readRefreshToken(body: unknown): string {
+  const { refresh_token } = (body ?? {}) as Record<string, unknown>;
+
+  if (typeof refresh_token !== "string" || !refresh_token.trim()) {
+    throw new ApiError(400, "El refresh_token es obligatorio");
+  }
+
+  return refresh_token;
+}
+
 /** POST /api/users/register */
 export async function register(req: Request, res: Response) {
   const credentials = readCredentials(req.body);
@@ -28,6 +39,20 @@ export async function login(req: Request, res: Response) {
   const { email, password } = readCredentials(req.body);
   const result = await userService.loginUser({ email, password });
   res.status(200).json(result);
+}
+
+/** POST /api/users/refresh */
+export async function refresh(req: Request, res: Response) {
+  const refreshToken = readRefreshToken(req.body);
+  const result = await userService.refreshSession(refreshToken);
+  res.status(200).json(result);
+}
+
+/** POST /api/users/logout */
+export async function logout(req: Request, res: Response) {
+  const refreshToken = readRefreshToken(req.body);
+  await userService.logoutUser(refreshToken);
+  res.status(200).json({ ok: true });
 }
 
 /** GET /api/users/me (ruta protegida) */
