@@ -4,6 +4,7 @@ import onboardingRoutes from "./onboarding.routes";
 import adminRoutes from "./admin.routes";
 import catalogRoutes from "./catalog.routes";
 import projectRoutes from "./proyecto.routes";
+import ofertaRoutes from "./oferta.routes";
 
 const router = Router();
 
@@ -17,5 +18,6 @@ router.use("/users", userRoutes);
 router.use("/admin", adminRoutes);
 router.use("/catalogs", catalogRoutes);
 router.use("/projects", projectRoutes);
+router.use("/ofertas", ofertaRoutes);
 
 export default router;
