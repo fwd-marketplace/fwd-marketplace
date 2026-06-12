@@ -1,7 +1,9 @@
 "use client";
 
 import React, { useState, useMemo } from "react";
-import { useTranslations } from "next-intl";
+import { useTranslations, useLocale } from "next-intl";
+import { useRouter } from "next/navigation";
+import Image from "next/image";
 import {
   Plus,
   Check,
@@ -207,6 +209,9 @@ const INITIAL_APPLICATIONS: Application[] = [
 
 export function PerfilEmpresa() {
   const t = useTranslations("empresa_dashboard");
+  const router = useRouter();
+  const locale = useLocale();
+  const [logoError, setLogoError] = useState(false);
 
   const [projects, setProjects] = useState<Project[]>(INITIAL_PROJECTS);
   const [candidates] = useState<CandidateMatch[]>(INITIAL_CANDIDATES);
@@ -227,6 +232,7 @@ export function PerfilEmpresa() {
 
   const handleSelectProject = (projectId: string) => {
     setSelectedProjectId((prev) => (prev === projectId ? null : projectId));
+    router.push(`/${locale}/dashboard`);
   };
 
   const handleOpenModal = () => {
@@ -355,13 +361,37 @@ export function PerfilEmpresa() {
         <FwdGeoBackdrop />
 
         <div className="relative z-10 space-y-6">
-          <div className="space-y-1.5">
-            <h1 className="font-heading text-2xl font-bold tracking-tight md:text-3.5xl uppercase">
-              {t("title")}
-              <span className="text-primary" aria-hidden="true">
-                .
-              </span>
-            </h1>
+          <div className="flex flex-col gap-6 md:flex-row md:items-center">
+            {/* Foto de la empresa (Logo) */}
+            <div className="relative size-20 md:size-24 shrink-0 overflow-hidden rounded-2xl border border-white/20 bg-white shadow-[var(--shadow-soft)] flex items-center justify-center">
+              {!logoError ? (
+                <Image
+                  src="/company_logo.png"
+                  alt="Logo Empresa"
+                  width={96}
+                  height={96}
+                  className="size-full object-contain p-2"
+                  onError={() => setLogoError(true)}
+                />
+              ) : (
+                <div className="flex size-full items-center justify-center bg-gradient-to-br from-accent to-secondary font-heading text-2xl font-extrabold text-white">
+                  FWD
+                </div>
+              )}
+            </div>
+
+            {/* Título y Descripción */}
+            <div className="space-y-2">
+              <h1 className="font-heading text-2xl font-bold tracking-tight md:text-3.5xl uppercase leading-none">
+                {t("title")}
+                <span className="text-primary" aria-hidden="true">
+                  .
+                </span>
+              </h1>
+              <p className="font-body text-sm text-white/80 max-w-2xl leading-relaxed">
+                {t("company_desc")}
+              </p>
+            </div>
           </div>
 
           {/* Stat Cards */}
@@ -379,7 +409,7 @@ export function PerfilEmpresa() {
               <span className="font-body text-[10px] font-bold uppercase tracking-wider text-white/70">
                 {t("stats.applications")}
               </span>
-              <span className="font-heading text-3xl font-extrabold text-highlight">
+              <span className="font-heading text-3xl font-extrabold text-white">
                 {stats.totalApplications}
               </span>
             </div>
@@ -388,7 +418,7 @@ export function PerfilEmpresa() {
               <span className="font-body text-[10px] font-bold uppercase tracking-wider text-white/70">
                 {t("stats.reviewed")}
               </span>
-              <span className="font-heading text-3xl font-extrabold text-accent">
+              <span className="font-heading text-3xl font-extrabold text-white">
                 {stats.reviewedCount}
               </span>
             </div>
@@ -397,7 +427,7 @@ export function PerfilEmpresa() {
               <span className="font-body text-[10px] font-bold uppercase tracking-wider text-white/70">
                 {t("stats.pending_match")}
               </span>
-              <span className="font-heading text-3xl font-extrabold text-warning">
+              <span className="font-heading text-3xl font-extrabold text-white">
                 {stats.pendingMatchCount}
               </span>
             </div>

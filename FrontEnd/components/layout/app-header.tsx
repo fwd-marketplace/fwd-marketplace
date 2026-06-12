@@ -1,12 +1,15 @@
 import Link from "next/link";
+import { useLocale } from "next-intl";
 import { Bell } from "lucide-react";
 
 export function AppHeader() {
+  const locale = useLocale();
+  
   return (
     <header className="sticky top-0 z-50 border-b border-border bg-surface/80 backdrop-blur-sm">
       <div className="mx-auto flex h-14 max-w-7xl items-center justify-between px-4 md:px-6">
         <Link
-          href="/marketplace"
+          href={`/${locale}/marketplace`}
           className="font-heading text-lg font-bold tracking-tight text-ink-strong"
         >
           FWD <span className="text-primary">Talent.</span>

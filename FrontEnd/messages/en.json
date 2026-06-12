@@ -360,6 +360,7 @@
   },
   "empresa_dashboard": {
     "title": "Company dashboard",
+    "company_desc": "We connect emerging junior talent in Costa Rica with real tech projects. Forward is a foundation dedicated to boosting professional development in technology.",
     "stats": {
       "active_projects": "Active projects",
       "applications": "Applications",
@@ -420,6 +421,44 @@
     "notifications": {
       "accepted": "{name} has been accepted to the project.",
       "rejected": "{name} has been notified they were not selected."
+    }
+  },
+  "mis_proyectos": {
+    "published_on": "Published on {date}",
+    "modality_label": "Modality",
+    "level_label": "Level",
+    "budget_label": "Budget",
+    "edit_btn": "Edit Project",
+    "pause_btn": "Pause Project",
+    "reactivate_btn": "Reactivate Project",
+    "status_active": "ACTIVE",
+    "status_paused": "PAUSED",
+    "tabs": {
+      "project": "Project",
+      "mockups": "Mockups",
+      "applications": "Applications"
+    },
+    "objective_title": "Project Objective",
+    "scope_title": "Scope and Requirements",
+    "deliverables_title": "Expected Deliverables",
+    "stack_title": "TECH STACK",
+    "metrics_title": "PROGRESS METRICS",
+    "metrics_talent_match": "Talent Match",
+    "metrics_active_applicants": "Active Applicants",
+    "mockups_empty": "No mockups uploaded for this project yet.",
+    "applications_empty": "No applications registered yet.",
+    "edit_modal": {
+      "title": "Edit project",
+      "name_label": "Project name",
+      "modality_label": "Modality",
+      "budget_label": "Budget",
+      "cancel": "Cancel",
+      "save": "Save changes",
+      "success": "Project updated successfully."
+    },
+    "notifications": {
+      "paused": "Project has been paused.",
+      "reactivated": "Project has been reactivated."
     }
   },
   "perfil_junior": {

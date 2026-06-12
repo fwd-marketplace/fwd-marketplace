@@ -35,7 +35,7 @@ export async function EmpresaDone({ locale }: EmpresaDoneProps) {
           </p>
 
           <Link
-            href={`/${locale}/empresa/dashboard`}
+            href={`/${locale}/dashboard`}
             className="inline-flex items-center justify-center rounded-full bg-highlight px-8 py-3 font-body text-sm font-semibold text-highlight-foreground transition-opacity duration-[--duration-fast] hover:opacity-90"
           >
             {t("empresa.done.cta")}
