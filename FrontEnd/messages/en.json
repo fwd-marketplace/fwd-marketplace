@@ -372,6 +372,7 @@
   },
   "empresa_dashboard": {
     "title": "Company dashboard",
+    "company_desc": "We connect emerging junior talent in Costa Rica with real tech projects. Forward is a foundation dedicated to boosting professional development in technology.",
     "stats": {
       "active_projects": "Active projects",
       "applications": "Applications",
@@ -433,6 +434,55 @@
       "accepted": "{name} has been accepted to the project.",
       "rejected": "{name} has been notified they were not selected."
     }
+  },
+  "mis_proyectos": {
+    "published_on": "Published on {date}",
+    "modality_label": "Modality",
+    "level_label": "Level",
+    "budget_label": "Budget",
+    "edit_btn": "Edit Project",
+    "pause_btn": "Pause Project",
+    "reactivate_btn": "Reactivate Project",
+    "status_active": "ACTIVE",
+    "status_paused": "PAUSED",
+    "tabs": {
+      "project": "Project",
+      "mockups": "Mockups",
+      "applications": "Applications"
+    },
+    "objective_title": "Project Objective",
+    "scope_title": "Scope and Requirements",
+    "deliverables_title": "Expected Deliverables",
+    "stack_title": "TECH STACK",
+    "metrics_title": "PROGRESS METRICS",
+    "metrics_talent_match": "Talent Match",
+    "metrics_active_applicants": "Active Applicants",
+    "mockups_empty": "No mockups uploaded for this project yet.",
+    "applications_empty": "No applications registered yet.",
+    "edit_modal": {
+      "title": "Edit project",
+      "name_label": "Project name",
+      "modality_label": "Modality",
+      "budget_label": "Budget",
+      "cancel": "Cancel",
+      "save": "Save changes",
+      "success": "Project updated successfully."
+    },
+    "notifications": {
+      "paused": "Project has been paused.",
+      "reactivated": "Project has been reactivated."
+    }
+  },
+  "app_header": {
+    "notifications": "Notifications",
+    "user_menu": "User menu"
+  },
+  "empresa_subnav": {
+    "back": "Back",
+    "mis_proyectos": "My projects",
+    "matches": "Matches",
+    "postulaciones": "Applications",
+    "mi_empresa": "My company"
   },
   "perfil_junior": {
     "tabs": {
@@ -582,5 +632,96 @@
     "celeb_eyebrow": "New skill",
     "celeb_sub_prefix": "You lit a star in",
     "celeb_btn": "Keep exploring"
+  },
+  "marketplace_page": {
+    "eyebrow": "MARKETPLACE",
+    "title": "Available projects",
+    "search_label": "Search by name or technology",
+    "search_placeholder": "e.g. React, Figma, Backend...",
+    "specialty_label": "Specialty",
+    "specialty_all": "All areas",
+    "active_filters": "ACTIVE FILTERS:",
+    "clear_all": "Clear all",
+    "budget": "BUDGET",
+    "duration": "DURATION",
+    "experience": "EXPERIENCE",
+    "hourly_rate": "HOURLY RATE",
+    "view_project": "View project",
+    "filter_remote": "Remote",
+    "filter_senior": "Senior",
+    "match_suffix": "match",
+    "badges": {
+      "urgent": "URGENT",
+      "full_time": "FULL-TIME",
+      "project": "PROJECT",
+      "part_time": "PART-TIME"
+    }
+  },
+  "bienvenida": {
+    "hero": {
+      "welcome": "WELCOME TO FWD TALENT!",
+      "greeting": "Good morning",
+      "description": "Your profile is already connected with real opportunities.\nExplore projects created by companies looking for talent like yours.",
+      "btn_explore": "Explore opportunities",
+      "btn_edit": "Edit my profile",
+      "stack_center": "Your stack",
+      "stack_frontend": "Frontend",
+      "stack_backend": "Backend",
+      "stack_ux": "UX / UI",
+      "stack_mobile": "Mobile",
+      "stack_ai": "AI & Data"
+    },
+    "stats": {
+      "projects": "Compatible projects",
+      "match": "Average match",
+      "match_desc": "Excellent compatibility",
+      "companies": "New companies",
+      "companies_desc": "This week",
+      "applications": "Active applications",
+      "view_all": "View all",
+      "view_applications": "View my applications"
+    },
+    "recommended": {
+      "title": "Recommended for you",
+      "view_all": "View all projects",
+      "badges": {
+        "urgent": "URGENT",
+        "high_match": "HIGH MATCH",
+        "new": "NEW"
+      },
+      "weeks": "weeks",
+      "match": "High match"
+    },
+    "progress": {
+      "title": "Your progress at FWD",
+      "step1_title": "Profile completed",
+      "step1_desc": "Excellent! Your profile is at 100%.",
+      "step2_title": "Stack defined",
+      "step2_desc": "You defined your core technologies.",
+      "step3_title": "Availability defined",
+      "step3_desc": "Immediate availability configured.",
+      "step4_title": "First project",
+      "step4_desc": "Apply to your first opportunity.",
+      "step5_title": "First hiring",
+      "step5_desc": "Complete your first project.",
+      "card_title": "You're on an excellent path",
+      "card_desc": "Keep exploring and building your future.",
+      "btn_profile": "View my profile"
+    },
+    "companies": {
+      "title": "Interested companies",
+      "view_all": "View all",
+      "active": "ACTIVE",
+      "btn_all": "View all companies"
+    },
+    "activity": {
+      "title": "Recent activity",
+      "view_all": "View all activity"
+    },
+    "modality": {
+      "remote": "Remote",
+      "hybrid": "Hybrid",
+      "onsite": "On-site"
+    }
   }
 }

@@ -87,18 +87,18 @@ const LinkedinIcon = (props: React.SVGProps<SVGSVGElement>) => (
 
 function getCategoryIcon(category: Application["category"]) {
   switch (category) {
-    case "ux":     return <Layers    className="w-5 h-5 text-primary" />;
-    case "data":   return <BarChart2 className="w-5 h-5 text-warning" />;
-    case "dev":    return <Code2     className="w-5 h-5 text-accent" />;
-    case "design": return <Palette   className="w-5 h-5 text-magenta" />;
+    case "ux": return <Layers className="w-5 h-5 text-primary" />;
+    case "data": return <BarChart2 className="w-5 h-5 text-warning" />;
+    case "dev": return <Code2 className="w-5 h-5 text-accent" />;
+    case "design": return <Palette className="w-5 h-5 text-magenta" />;
   }
 }
 
 function getCategoryBg(category: Application["category"]): string {
   switch (category) {
-    case "ux":     return "bg-primary/10";
-    case "data":   return "bg-warning/10";
-    case "dev":    return "bg-accent/10";
+    case "ux": return "bg-primary/10";
+    case "data": return "bg-warning/10";
+    case "dev": return "bg-accent/10";
     case "design": return "bg-magenta/10";
   }
 }
@@ -106,18 +106,18 @@ function getCategoryBg(category: Application["category"]): string {
 function getNotifIconStyle(type: NotifType): string {
   switch (type) {
     case "oportunidad": return "bg-primary/10 text-primary border border-primary/20";
-    case "rechazo":     return "bg-magenta/10 text-magenta border border-magenta/20";
+    case "rechazo": return "bg-magenta/10 text-magenta border border-magenta/20";
     case "visibilidad": return "bg-warning/10 text-warning border border-warning/20";
-    case "proyecto":    return "bg-accent/15 text-accent border border-accent/20";
+    case "proyecto": return "bg-accent/15 text-accent border border-accent/20";
   }
 }
 
 function getNotifIcon(type: NotifType) {
   switch (type) {
     case "oportunidad": return <Compass className="w-5 h-5" />;
-    case "rechazo":     return <X       className="w-5 h-5" />;
-    case "visibilidad": return <Eye     className="w-5 h-5" />;
-    case "proyecto":    return <Check   className="w-5 h-5" />;
+    case "rechazo": return <X className="w-5 h-5" />;
+    case "visibilidad": return <Eye className="w-5 h-5" />;
+    case "proyecto": return <Check className="w-5 h-5" />;
   }
 }
 
@@ -221,7 +221,7 @@ function buildWorkProjectPreview(project: WorkProject) {
 
 const OPPORTUNITY_ICONS = [
   <UserCog key="user-cog" className="w-6 h-6 text-ink-muted" />,
-  <Box     key="box"      className="w-6 h-6 text-ink-muted" />,
+  <Box key="box" className="w-6 h-6 text-ink-muted" />,
 ] as const;
 
 function getOpportunityIcon(index: number): React.ReactNode {
@@ -276,20 +276,20 @@ export default function PerfilUsuario({
   // ── Label maps — avoids dynamic key access ─────────────────────────────────
 
   const TAB_LABELS: Record<TabId, string> = {
-    perfil:         t("tabs.perfil"),
-    trabajo:        t("tabs.trabajo"),
-    postulaciones:  t("tabs.postulaciones"),
+    perfil: t("tabs.perfil"),
+    trabajo: t("tabs.trabajo"),
+    postulaciones: t("tabs.postulaciones"),
     notificaciones: t("tabs.notificaciones"),
-    sugeridos:      t("tabs.sugeridos"),
+    sugeridos: t("tabs.sugeridos"),
   };
 
   const FILTER_LABELS: Record<FilterStatus, string> = {
-    todas:      t("applications.filter.all"),
-    enviada:    t("applications.filter.sent"),
-    vista:      t("applications.filter.seen"),
+    todas: t("applications.filter.all"),
+    enviada: t("applications.filter.sent"),
+    vista: t("applications.filter.seen"),
     en_proceso: t("applications.filter.in_process"),
-    aceptada:   t("applications.filter.accepted"),
-    rechazada:  t("applications.filter.rejected"),
+    aceptada: t("applications.filter.accepted"),
+    rechazada: t("applications.filter.rejected"),
   };
 
   // ── Status styles ──────────────────────────────────────────────────────────
@@ -297,15 +297,15 @@ export default function PerfilUsuario({
   function getStatusStyles(status: Application["status"]) {
     switch (status) {
       case "enviada":
-        return { strip: "bg-primary",   badge: "bg-primary/10 text-primary border-primary/20",       label: t("status.enviada") };
+        return { strip: "bg-primary", badge: "bg-primary/10 text-primary border-primary/20", label: t("status.enviada") };
       case "vista":
-        return { strip: "bg-warning",   badge: "bg-warning/10 text-warning border-warning/20",       label: t("status.vista") };
+        return { strip: "bg-warning", badge: "bg-warning/10 text-warning border-warning/20", label: t("status.vista") };
       case "en_proceso":
         return { strip: "bg-secondary", badge: "bg-secondary/10 text-secondary border-secondary/20", label: t("status.en_proceso") };
       case "aceptada":
-        return { strip: "bg-accent",    badge: "bg-accent/15 text-accent border-accent/20",          label: t("status.aceptada") };
+        return { strip: "bg-accent", badge: "bg-accent/15 text-accent border-accent/20", label: t("status.aceptada") };
       case "rechazada":
-        return { strip: "bg-magenta",   badge: "bg-magenta/10 text-magenta border-magenta/20",       label: t("status.rechazada") };
+        return { strip: "bg-magenta", badge: "bg-magenta/10 text-magenta border-magenta/20", label: t("status.rechazada") };
     }
   }
 
@@ -461,7 +461,7 @@ export default function PerfilUsuario({
                       const badgeLower = badge.toLowerCase();
                       let badgeStyle = "bg-white/10 text-white border border-white/20";
                       if (badgeLower === "disponible") badgeStyle = "bg-accent text-accent-foreground font-semibold";
-                      if (badgeLower === "frontend")   badgeStyle = "bg-highlight text-highlight-foreground font-semibold";
+                      if (badgeLower === "frontend") badgeStyle = "bg-highlight text-highlight-foreground font-semibold";
                       return (
                         <span
                           key={badge}
@@ -498,9 +498,9 @@ export default function PerfilUsuario({
           {TAB_IDS.map((tabId) => {
             const isActive = activeTab === tabId;
             let badge: number | null = null;
-            if (tabId === "postulaciones")  badge = applications.length;
+            if (tabId === "postulaciones") badge = applications.length;
             if (tabId === "notificaciones") badge = unreadCount;
-            if (tabId === "sugeridos")      badge = MOCK_SUGGESTED_PROJECTS.length;
+            if (tabId === "sugeridos") badge = MOCK_SUGGESTED_PROJECTS.length;
 
             return (
               <button
@@ -508,11 +508,10 @@ export default function PerfilUsuario({
                 role="tab"
                 aria-selected={isActive}
                 onClick={() => setActiveTab(tabId)}
-                className={`border-b-2 py-4 px-1 text-sm md:text-base transition-all flex items-center gap-2 cursor-pointer ${
-                  isActive
+                className={`border-b-2 py-4 px-1 text-sm md:text-base transition-all flex items-center gap-2 cursor-pointer ${isActive
                     ? "border-primary text-ink-strong font-semibold"
                     : "border-transparent text-ink-muted hover:text-ink"
-                }`}
+                  }`}
               >
                 {TAB_LABELS[tabId]}
                 {badge !== null && (
@@ -920,11 +919,10 @@ export default function PerfilUsuario({
                     key={value}
                     type="button"
                     onClick={() => setFilterStatus(value)}
-                    className={`px-4 py-1.5 rounded-full text-xs font-medium border transition-colors cursor-pointer ${
-                      isActive
+                    className={`px-4 py-1.5 rounded-full text-xs font-medium border transition-colors cursor-pointer ${isActive
                         ? "bg-primary border-primary text-white"
                         : "bg-surface-sunken border-border text-ink-muted hover:bg-border/30 hover:text-ink"
-                    }`}
+                      }`}
                   >
                     {FILTER_LABELS[value]}
                   </button>

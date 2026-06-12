@@ -1,6 +1,8 @@
 import { useTranslations } from 'next-intl';
 import Link from 'next/link';
-import { ArrowRight, Clock, MapPin, DollarSign } from 'lucide-react';
+import Image from 'next/image';
+import { ArrowRight } from 'lucide-react';
+import dashboardLogo from '@/Img/Comunidad_icon-01_gneaaf (1).webp';
 import { FwdGeoBackdrop } from '@/components/ui/fwd-geo-backdrop';
 
 export default function HeroSection({ locale }: { locale: string }) {
@@ -42,69 +44,15 @@ export default function HeroSection({ locale }: { locale: string }) {
           </div>
         </div>
 
-        {/* Right Column: Hero Card */}
-        <div className="w-full max-w-lg flex-1">
-          <div className="rounded-xl bg-surface p-6 text-ink-strong shadow-elevated">
-            {/* Window dots */}
-            <div className="mb-4 flex space-x-1.5">
-              <div className="h-3 w-3 rounded-full bg-magenta" aria-hidden="true" />
-              <div className="h-3 w-3 rounded-full bg-warning" aria-hidden="true" />
-              <div className="h-3 w-3 rounded-full bg-success" aria-hidden="true" />
-            </div>
-
-            <p className="mb-2 text-xs font-bold uppercase text-magenta">{t('card_eyebrow')}</p>
-            <h3 className="mb-1 font-heading text-2xl font-bold">{t('card_title')}</h3>
-            <p className="mb-4 flex items-center gap-2 text-ink-muted">
-              <span className="flex h-5 w-5 items-center justify-center rounded bg-ink-subtle text-xs text-white">
-                E
-              </span>
-              {t('card_company')}
-            </p>
-
-            <div className="mb-6 flex flex-wrap gap-2">
-              {['Next.js', 'TypeScript', 'Tailwind CSS', 'Supabase'].map((tech) => (
-                <span key={tech} className="rounded-full border border-border bg-canvas px-3 py-1 text-sm">
-                  {tech}
-                </span>
-              ))}
-            </div>
-
-            <div className="mb-6 flex items-center justify-between border-b border-border pb-6">
-              <div className="flex gap-6 text-sm text-ink-muted">
-                <div>
-                  <div className="mb-1 flex items-center gap-1">
-                    <Clock className="h-4 w-4" aria-hidden="true" /> {t('card_duration')}
-                  </div>
-                  <strong className="text-ink-strong">{t('card_duration_val')}</strong>
-                </div>
-                <div>
-                  <div className="mb-1 flex items-center gap-1">
-                    <MapPin className="h-4 w-4" aria-hidden="true" /> {t('card_modality')}
-                  </div>
-                  <strong className="text-ink-strong">{t('card_modality_val')}</strong>
-                </div>
-                <div>
-                  <div className="mb-1 flex items-center gap-1">
-                    <DollarSign className="h-4 w-4" aria-hidden="true" /> {t('card_budget')}
-                  </div>
-                  <strong className="text-ink-strong">{t('card_budget_val')}</strong>
-                </div>
-              </div>
-
-              <div className="relative flex h-20 w-20 flex-col items-center justify-center rounded-full border-4 border-accent font-bold text-xl text-accent">
-                92%
-                <span className="absolute -bottom-5 text-[10px] text-ink-muted">{t('card_match')}</span>
-              </div>
-            </div>
-
-            <Link
-              href="#"
-              className="flex items-center justify-between font-medium text-primary hover:underline"
-            >
-              {t('card_link')}
-              <ArrowRight className="h-4 w-4" />
-            </Link>
-          </div>
+        {/* Right Column: Hero Image */}
+        <div className="w-full max-w-lg flex-1 flex items-center justify-center lg:justify-end">
+          <Image 
+            src={dashboardLogo} 
+            alt="Comunidad Logo" 
+            quality={100}
+            className="w-full max-w-[450px] md:max-w-[500px] h-auto object-contain drop-shadow-2xl hover:scale-[1.03] transition-transform duration-[var(--duration-slow)]" 
+            priority
+          />
         </div>
       </div>
     </section>
