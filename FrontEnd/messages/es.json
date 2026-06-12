@@ -151,17 +151,23 @@
     },
     "junior": {
       "done": {
-        "eyebrow": "¡Todo listo!",
-        "title": "Tu perfil junior está completo",
-        "description": "Revisa el marketplace y postúlate a tu primer proyecto real.",
-        "cta": "Ver proyectos"
+        "eyebrow": "Solicitud recibida",
+        "title": "Tu cuenta está en revisión",
+        "description": "El equipo de FWD revisará tu perfil y te notificará por correo cuando tu cuenta esté aprobada. Esto suele tardar entre 24 y 48 horas.",
+        "cta": "Volver al inicio"
       },
       "step1": {
         "eyebrow": "Primero lo primero",
         "title": "¿Cuál es tu nombre?",
         "description": "Así te mostraremos a las empresas del marketplace.",
-        "label": "Nombre completo",
-        "placeholder": "Ej. María García"
+        "label_nombre": "Nombre",
+        "placeholder_nombre": "Ej. María",
+        "label_apellido1": "Primer apellido",
+        "placeholder_apellido1": "Ej. García",
+        "label_apellido2": "Segundo apellido",
+        "placeholder_apellido2": "Ej. López",
+        "label_cedula": "Número de cédula",
+        "placeholder_cedula": "Ej. 1-1234-5678"
       },
       "step2": {
         "eyebrow": "Tu especialización",
@@ -227,10 +233,10 @@
     },
     "empresa": {
       "done": {
-        "eyebrow": "¡Todo listo!",
-        "title": "Tu perfil de empresa está completo",
-        "description": "Ya puedes publicar proyectos y empezar a conectar con talentos juniors FWD.",
-        "cta": "Ir al dashboard"
+        "eyebrow": "Solicitud recibida",
+        "title": "Tu cuenta está en revisión",
+        "description": "El equipo de FWD revisará tu empresa y te notificará por correo cuando tu cuenta esté aprobada. Esto suele tardar entre 24 y 48 horas.",
+        "cta": "Volver al inicio"
       },
       "step1": {
         "eyebrow": "Tu empresa",
@@ -299,10 +305,10 @@
     },
     "emprendedor": {
       "done": {
-        "eyebrow": "¡Listo para conectar!",
-        "title": "Tu perfil de emprendedor está completo",
-        "description": "Ahora podés explorar el marketplace y conectar con los mejores talentos juniors de FWD.",
-        "cta": "Explorar marketplace"
+        "eyebrow": "Solicitud recibida",
+        "title": "Tu cuenta está en revisión",
+        "description": "El equipo de FWD revisará tu perfil y te notificará por correo cuando tu cuenta esté aprobada. Esto suele tardar entre 24 y 48 horas.",
+        "cta": "Volver al inicio"
       },
       "step1": {
         "eyebrow": "Tu proyecto",
