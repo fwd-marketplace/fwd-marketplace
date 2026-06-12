@@ -1,11 +1,13 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useTransition } from "react";
 import { useRouter, useParams } from "next/navigation";
 import { useTranslations } from "next-intl";
 import { ArrowRight } from "lucide-react";
 import { FwdGeoBackdrop } from "@/components/ui/fwd-geo-backdrop";
 import { ProgressDots } from "@/components/onboarding/ProgressDots";
+import { saveStep, getOnboarding, clearOnboarding } from "@/lib/onboarding-storage";
+import { saveEmprendedorProfile } from "@/lib/actions/auth";
 
 const TOTAL_STEPS = 5;
 const OPTIONAL_STEPS = new Set([5]);
@@ -241,7 +243,7 @@ function Step4({ onChange }: { onChange: (val: BudgetRange) => void }) {
   );
 }
 
-function Step5() {
+function Step5({ onChange }: { onChange: (val: string) => void }) {
   const t = useTranslations("register.emprendedor.step5");
   const [descriptionValue, setDescriptionValue] = useState("");
   const remainingChars = DESC_MAX_CHARS - descriptionValue.length;
@@ -263,7 +265,7 @@ function Step5() {
         <textarea
           id="emprendedor-description"
           value={descriptionValue}
-          onChange={(e) => setDescriptionValue(e.target.value.slice(0, DESC_MAX_CHARS))}
+          onChange={(e) => { const v = e.target.value.slice(0, DESC_MAX_CHARS); setDescriptionValue(v); onChange(v); }}
           placeholder={t("placeholder")}
           rows={5}
           className="w-full resize-none rounded-2xl bg-surface-sunken px-5 py-4 font-body text-sm text-ink-strong placeholder:text-ink-subtle outline-none focus:ring-2 focus:ring-primary/40"
@@ -290,13 +292,36 @@ export function EmprendedorOnboarding() {
   const currentStep = Number(params.step) || 1;
 
   const [pendingValue, setPendingValue] = useState<unknown>(null);
+  const [submitError, setSubmitError] = useState<string | null>(null);
+  const [isSubmitting, startTransition] = useTransition();
 
   function handleNext() {
+    setSubmitError(null);
+    saveStep("emprendedor", currentStep, pendingValue);
+
     if (currentStep < TOTAL_STEPS) {
       router.push(`/${locale}/register/onboarding/emprendedor/${currentStep + 1}`);
-    } else {
-      router.push(`/${locale}/register/onboarding/emprendedor/done`);
+      return;
     }
+
+    const stored = getOnboarding("emprendedor");
+    const raw = {
+      projectName:   stored.step1 as string,
+      stage:         stored.step2,
+      neededSupport: stored.step3,
+      budget:        stored.step4,
+      description:   stored.step5 as string ?? "",
+    };
+
+    startTransition(async () => {
+      const result = await saveEmprendedorProfile(raw);
+      if (result.ok) {
+        clearOnboarding("emprendedor");
+        router.push(`/${locale}/register/onboarding/emprendedor/done`);
+      } else {
+        setSubmitError(result.error);
+      }
+    });
   }
 
   function handleBack() {
@@ -305,7 +330,7 @@ export function EmprendedorOnboarding() {
     }
   }
 
-  const canContinue = OPTIONAL_STEPS.has(currentStep) || Boolean(pendingValue);
+  const canContinue = !isSubmitting && (OPTIONAL_STEPS.has(currentStep) || Boolean(pendingValue));
 
   return (
     <div className="relative flex min-h-[100dvh] flex-col bg-secondary">
@@ -335,34 +360,42 @@ export function EmprendedorOnboarding() {
           {currentStep === 4 && (
             <Step4 onChange={(val) => setPendingValue(val)} />
           )}
-          {currentStep === 5 && <Step5 />}
+          {currentStep === 5 && <Step5 onChange={(val) => setPendingValue(val)} />}
         </div>
       </div>
 
-      <footer className="relative flex items-center justify-between px-4 py-5 sm:px-8 sm:py-6">
-        {currentStep > 1 ? (
+      <footer className="relative flex flex-col items-center gap-2 px-4 py-5 sm:px-8 sm:py-6">
+        {submitError && (
+          <p role="alert" className="w-full max-w-md text-center font-body text-xs text-red-500">
+            {submitError}
+          </p>
+        )}
+        <div className="flex w-full items-center justify-between">
+          {currentStep > 1 ? (
+            <button
+              type="button"
+              onClick={handleBack}
+              disabled={isSubmitting}
+              className="font-body text-sm font-medium text-secondary-foreground/70 transition-opacity hover:opacity-80 disabled:opacity-40"
+            >
+              {t("nav.back")}
+            </button>
+          ) : (
+            <div />
+          )}
+
+          <ProgressDots current={currentStep} total={TOTAL_STEPS} />
+
           <button
             type="button"
-            onClick={handleBack}
-            className="font-body text-sm font-medium text-secondary-foreground/70 transition-opacity hover:opacity-80"
+            onClick={handleNext}
+            disabled={!canContinue}
+            className="flex items-center gap-2 rounded-full bg-primary px-5 py-2.5 font-body text-sm font-semibold text-white transition-opacity duration-[--duration-fast] hover:opacity-90 disabled:cursor-not-allowed disabled:opacity-40 sm:px-6"
           >
-            {t("nav.back")}
+            {isSubmitting ? t("nav.finishing") : currentStep === TOTAL_STEPS ? t("nav.finish") : t("nav.next")}
+            {!isSubmitting && <ArrowRight size={15} strokeWidth={2.5} />}
           </button>
-        ) : (
-          <div />
-        )}
-
-        <ProgressDots current={currentStep} total={TOTAL_STEPS} />
-
-        <button
-          type="button"
-          onClick={handleNext}
-          disabled={!canContinue}
-          className="flex items-center gap-2 rounded-full bg-primary px-5 py-2.5 font-body text-sm font-semibold text-white transition-opacity duration-[--duration-fast] hover:opacity-90 disabled:cursor-not-allowed disabled:opacity-40 sm:px-6"
-        >
-          {currentStep === TOTAL_STEPS ? t("nav.finish") : t("nav.next")}
-          <ArrowRight size={15} strokeWidth={2.5} />
-        </button>
+        </div>
       </footer>
     </div>
   );

@@ -1,11 +1,12 @@
 "use client";
 
-import { useState } from "react";
-import { useParams } from "next/navigation";
+import { useState, useTransition } from "react";
+import { useParams, useRouter } from "next/navigation";
 import Link from "next/link";
 import { useTranslations } from "next-intl";
 import { Eye, EyeOff } from "lucide-react";
 import { FwdGeoBackdrop } from "@/components/ui/fwd-geo-backdrop";
+import { loginUser } from "@/lib/actions/auth";
 
 function GoogleIcon() {
   return (
@@ -41,11 +42,47 @@ function GitHubIcon() {
 export function LoginForm() {
   const t = useTranslations("login");
   const params = useParams();
+  const router = useRouter();
   const locale = params.locale as string;
+
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
   const [isPasswordVisible, setIsPasswordVisible] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+  const [pendingMessage, setPendingMessage] = useState<string | null>(null);
+  const [isPending, startTransition] = useTransition();
 
   function togglePasswordVisibility() {
     setIsPasswordVisible((prev) => !prev);
+  }
+
+  function handleSubmit(e: React.FormEvent) {
+    e.preventDefault();
+    setError(null);
+    setPendingMessage(null);
+    startTransition(async () => {
+      const result = await loginUser({ email, password });
+      if (!result.ok) {
+        setError(result.error);
+        return;
+      }
+      const { role, estado_cuenta } = result.data;
+      if (estado_cuenta === "no_profile") {
+        router.push(`/${locale}/register/role`);
+      } else if (estado_cuenta === "pendiente") {
+        setPendingMessage(t("pending_approval"));
+      } else if (estado_cuenta === "activa") {
+        if (role === "admin") {
+          router.push(`/${locale}/admin`);
+        } else if (role === "empresa" || role === "emprendedor") {
+          router.push(`/${locale}/empresa/dashboard`);
+        } else {
+          router.push(`/${locale}/marketplace`);
+        }
+      } else {
+        setError(t("account_suspended"));
+      }
+    });
   }
 
   return (
@@ -91,7 +128,7 @@ export function LoginForm() {
             <span className="h-px flex-1 bg-border" />
           </div>
 
-          <form className="space-y-3" onSubmit={(e) => e.preventDefault()}>
+          <form className="space-y-3" onSubmit={handleSubmit}>
             <div className="flex flex-col gap-1.5">
               <label htmlFor="login-email" className="font-body text-xs font-semibold text-ink-muted">
                 {t("email_label")}
@@ -100,6 +137,9 @@ export function LoginForm() {
                 id="login-email"
                 type="email"
                 autoComplete="email"
+                required
+                value={email}
+                onChange={(e) => setEmail(e.target.value)}
                 placeholder={t("email_placeholder")}
                 className="w-full rounded-2xl bg-surface-sunken px-5 py-3.5 font-body text-sm text-ink-strong placeholder:text-ink-subtle outline-none focus:ring-2 focus:ring-primary/40"
               />
@@ -119,6 +159,9 @@ export function LoginForm() {
                   id="login-password"
                   type={isPasswordVisible ? "text" : "password"}
                   autoComplete="current-password"
+                  required
+                  value={password}
+                  onChange={(e) => setPassword(e.target.value)}
                   placeholder={t("password_placeholder")}
                   className="w-full rounded-2xl bg-surface-sunken px-5 py-3.5 pr-12 font-body text-sm text-ink-strong placeholder:text-ink-subtle outline-none focus:ring-2 focus:ring-primary/40"
                 />
@@ -136,11 +179,21 @@ export function LoginForm() {
               </div>
             </div>
 
+            {error && (
+              <p role="alert" className="font-body text-xs text-red-500">{error}</p>
+            )}
+            {pendingMessage && (
+              <p role="status" className="rounded-xl bg-amber-50 px-4 py-3 font-body text-xs text-amber-700">
+                {pendingMessage}
+              </p>
+            )}
+
             <button
               type="submit"
-              className="mt-1 flex w-full items-center justify-center rounded-full bg-primary px-6 py-3 font-body text-sm font-semibold text-white transition-opacity duration-[--duration-fast] hover:opacity-90"
+              disabled={isPending}
+              className="mt-1 flex w-full items-center justify-center rounded-full bg-primary px-6 py-3 font-body text-sm font-semibold text-white transition-opacity duration-[--duration-fast] hover:opacity-90 disabled:opacity-60"
             >
-              {t("submit")}
+              {isPending ? t("submitting") : t("submit")}
             </button>
           </form>
 

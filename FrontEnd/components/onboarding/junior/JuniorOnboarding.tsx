@@ -1,11 +1,13 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useTransition } from "react";
 import { useRouter, useParams } from "next/navigation";
 import { useTranslations } from "next-intl";
 import { ArrowRight } from "lucide-react";
 import { FwdGeoBackdrop } from "@/components/ui/fwd-geo-backdrop";
 import { ProgressDots } from "@/components/onboarding/ProgressDots";
+import { saveStep, getOnboarding, clearOnboarding } from "@/lib/onboarding-storage";
+import { saveJuniorProfile } from "@/lib/actions/auth";
 
 const TOTAL_STEPS = 7;
 const OPTIONAL_STEPS = new Set([6, 7]);
@@ -357,14 +359,23 @@ function Step5({ onChange }: { onChange: (val: string[]) => void }) {
   );
 }
 
-function Step6() {
-  const t = useTranslations("register.junior.step6");
+type Step6Links = { githubUrl: string; linkedinUrl: string; portfolioUrl: string };
 
-  const LINK_FIELDS = [
-    { key: "github",    labelKey: "github_label",    placeholderKey: "github_placeholder" },
-    { key: "linkedin",  labelKey: "linkedin_label",  placeholderKey: "linkedin_placeholder" },
-    { key: "portfolio", labelKey: "portfolio_label", placeholderKey: "portfolio_placeholder" },
-  ] as const;
+function Step6({ onChange }: { onChange: (val: Step6Links) => void }) {
+  const t = useTranslations("register.junior.step6");
+  const [links, setLinks] = useState<Step6Links>({ githubUrl: "", linkedinUrl: "", portfolioUrl: "" });
+
+  function update(key: keyof Step6Links, value: string) {
+    const next = { ...links, [key]: value };
+    setLinks(next);
+    onChange(next);
+  }
+
+  const LINK_FIELDS: { key: keyof Step6Links; labelKey: string; placeholderKey: string }[] = [
+    { key: "githubUrl",    labelKey: "github_label",    placeholderKey: "github_placeholder" },
+    { key: "linkedinUrl",  labelKey: "linkedin_label",  placeholderKey: "linkedin_placeholder" },
+    { key: "portfolioUrl", labelKey: "portfolio_label", placeholderKey: "portfolio_placeholder" },
+  ];
 
   return (
     <div className="flex flex-col gap-6">
@@ -387,6 +398,8 @@ function Step6() {
             <input
               id={`link-${key}`}
               type="url"
+              value={links[key]}
+              onChange={(e) => update(key, e.target.value)}
               placeholder={t(placeholderKey)}
               className="w-full rounded-2xl bg-surface-sunken px-5 py-3.5 font-body text-sm text-ink-strong placeholder:text-ink-subtle outline-none focus:ring-2 focus:ring-primary/40"
             />
@@ -397,7 +410,7 @@ function Step6() {
   );
 }
 
-function Step7() {
+function Step7({ onChange }: { onChange: (val: string) => void }) {
   const t = useTranslations("register.junior.step7");
   const [bioValue, setBioValue] = useState("");
   const remainingChars = BIO_MAX_CHARS - bioValue.length;
@@ -419,7 +432,7 @@ function Step7() {
         <textarea
           id="junior-bio"
           value={bioValue}
-          onChange={(e) => setBioValue(e.target.value.slice(0, BIO_MAX_CHARS))}
+          onChange={(e) => { const v = e.target.value.slice(0, BIO_MAX_CHARS); setBioValue(v); onChange(v); }}
           placeholder={t("placeholder")}
           rows={5}
           className="w-full resize-none rounded-2xl bg-surface-sunken px-5 py-4 font-body text-sm text-ink-strong placeholder:text-ink-subtle outline-none focus:ring-2 focus:ring-primary/40"
@@ -446,13 +459,38 @@ export function JuniorOnboarding() {
   const currentStep = Number(params.step) || 1;
 
   const [pendingValue, setPendingValue] = useState<unknown>(null);
+  const [submitError, setSubmitError] = useState<string | null>(null);
+  const [isSubmitting, startTransition] = useTransition();
 
   function handleNext() {
+    setSubmitError(null);
+    saveStep("junior", currentStep, pendingValue);
+
     if (currentStep < TOTAL_STEPS) {
       router.push(`/${locale}/register/onboarding/junior/${currentStep + 1}`);
-    } else {
-      router.push(`/${locale}/register/onboarding/junior/done`);
+      return;
     }
+
+    const stored = getOnboarding("junior");
+    const raw = {
+      ...(stored.step1 as object ?? {}),
+      specialization: stored.step2,
+      modalities:     stored.step3,
+      availability:   stored.step4,
+      techStack:      stored.step5,
+      ...(stored.step6 as object ?? {}),
+      bio:            stored.step7 as string ?? "",
+    };
+
+    startTransition(async () => {
+      const result = await saveJuniorProfile(raw);
+      if (result.ok) {
+        clearOnboarding("junior");
+        router.push(`/${locale}/register/onboarding/junior/done`);
+      } else {
+        setSubmitError(result.error);
+      }
+    });
   }
 
   function handleBack() {
@@ -461,7 +499,7 @@ export function JuniorOnboarding() {
     }
   }
 
-  const canContinue = OPTIONAL_STEPS.has(currentStep) || Boolean(pendingValue);
+  const canContinue = !isSubmitting && (OPTIONAL_STEPS.has(currentStep) || Boolean(pendingValue));
 
   return (
     <div className="relative flex min-h-[100dvh] flex-col bg-secondary">
@@ -497,35 +535,43 @@ export function JuniorOnboarding() {
           {currentStep === 5 && (
             <Step5 onChange={(val) => setPendingValue(val.length > 0 ? val : null)} />
           )}
-          {currentStep === 6 && <Step6 />}
-          {currentStep === 7 && <Step7 />}
+          {currentStep === 6 && <Step6 onChange={(val) => setPendingValue(val)} />}
+          {currentStep === 7 && <Step7 onChange={(val) => setPendingValue(val)} />}
         </div>
       </div>
 
-      <footer className="relative flex items-center justify-between px-4 py-5 sm:px-8 sm:py-6">
-        {currentStep > 1 ? (
+      <footer className="relative flex flex-col items-center gap-2 px-4 py-5 sm:px-8 sm:py-6">
+        {submitError && (
+          <p role="alert" className="w-full max-w-md text-center font-body text-xs text-red-500">
+            {submitError}
+          </p>
+        )}
+        <div className="flex w-full items-center justify-between">
+          {currentStep > 1 ? (
+            <button
+              type="button"
+              onClick={handleBack}
+              disabled={isSubmitting}
+              className="font-body text-sm font-medium text-secondary-foreground/70 transition-opacity hover:opacity-80 disabled:opacity-40"
+            >
+              {t("nav.back")}
+            </button>
+          ) : (
+            <div />
+          )}
+
+          <ProgressDots current={currentStep} total={TOTAL_STEPS} />
+
           <button
             type="button"
-            onClick={handleBack}
-            className="font-body text-sm font-medium text-secondary-foreground/70 transition-opacity hover:opacity-80"
+            onClick={handleNext}
+            disabled={!canContinue}
+            className="flex items-center gap-2 rounded-full bg-primary px-5 py-2.5 font-body text-sm font-semibold text-white transition-opacity duration-[--duration-fast] hover:opacity-90 disabled:cursor-not-allowed disabled:opacity-40 sm:px-6"
           >
-            {t("nav.back")}
+            {isSubmitting ? t("nav.finishing") : currentStep === TOTAL_STEPS ? t("nav.finish") : t("nav.next")}
+            {!isSubmitting && <ArrowRight size={15} strokeWidth={2.5} />}
           </button>
-        ) : (
-          <div />
-        )}
-
-        <ProgressDots current={currentStep} total={TOTAL_STEPS} />
-
-        <button
-          type="button"
-          onClick={handleNext}
-          disabled={!canContinue}
-          className="flex items-center gap-2 rounded-full bg-primary px-5 py-2.5 font-body text-sm font-semibold text-white transition-opacity duration-[--duration-fast] hover:opacity-90 disabled:cursor-not-allowed disabled:opacity-40 sm:px-6"
-        >
-          {currentStep === TOTAL_STEPS ? t("nav.finish") : t("nav.next")}
-          <ArrowRight size={15} strokeWidth={2.5} />
-        </button>
+        </div>
       </footer>
     </div>
   );

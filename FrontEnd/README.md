@@ -8,13 +8,26 @@ Marketplace de proyectos freelance para juniors egresados de Fundación Forward 
 
 ---
 
+## Arquitectura
+
+```
+FrontEnd/ (Next.js 15)  ──fetch (JSON)──►  BackEnd/ (Express + TS)  ──►  Supabase
+  solo UI                  REST              lógica + DB + Auth            Postgres / Auth / RLS
+http://localhost:3000                       http://localhost:3001
+```
+
+- El **FrontEnd es solo presentación**. Se comunica con el BackEnd por HTTP (`fetch`).
+- El **FrontEnd no importa `@supabase/*` ni conoce las claves de Supabase**. Esa conexión vive únicamente en el BackEnd.
+- La IA (matching, sugerencias) también vive en el BackEnd. El FrontEnd solo llama endpoints REST.
+
+---
+
 ## Stack técnico (no negociable)
 
 | Capa | Tecnología | Versión |
 |---|---|---|
-| Framework | Next.js (App Router) | 16.x |
+| Framework | Next.js (App Router) | 15.x |
 | Lenguaje | TypeScript strict | ^5 |
-| Base de datos | Supabase (cliente JS) | ^2 |
 | Estilos | Tailwind CSS v4 + shadcn/ui | ^4 |
 | i18n | next-intl | ^4 |
 | Validación | Zod | ^4 |
@@ -23,9 +36,6 @@ Marketplace de proyectos freelance para juniors egresados de Fundación Forward 
 | Linting | ESLint + Prettier | ^9 / ^3 |
 | Commits | Conventional Commits + commitlint + Husky | — |
 | Deploy | Vercel | — |
-| IA primaria | Groq API (Llama 4 Scout / Llama 3.3 70B) | — |
-| IA fallback | Gemini 2.5 Flash | — |
-| Email | Resend (RESEND_DEV_MODE=true en dev) | — |
 
 ---
 
@@ -36,14 +46,16 @@ Marketplace de proyectos freelance para juniors egresados de Fundación Forward 
 npm install
 
 # 2. Copiar variables de entorno
-cp .env.example .env.local
-# Completar las variables en .env.local
+cp .env.local.example .env.local
+# El valor por defecto ya sirve para desarrollo local
 
 # 3. Arrancar el servidor de desarrollo
 npm run dev
 ```
 
 Abrir [http://localhost:3000](http://localhost:3000) en el navegador.
+
+> El BackEnd debe estar corriendo en `http://localhost:3001` para que las llamadas API funcionen.
 
 ### Otros comandos
 
@@ -58,37 +70,16 @@ npm run typecheck    # TypeScript sin emitir (tsc --noEmit)
 
 ## Variables de entorno
 
-Crear un archivo `.env.local` en la raíz del proyecto con las siguientes variables:
+El FrontEnd necesita una sola variable de entorno:
 
 ```env
-# Supabase
-NEXT_PUBLIC_SUPABASE_URL=
-NEXT_PUBLIC_SUPABASE_ANON_KEY=
-
-# Groq (IA primaria — gratis permanente, sin tarjeta)
-# Registrarse en console.groq.com — una key por persona
-GROQ_API_KEY=
-
-# Gemini (fallback IA — gratis, sin billing activado NUNCA)
-# Registrarse en aistudio.google.com
-GEMINI_API_KEY=
-
-# Resend (emails — en dev los emails van a consola, cero cuota)
-RESEND_API_KEY=
-RESEND_DEV_MODE=true
+# URL base del BackEnd (Express). El FrontEnd consume TODO por aquí vía fetch.
+NEXT_PUBLIC_API_URL=http://localhost:3001/api
 ```
 
-> **Importante:** El archivo `.env.local` nunca va al repositorio. Está en `.gitignore`.
+El archivo `.env.local.example` contiene la plantilla con el valor por defecto para desarrollo local. Copiarlo como `.env.local` (ya ignorado en `.gitignore`).
 
----
-
-## Qué se simula (no es integración real)
-
-| Elemento | Cómo se simula |
-|---|---|
-| Base de egresados FWD | Tabla `fwd_graduates` con datos seed locales — no hay integración externa real |
-| Antivirus de archivos | Stub que retorna `"clean"` — documentado, no es funcional |
-| Emails en desarrollo | `RESEND_DEV_MODE=true` — los correos se loguean en consola, cero cuota consumida |
+> **El FrontEnd no usa claves de Supabase, Groq, Gemini, Resend ni Sentry.** Esas variables viven en el BackEnd (`.env` dentro de `BackEnd/`). No agregar `SUPABASE_URL`, `SUPABASE_KEY` ni claves de IA aquí.
 
 ---
 
@@ -160,10 +151,10 @@ El código debe verse como parte del mismo producto que `jobs.fwdcostarica.com`.
 | **Cero `any` en TypeScript** | Si es inevitable, usar `unknown` con type guard. Prohibido `@ts-ignore` sin comentario. |
 | **Punto azul en cada H1** | `<span className="text-primary">.</span>` al final de cada título principal. Firma de marca FWD. |
 | **`Result<T,E>` en server actions** | Toda server action devuelve `Result<T,E>`. Nunca lanzar excepciones sin capturar. |
+| **FrontEnd no toca Supabase** | Todo `fetch` va al BackEnd. El FrontEnd nunca importa `@supabase/*`. |
 | **NUNCA generar postulaciones por IA** | El junior siempre escribe su propia carta. La IA no redacta postulaciones automáticas. |
 | **Todos los miembros commitean** | Conventional Commits: `feat:`, `fix:`, `chore:`, `docs:`. Penalización si solo una persona commitea. |
 | **Cero `console.log` en producción** | Usar `lib/logger.ts`. Prohibido código muerto, imports sin usar, TODOs sin ticket. |
-| **RLS en todas las tablas** | Responsabilidad del backend — no crear tablas sin RLS ni políticas explícitas. |
 | **Cero emojis en código o copy** | Las celebraciones se hacen con iconos lucide o SVG geométrico. |
 
 ### Definition of Done por feature
@@ -188,29 +179,26 @@ src/
       (public)/          # landing, login, onboarding
       (app)/             # app autenticada del junior
         marketplace/     # listado y detalle de proyectos
-        postulaciones/   # mis postulaciones
-        perfil/          # perfil del junior
-        notificaciones/  # centro de notificaciones
+        applications/    # mis postulaciones
       (empresa)/         # portal empresa autenticada
         dashboard/
-        proyectos/
       (admin)/           # panel admin FWD
   components/
     ui/                  # primitivos shadcn/ui
     features/            # componentes de dominio
-      marketplace/       # ProjectCard, ProjectFilters, etc.
-      applications/      # ApplicationRow, StatusPill, etc.
-      auth/              # LoginButton, etc.
+      marketplace/
+      applications/
+      auth/
     layout/              # AppHeader, AppFooter, etc.
   lib/
-    supabase/            # clientes server + browser, actions
-    ai/                  # provider.ts con Groq + fallback Gemini
+    api/                 # wrappers fetch tipados hacia el BackEnd
+    actions/             # server actions (llaman al BackEnd, nunca a Supabase)
+    validations/         # schemas Zod para forms y respuestas de API
     result.ts            # Result<T,E>, ok(), err()
-    logger.ts            # logger estructurado (nunca console.log)
   types/                 # un archivo por entidad
-  messages/
-    es.json
-    en.json
+messages/
+  es.json
+  en.json
 ```
 
 ### Convenciones de naming
@@ -223,23 +211,6 @@ src/
 
 ---
 
-## Fases del plan de trabajo
-
-| Fase | Semana | Contenido |
-|---|---|---|
-| **Fase 0** | 0 | Setup, APIs, prerequisites, tokens FWD, fuentes |
-| **Fase 1** | 1–2 | Design system: PageTitle, InsightSection, StatusPill, Buttons, layouts |
-| **Fase 2** | 2–3 | Autenticación OAuth, landing pública, onboarding Junior y Empresa |
-| **Fase 3** | 3–4 | Perfiles: Junior (tabs, stack, portafolio) y Empresa |
-| **Fase 4** | 4–6 | Agente conversacional (Groq) + matching de candidatos |
-| **Fase 5** | 5–7 | Marketplace: listado, detalle, publicar/editar proyectos |
-| **Fase 6** | 7–9 | Postulaciones, adjudicación, mis postulaciones |
-| **Fase 7** | 9–11 | Entregables, mensajería, notificaciones (Supabase Realtime) |
-| **Fase 8** | 11–13 | Reputación, panel admin, validación egresados FWD |
-| **Fase 9** | 13–15 | Calidad, accesibilidad WCAG AA, pulido visual, deploy estable |
-
----
-
 ## Convención de PRs
 
 - Rama: `feat/F2-BE01-signup`
@@ -248,24 +219,20 @@ src/
 
 ---
 
-## Servicios externos (todos gratuitos, sin tarjeta)
+## Servicios externos (FrontEnd)
 
-| Servicio | Para qué | Límites gratuitos |
+| Servicio | Para qué | Notas |
 |---|---|---|
-| Groq API | Agente conversacional + matching | 30 RPM · 6,000 TPM · 14,400 req/día. **Una key por persona en `.env.local`** |
-| Gemini 2.5 Flash | Fallback IA. **SIN activar billing nunca** | ~1,000 RPD · 15 RPM |
-| Supabase | DB Postgres + RLS + Auth + Storage | 500 MB DB · 1 GB Storage · 50K MAU |
-| Resend | Emails transaccionales | 3,000 emails/mes · 100/día. En dev: logs a consola |
 | Vercel | Hosting Next.js | Gratis para proyectos. SSL automático |
-| Sentry | Error tracking en producción | 5,000 errores/mes |
+
+> Supabase, Groq, Gemini, Resend y Sentry son responsabilidad del **BackEnd**. Ver `BackEnd/.env.example` para esas variables.
 
 ---
 
 ## Decisiones técnicas relevantes
 
-- **Groq como IA primaria (no Anthropic):** Groq tiene free tier permanente sin tarjeta. La API de Anthropic no tiene free tier permanente, por eso no se usa en este proyecto.
-- **Skills unificado:** `Habilidad` y `Tecnología` son el mismo concepto. Una sola tabla `skills` con campo `tipo` para que el matching funcione correctamente.
-- **Tabla `files` unificada:** Foto de perfil, logo, prototipo y entregable son archivos. Una sola tabla centraliza la lógica de RLS en Supabase Storage.
 - **`@theme inline` de Tailwind v4:** Los tokens FWD se mapean a variables de color de Tailwind mediante `@theme inline {}` — no usar la sintaxis de v3.
 - **Server Components por defecto:** `'use client'` solo donde haga falta interactividad real.
 - **`Result<T,E>` en todas las server actions:** Nunca lanzar excepciones sin capturar. El frontend siempre recibe un tipo discriminado.
+- **httpOnly cookie para el token:** El BackEnd emite el JWT de Supabase; el FrontEnd lo guarda en una cookie `httpOnly` (sin acceso desde JS). Las server actions leen la cookie con `cookies()` de `next/headers`.
+- **sessionStorage para onboarding:** El onboarding usa navegación por URL (un paso = una ruta). React state se resetea en cada navegación; sessionStorage persiste los datos del paso actual hasta el submit final.

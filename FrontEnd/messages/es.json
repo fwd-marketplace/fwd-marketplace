@@ -99,6 +99,9 @@
     "show_password": "Mostrar contraseña",
     "hide_password": "Ocultar contraseña",
     "submit": "Ingresar",
+    "submitting": "Ingresando...",
+    "pending_approval": "Tu cuenta está pendiente de aprobación. Te avisaremos cuando sea activada.",
+    "account_suspended": "Tu cuenta ha sido suspendida o rechazada. Contacta a soporte.",
     "terms_prefix": "Al ingresar aceptas los",
     "terms_link": "Términos de Servicio",
     "terms_connector": "y la",
@@ -113,7 +116,8 @@
       "step_counter": "Paso {current} de {total}",
       "back": "Volver",
       "next": "Continuar",
-      "finish": "Finalizar"
+      "finish": "Finalizar",
+      "finishing": "Guardando..."
     },
     "role": {
       "eyebrow": "Empieza aquí",
@@ -143,6 +147,8 @@
       "show_password": "Mostrar contraseña",
       "hide_password": "Ocultar contraseña",
       "submit": "Crear cuenta",
+      "submitting": "Creando cuenta...",
+      "passwords_mismatch": "Las contraseñas no coinciden",
       "terms_prefix": "Al registrarte aceptas los",
       "terms_link": "Términos de Servicio",
       "terms_connector": "y la",
@@ -217,11 +223,11 @@
         "title": "¿Tienes portafolio o proyectos?",
         "description": "Agrega enlaces para mostrar tu trabajo. Puedes completar esto después.",
         "github_label": "GitHub",
-        "github_placeholder": "github.com/tu-usuario",
+        "github_placeholder": "https://github.com/tu-usuario",
         "linkedin_label": "LinkedIn",
-        "linkedin_placeholder": "linkedin.com/in/tu-usuario",
+        "linkedin_placeholder": "https://linkedin.com/in/tu-usuario",
         "portfolio_label": "Portafolio",
-        "portfolio_placeholder": "tu-sitio.com"
+        "portfolio_placeholder": "https://tu-sitio.com"
       },
       "step7": {
         "eyebrow": "Opcional",
@@ -272,8 +278,8 @@
         "eyebrow": "Datos de contacto",
         "title": "Información legal y web",
         "description": "Necesitamos estos datos para verificar y completar tu perfil.",
-        "website_label": "Sitio web",
-        "website_placeholder": "https://tuempresa.com",
+        "direccion_label": "Dirección",
+        "direccion_placeholder": "Av. Principal 123, San José",
         "cedula_label": "Cédula jurídica",
         "cedula_placeholder": "3-101-XXXXXX"
       },
