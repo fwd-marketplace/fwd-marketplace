@@ -582,5 +582,96 @@
     "celeb_eyebrow": "New skill",
     "celeb_sub_prefix": "You lit a star in",
     "celeb_btn": "Keep exploring"
+  },
+  "marketplace_page": {
+    "eyebrow": "MARKETPLACE",
+    "title": "Available projects",
+    "search_label": "Search by name or technology",
+    "search_placeholder": "e.g. React, Figma, Backend...",
+    "specialty_label": "Specialty",
+    "specialty_all": "All areas",
+    "active_filters": "ACTIVE FILTERS:",
+    "clear_all": "Clear all",
+    "budget": "BUDGET",
+    "duration": "DURATION",
+    "experience": "EXPERIENCE",
+    "hourly_rate": "HOURLY RATE",
+    "view_project": "View project",
+    "filter_remote": "Remote",
+    "filter_senior": "Senior",
+    "match_suffix": "match",
+    "badges": {
+      "urgent": "URGENT",
+      "full_time": "FULL-TIME",
+      "project": "PROJECT",
+      "part_time": "PART-TIME"
+    }
+  },
+  "bienvenida": {
+    "hero": {
+      "welcome": "WELCOME TO FWD TALENT!",
+      "greeting": "Good morning",
+      "description": "Your profile is already connected with real opportunities.\nExplore projects created by companies looking for talent like yours.",
+      "btn_explore": "Explore opportunities",
+      "btn_edit": "Edit my profile",
+      "stack_center": "Your stack",
+      "stack_frontend": "Frontend",
+      "stack_backend": "Backend",
+      "stack_ux": "UX / UI",
+      "stack_mobile": "Mobile",
+      "stack_ai": "AI & Data"
+    },
+    "stats": {
+      "projects": "Compatible projects",
+      "match": "Average match",
+      "match_desc": "Excellent compatibility",
+      "companies": "New companies",
+      "companies_desc": "This week",
+      "applications": "Active applications",
+      "view_all": "View all",
+      "view_applications": "View my applications"
+    },
+    "recommended": {
+      "title": "Recommended for you",
+      "view_all": "View all projects",
+      "badges": {
+        "urgent": "URGENT",
+        "high_match": "HIGH MATCH",
+        "new": "NEW"
+      },
+      "weeks": "weeks",
+      "match": "High match"
+    },
+    "progress": {
+      "title": "Your progress at FWD",
+      "step1_title": "Profile completed",
+      "step1_desc": "Excellent! Your profile is at 100%.",
+      "step2_title": "Stack defined",
+      "step2_desc": "You defined your core technologies.",
+      "step3_title": "Availability defined",
+      "step3_desc": "Immediate availability configured.",
+      "step4_title": "First project",
+      "step4_desc": "Apply to your first opportunity.",
+      "step5_title": "First hiring",
+      "step5_desc": "Complete your first project.",
+      "card_title": "You're on an excellent path",
+      "card_desc": "Keep exploring and building your future.",
+      "btn_profile": "View my profile"
+    },
+    "companies": {
+      "title": "Interested companies",
+      "view_all": "View all",
+      "active": "ACTIVE",
+      "btn_all": "View all companies"
+    },
+    "activity": {
+      "title": "Recent activity",
+      "view_all": "View all activity"
+    },
+    "modality": {
+      "remote": "Remote",
+      "hybrid": "Hybrid",
+      "onsite": "On-site"
+    }
   }
 }
