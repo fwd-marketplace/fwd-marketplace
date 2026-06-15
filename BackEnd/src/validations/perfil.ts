@@ -1,0 +1,45 @@
+import { z } from "zod";
+
+/**
+ * Validaciones de edición de perfil. Usan los NOMBRES DE CAMPO DEL FRONTEND
+ * (ver BackEnd/docs/auth-contract.md); el service los traduce a columnas de la BD.
+ * Como es un PATCH (actualización parcial) todos los campos son opcionales, pero
+ * se exige al menos uno para no disparar un UPDATE vacío.
+ */
+
+/** URL opcional que también admite cadena vacía (el FE manda "" cuando no hay valor). */
+const optionalUrl = z.union([z.string().url(), z.literal("")]).optional();
+
+const NON_EMPTY = { message: "Enviá al menos un campo para actualizar" };
+
+/** PATCH del perfil del junior: columnas editables de `estudiante`. */
+export const PerfilEstudianteSchema = z
+  .object({
+    bio: z.string().max(500).optional(),
+    especializacion: z.enum(["frontend", "backend", "fullstack", "ia"]).optional(),
+    modalidad: z.array(z.string().min(1)).min(1).optional(),
+    disponibilidad: z.enum(["immediate", "two_weeks", "one_month", "unavailable"]).optional(),
+    link_github: optionalUrl,
+    link_linkedin: optionalUrl,
+    link_portfolio: optionalUrl,
+  })
+  .refine((value) => Object.keys(value).length > 0, NON_EMPTY);
+
+/** PATCH del perfil de empresa/emprendedor: columnas editables de `empresario`. */
+export const PerfilEmpresarioSchema = z
+  .object({
+    nombre_comercial: z.string().min(1).max(255).optional(),
+    descripcion: z.string().max(400).optional(),
+    sector: z.array(z.string().min(1)).min(1).optional(),
+    tipos_proyecto: z.array(z.string().min(1)).min(1).optional(),
+    soporte_tecnico: z.array(z.string().min(1)).min(1).optional(),
+    ruc: z.string().min(1).max(30).optional(),
+    direccion: z.string().min(1).optional(),
+    url_sitio_web: optionalUrl,
+    etapa: z.enum(["idea", "mvp", "validating", "scaling"]).optional(),
+    presupuesto: z.enum(["under_500", "range_500_1000", "range_1000_2500", "flexible"]).optional(),
+  })
+  .refine((value) => Object.keys(value).length > 0, NON_EMPTY);
+
+export type PerfilEstudianteInput = z.infer<typeof PerfilEstudianteSchema>;
+export type PerfilEmpresarioInput = z.infer<typeof PerfilEmpresarioSchema>;

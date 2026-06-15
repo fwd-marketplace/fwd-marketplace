@@ -1,6 +1,7 @@
 import { Router } from "express";
 import userRoutes from "./user.routes";
 import onboardingRoutes from "./onboarding.routes";
+import perfilRoutes from "./perfil.routes";
 import adminRoutes from "./admin.routes";
 import catalogRoutes from "./catalog.routes";
 import projectRoutes from "./proyecto.routes";
@@ -14,6 +15,7 @@ router.get("/health", (_req, res) => {
 });
 
 router.use("/users/onboarding", onboardingRoutes);
+router.use("/users/me/perfil", perfilRoutes);
 router.use("/users", userRoutes);
 router.use("/admin", adminRoutes);
 router.use("/catalogs", catalogRoutes);
