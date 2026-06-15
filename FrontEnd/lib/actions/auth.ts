@@ -1,7 +1,7 @@
 "use server";
 
 import { cookies } from "next/headers";
-import { apiFetch, apiAuth, ApiError } from "@/lib/api-client";
+import { apiFetch, apiAuth, ApiError, SESSION_COOKIE, REFRESH_COOKIE, COOKIE_OPTS } from "@/lib/api-client";
 import {
   JuniorProfileSchema,
   EmpresaProfileSchema,
@@ -9,15 +9,6 @@ import {
 } from "@/lib/validations/auth";
 import { ok, err } from "@/lib/result";
 import type { Result } from "@/lib/result";
-
-const SESSION_COOKIE = "fwd_token";
-const COOKIE_OPTS = {
-  httpOnly: true,
-  secure: process.env.NODE_ENV === "production",
-  sameSite: "lax" as const,
-  path: "/",
-  maxAge: 60 * 60 * 24 * 7,
-};
 
 type ProfileData = {
   estado_cuenta: string;
@@ -38,12 +29,15 @@ export async function registerUser(input: {
   try {
     const data = await apiFetch<{
       user: unknown;
-      session: { access_token: string } | null;
+      session: { access_token: string; refresh_token: string } | null;
     }>("/users/register", { method: "POST", body: JSON.stringify(input) });
 
     if (data.session?.access_token) {
       const jar = await cookies();
       jar.set(SESSION_COOKIE, data.session.access_token, COOKIE_OPTS);
+      if (data.session.refresh_token) {
+        jar.set(REFRESH_COOKIE, data.session.refresh_token, COOKIE_OPTS);
+      }
     }
     return ok(undefined);
   } catch (e) {
@@ -58,14 +52,18 @@ export async function loginUser(input: {
   try {
     const loginData = await apiFetch<{
       user: unknown;
-      session: { access_token: string };
+      session: { access_token: string; refresh_token: string };
     }>("/users/login", { method: "POST", body: JSON.stringify(input) });
 
     const token = loginData.session?.access_token;
+    const refreshToken = loginData.session?.refresh_token;
     if (!token) return err("No se recibió sesión del servidor");
 
     const jar = await cookies();
     jar.set(SESSION_COOKIE, token, COOKIE_OPTS);
+    if (refreshToken) {
+      jar.set(REFRESH_COOKIE, refreshToken, COOKIE_OPTS);
+    }
 
     const meData = await apiFetch<{ user: unknown; profile: ProfileData | null }>(
       "/users/me",
@@ -87,7 +85,21 @@ export async function loginUser(input: {
 
 export async function logoutUser(): Promise<void> {
   const jar = await cookies();
+  const refreshToken = jar.get(REFRESH_COOKIE)?.value;
+  
+  if (refreshToken) {
+    try {
+      await apiFetch("/users/logout", {
+        method: "POST",
+        body: JSON.stringify({ refresh_token: refreshToken }),
+      });
+    } catch {
+      // Ignoramos el error porque el logout es idempotente
+    }
+  }
+
   jar.delete(SESSION_COOKIE);
+  jar.delete(REFRESH_COOKIE);
 }
 
 // ── Onboarding ────────────────────────────────────────────────────────────────
