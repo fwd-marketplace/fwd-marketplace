@@ -1,7 +1,7 @@
 import { useTranslations } from 'next-intl';
 import Link from 'next/link';
 import Image from 'next/image';
-import { ArrowRight, Clock, MapPin, DollarSign } from 'lucide-react';
+import { ArrowRight } from 'lucide-react';
 import dashboardLogo from '@/Img/Comunidad_icon-01_gneaaf (1).webp';
 import { FwdGeoBackdrop } from '@/components/ui/fwd-geo-backdrop';
 
@@ -50,7 +50,7 @@ export default function HeroSection({ locale }: { locale: string }) {
             src={dashboardLogo} 
             alt="Comunidad Logo" 
             quality={100}
-            className="w-full max-w-[450px] md:max-w-[500px] h-auto object-contain drop-shadow-2xl hover:scale-[1.03] transition-transform duration-300" 
+            className="w-full max-w-[450px] md:max-w-[500px] h-auto object-contain drop-shadow-2xl hover:scale-[1.03] transition-transform duration-[var(--duration-slow)]" 
             priority
           />
         </div>

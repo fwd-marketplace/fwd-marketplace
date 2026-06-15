@@ -99,6 +99,9 @@
     "show_password": "Show password",
     "hide_password": "Hide password",
     "submit": "Sign in",
+    "submitting": "Signing in...",
+    "pending_approval": "Your account is pending approval. We'll notify you when it's activated.",
+    "account_suspended": "Your account has been suspended or rejected. Please contact support.",
     "terms_prefix": "By signing in you agree to the",
     "terms_link": "Terms of Service",
     "terms_connector": "and the",
@@ -113,7 +116,8 @@
       "step_counter": "Step {current} of {total}",
       "back": "Back",
       "next": "Continue",
-      "finish": "Finish"
+      "finish": "Finish",
+      "finishing": "Saving..."
     },
     "role": {
       "eyebrow": "Start here",
@@ -143,6 +147,8 @@
       "show_password": "Show password",
       "hide_password": "Hide password",
       "submit": "Create account",
+      "submitting": "Creating account...",
+      "passwords_mismatch": "Passwords do not match",
       "terms_prefix": "By signing up you agree to the",
       "terms_link": "Terms of Service",
       "terms_connector": "and the",
@@ -151,17 +157,23 @@
     },
     "junior": {
       "done": {
-        "eyebrow": "All set!",
-        "title": "Your junior profile is complete",
-        "description": "Check the marketplace and apply for your first real project.",
-        "cta": "View projects"
+        "eyebrow": "Request received",
+        "title": "Your account is under review",
+        "description": "The FWD team will review your profile and notify you by email once your account is approved. This usually takes 24 to 48 hours.",
+        "cta": "Back to home"
       },
       "step1": {
         "eyebrow": "First things first",
         "title": "What is your name?",
         "description": "This is how companies will see you on the marketplace.",
-        "label": "Full name",
-        "placeholder": "e.g. María García"
+        "label_nombre": "First name",
+        "placeholder_nombre": "e.g. María",
+        "label_apellido1": "First surname",
+        "placeholder_apellido1": "e.g. García",
+        "label_apellido2": "Second surname",
+        "placeholder_apellido2": "e.g. López",
+        "label_cedula": "ID number",
+        "placeholder_cedula": "e.g. 1-1234-5678"
       },
       "step2": {
         "eyebrow": "Your specialization",
@@ -211,11 +223,11 @@
         "title": "Do you have a portfolio or projects?",
         "description": "Add links to show your work. You can complete this later.",
         "github_label": "GitHub",
-        "github_placeholder": "github.com/your-username",
+        "github_placeholder": "https://github.com/your-username",
         "linkedin_label": "LinkedIn",
-        "linkedin_placeholder": "linkedin.com/in/your-username",
+        "linkedin_placeholder": "https://linkedin.com/in/your-username",
         "portfolio_label": "Portfolio",
-        "portfolio_placeholder": "your-site.com"
+        "portfolio_placeholder": "https://your-site.com"
       },
       "step7": {
         "eyebrow": "Optional",
@@ -227,10 +239,10 @@
     },
     "empresa": {
       "done": {
-        "eyebrow": "All set!",
-        "title": "Your company profile is complete",
-        "description": "You can now post projects and start connecting with FWD junior talents.",
-        "cta": "Go to dashboard"
+        "eyebrow": "Request received",
+        "title": "Your account is under review",
+        "description": "The FWD team will review your company and notify you by email once your account is approved. This usually takes 24 to 48 hours.",
+        "cta": "Back to home"
       },
       "step1": {
         "eyebrow": "Your company",
@@ -266,8 +278,8 @@
         "eyebrow": "Contact details",
         "title": "Legal and web information",
         "description": "We need these details to verify and complete your profile.",
-        "website_label": "Website",
-        "website_placeholder": "https://yourcompany.com",
+        "direccion_label": "Address",
+        "direccion_placeholder": "123 Main Street, San José",
         "cedula_label": "Legal ID",
         "cedula_placeholder": "3-101-XXXXXX"
       },
@@ -299,10 +311,10 @@
     },
     "emprendedor": {
       "done": {
-        "eyebrow": "Ready to connect!",
-        "title": "Your entrepreneur profile is complete",
-        "description": "You can now explore the marketplace and connect with the best FWD junior talents.",
-        "cta": "Explore marketplace"
+        "eyebrow": "Request received",
+        "title": "Your account is under review",
+        "description": "The FWD team will review your profile and notify you by email once your account is approved. This usually takes 24 to 48 hours.",
+        "cta": "Back to home"
       },
       "step1": {
         "eyebrow": "Your project",
@@ -360,6 +372,7 @@
   },
   "empresa_dashboard": {
     "title": "Company dashboard",
+    "company_desc": "We connect emerging junior talent in Costa Rica with real tech projects. Forward is a foundation dedicated to boosting professional development in technology.",
     "stats": {
       "active_projects": "Active projects",
       "applications": "Applications",
@@ -421,6 +434,55 @@
       "accepted": "{name} has been accepted to the project.",
       "rejected": "{name} has been notified they were not selected."
     }
+  },
+  "mis_proyectos": {
+    "published_on": "Published on {date}",
+    "modality_label": "Modality",
+    "level_label": "Level",
+    "budget_label": "Budget",
+    "edit_btn": "Edit Project",
+    "pause_btn": "Pause Project",
+    "reactivate_btn": "Reactivate Project",
+    "status_active": "ACTIVE",
+    "status_paused": "PAUSED",
+    "tabs": {
+      "project": "Project",
+      "mockups": "Mockups",
+      "applications": "Applications"
+    },
+    "objective_title": "Project Objective",
+    "scope_title": "Scope and Requirements",
+    "deliverables_title": "Expected Deliverables",
+    "stack_title": "TECH STACK",
+    "metrics_title": "PROGRESS METRICS",
+    "metrics_talent_match": "Talent Match",
+    "metrics_active_applicants": "Active Applicants",
+    "mockups_empty": "No mockups uploaded for this project yet.",
+    "applications_empty": "No applications registered yet.",
+    "edit_modal": {
+      "title": "Edit project",
+      "name_label": "Project name",
+      "modality_label": "Modality",
+      "budget_label": "Budget",
+      "cancel": "Cancel",
+      "save": "Save changes",
+      "success": "Project updated successfully."
+    },
+    "notifications": {
+      "paused": "Project has been paused.",
+      "reactivated": "Project has been reactivated."
+    }
+  },
+  "app_header": {
+    "notifications": "Notifications",
+    "user_menu": "User menu"
+  },
+  "empresa_subnav": {
+    "back": "Back",
+    "mis_proyectos": "My projects",
+    "matches": "Matches",
+    "postulaciones": "Applications",
+    "mi_empresa": "My company"
   },
   "perfil_junior": {
     "tabs": {
@@ -537,6 +599,40 @@
       "support": "Support"
     }
   },
+  "viaje": {
+    "title": "Your sky",
+    "eyebrow": "Learning journey",
+    "back_label": "Back to profile",
+    "sky_lit": "{pct}% of the sky lit",
+    "xp_label": "XP",
+    "streak_label": "days",
+    "goal_next_eyebrow": "Your next star",
+    "goal_see_how": "See how",
+    "goal_complete_eyebrow": "Sky complete",
+    "goal_complete_title": "You lit every star.",
+    "legend_done": "Lit",
+    "legend_available": "Available",
+    "legend_locked": "Locked",
+    "zoom_in": "Zoom in",
+    "zoom_out": "Zoom out",
+    "zoom_fit": "Fit all",
+    "panel_mastery": "Mastery",
+    "panel_state_done": "Lit",
+    "panel_state_available": "Available",
+    "panel_state_locked": "Locked",
+    "panel_unlocked_eyebrow": "Lit",
+    "panel_unlocked_prefix": "You lit it on",
+    "panel_unlocked_joining": "by completing",
+    "panel_available_eyebrow": "How to light it",
+    "panel_locked_eyebrow": "How to unlock it",
+    "panel_locked_via_prefix": "Waiting for you in",
+    "panel_btn_light": "Light star",
+    "panel_btn_later": "Later",
+    "panel_close": "Close",
+    "celeb_eyebrow": "New skill",
+    "celeb_sub_prefix": "You lit a star in",
+    "celeb_btn": "Keep exploring"
+  },
   "marketplace_page": {
     "eyebrow": "MARKETPLACE",
     "title": "Available projects",
@@ -551,6 +647,9 @@
     "experience": "EXPERIENCE",
     "hourly_rate": "HOURLY RATE",
     "view_project": "View project",
+    "filter_remote": "Remote",
+    "filter_senior": "Senior",
+    "match_suffix": "match",
     "badges": {
       "urgent": "URGENT",
       "full_time": "FULL-TIME",
@@ -618,6 +717,17 @@
     "activity": {
       "title": "Recent activity",
       "view_all": "View all activity"
+    },
+    "modality": {
+      "remote": "Remote",
+      "hybrid": "Hybrid",
+      "onsite": "On-site"
     }
+  },
+  "done_page": {
+    "eyebrow": "Request received",
+    "title": "Your account is under review",
+    "description": "The FWD team will review your account and notify you by email once it is approved. This usually takes 24 to 48 hours.",
+    "cta": "Back to home"
   }
 }

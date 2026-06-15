@@ -1,7 +1,7 @@
 'use client';
 
 import React from 'react';
-import { useTranslations } from 'next-intl';
+import { useTranslations, useLocale } from 'next-intl';
 import Link from 'next/link';
 import {
   ArrowRight,
@@ -27,16 +27,16 @@ import {
 import { FwdGeoBackdrop } from '@/components/ui/fwd-geo-backdrop';
 import { Button } from '@/components/ui/button';
 
-// Mock Data
+// TODO: replace with real API data once backend integration is complete
 const recommendedProjects = [
   {
     id: 1,
     title: 'Rediseño App Fintech',
     company: 'FinPay',
-    badge: 'urgent',
+    badge: 'urgent' as const,
     match: 93,
     duration: 6,
-    modality: 'Remoto',
+    modality: 'remote' as const,
     tags: ['React', 'TypeScript', 'Tailwind'],
     icon: 'line-chart'
   },
@@ -44,10 +44,10 @@ const recommendedProjects = [
     id: 2,
     title: 'Plataforma Educativa',
     company: 'EduConnect',
-    badge: 'high_match',
+    badge: 'high_match' as const,
     match: 91,
     duration: 8,
-    modality: 'Remoto',
+    modality: 'remote' as const,
     tags: ['Next.js', 'Supabase', 'PostgreSQL'],
     icon: 'graduation-cap'
   },
@@ -55,10 +55,10 @@ const recommendedProjects = [
     id: 3,
     title: 'Dashboard Analytics',
     company: 'DataNova',
-    badge: 'new',
+    badge: 'new' as const,
     match: 85,
     duration: 4,
-    modality: 'Híbrido',
+    modality: 'hybrid' as const,
     tags: ['React', 'Node.js', 'MongoDB'],
     icon: 'bar-chart'
   }
@@ -102,9 +102,15 @@ const recentActivity = [
 
 export function BienvenidaDashboard() {
   const t = useTranslations('bienvenida');
+  const locale = useLocale();
+  const modalityLabel: Record<string, string> = {
+    remote: t('modality.remote'),
+    hybrid: t('modality.hybrid'),
+    onsite: t('modality.onsite'),
+  };
 
   return (
-    <div className="min-h-screen bg-canvas font-sans pb-20">
+    <div className="min-h-screen bg-canvas font-body pb-20">
       {/* Hero Section */}
       <section className="relative overflow-hidden bg-secondary px-6 py-16 md:px-10 lg:px-16 text-white lg:py-24">
         <FwdGeoBackdrop />
@@ -117,7 +123,7 @@ export function BienvenidaDashboard() {
                 {t('hero.welcome')}
               </p>
               <h1 className="font-heading text-5xl md:text-6xl font-bold tracking-tight mb-6">
-                {t('hero.greeting')}, <span className="text-highlight">Ari</span><span className="text-primary">.</span>
+                {t('hero.greeting')}<span className="text-primary">.</span>
               </h1>
               <p className="text-lg md:text-xl text-white/80 whitespace-pre-line max-w-xl">
                 {t('hero.description')}
@@ -126,14 +132,14 @@ export function BienvenidaDashboard() {
 
             <div className="flex flex-col sm:flex-row gap-4">
               <Link
-                href="/marketplace"
+                href={`/${locale}/marketplace`}
                 className="inline-flex h-12 items-center justify-center rounded-full bg-highlight px-8 font-semibold text-secondary transition-opacity hover:opacity-90"
               >
                 {t('hero.btn_explore')}
                 <ArrowRight className="ml-2 h-5 w-5" />
               </Link>
               <Link
-                href="/perfil"
+                href={`/${locale}/perfil`}
                 className="inline-flex h-12 items-center justify-center rounded-full border border-white/30 px-8 font-semibold text-white transition-colors hover:bg-white/10"
               >
                 {t('hero.btn_edit')}
@@ -352,7 +358,7 @@ export function BienvenidaDashboard() {
                   <div className="flex items-center gap-3 text-xs text-ink-muted">
                     <span>{project.duration} {t('recommended.weeks')}</span>
                     <span className="h-1 w-1 rounded-full bg-ink-subtle"></span>
-                    <span>{project.modality}</span>
+                    <span>{modalityLabel[project.modality]}</span>
                   </div>
                   <div className="flex flex-col items-center">
                     <div className="relative flex h-12 w-12 items-center justify-center rounded-full border-4 border-accent text-accent font-bold text-sm">
@@ -408,7 +414,7 @@ export function BienvenidaDashboard() {
                   {t('progress.card_desc')}
                 </p>
                 <Link
-                  href="/perfil"
+                  href={`/${locale}/perfil`}
                   className="inline-flex h-9 w-full items-center justify-center rounded-full border-2 border-secondary font-semibold text-secondary hover:bg-secondary/5 transition-colors"
                 >
                   {t('progress.btn_profile')}

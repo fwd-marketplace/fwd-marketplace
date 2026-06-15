@@ -106,10 +106,10 @@ export default function MarketPlace() {
                         {t('active_filters')}
                     </span>
                     <div className="flex items-center gap-1 bg-surface border border-border rounded-md px-2.5 py-1 text-xs text-ink-muted hover:bg-surface-sunken transition-colors cursor-pointer">
-                        Remoto <X className="w-3 h-3 ml-1" />
+                        {t('filter_remote')} <X className="w-3 h-3 ml-1" />
                     </div>
                     <div className="flex items-center gap-1 bg-surface border border-border rounded-md px-2.5 py-1 text-xs text-ink-muted hover:bg-surface-sunken transition-colors cursor-pointer">
-                        Senior <X className="w-3 h-3 ml-1" />
+                        {t('filter_senior')} <X className="w-3 h-3 ml-1" />
                     </div>
                     <button className="text-xs text-primary font-semibold hover:underline ml-2">
                         {t('clear_all')}
@@ -128,7 +128,7 @@ export default function MarketPlace() {
                                 </div>
                                 <div className={`shrink-0 flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-sm font-bold tracking-wide ${getMatchColor(project.match)}`}>
                                     <Sparkles className="w-4 h-4" />
-                                    {project.match}% match
+                                    {project.match}% {t('match_suffix')}
                                 </div>
                             </div>
 

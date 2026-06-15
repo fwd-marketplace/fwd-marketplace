@@ -99,6 +99,9 @@
     "show_password": "Mostrar contraseña",
     "hide_password": "Ocultar contraseña",
     "submit": "Ingresar",
+    "submitting": "Ingresando...",
+    "pending_approval": "Tu cuenta está pendiente de aprobación. Te avisaremos cuando sea activada.",
+    "account_suspended": "Tu cuenta ha sido suspendida o rechazada. Contacta a soporte.",
     "terms_prefix": "Al ingresar aceptas los",
     "terms_link": "Términos de Servicio",
     "terms_connector": "y la",
@@ -113,7 +116,8 @@
       "step_counter": "Paso {current} de {total}",
       "back": "Volver",
       "next": "Continuar",
-      "finish": "Finalizar"
+      "finish": "Finalizar",
+      "finishing": "Guardando..."
     },
     "role": {
       "eyebrow": "Empieza aquí",
@@ -143,6 +147,8 @@
       "show_password": "Mostrar contraseña",
       "hide_password": "Ocultar contraseña",
       "submit": "Crear cuenta",
+      "submitting": "Creando cuenta...",
+      "passwords_mismatch": "Las contraseñas no coinciden",
       "terms_prefix": "Al registrarte aceptas los",
       "terms_link": "Términos de Servicio",
       "terms_connector": "y la",
@@ -151,17 +157,23 @@
     },
     "junior": {
       "done": {
-        "eyebrow": "¡Todo listo!",
-        "title": "Tu perfil junior está completo",
-        "description": "Revisa el marketplace y postúlate a tu primer proyecto real.",
-        "cta": "Ver proyectos"
+        "eyebrow": "Solicitud recibida",
+        "title": "Tu cuenta está en revisión",
+        "description": "El equipo de FWD revisará tu perfil y te notificará por correo cuando tu cuenta esté aprobada. Esto suele tardar entre 24 y 48 horas.",
+        "cta": "Volver al inicio"
       },
       "step1": {
         "eyebrow": "Primero lo primero",
         "title": "¿Cuál es tu nombre?",
         "description": "Así te mostraremos a las empresas del marketplace.",
-        "label": "Nombre completo",
-        "placeholder": "Ej. María García"
+        "label_nombre": "Nombre",
+        "placeholder_nombre": "Ej. María",
+        "label_apellido1": "Primer apellido",
+        "placeholder_apellido1": "Ej. García",
+        "label_apellido2": "Segundo apellido",
+        "placeholder_apellido2": "Ej. López",
+        "label_cedula": "Número de cédula",
+        "placeholder_cedula": "Ej. 1-1234-5678"
       },
       "step2": {
         "eyebrow": "Tu especialización",
@@ -211,11 +223,11 @@
         "title": "¿Tienes portafolio o proyectos?",
         "description": "Agrega enlaces para mostrar tu trabajo. Puedes completar esto después.",
         "github_label": "GitHub",
-        "github_placeholder": "github.com/tu-usuario",
+        "github_placeholder": "https://github.com/tu-usuario",
         "linkedin_label": "LinkedIn",
-        "linkedin_placeholder": "linkedin.com/in/tu-usuario",
+        "linkedin_placeholder": "https://linkedin.com/in/tu-usuario",
         "portfolio_label": "Portafolio",
-        "portfolio_placeholder": "tu-sitio.com"
+        "portfolio_placeholder": "https://tu-sitio.com"
       },
       "step7": {
         "eyebrow": "Opcional",
@@ -227,10 +239,10 @@
     },
     "empresa": {
       "done": {
-        "eyebrow": "¡Todo listo!",
-        "title": "Tu perfil de empresa está completo",
-        "description": "Ya puedes publicar proyectos y empezar a conectar con talentos juniors FWD.",
-        "cta": "Ir al dashboard"
+        "eyebrow": "Solicitud recibida",
+        "title": "Tu cuenta está en revisión",
+        "description": "El equipo de FWD revisará tu empresa y te notificará por correo cuando tu cuenta esté aprobada. Esto suele tardar entre 24 y 48 horas.",
+        "cta": "Volver al inicio"
       },
       "step1": {
         "eyebrow": "Tu empresa",
@@ -266,8 +278,8 @@
         "eyebrow": "Datos de contacto",
         "title": "Información legal y web",
         "description": "Necesitamos estos datos para verificar y completar tu perfil.",
-        "website_label": "Sitio web",
-        "website_placeholder": "https://tuempresa.com",
+        "direccion_label": "Dirección",
+        "direccion_placeholder": "Av. Principal 123, San José",
         "cedula_label": "Cédula jurídica",
         "cedula_placeholder": "3-101-XXXXXX"
       },
@@ -299,10 +311,10 @@
     },
     "emprendedor": {
       "done": {
-        "eyebrow": "¡Listo para conectar!",
-        "title": "Tu perfil de emprendedor está completo",
-        "description": "Ahora podés explorar el marketplace y conectar con los mejores talentos juniors de FWD.",
-        "cta": "Explorar marketplace"
+        "eyebrow": "Solicitud recibida",
+        "title": "Tu cuenta está en revisión",
+        "description": "El equipo de FWD revisará tu perfil y te notificará por correo cuando tu cuenta esté aprobada. Esto suele tardar entre 24 y 48 horas.",
+        "cta": "Volver al inicio"
       },
       "step1": {
         "eyebrow": "Tu proyecto",
@@ -359,7 +371,14 @@
     }
   },
   "empresa_dashboard": {
-    "title": "Panel de empresa",
+    "title": "GLOBAL TECH SOLUTIONS",
+    "company_desc": "Líder global en soluciones tecnológicas para la industria 4.0, enfocados en optimizar procesos productivos mediante talento especializado.",
+    "label_empresa": "Empresa",
+    "tag_socio": "Socio Industrial",
+    "tag_location": "Costa Rica",
+    "tag_size": "1-10 empleados",
+    "edit_profile_btn": "Editar perfil",
+    "view_projects_btn": "Ver proyectos",
     "stats": {
       "active_projects": "Proyectos activos",
       "applications": "Postulaciones",
@@ -421,6 +440,55 @@
       "accepted": "{name} ha sido aceptado al proyecto.",
       "rejected": "Se ha notificado a {name} que no fue seleccionado."
     }
+  },
+  "mis_proyectos": {
+    "published_on": "Publicado el {date}",
+    "modality_label": "Modalidad",
+    "level_label": "Nivel",
+    "budget_label": "Presupuesto",
+    "edit_btn": "Editar Proyecto",
+    "pause_btn": "Pausar Proyecto",
+    "reactivate_btn": "Reactivar Proyecto",
+    "status_active": "ACTIVO",
+    "status_paused": "PAUSADO",
+    "tabs": {
+      "project": "Proyecto",
+      "mockups": "Maquetas",
+      "applications": "Postulaciones"
+    },
+    "objective_title": "Objetivo del Proyecto",
+    "scope_title": "Alcance y Requerimientos",
+    "deliverables_title": "Entregables Esperados",
+    "stack_title": "STACK TECNOLÓGICO",
+    "metrics_title": "MÉTRICAS DE PROGRESO",
+    "metrics_talent_match": "Match de Talento",
+    "metrics_active_applicants": "Postulantes Activos",
+    "mockups_empty": "No hay maquetas cargadas para este proyecto.",
+    "applications_empty": "No hay postulaciones registradas aún.",
+    "edit_modal": {
+      "title": "Editar proyecto",
+      "name_label": "Nombre del proyecto",
+      "modality_label": "Modalidad",
+      "budget_label": "Presupuesto",
+      "cancel": "Cancelar",
+      "save": "Guardar cambios",
+      "success": "Proyecto actualizado exitosamente."
+    },
+    "notifications": {
+      "paused": "El proyecto ha sido pausado.",
+      "reactivated": "El proyecto ha sido reactivado."
+    }
+  },
+  "app_header": {
+    "notifications": "Notificaciones",
+    "user_menu": "Menú de usuario"
+  },
+  "empresa_subnav": {
+    "back": "Volver",
+    "mis_proyectos": "Mis proyectos",
+    "matches": "Matches",
+    "postulaciones": "Postulaciones",
+    "mi_empresa": "Mi empresa"
   },
   "perfil_junior": {
     "tabs": {
@@ -537,7 +605,41 @@
       "support": "Soporte"
     }
   },
-  "marketplace_page": {
+  "viaje": {
+    "title": "Tu cielo",
+    "eyebrow": "Viaje de aprendizaje",
+    "back_label": "Volver al perfil",
+    "sky_lit": "{pct}% del cielo iluminado",
+    "xp_label": "XP",
+    "streak_label": "días",
+    "goal_next_eyebrow": "Tu próxima estrella",
+    "goal_see_how": "Ver cómo",
+    "goal_complete_eyebrow": "Cielo completo",
+    "goal_complete_title": "Encendiste todas las estrellas.",
+    "legend_done": "Encendida",
+    "legend_available": "Disponible",
+    "legend_locked": "Bloqueada",
+    "zoom_in": "Acercar",
+    "zoom_out": "Alejar",
+    "zoom_fit": "Ver todo el cielo",
+    "panel_mastery": "Maestría",
+    "panel_state_done": "Encendida",
+    "panel_state_available": "Disponible",
+    "panel_state_locked": "Bloqueada",
+    "panel_unlocked_eyebrow": "Encendida",
+    "panel_unlocked_prefix": "La encendiste el",
+    "panel_unlocked_joining": "completando",
+    "panel_available_eyebrow": "Cómo encenderla",
+    "panel_locked_eyebrow": "Cómo desbloquearla",
+    "panel_locked_via_prefix": "Te espera en",
+    "panel_btn_light": "Encender estrella",
+    "panel_btn_later": "Más tarde",
+    "panel_close": "Cerrar",
+    "celeb_eyebrow": "Nueva habilidad",
+    "celeb_sub_prefix": "Encendiste una estrella en",
+    "celeb_btn": "Seguí explorando"
+  },
+    "marketplace_page": {
     "eyebrow": "MARKETPLACE",
     "title": "Proyectos disponibles",
     "search_label": "Buscar por nombre o tecnología",
@@ -551,6 +653,9 @@
     "experience": "EXPERIENCIA",
     "hourly_rate": "TARIFA HORA",
     "view_project": "Ver proyecto",
+    "filter_remote": "Remoto",
+    "filter_senior": "Senior",
+    "match_suffix": "match",
     "badges": {
       "urgent": "URGENTE",
       "full_time": "FULL-TIME",
@@ -618,6 +723,41 @@
     "activity": {
       "title": "Actividad reciente",
       "view_all": "Ver toda la actividad"
+    },
+    "modality": {
+      "remote": "Remoto",
+      "hybrid": "Híbrido",
+      "onsite": "Presencial"
     }
+  },
+  "matches_empresa": {
+    "viewing_matches": "Viendo matches para:",
+    "filters_title": "Filtros",
+    "clear_btn": "Limpiar",
+    "specialty_label": "Especialidad",
+    "match_level_label": "Nivel de match",
+    "availability_label": "Disponibilidad",
+    "availability_immediate": "Inmediata",
+    "availability_agreed": "A convenir",
+    "modality_label": "Modalidad",
+    "modality_onsite": "Presencial",
+    "modality_remote": "Remoto",
+    "modality_hybrid": "Híbrido",
+    "showing_count": "Mostrando {count} candidatos automáticos para este perfil",
+    "sort_best": "Mayor match",
+    "invite_btn": "Invitar a postularse",
+    "invited_btn": "Invitado",
+    "view_profile": "Ver perfil",
+    "compare": "Comparar",
+    "load_more": "Cargar más matches",
+    "toast_invited": "Se ha invitado a {name} a postularse al proyecto.",
+    "toast_cleared": "Se han limpiado los filtros de búsqueda.",
+    "toast_profile_edit": "Funcionalidad de edición de perfil en desarrollo (Fase 3)."
+  },
+  "done_page": {
+    "eyebrow": "Solicitud recibida",
+    "title": "Tu cuenta está en revisión",
+    "description": "El equipo de FWD revisará tu cuenta y te notificará por correo cuando esté aprobada. Esto suele tardar entre 24 y 48 horas.",
+    "cta": "Volver al inicio"
   }
 }
