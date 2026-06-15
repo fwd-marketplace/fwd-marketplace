@@ -87,6 +87,47 @@ export async function listMyOfertas(accessToken: string, userId: string) {
   return data;
 }
 
+/**
+ * Devuelve una postulación con los datos de CONTACTO del junior (correo y los
+ * links de su perfil de estudiante) para que la empresa pueda contactarlo tras
+ * adjudicar. Solo el dueño del proyecto al que pertenece la oferta puede verla;
+ * el RLS de la migración 0011 (`users_empresa_ve_postulantes`,
+ * `estudiante_empresa_ve_postulantes`) habilita el embed del postulante.
+ */
+export async function getOfertaContacto(accessToken: string, userId: string, ofertaId: string) {
+  const client = supabaseForToken(accessToken);
+
+  // 1. La oferta debe existir y pertenecer a un proyecto del usuario.
+  const { data: oferta, error: ofertaError } = await client
+    .from("oferta")
+    .select("id, id_proyecto")
+    .eq("id", ofertaId)
+    .maybeSingle();
+  if (ofertaError) throw new ApiError(500, ofertaError.message);
+  if (!oferta) throw new ApiError(404, "Postulación no encontrada");
+
+  const { data: proyecto, error: projError } = await client
+    .from("proyecto")
+    .select("empresa:empresario(id_usuario)")
+    .eq("id", oferta.id_proyecto)
+    .maybeSingle();
+  if (projError) throw new ApiError(500, projError.message);
+  if (proyecto?.empresa?.id_usuario !== userId) {
+    throw new ApiError(403, "No podés ver esta postulación");
+  }
+
+  // 2. La oferta con el contacto del junior (users + perfil estudiante).
+  const { data, error } = await client
+    .from("oferta")
+    .select(
+      "id, propuesta, prototipo_url, fecha_envio, estado:estado_oferta(nombre), proyecto:proyecto(id, titulo), junior:users(id, nombre, apellido1, apellido2, correo, estudiante:estudiante(url_github, url_linkedin, url_portfolio))",
+    )
+    .eq("id", ofertaId)
+    .single();
+  if (error) throw new ApiError(500, error.message);
+  return data;
+}
+
 /** Lista las postulaciones recibidas en un proyecto. Solo el dueño del proyecto. */
 export async function listProjectOfertas(accessToken: string, userId: string, projectId: string) {
   const client = supabaseForToken(accessToken);
