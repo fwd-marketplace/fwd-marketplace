@@ -6,6 +6,7 @@ import {
   createOferta,
   listMyOfertas,
   listProjectOfertas,
+  getOfertaContacto,
   decideOferta,
 } from "../services/oferta.service";
 
@@ -52,6 +53,14 @@ export async function listMine(req: Request, res: Response) {
   const { token, userId } = readAuth(req);
   const ofertas = await listMyOfertas(token, userId);
   res.status(200).json({ ofertas });
+}
+
+/** GET /api/ofertas/:id (empresa dueña ve la postulación con el contacto del junior) */
+export async function getOne(req: Request, res: Response) {
+  const { token, userId } = readAuth(req);
+  const ofertaId = readUuidParam(req.params.id, "de la postulación");
+  const oferta = await getOfertaContacto(token, userId, ofertaId);
+  res.status(200).json({ oferta });
 }
 
 /** PATCH /api/ofertas/:id (empresa acepta/rechaza) */
