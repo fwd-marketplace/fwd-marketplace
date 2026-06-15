@@ -1,6 +1,6 @@
 # Contrato de API — Autenticación, Onboarding y Aprobación
 
-> **Última actualización:** 2026-06-15 · Fase 1 (auth + onboarding + aprobación/rechazo/suspensión) + sesión (refresh / logout).
+> **Última actualización:** 2026-06-15 · Fase 1 (auth + onboarding + edición de perfil + aprobación/rechazo/suspensión) + sesión (refresh / logout).
 > Este archivo es la **fuente de verdad** del contrato. Si te pasan una versión nueva,
 > **reemplazá el archivo completo** — no fusiones a mano (evita arrastrar frases viejas).
 
@@ -140,6 +140,35 @@ Crea `users` (`pendiente`) + `empresario` (`tipo='emprendedor'`).
 }
 ```
 → `201 { "role": "company", "estado_cuenta": "pendiente" }`
+
+### PATCH /api/users/me/perfil  (Bearer)
+El usuario edita su **propio** perfil: el junior su fila `estudiante`, la empresa o
+emprendedor su fila `empresario`. El BackEnd elige la tabla según el rol del usuario
+(no hace falta mandarlo). Es una **actualización parcial**: mandá solo los campos a
+cambiar, pero **al menos uno** (body vacío → `400`). Los enums son los mismos del
+onboarding (valor fuera de lista → `400`).
+
+Campos aceptados (todos opcionales, nombres del FE):
+```
+junior (estudiante):   bio, especializacion, modalidad[], disponibilidad,
+                       link_github, link_linkedin, link_portfolio
+empresa/emprendedor:   nombre_comercial, descripcion, sector[], tipos_proyecto[],
+(empresario)           soporte_tecnico[], ruc, direccion, url_sitio_web,
+                       etapa, presupuesto
+```
+Body de ejemplo (junior):
+```json
+{ "bio": "Actualicé mi bio", "link_github": "https://github.com/ana", "modalidad": ["remote"] }
+```
+→ `200 { "perfil": { ...la fila actualizada (columnas de BD)... } }`
+Los arrays se devuelven como **JSON string** (igual que en las lecturas: hay que
+`JSON.parse()`). Errores: `400` body inválido/vacío; `403` sin onboarding o rol sin
+perfil editable (ej. admin); `404` si no existe la fila de perfil.
+
+Notas de alcance: este endpoint **no** edita identidad (`nombre`, `apellido`, `cedula`,
+`correo`), ni `estado_cuenta`/`estado_verificacion`, ni el `tech_stack` (skills). El
+campo `nombre_comercial` actualiza el nombre visible de la empresa en el marketplace
+(no toca `users.nombre`).
 
 ### GET /api/admin/users/pending  (Bearer admin)
 → `200 { users: [...] }` — cuentas en `pendiente`.
