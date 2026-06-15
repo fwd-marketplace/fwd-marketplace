@@ -70,7 +70,7 @@ export function LoginForm() {
       if (estado_cuenta === "no_profile") {
         router.push(`/${locale}/register/role`);
       } else if (estado_cuenta === "pendiente") {
-        setPendingMessage(t("pending_approval"));
+        router.push(`/${locale}/done`);
       } else if (estado_cuenta === "activa") {
         if (role === "admin") {
           router.push(`/${locale}/admin`);

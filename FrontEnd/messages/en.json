@@ -801,5 +801,11 @@
     "toast_full_profile": "Loading full profile for {name}...",
     "engine_insight": "This candidate highly matches your technical and cultural requirements.",
     "engine_signature": "FWD Matching Engine"
+  },
+  "done_page": {
+    "eyebrow": "Request received",
+    "title": "Your account is under review",
+    "description": "The FWD team will review your account and notify you by email once it is approved. This usually takes 24 to 48 hours.",
+    "cta": "Back to home"
   }
 }

@@ -801,5 +801,11 @@
     "toast_full_profile": "Cargando perfil completo de {name}...",
     "engine_insight": "Este candidato coincide altamente con sus requisitos técnicos y culturales.",
     "engine_signature": "FWD Matching Engine"
+  },
+  "done_page": {
+    "eyebrow": "Solicitud recibida",
+    "title": "Tu cuenta está en revisión",
+    "description": "El equipo de FWD revisará tu cuenta y te notificará por correo cuando esté aprobada. Esto suele tardar entre 24 y 48 horas.",
+    "cta": "Volver al inicio"
   }
 }
