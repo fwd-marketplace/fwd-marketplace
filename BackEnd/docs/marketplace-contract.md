@@ -49,6 +49,9 @@ Misma forma de item que `GET /projects`. → `{ "projects": [ ... ] }`
 { "titulo": "Landing", "descripcion": "...", "id_area_negocio": "uuid",
   "plazo_dias": 10, "usa_ia": false, "skills": ["uuid"], "publicar": true }
 ```
+- `titulo`: 1-255 caracteres. `descripcion`: mínimo 1.
+- `plazo_dias`: entero **entre 5 y 15** (fuera de rango → `400`).
+- `id_area_negocio`: uuid del catálogo. `skills`: lista de uuids del catálogo (opcional).
 - `publicar: true` → estado `en_recepcion` (visible) y calcula `fecha_cierre`.
 - `publicar: false`/omitido → queda en `borrador`.
 → `201 { "project": { "id": "uuid", "titulo": "...", "estado": { "nombre": "en_recepcion" } } }`
