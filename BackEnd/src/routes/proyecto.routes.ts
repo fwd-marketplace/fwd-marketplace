@@ -1,5 +1,5 @@
 import { Router } from "express";
-import { list, detail, create } from "../controllers/proyecto.controller";
+import { list, detail, create, changeState } from "../controllers/proyecto.controller";
 import { createForProject, listForProject } from "../controllers/oferta.controller";
 import { authenticate } from "../middlewares/auth.middleware";
 import { asyncHandler } from "../utils/asyncHandler";
@@ -10,6 +10,8 @@ const router = Router();
 router.get("/", authenticate, asyncHandler(list));
 router.post("/", authenticate, asyncHandler(create));
 router.get("/:id", authenticate, asyncHandler(detail));
+// La empresa dueña gestiona el ciclo de vida de su proyecto.
+router.patch("/:id/estado", authenticate, asyncHandler(changeState));
 
 // Postulaciones de un proyecto: el junior postula, la empresa las consulta.
 router.post("/:id/ofertas", authenticate, asyncHandler(createForProject));

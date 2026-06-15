@@ -14,3 +14,23 @@ export const CreateProjectSchema = z.object({
 });
 
 export type CreateProjectInput = z.infer<typeof CreateProjectSchema>;
+
+/**
+ * Estados que la empresa dueña puede asignar a su proyecto para gestionar su
+ * ciclo de vida. Excluye 'borrador' (solo al crear) y 'cancelado' (reservado a
+ * la moderación del admin).
+ */
+export const PROJECT_STATES_EMPRESA = [
+  "en_recepcion",
+  "en_evaluacion",
+  "adjudicado",
+  "en_desarrollo",
+  "cerrado",
+] as const;
+
+/** Cuerpo para que la empresa cambie el estado de su proyecto. */
+export const ChangeProjectStateSchema = z.object({
+  estado: z.enum(PROJECT_STATES_EMPRESA),
+});
+
+export type ChangeProjectStateInput = z.infer<typeof ChangeProjectStateSchema>;
