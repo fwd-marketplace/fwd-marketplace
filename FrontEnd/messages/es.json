@@ -754,6 +754,49 @@
     "toast_cleared": "Se han limpiado los filtros de búsqueda.",
     "toast_profile_edit": "Funcionalidad de edición de perfil en desarrollo (Fase 3)."
   },
+  "mi_empresa": {
+    "sections": {
+      "general": "Información General",
+      "culture": "Identidad y Cultura",
+      "interests": "Intereses de Contratación",
+      "needs": "Necesidades Actuales",
+      "modalities": "Modalidades de Colaboración",
+      "schedules": "Horarios de Trabajo",
+      "matching": "Pesos del Algoritmo Matching",
+      "contacts": "Contactos de Reclutamiento"
+    },
+    "fields": {
+      "comercial_name": "Nombre comercial",
+      "website": "Sitio web",
+      "location": "Ubicación",
+      "sector": "Sector",
+      "mission": "Misión",
+      "vision": "Visión",
+      "values": "Valores",
+      "organization": "Cultura organizacional"
+    },
+    "hero": {
+      "edit_profile": "Editar perfil",
+      "view_projects": "Ver proyectos"
+    },
+    "modalities": {
+      "remote": "Remoto",
+      "onsite": "Presencial",
+      "hybrid": "Híbrido",
+      "nomad": "Nómada"
+    },
+    "matching_weights": {
+      "skills": "Habilidades técnicas",
+      "experience": "Experiencia",
+      "cultural": "Afinidad cultural",
+      "availability": "Disponibilidad"
+    },
+    "schedules": {
+      "flexible": "Horario Flexible",
+      "fixed": "Horario Fijo",
+      "timezone": "Zona horaria (GMT-6)"
+    }
+  },
   "done_page": {
     "eyebrow": "Solicitud recibida",
     "title": "Tu cuenta está en revisión",
