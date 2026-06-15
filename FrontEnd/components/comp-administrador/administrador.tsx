@@ -19,6 +19,10 @@ import { Card } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { cn } from '@/lib/utils';
+import { Proyectos } from '@/components/comp-administrador/proyectos';
+import { Talento } from '@/components/comp-administrador/talento';
+import { Reportes } from '@/components/comp-administrador/reportes';
+import { Configuracion } from '@/components/comp-administrador/configuracion';
 
 // Mock Data Inicial
 const INITIAL_APPLICATIONS = [
@@ -47,7 +51,7 @@ const INITIAL_COMPANIES = [
   { id: '303', name: 'Agrotica S.A.', sector: 'Agricultura / Exportación', status: 'pending' }
 ];
 
-type TabType = 'applications' | 'users' | 'projects' | 'companies';
+type TabType = 'applications' | 'users' | 'projects' | 'companies' | 'talent' | 'reports' | 'config';
 
 export function Administrador() {
   const t = useTranslations('admin');
@@ -56,7 +60,6 @@ export function Administrador() {
   const [activeTab, setActiveTab] = React.useState<TabType>('applications');
   const [applications, setApplications] = React.useState(INITIAL_APPLICATIONS);
   const [users, setUsers] = React.useState(INITIAL_USERS);
-  const [projects, setProjects] = React.useState(INITIAL_PROJECTS);
   const [companies, setCompanies] = React.useState(INITIAL_COMPANIES);
 
   // Filtros de usuarios
@@ -67,7 +70,8 @@ export function Administrador() {
   const pendingAppsCount = applications.filter(a => a.status === 'pending').length;
   const totalStudents = users.filter(u => u.role === 'student').length + applications.filter(a => a.status === 'approved').length;
   const approvedCompanies = companies.filter(c => c.status === 'approved').length;
-  const activeProjCount = projects.filter(p => p.status === 'active').length;
+  // KPI de proyectos activos — valor mock (la fuente de verdad vive en el componente Proyectos)
+  const activeProjCount = INITIAL_PROJECTS.filter(p => p.status === 'active').length;
 
   // Acciones: Solicitudes
   const handleApproveApp = (id: string) => {
@@ -98,23 +102,7 @@ export function Administrador() {
     }));
   };
 
-  // Acciones: Proyectos
-  const handleApproveProject = (id: string) => {
-    setProjects(prev => prev.map(p => p.id === id ? { ...p, status: 'active' } : p));
-  };
 
-  const handlePauseProject = (id: string) => {
-    setProjects(prev => prev.map(p => {
-      if (p.id === id) {
-        return { ...p, status: p.status === 'active' ? 'paused' : 'active' };
-      }
-      return p;
-    }));
-  };
-
-  const handleDeleteProject = (id: string) => {
-    setProjects(prev => prev.filter(p => p.id !== id));
-  };
 
   // Acciones: Empresas
   const handleApproveCompany = (id: string) => {
@@ -199,7 +187,7 @@ export function Administrador() {
 
       {/* Tabs Navigation */}
       <div className="border-b border-border flex overflow-x-auto no-scrollbar gap-2">
-        {(['applications', 'users', 'projects', 'companies'] as TabType[]).map((tab) => (
+        {(['applications', 'users', 'projects', 'companies', 'talent', 'reports', 'config'] as TabType[]).map((tab) => (
           <button
             key={tab}
             onClick={() => setActiveTab(tab)}
@@ -407,89 +395,8 @@ export function Administrador() {
           </div>
         )}
 
-        {/* VIEW: GESTION DE PROYECTOS */}
-        {activeTab === 'projects' && (
-          <div className="space-y-4">
-            <h2 className="font-heading text-lg md:text-xl font-extrabold text-ink-strong uppercase tracking-tight">
-              {t('projects.title')}
-            </h2>
-            <Card className="overflow-hidden border-border bg-surface">
-              <div className="overflow-x-auto">
-                <table className="w-full text-left border-collapse text-sm">
-                  <thead>
-                    <tr className="bg-surface-sunken border-b border-border">
-                      <th className="p-4 font-bold text-ink-strong uppercase tracking-wider text-xs">Proyecto</th>
-                      <th className="p-4 font-bold text-ink-strong uppercase tracking-wider text-xs">{t('projects.company')}</th>
-                      <th className="p-4 font-bold text-ink-strong uppercase tracking-wider text-xs">{t('projects.budget')}</th>
-                      <th className="p-4 font-bold text-ink-strong uppercase tracking-wider text-xs">Estado</th>
-                      <th className="p-4 font-bold text-ink-strong uppercase tracking-wider text-xs text-right">Acciones</th>
-                    </tr>
-                  </thead>
-                  <tbody className="divide-y divide-border">
-                    {projects.length === 0 ? (
-                      <tr>
-                        <td colSpan={5} className="p-8 text-center text-ink-muted">
-                          No hay proyectos publicados.
-                        </td>
-                      </tr>
-                    ) : (
-                      projects.map(proj => (
-                        <tr key={proj.id} className="hover:bg-surface-sunken/40 transition-colors">
-                          <td className="p-4 font-semibold text-ink-strong">{proj.title}</td>
-                          <td className="p-4 text-ink-muted">{proj.company}</td>
-                          <td className="p-4 font-mono font-bold text-primary">${proj.budget} USD</td>
-                          <td className="p-4">
-                            <Badge className={cn(
-                              "border-none",
-                              proj.status === 'active' && "bg-accent/15 text-accent",
-                              proj.status === 'paused' && "bg-ink-muted/15 text-ink-muted",
-                              proj.status === 'moderation' && "bg-warning/15 text-warning"
-                            )}>
-                              {t(`projects.status_${proj.status}`)}
-                            </Badge>
-                          </td>
-                          <td className="p-4 text-right">
-                            <div className="flex justify-end gap-2">
-                              {proj.status === 'moderation' && (
-                                <Button
-                                  size="sm"
-                                  onClick={() => handleApproveProject(proj.id)}
-                                  className="bg-accent hover:bg-accent/90 text-white rounded-full text-xs font-bold px-3 py-1 h-7"
-                                >
-                                  {t('projects.approve')}
-                                </Button>
-                              )}
-                              {proj.status !== 'moderation' && (
-                                <Button
-                                  size="sm"
-                                  variant="outline"
-                                  onClick={() => handlePauseProject(proj.id)}
-                                  className="h-7 text-xs border-border-strong text-ink hover:bg-canvas"
-                                >
-                                  {proj.status === 'active' ? t('projects.pause') : 'Reactivar'}
-                                </Button>
-                              )}
-                              <Button
-                                size="sm"
-                                variant="ghost"
-                                onClick={() => handleDeleteProject(proj.id)}
-                                className="h-7 text-xs text-magenta hover:bg-magenta/5 font-bold"
-                              >
-                                {t('projects.delete')}
-                              </Button>
-                            </div>
-                          </td>
-                        </tr>
-                      ))
-                    )}
-                  </tbody>
-                </table>
-              </div>
-            </Card>
-          </div>
-        )}
 
-        {/* VIEW: GESTION DE EMPRESAS */}
+
         {activeTab === 'companies' && (
           <div className="space-y-4">
             <h2 className="font-heading text-lg md:text-xl font-extrabold text-ink-strong uppercase tracking-tight">
@@ -567,6 +474,46 @@ export function Administrador() {
                 </table>
               </div>
             </Card>
+          </div>
+        )}
+
+        {/* VIEW: GESTION DE PROYECTOS (componente rico) */}
+        {activeTab === 'projects' && (
+          <div className="space-y-4">
+            <h2 className="font-heading text-lg md:text-xl font-extrabold text-ink-strong uppercase tracking-tight">
+              {t('projects.title')}
+            </h2>
+            <Proyectos />
+          </div>
+        )}
+
+        {/* VIEW: TALENTO */}
+        {activeTab === 'talent' && (
+          <div className="space-y-4">
+            <h2 className="font-heading text-lg md:text-xl font-extrabold text-ink-strong uppercase tracking-tight">
+              {t('talent.title')}<span className="text-primary">.</span>
+            </h2>
+            <Talento />
+          </div>
+        )}
+
+        {/* VIEW: REPORTES */}
+        {activeTab === 'reports' && (
+          <div className="space-y-4">
+            <h2 className="font-heading text-lg md:text-xl font-extrabold text-ink-strong uppercase tracking-tight">
+              {t('reports.title')}<span className="text-primary">.</span>
+            </h2>
+            <Reportes />
+          </div>
+        )}
+
+        {/* VIEW: CONFIGURACION */}
+        {activeTab === 'config' && (
+          <div className="space-y-4">
+            <h2 className="font-heading text-lg md:text-xl font-extrabold text-ink-strong uppercase tracking-tight">
+              {t('config.title')}<span className="text-primary">.</span>
+            </h2>
+            <Configuracion />
           </div>
         )}
       </div>
