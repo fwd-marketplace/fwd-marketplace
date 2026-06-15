@@ -1,6 +1,6 @@
 # Contrato de API — Marketplace (catálogos, proyectos, postulaciones, admin)
 
-> **Última actualización:** 2026-06-12. Fuente de verdad del contrato del marketplace.
+> **Última actualización:** 2026-06-15. Fuente de verdad del contrato del marketplace.
 > Si te pasan una versión nueva, **reemplazá el archivo completo** (no fusiones a mano).
 
 Complemento de `auth-contract.md` para el equipo de FrontEnd. Mismas reglas:
@@ -48,6 +48,19 @@ Listado visible (publicados + los propios de la empresa). Query opcional:
 - `publicar: false`/omitido → queda en `borrador`.
 → `201 { "project": { "id": "uuid", "titulo": "...", "estado": { "nombre": "en_recepcion" } } }`
 
+### PATCH /api/projects/:id/estado  (Bearer — empresa dueña del proyecto)
+La empresa gestiona el ciclo de vida de su proyecto. `estado` debe ser uno de:
+`en_recepcion`, `en_evaluacion`, `adjudicado`, `en_desarrollo`, `cerrado`
+(NO acepta `borrador` ni `cancelado`; `cancelado` es solo moderación del admin).
+```json
+{ "estado": "cerrado" }
+```
+→ `200 { "project": { "id": "uuid", "estado": { "nombre": "cerrado" } } }`
+Errores: 403 si el proyecto no es tuyo; 404 si no existe; 400 si el `estado` no es válido.
+
+Nota de flujo: aceptar una postulación (`PATCH /ofertas/:id`) NO cierra el proyecto
+automáticamente — la empresa lo cierra con este endpoint cuando ya decidió.
+
 ## Postulaciones (ofertas)
 
 ### POST /api/projects/:id/ofertas  (Bearer — junior con cuenta activa)
@@ -89,6 +102,8 @@ Errores típicos: 409 si ya postuló o si el proyecto no está en recepción; 40
 | --- | --- | --- |
 | `GET /api/admin/users/pending` | Bearer admin | `{ users: [...] }` (cuentas pendientes) |
 | `PATCH /api/admin/users/:id/aprobar` | Bearer admin | `{ user: {...} }` (estado → activa) |
+| `PATCH /api/admin/users/:id/rechazar` | Bearer admin | `{ user: {...} }` (estado → rechazada) |
+| `PATCH /api/admin/users/:id/suspender` | Bearer admin | `{ user: {...} }` (estado → suspendida) |
 | `GET /api/admin/projects` | Bearer admin | `{ projects: [...] }` (todos, incluye borradores) |
 | `PATCH /api/admin/projects/:id/cancelar` | Bearer admin | `{ project: {...} }` (estado → cancelado) |
 

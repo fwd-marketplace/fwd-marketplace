@@ -1,5 +1,5 @@
 import { describe, it, expect } from "vitest";
-import { CreateProjectSchema } from "../project";
+import { CreateProjectSchema, ChangeProjectStateSchema } from "../project";
 
 const UUID = "550e8400-e29b-41d4-a716-446655440000";
 
@@ -33,5 +33,23 @@ describe("CreateProjectSchema", () => {
 
   it("rechaza skills con un valor que no es UUID", () => {
     expect(CreateProjectSchema.safeParse({ ...valido, skills: ["no-uuid"] }).success).toBe(false);
+  });
+});
+
+describe("ChangeProjectStateSchema", () => {
+  it("acepta un estado válido de la empresa", () => {
+    expect(ChangeProjectStateSchema.safeParse({ estado: "cerrado" }).success).toBe(true);
+  });
+
+  it("rechaza 'cancelado' (reservado a la moderación del admin)", () => {
+    expect(ChangeProjectStateSchema.safeParse({ estado: "cancelado" }).success).toBe(false);
+  });
+
+  it("rechaza 'borrador' (solo aplica al crear)", () => {
+    expect(ChangeProjectStateSchema.safeParse({ estado: "borrador" }).success).toBe(false);
+  });
+
+  it("rechaza un estado inexistente", () => {
+    expect(ChangeProjectStateSchema.safeParse({ estado: "lo_que_sea" }).success).toBe(false);
   });
 });
