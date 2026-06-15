@@ -74,8 +74,10 @@ export function LoginForm() {
       } else if (estado_cuenta === "activa") {
         if (role === "admin") {
           router.push(`/${locale}/admin`);
-        } else if (role === "empresa" || role === "emprendedor") {
+        } else if (role === "company" || role === "empresa" || role === "emprendedor") {
           router.push(`/${locale}/empresa/dashboard`);
+        } else if (role === "student" || role === "junior") {
+          router.push(`/${locale}/bienvenida`);
         } else {
           router.push(`/${locale}/marketplace`);
         }
