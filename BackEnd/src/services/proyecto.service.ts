@@ -79,6 +79,33 @@ export async function listProjects(accessToken: string, filters: ProjectFilters)
   return data;
 }
 
+/**
+ * Lista los proyectos PROPIOS de la empresa autenticada (incluye borradores,
+ * porque es el dueño). Para la pantalla "Mis Proyectos". Se distingue de
+ * `listProjects`, que mezcla los publicados de todos con los propios.
+ */
+export async function listMyProjects(accessToken: string, userId: string) {
+  const client = supabaseForToken(accessToken);
+
+  // 1. Resolver el empresario del usuario.
+  const { data: empresario, error: empError } = await client
+    .from("empresario")
+    .select("id")
+    .eq("id_usuario", userId)
+    .maybeSingle();
+  if (empError) throw new ApiError(500, empError.message);
+  if (!empresario) throw new ApiError(403, "Solo las empresas tienen proyectos");
+
+  // 2. Solo los proyectos de ese empresario.
+  const { data, error } = await client
+    .from("proyecto")
+    .select(PROJECT_SELECT)
+    .eq("id_empresario", empresario.id)
+    .order("fecha_publicacion", { ascending: false, nullsFirst: false });
+  if (error) throw new ApiError(500, error.message);
+  return data;
+}
+
 /** Devuelve un proyecto por id, o 404 si no existe / no es visible para el usuario. */
 export async function getProjectById(accessToken: string, id: string) {
   const client = supabaseForToken(accessToken);

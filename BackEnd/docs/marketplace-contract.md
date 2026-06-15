@@ -36,6 +36,11 @@ Listado visible (publicados + los propios de la empresa). Query opcional:
 }] }
 ```
 
+### GET /api/projects/mias  (Bearer — empresa)
+Solo los proyectos PROPIOS de la empresa, incluyendo borradores. Para "Mis Proyectos".
+Misma forma de item que `GET /projects`. → `{ "projects": [ ... ] }`
+(403 si el usuario no tiene perfil de empresa).
+
 ### GET /api/projects/:id  (Bearer)
 → `{ "project": { ...misma forma que el item de arriba... } }` (404 si no existe/no visible).
 
@@ -44,6 +49,9 @@ Listado visible (publicados + los propios de la empresa). Query opcional:
 { "titulo": "Landing", "descripcion": "...", "id_area_negocio": "uuid",
   "plazo_dias": 10, "usa_ia": false, "skills": ["uuid"], "publicar": true }
 ```
+- `titulo`: 1-255 caracteres. `descripcion`: mínimo 1.
+- `plazo_dias`: entero **entre 5 y 15** (fuera de rango → `400`).
+- `id_area_negocio`: uuid del catálogo. `skills`: lista de uuids del catálogo (opcional).
 - `publicar: true` → estado `en_recepcion` (visible) y calcula `fecha_cierre`.
 - `publicar: false`/omitido → queda en `borrador`.
 → `201 { "project": { "id": "uuid", "titulo": "...", "estado": { "nombre": "en_recepcion" } } }`

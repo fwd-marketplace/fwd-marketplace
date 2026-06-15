@@ -6,9 +6,10 @@ import { describe, it, expect, beforeEach, vi } from "vitest";
  * porque `changeProjectState` usa la tabla `proyecto` dos veces: primero para
  * leer al dueño y luego para actualizar el estado.
  */
-const { reads, updates } = vi.hoisted(() => ({
+const { reads, updates, lists } = vi.hoisted(() => ({
   reads: {} as Record<string, { data: unknown; error: unknown }>,
   updates: {} as Record<string, { data: unknown; error: unknown }>,
+  lists: {} as Record<string, { data: unknown; error: unknown }>,
 }));
 
 vi.mock("../../config/supabase", () => ({
@@ -17,7 +18,7 @@ vi.mock("../../config/supabase", () => ({
       let isUpdate = false;
       const builder: Record<string, unknown> = {};
       const chain = () => builder;
-      const resolve = () =>
+      const resolveSingle = () =>
         Promise.resolve(
           (isUpdate ? updates[table] : reads[table]) ?? { data: null, error: null },
         );
@@ -30,15 +31,18 @@ vi.mock("../../config/supabase", () => ({
         insert: chain,
         eq: chain,
         order: chain,
-        maybeSingle: resolve,
-        single: resolve,
+        maybeSingle: resolveSingle,
+        single: resolveSingle,
+        // Para queries de lista que se awaitean directo (sin maybeSingle/single).
+        then: (onFulfilled: (v: unknown) => unknown) =>
+          onFulfilled(lists[table] ?? { data: [], error: null }),
       });
       return builder;
     },
   }),
 }));
 
-import { changeProjectState } from "../proyecto.service";
+import { changeProjectState, listMyProjects } from "../proyecto.service";
 
 const TOKEN = "token";
 const USER = "550e8400-e29b-41d4-a716-446655440000";
@@ -55,6 +59,7 @@ function happyPath() {
 beforeEach(() => {
   for (const key of Object.keys(reads)) delete reads[key];
   for (const key of Object.keys(updates)) delete updates[key];
+  for (const key of Object.keys(lists)) delete lists[key];
 });
 
 describe("changeProjectState", () => {
@@ -86,5 +91,19 @@ describe("changeProjectState", () => {
     await expect(changeProjectState(TOKEN, USER, PROJECT, input)).rejects.toMatchObject({
       statusCode: 500,
     });
+  });
+});
+
+describe("listMyProjects", () => {
+  it("devuelve los proyectos del empresario del usuario", async () => {
+    reads["empresario"] = { data: { id: "emp-1" }, error: null };
+    lists["proyecto"] = { data: [{ id: PROJECT, titulo: "Landing" }], error: null };
+    const result = await listMyProjects(TOKEN, USER);
+    expect(result).toEqual([{ id: PROJECT, titulo: "Landing" }]);
+  });
+
+  it("rechaza (403) si el usuario no tiene perfil de empresa", async () => {
+    reads["empresario"] = { data: null, error: null };
+    await expect(listMyProjects(TOKEN, USER)).rejects.toMatchObject({ statusCode: 403 });
   });
 });
