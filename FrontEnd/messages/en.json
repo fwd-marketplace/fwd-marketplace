@@ -916,5 +916,72 @@
     "title": "Your account is under review",
     "description": "The FWD team will review your account and notify you by email once it is approved. This usually takes 24 to 48 hours.",
     "cta": "Back to home"
+  },
+  "admin": {
+    "title": "Administration Panel",
+    "subtitle": "FWD Marketplace Management",
+    "stats": {
+      "total_students": "Total Students",
+      "active_companies": "Approved Companies",
+      "active_projects": "Active Projects",
+      "pending_approvals": "Pending Approvals"
+    },
+    "tabs": {
+      "applications": "Graduate Requests",
+      "users": "Users",
+      "projects": "Projects",
+      "companies": "Companies"
+    },
+    "applications": {
+      "title": "Graduate entry applications",
+      "empty": "No pending applications for review.",
+      "name": "Graduate",
+      "specialization": "Specialization",
+      "date": "Request Date",
+      "status": "Status",
+      "actions": "Actions",
+      "approve": "Approve",
+      "reject": "Reject",
+      "approved": "Approved",
+      "rejected": "Rejected",
+      "pending": "Pending"
+    },
+    "users": {
+      "title": "User Management",
+      "search_placeholder": "Search by name or email...",
+      "filter_role": "All roles",
+      "role_student": "Student",
+      "role_company": "Company",
+      "role_admin": "Admin",
+      "status_active": "Active",
+      "status_suspended": "Suspended",
+      "actions": "Actions",
+      "change_role": "Change Role",
+      "suspend": "Suspend",
+      "activate": "Activate"
+    },
+    "projects": {
+      "title": "Project Management",
+      "company": "Company",
+      "budget": "Budget",
+      "status": "Status",
+      "status_active": "Active",
+      "status_paused": "Paused",
+      "status_moderation": "Pending Moderation",
+      "approve": "Approve",
+      "pause": "Pause",
+      "delete": "Delete"
+    },
+    "companies": {
+      "title": "Company Management",
+      "sector": "Sector",
+      "status": "Status",
+      "status_approved": "Approved",
+      "status_pending": "Pending Approval",
+      "status_rejected": "Rejected",
+      "approve": "Approve",
+      "reject": "Reject",
+      "suspend": "Suspend"
+    }
   }
 }
