@@ -670,12 +670,12 @@
       "description": "Tu perfil ya está conectado con oportunidades reales.\nExplorá proyectos creados por empresas que buscan talento como el tuyo.",
       "btn_explore": "Explorar oportunidades",
       "btn_edit": "Editar mi perfil",
-      "stack_center": "Tu stack",
-      "stack_frontend": "Frontend",
-      "stack_backend": "Backend",
-      "stack_ux": "UX / UI",
-      "stack_mobile": "Mobile",
-      "stack_ai": "IA y Datos"
+      "stack_center": "Tu progreso",
+      "stack_frontend": "Perfil completado",
+      "stack_backend": "CV cargado",
+      "stack_ux": "Primer proyecto",
+      "stack_mobile": "Primera postulación",
+      "stack_ai": "Empresa interesada"
     },
     "stats": {
       "projects": "Proyectos compatibles",
