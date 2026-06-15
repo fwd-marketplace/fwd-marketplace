@@ -209,6 +209,7 @@ const INITIAL_APPLICATIONS: Application[] = [
 
 export function PerfilEmpresa() {
   const t = useTranslations("empresa_dashboard");
+  const tMatches = useTranslations("matches_empresa");
   const router = useRouter();
   const locale = useLocale();
   const [logoError, setLogoError] = useState(false);
@@ -228,6 +229,14 @@ export function PerfilEmpresa() {
     setTimeout(() => {
       setToastMessage(null);
     }, 4000);
+  };
+
+  const handleEditProfile = () => {
+    triggerToast(tMatches("toast_profile_edit"));
+  };
+
+  const handleViewProjects = () => {
+    document.getElementById("projects-section")?.scrollIntoView({ behavior: "smooth" });
   };
 
   const handleSelectProject = (projectId: string) => {
@@ -361,36 +370,72 @@ export function PerfilEmpresa() {
         <FwdGeoBackdrop />
 
         <div className="relative z-10 space-y-6">
-          <div className="flex flex-col gap-6 md:flex-row md:items-center">
-            {/* Foto de la empresa (Logo) */}
-            <div className="relative size-20 md:size-24 shrink-0 overflow-hidden rounded-2xl border border-white/20 bg-white shadow-[var(--shadow-soft)] flex items-center justify-center">
-              {!logoError ? (
-                <Image
-                  src="/company_logo.png"
-                  alt="Logo Empresa"
-                  width={96}
-                  height={96}
-                  className="size-full object-contain p-2"
-                  onError={() => setLogoError(true)}
-                />
-              ) : (
-                <div className="flex size-full items-center justify-center bg-gradient-to-br from-accent to-secondary font-heading text-2xl font-extrabold text-white">
-                  FWD
+          <div className="flex flex-col gap-6 md:flex-row md:items-center md:justify-between">
+            <div className="flex flex-col gap-6 md:flex-row md:items-center">
+              {/* Foto de la empresa (Logo) */}
+              <div className="relative size-20 md:size-24 shrink-0 overflow-hidden rounded-2xl border border-white/20 bg-white shadow-[var(--shadow-soft)] flex items-center justify-center">
+                {!logoError ? (
+                  <Image
+                    src="/company_logo.png"
+                    alt="Logo Empresa"
+                    width={96}
+                    height={96}
+                    className="size-full object-contain p-2"
+                    onError={() => setLogoError(true)}
+                  />
+                ) : (
+                  <div className="flex size-full items-center justify-center bg-gradient-to-br from-accent to-secondary font-heading text-2xl font-extrabold text-white">
+                    FWD
+                  </div>
+                )}
+              </div>
+
+              {/* Título y Descripción */}
+              <div className="space-y-2">
+                <span className="font-body text-[10px] font-bold uppercase tracking-wider text-white/70">
+                  {t("label_empresa")}
+                </span>
+                <h1 className="font-heading text-2xl font-bold tracking-tight md:text-3.5xl uppercase leading-none">
+                  {t("title")}
+                  <span className="text-primary" aria-hidden="true">
+                    .
+                  </span>
+                </h1>
+                <p className="font-body text-sm text-white/80 max-w-2xl leading-relaxed">
+                  {t("company_desc")}
+                </p>
+
+                {/* Tags */}
+                <div className="flex flex-wrap gap-2 pt-2">
+                  <span className="rounded-full bg-white/10 px-3 py-1 font-body text-xs font-semibold text-white">
+                    {t("tag_socio")}
+                  </span>
+                  <span className="rounded-full bg-white/10 px-3 py-1 font-body text-xs font-semibold text-white">
+                    {t("tag_location")}
+                  </span>
+                  <span className="rounded-full bg-white/10 px-3 py-1 font-body text-xs font-semibold text-white">
+                    {t("tag_size")}
+                  </span>
                 </div>
-              )}
+              </div>
             </div>
 
-            {/* Título y Descripción */}
-            <div className="space-y-2">
-              <h1 className="font-heading text-2xl font-bold tracking-tight md:text-3.5xl uppercase leading-none">
-                {t("title")}
-                <span className="text-primary" aria-hidden="true">
-                  .
-                </span>
-              </h1>
-              <p className="font-body text-sm text-white/80 max-w-2xl leading-relaxed">
-                {t("company_desc")}
-              </p>
+            {/* Actions */}
+            <div className="flex flex-wrap gap-3 shrink-0 self-start md:self-center">
+              <Button
+                variant="outline"
+                onClick={handleEditProfile}
+                className="h-10 rounded-full border-white/20 px-5 text-sm font-bold text-white hover:bg-white/10 hover:text-white"
+              >
+                {t("edit_profile_btn")}
+              </Button>
+              <Button
+                variant="default"
+                onClick={handleViewProjects}
+                className="h-10 rounded-full bg-highlight px-5 text-sm font-bold text-secondary hover:bg-highlight/90"
+              >
+                {t("view_projects_btn")}
+              </Button>
             </div>
           </div>
 
@@ -438,7 +483,7 @@ export function PerfilEmpresa() {
       {/* --- MIDDLE INTERACTIVE BLOCK --- */}
       <div className="grid grid-cols-1 gap-8 lg:grid-cols-12">
         {/* Left Column: Tus Proyectos */}
-        <section className="space-y-4 lg:col-span-4">
+        <section id="projects-section" className="space-y-4 lg:col-span-4">
           <div className="flex items-center justify-between">
             <h2 className="font-heading text-xl font-bold tracking-tight text-ink-strong">
               {t("projects.title")}

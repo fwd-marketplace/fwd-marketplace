@@ -477,6 +477,22 @@
     "notifications": {
       "paused": "El proyecto ha sido pausado.",
       "reactivated": "El proyecto ha sido reactivado."
+    },
+    "filters": {
+      "title": "Filtros",
+      "search_placeholder": "Buscar por título...",
+      "status_label": "Estado",
+      "status_all": "Todos los estados",
+      "status_active": "Activos",
+      "status_paused": "Pausados",
+      "modality_label": "Modalidad",
+      "modality_all": "Todas",
+      "level_label": "Nivel",
+      "level_all": "Todos",
+      "clear": "Limpiar filtros",
+      "empty_title": "No se encontraron proyectos",
+      "empty_desc": "Prueba cambiando los criterios de filtrado o la búsqueda.",
+      "view_details": "Ver Detalles"
     }
   },
   "app_header": {
@@ -753,6 +769,38 @@
     "toast_invited": "Se ha invitado a {name} a postularse al proyecto.",
     "toast_cleared": "Se han limpiado los filtros de búsqueda.",
     "toast_profile_edit": "Funcionalidad de edición de perfil en desarrollo (Fase 3)."
+  },
+  "postulaciones_empresa": {
+    "title": "POSTULACIONES",
+    "subtitle": "Revisión de candidatos.",
+    "actions_header": "ACCIONES DISPONIBLES",
+    "invite_btn": "Invitar",
+    "info_btn": "Solicitar Info",
+    "accept_btn": "Aceptar",
+    "reject_btn": "Rechazar",
+    "view_full_profile": "Ver perfil completo",
+    "match_analysis": "ANÁLISIS DE MATCH",
+    "personal_info": "Información Personal",
+    "tech_stack": "Stack Tecnológico",
+    "bio_professional": "Bio Profesional",
+    "proposal_project": "Propuesta de Proyecto",
+    "view_pdf": "Ver PDF",
+    "open_figma": "Abrir Figma",
+    "past_works": "Trabajos Anteriores",
+    "history_postulation": "Historial de Postulación",
+    "status_in_review": "EN REVISIÓN",
+    "status_new": "NUEVA",
+    "status_accepted": "ACEPTADA",
+    "status_rejected": "RECHAZADA",
+    "toast_invited": "Invitación para entrevista enviada a {name}.",
+    "toast_info_requested": "Solicitud de información adicional enviada a {name}.",
+    "toast_accepted": "Postulación de {name} aceptada con éxito.",
+    "toast_rejected": "Postulación de {name} rechazada.",
+    "toast_pdf": "Visualización del documento PDF de {name} en desarrollo.",
+    "toast_figma": "Enlace a Figma de {name} en desarrollo.",
+    "toast_full_profile": "Cargando perfil completo de {name}...",
+    "engine_insight": "Este candidato coincide altamente con sus requisitos técnicos y culturales.",
+    "engine_signature": "FWD Matching Engine"
   },
   "done_page": {
     "eyebrow": "Solicitud recibida",
