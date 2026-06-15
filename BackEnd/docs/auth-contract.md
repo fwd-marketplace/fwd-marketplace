@@ -1,6 +1,6 @@
 # Contrato de API — Autenticación, Onboarding y Aprobación
 
-> **Última actualización:** 2026-06-12 · Fase 1 (auth + onboarding + aprobación) + sesión (refresh / logout).
+> **Última actualización:** 2026-06-15 · Fase 1 (auth + onboarding + aprobación/rechazo/suspensión) + sesión (refresh / logout).
 > Este archivo es la **fuente de verdad** del contrato. Si te pasan una versión nueva,
 > **reemplazá el archivo completo** — no fusiones a mano (evita arrastrar frases viejas).
 
@@ -128,6 +128,12 @@ Crea `users` (`pendiente`) + `empresario` (`tipo='emprendedor'`).
 
 ### PATCH /api/admin/users/:id/aprobar  (Bearer admin)
 → `200 { user: { id, estado_cuenta: "activa" } }`
+
+### PATCH /api/admin/users/:id/rechazar  (Bearer admin)
+Rechaza una cuenta pendiente. → `200 { user: { id, estado_cuenta: "rechazada" } }`
+
+### PATCH /api/admin/users/:id/suspender  (Bearer admin)
+Suspende una cuenta activa. → `200 { user: { id, estado_cuenta: "suspendida" } }`
 
 ---
 
