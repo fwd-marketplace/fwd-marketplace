@@ -17,15 +17,18 @@ export async function listPendingUsers(accessToken: string) {
   return data;
 }
 
+/** Estados válidos de `users.estado_cuenta` (coincide con el CHECK de la BD). */
+type EstadoCuenta = "activa" | "pendiente" | "suspendida" | "rechazada";
+
 /**
- * Aprueba una cuenta: estado_cuenta -> 'activa'. Solo admin (RLS:
- * `users_admin_editar_todos`). 404 si el usuario no existe.
+ * Cambia el estado de una cuenta. Solo admin (RLS: `users_admin_editar_todos`
+ * via `is_admin()`). 404 si el usuario no existe. Base de approve/reject/suspend.
  */
-export async function approveUser(accessToken: string, targetUserId: string) {
+async function setAccountState(accessToken: string, targetUserId: string, estado: EstadoCuenta) {
   const client = supabaseForToken(accessToken);
   const { data, error } = await client
     .from("users")
-    .update({ estado_cuenta: "activa", updated_at: new Date().toISOString() })
+    .update({ estado_cuenta: estado, updated_at: new Date().toISOString() })
     .eq("id", targetUserId)
     .select("id, estado_cuenta")
     .maybeSingle();
@@ -33,6 +36,21 @@ export async function approveUser(accessToken: string, targetUserId: string) {
   if (error) throw new ApiError(400, error.message);
   if (!data) throw new ApiError(404, "Usuario no encontrado");
   return data;
+}
+
+/** Aprueba una cuenta: estado_cuenta -> 'activa'. */
+export function approveUser(accessToken: string, targetUserId: string) {
+  return setAccountState(accessToken, targetUserId, "activa");
+}
+
+/** Rechaza una cuenta pendiente: estado_cuenta -> 'rechazada'. */
+export function rejectUser(accessToken: string, targetUserId: string) {
+  return setAccountState(accessToken, targetUserId, "rechazada");
+}
+
+/** Suspende una cuenta activa: estado_cuenta -> 'suspendida'. */
+export function suspendUser(accessToken: string, targetUserId: string) {
+  return setAccountState(accessToken, targetUserId, "suspendida");
 }
 
 /**
