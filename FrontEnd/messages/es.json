@@ -802,10 +802,120 @@
     "engine_insight": "Este candidato coincide altamente con sus requisitos técnicos y culturales.",
     "engine_signature": "FWD Matching Engine"
   },
+  "mi_empresa": {
+    "sections": {
+      "general": "Información General",
+      "culture": "Identidad y Cultura",
+      "interests": "Intereses de Contratación",
+      "needs": "Necesidades Actuales",
+      "modalities": "Modalidades de Colaboración",
+      "schedules": "Horarios de Trabajo",
+      "matching": "Pesos del Algoritmo Matching",
+      "contacts": "Contactos de Reclutamiento"
+    },
+    "fields": {
+      "comercial_name": "Nombre comercial",
+      "website": "Sitio web",
+      "location": "Ubicación",
+      "sector": "Sector",
+      "mission": "Misión",
+      "vision": "Visión",
+      "values": "Valores",
+      "organization": "Cultura organizacional"
+    },
+    "hero": {
+      "edit_profile": "Editar perfil",
+      "view_projects": "Ver proyectos"
+    },
+    "modalities": {
+      "remote": "Remoto",
+      "onsite": "Presencial",
+      "hybrid": "Híbrido",
+      "nomad": "Nómada"
+    },
+    "matching_weights": {
+      "skills": "Habilidades técnicas",
+      "experience": "Experiencia",
+      "cultural": "Afinidad cultural",
+      "availability": "Disponibilidad"
+    },
+    "schedules": {
+      "flexible": "Horario Flexible",
+      "fixed": "Horario Fijo",
+      "timezone": "Zona horaria (GMT-6)"
+    }
+  },
   "done_page": {
     "eyebrow": "Solicitud recibida",
     "title": "Tu cuenta está en revisión",
     "description": "El equipo de FWD revisará tu cuenta y te notificará por correo cuando esté aprobada. Esto suele tardar entre 24 y 48 horas.",
     "cta": "Volver al inicio"
+  },
+  "admin": {
+    "title": "Panel de Administración",
+    "subtitle": "Gestión del Marketplace FWD",
+    "stats": {
+      "total_students": "Total Estudiantes",
+      "active_companies": "Empresas Aprobadas",
+      "active_projects": "Proyectos Activos",
+      "pending_approvals": "Aprobaciones Pendientes"
+    },
+    "tabs": {
+      "applications": "Solicitudes Egresados",
+      "users": "Usuarios",
+      "projects": "Proyectos",
+      "companies": "Empresas"
+    },
+    "applications": {
+      "title": "Solicitudes de ingreso de egresados",
+      "empty": "No hay solicitudes pendientes de aprobación.",
+      "name": "Egresado",
+      "specialization": "Especialización",
+      "date": "Fecha Solicitud",
+      "status": "Estado",
+      "actions": "Acciones",
+      "approve": "Aprobar",
+      "reject": "Rechazar",
+      "approved": "Aprobada",
+      "rejected": "Rechazada",
+      "pending": "Pendiente"
+    },
+    "users": {
+      "title": "Gestión de Usuarios",
+      "search_placeholder": "Buscar por nombre o correo...",
+      "filter_role": "Todos los roles",
+      "role_student": "Estudiante",
+      "role_company": "Empresa",
+      "role_admin": "Admin",
+      "status_active": "Activo",
+      "status_suspended": "Suspendido",
+      "actions": "Acciones",
+      "change_role": "Cambiar Rol",
+      "suspend": "Suspender",
+      "activate": "Activar"
+    },
+    "projects": {
+      "title": "Gestión de Proyectos",
+      "company": "Empresa",
+      "budget": "Presupuesto",
+      "status": "Estado",
+      "status_active": "Activo",
+      "status_paused": "Pausado",
+      "status_moderation": "Pendiente Moderación",
+      "approve": "Aprobar",
+      "pause": "Pausar",
+      "delete": "Eliminar"
+    },
+    "companies": {
+      "title": "Gestión de Empresas",
+      "sector": "Sector",
+      "status": "Estado",
+      "status_approved": "Aprobada",
+      "status_pending": "Pendiente Aprobación",
+      "status_rejected": "Rechazada",
+      "approve": "Aprobar",
+      "reject": "Rechazar",
+      "suspend": "Suspender"
+    }
   }
 }
