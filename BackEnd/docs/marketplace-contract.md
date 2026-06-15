@@ -36,6 +36,11 @@ Listado visible (publicados + los propios de la empresa). Query opcional:
 }] }
 ```
 
+### GET /api/projects/mias  (Bearer — empresa)
+Solo los proyectos PROPIOS de la empresa, incluyendo borradores. Para "Mis Proyectos".
+Misma forma de item que `GET /projects`. → `{ "projects": [ ... ] }`
+(403 si el usuario no tiene perfil de empresa).
+
 ### GET /api/projects/:id  (Bearer)
 → `{ "project": { ...misma forma que el item de arriba... } }` (404 si no existe/no visible).
 

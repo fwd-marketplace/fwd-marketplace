@@ -35,6 +35,15 @@ export async function list(req: Request, res: Response) {
   res.status(200).json({ projects });
 }
 
+/** GET /api/projects/mias (ruta protegida — empresa) */
+export async function listMine(req: Request, res: Response) {
+  if (!req.user) {
+    throw new ApiError(401, "No autenticado");
+  }
+  const projects = await projectService.listMyProjects(readToken(req), req.user.id);
+  res.status(200).json({ projects });
+}
+
 /** GET /api/projects/:id (ruta protegida) */
 export async function detail(req: Request, res: Response) {
   const parsed = idParamSchema.safeParse(req.params.id);
