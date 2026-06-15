@@ -1,6 +1,6 @@
 import { supabaseForToken } from "../config/supabase";
 import { ApiError } from "../utils/ApiError";
-import type { CreateProjectInput } from "../validations/project";
+import type { CreateProjectInput, ChangeProjectStateInput } from "../validations/project";
 
 /** Filtros opcionales del listado de proyectos. */
 export type ProjectFilters = {
@@ -182,4 +182,51 @@ export async function createProject(
   }
 
   return proyecto;
+}
+
+/**
+ * La empresa dueña cambia el estado de su proyecto para gestionar su ciclo de
+ * vida (cerrar recepción, adjudicar, marcar en desarrollo o cerrar). Los
+ * estados válidos los acota `ChangeProjectStateSchema` (sin 'cancelado', que es
+ * moderación del admin). El RLS de UPDATE de proyecto exige además ser el dueño;
+ * aquí se valida explícitamente para devolver 403/404 claros.
+ */
+export async function changeProjectState(
+  accessToken: string,
+  userId: string,
+  projectId: string,
+  input: ChangeProjectStateInput,
+) {
+  const client = supabaseForToken(accessToken);
+
+  // 1. El proyecto debe existir y pertenecer al usuario.
+  const { data: proyecto, error: projError } = await client
+    .from("proyecto")
+    .select("id, empresa:empresario(id_usuario)")
+    .eq("id", projectId)
+    .maybeSingle();
+  if (projError) throw new ApiError(500, projError.message);
+  if (!proyecto) throw new ApiError(404, "Proyecto no encontrado");
+  if (proyecto.empresa?.id_usuario !== userId) {
+    throw new ApiError(403, "Este proyecto no es tuyo");
+  }
+
+  // 2. Resolver el id del estado destino.
+  const { data: estado, error: estadoError } = await client
+    .from("estado_proyecto")
+    .select("id")
+    .eq("nombre", input.estado)
+    .maybeSingle();
+  if (estadoError) throw new ApiError(500, estadoError.message);
+  if (!estado) throw new ApiError(500, `Falta el estado '${input.estado}' (seeds no aplicados)`);
+
+  // 3. Actualizar el estado del proyecto.
+  const { data, error } = await client
+    .from("proyecto")
+    .update({ id_estado: estado.id })
+    .eq("id", projectId)
+    .select("id, estado:estado_proyecto(nombre)")
+    .single();
+  if (error) throw new ApiError(400, error.message);
+  return data;
 }

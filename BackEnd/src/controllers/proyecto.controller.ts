@@ -2,7 +2,7 @@ import type { Request, Response } from "express";
 import { z } from "zod";
 import * as projectService from "../services/proyecto.service";
 import { ApiError } from "../utils/ApiError";
-import { CreateProjectSchema } from "../validations/project";
+import { CreateProjectSchema, ChangeProjectStateSchema } from "../validations/project";
 
 /** Filtros aceptados en GET /api/projects (query string). */
 const listQuerySchema = z.object({
@@ -58,4 +58,27 @@ export async function create(req: Request, res: Response) {
 
   const project = await projectService.createProject(readToken(req), req.user.id, parsed.data);
   res.status(201).json({ project });
+}
+
+/** PATCH /api/projects/:id/estado (ruta protegida — empresa dueña) */
+export async function changeState(req: Request, res: Response) {
+  if (!req.user) {
+    throw new ApiError(401, "No autenticado");
+  }
+  const idParsed = idParamSchema.safeParse(req.params.id);
+  if (!idParsed.success) {
+    throw new ApiError(400, "El id del proyecto no es válido");
+  }
+  const bodyParsed = ChangeProjectStateSchema.safeParse(req.body);
+  if (!bodyParsed.success) {
+    throw new ApiError(400, bodyParsed.error.issues[0]?.message ?? "Estado inválido");
+  }
+
+  const project = await projectService.changeProjectState(
+    readToken(req),
+    req.user.id,
+    idParsed.data,
+    bodyParsed.data,
+  );
+  res.status(200).json({ project });
 }
