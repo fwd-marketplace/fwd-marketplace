@@ -76,6 +76,26 @@ Errores típicos: 409 si ya postuló o si el proyecto no está en recepción; 40
 }] }
 ```
 
+### GET /api/ofertas/:id  (Bearer — empresa dueña del proyecto)
+Detalle de una postulación con los datos de **contacto** del junior, para que la
+empresa pueda escribirle tras adjudicar. Solo la empresa dueña del proyecto al que
+pertenece la oferta puede verla (404 si no existe, 403 si no es suya).
+```json
+{ "oferta": {
+  "id": "uuid", "propuesta": "...", "prototipo_url": "...", "fecha_envio": "...",
+  "estado": { "nombre": "adjudicada" },
+  "proyecto": { "id": "uuid", "titulo": "..." },
+  "junior": {
+    "id": "uuid", "nombre": "Ana", "apellido1": "Soto", "apellido2": "Jiménez",
+    "correo": "ana@example.com",
+    "estudiante": {
+      "url_github": "https://github.com/ana", "url_linkedin": "", "url_portfolio": ""
+    }
+  }
+} }
+```
+Los links del `estudiante` pueden venir `null`/`""` si el junior no los completó.
+
 ### PATCH /api/ofertas/:id  (Bearer — empresa dueña)
 ```json
 { "accion": "aceptar" }   // o "rechazar"
