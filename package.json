@@ -1,6 +1,0 @@
-{
-  "dependencies": {
-    "eslint-config-next": "^15.5.19",
-    "next": "^15.5.19"
-  }
-}

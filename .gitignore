@@ -1,4 +1,0 @@
-# Tooling raíz (husky + commitlint + lint-staged)
-/node_modules
-
-# Cada app gestiona su propio build/deps en su carpeta
