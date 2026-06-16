@@ -14,6 +14,7 @@ const { state } = vi.hoisted(() => ({
       data: { session: unknown };
       error: unknown;
     },
+    setSessionResult: { error: null } as { error: unknown },
     updateUserResult: { error: null } as { error: unknown },
     signOutCalls: 0,
     updateUserCalls: 0,
@@ -32,6 +33,8 @@ vi.mock("../../config/supabase", () => ({
       },
       verifyOtp: (_args: { token_hash: string; type: string }) =>
         Promise.resolve(state.verifyOtpResult),
+      setSession: (_args: { access_token: string; refresh_token: string }) =>
+        Promise.resolve(state.setSessionResult),
       updateUser: (_args: { password: string }) => {
         state.updateUserCalls += 1;
         return Promise.resolve(state.updateUserResult);
@@ -45,6 +48,7 @@ import { refreshSession, logoutUser, confirmPasswordReset } from "../user.servic
 beforeEach(() => {
   state.refreshResult = { data: { user: null, session: null }, error: null };
   state.verifyOtpResult = { data: { session: null }, error: null };
+  state.setSessionResult = { error: null };
   state.updateUserResult = { error: null };
   state.signOutCalls = 0;
   state.updateUserCalls = 0;
@@ -108,29 +112,48 @@ describe("logoutUser", () => {
 });
 
 describe("confirmPasswordReset", () => {
-  it("actualiza la contraseña cuando el token de recovery es válido", async () => {
-    state.verifyOtpResult = { data: { session: { access_token: "recovery" } }, error: null };
-    state.updateUserResult = { error: null };
+  it("actualiza la contraseña con token_hash válido", async () => {
+    state.verifyOtpResult = { data: { session: {} }, error: null };
 
-    await expect(confirmPasswordReset("token-ok", "nuevaClave123")).resolves.toBeUndefined();
+    await expect(
+      confirmPasswordReset({ tokenHash: "token-ok", password: "nuevaClave123" }),
+    ).resolves.toBeUndefined();
     expect(state.updateUserCalls).toBe(1);
   });
 
-  it("lanza 400 si el token es inválido/expiró (sin sesión)", async () => {
+  it("actualiza la contraseña con access_token + refresh_token (correo default)", async () => {
+    state.setSessionResult = { error: null };
+
+    await expect(
+      confirmPasswordReset({ accessToken: "a", refreshToken: "r", password: "nuevaClave123" }),
+    ).resolves.toBeUndefined();
+    expect(state.updateUserCalls).toBe(1);
+  });
+
+  it("lanza 400 si el token_hash es inválido/expiró", async () => {
     state.verifyOtpResult = { data: { session: null }, error: { message: "invalid" } };
 
-    await expect(confirmPasswordReset("bad", "nuevaClave123")).rejects.toMatchObject({
-      statusCode: 400,
-    });
+    await expect(
+      confirmPasswordReset({ tokenHash: "bad", password: "nuevaClave123" }),
+    ).rejects.toMatchObject({ statusCode: 400 });
+    expect(state.updateUserCalls).toBe(0);
+  });
+
+  it("lanza 400 si la sesión (access/refresh) es inválida", async () => {
+    state.setSessionResult = { error: { message: "invalid" } };
+
+    await expect(
+      confirmPasswordReset({ accessToken: "a", refreshToken: "r", password: "nuevaClave123" }),
+    ).rejects.toMatchObject({ statusCode: 400 });
     expect(state.updateUserCalls).toBe(0);
   });
 
   it("lanza 400 si updateUser falla", async () => {
-    state.verifyOtpResult = { data: { session: { access_token: "recovery" } }, error: null };
+    state.verifyOtpResult = { data: { session: {} }, error: null };
     state.updateUserResult = { error: { message: "weak password" } };
 
-    await expect(confirmPasswordReset("token-ok", "nuevaClave123")).rejects.toMatchObject({
-      statusCode: 400,
-    });
+    await expect(
+      confirmPasswordReset({ tokenHash: "token-ok", password: "nuevaClave123" }),
+    ).rejects.toMatchObject({ statusCode: 400 });
   });
 });
