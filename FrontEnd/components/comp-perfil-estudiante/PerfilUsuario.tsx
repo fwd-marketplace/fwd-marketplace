@@ -3,7 +3,6 @@
 import React, { useState } from "react";
 import { useTranslations } from "next-intl";
 import {
-  MapPin,
   Mail,
   Globe,
   Plus,
@@ -24,31 +23,13 @@ import {
   BarChart2,
   Code2,
   Palette,
-  Search,
-  Box,
-  UserCog,
-  Play,
-  Eye,
-  Compass,
 } from "lucide-react";
 import {
   StudentProfile,
   Activity,
   Application,
   ApplicationStats,
-  NotifType,
-  MockNotification,
-  MockSuggestedProject,
-  WorkProject,
-  OpportunityItem,
 } from "@/app/[locale]/(public)/perfil-estudiante/types";
-import {
-  MOCK_NOTIFICATIONS_HOY,
-  MOCK_NOTIFICATIONS_AYER,
-  MOCK_SUGGESTED_PROJECTS,
-  MOCK_WORK_PROJECTS,
-  MOCK_OPPORTUNITIES,
-} from "@/app/[locale]/(public)/perfil-estudiante/mock-data";
 
 // ── Inline SVG icons ───────────────────────────────────────────────────────────
 
@@ -103,130 +84,7 @@ function getCategoryBg(category: Application["category"]): string {
   }
 }
 
-function getNotifIconStyle(type: NotifType): string {
-  switch (type) {
-    case "oportunidad": return "bg-primary/10 text-primary border border-primary/20";
-    case "rechazo": return "bg-magenta/10 text-magenta border border-magenta/20";
-    case "visibilidad": return "bg-warning/10 text-warning border border-warning/20";
-    case "proyecto": return "bg-accent/15 text-accent border border-accent/20";
-  }
-}
 
-function getNotifIcon(type: NotifType) {
-  switch (type) {
-    case "oportunidad": return <Compass className="w-5 h-5" />;
-    case "rechazo": return <X className="w-5 h-5" />;
-    case "visibilidad": return <Eye className="w-5 h-5" />;
-    case "proyecto": return <Check className="w-5 h-5" />;
-  }
-}
-
-function renderBoldMessage(message: string): React.ReactNode[] {
-  const parts = message.split(/(\*\*.*?\*\*)/g);
-  return parts.map((part, index) => {
-    if (part.startsWith("**") && part.endsWith("**")) {
-      return (
-        <strong key={index} className="font-bold text-ink-strong">
-          {part.slice(2, -2)}
-        </strong>
-      );
-    }
-    return part;
-  });
-}
-
-function buildWorkProjectPreview(project: WorkProject) {
-  switch (project.variant) {
-    case "dashboard":
-      return (
-        <div className="bg-canvas p-4 flex gap-3 h-44 overflow-hidden border-b border-border/40 select-none">
-          <div className="w-8 shrink-0 bg-surface border border-border/50 rounded flex flex-col gap-1.5 p-1">
-            <div className="w-full h-2 rounded bg-primary/20" />
-            <div className="w-full h-1 bg-border rounded" />
-            <div className="w-full h-1 bg-border rounded" />
-            <div className="w-full h-1 bg-border rounded" />
-          </div>
-          <div className="flex-grow flex flex-col gap-2">
-            <div className="w-full h-4 bg-surface border border-border/50 rounded flex items-center px-1.5 justify-between">
-              <div className="w-10 h-1.5 bg-border rounded" />
-              <div className="w-4 h-1.5 bg-primary/30 rounded" />
-            </div>
-            <div className="grid grid-cols-3 gap-2 flex-grow">
-              <div className="bg-surface border border-border/40 rounded p-1.5 flex flex-col justify-between">
-                <div className="w-full h-1 bg-border rounded" />
-                <div className="w-8 h-3 bg-secondary/15 rounded" />
-              </div>
-              <div className="bg-surface border border-border/40 rounded p-1.5 flex flex-col justify-between">
-                <div className="w-full h-1 bg-border rounded" />
-                <div className="w-6 h-3 bg-primary/15 rounded" />
-              </div>
-              <div className="bg-surface border border-border/40 rounded p-1.5 flex flex-col justify-between">
-                <div className="w-full h-1 bg-border rounded" />
-                <div className="w-10 h-3 bg-accent/15 rounded" />
-              </div>
-            </div>
-            <div className="w-full h-10 bg-surface border border-border/40 rounded p-1.5 flex flex-col gap-1">
-              <div className="w-full h-1 bg-border rounded" />
-              <div className="w-4/5 h-1 bg-border/60 rounded" />
-            </div>
-          </div>
-        </div>
-      );
-    case "landing":
-      return (
-        <div className="bg-canvas p-4 h-44 overflow-hidden border-b border-border/40 select-none flex flex-col gap-2">
-          <div className="flex justify-between items-center px-1">
-            <div className="w-8 h-2 bg-primary/40 rounded" />
-            <div className="flex gap-1.5">
-              <div className="w-4 h-1.5 bg-border rounded" />
-              <div className="w-4 h-1.5 bg-border rounded" />
-            </div>
-          </div>
-          <div className="flex-grow bg-ink-strong/95 rounded-lg flex flex-col items-center justify-center p-3 relative text-center border border-border/50">
-            <div className="w-20 h-1.5 bg-primary/30 rounded mb-1.5" />
-            <div className="w-28 h-2.5 bg-border rounded mb-3" />
-            <div className="w-8 h-8 rounded-full bg-primary/10 text-primary flex items-center justify-center border border-primary/20 shadow-soft">
-              <Play className="w-3.5 h-3.5 fill-primary text-primary ml-0.5" />
-            </div>
-          </div>
-        </div>
-      );
-    case "inventory":
-      return (
-        <div className="bg-canvas p-4 h-44 overflow-hidden border-b border-border/40 select-none flex flex-col gap-2.5">
-          <div className="flex justify-between items-center">
-            <div className="w-16 h-3.5 bg-primary/20 rounded" />
-            <div className="w-5 h-5 rounded-full bg-primary/80" />
-          </div>
-          <div className="space-y-2 flex-grow">
-            <div className="bg-surface border border-border/40 rounded p-1.5 flex items-center gap-2.5 shadow-sm">
-              <div className="w-5 h-5 bg-border rounded shrink-0" />
-              <div className="flex-grow space-y-1">
-                <div className="w-24 h-1.5 bg-border rounded" />
-                <div className="w-16 h-1 bg-border/60 rounded" />
-              </div>
-            </div>
-            <div className="bg-surface border border-border/40 rounded p-1.5 flex items-center gap-2.5 shadow-sm">
-              <div className="w-5 h-5 bg-border rounded shrink-0" />
-              <div className="flex-grow space-y-1">
-                <div className="w-28 h-1.5 bg-border rounded" />
-                <div className="w-12 h-1 bg-border/60 rounded" />
-              </div>
-            </div>
-          </div>
-        </div>
-      );
-  }
-}
-
-const OPPORTUNITY_ICONS = [
-  <UserCog key="user-cog" className="w-6 h-6 text-ink-muted" />,
-  <Box key="box" className="w-6 h-6 text-ink-muted" />,
-] as const;
-
-function getOpportunityIcon(index: number): React.ReactNode {
-  return OPPORTUNITY_ICONS[index] ?? OPPORTUNITY_ICONS[0];
-}
 
 // ── Tab and filter types ───────────────────────────────────────────────────────
 
@@ -262,12 +120,12 @@ export default function PerfilUsuario({
   const [applications] = useState<Application[]>(initialApplications);
 
   const [isEditingPersonal, setIsEditingPersonal] = useState(false);
-  const [editLocation, setEditLocation] = useState(profile.location);
+  const [editAvailability, setEditAvailability] = useState(profile.availability);
   const [editEmail, setEditEmail] = useState(profile.email);
   const [editBio, setEditBio] = useState(profile.bio);
 
   const [isEditingHero, setIsEditingHero] = useState(false);
-  const [editRole, setEditRole] = useState(profile.role);
+  const [editSpecialty, setEditSpecialty] = useState(profile.specialty);
   const [editProgram, setEditProgram] = useState(profile.program);
 
   const [newSkill, setNewSkill] = useState("");
@@ -313,7 +171,7 @@ export default function PerfilUsuario({
 
   function savePersonalInfo(e: React.FormEvent<HTMLFormElement>) {
     e.preventDefault();
-    setProfile((prev) => ({ ...prev, location: editLocation, email: editEmail, bio: editBio }));
+    setProfile((prev) => ({ ...prev, availability: editAvailability, email: editEmail, bio: editBio }));
     setIsEditingPersonal(false);
     setActivities((prev) => [
       { id: `act-${Date.now()}`, description: t("activity.updated_personal"), timestamp: t("activity.just_now") },
@@ -323,7 +181,7 @@ export default function PerfilUsuario({
 
   function saveHeroInfo(e: React.FormEvent<HTMLFormElement>) {
     e.preventDefault();
-    setProfile((prev) => ({ ...prev, role: editRole, program: editProgram }));
+    setProfile((prev) => ({ ...prev, specialty: editSpecialty, program: editProgram }));
     setIsEditingHero(false);
   }
 
@@ -349,21 +207,21 @@ export default function PerfilUsuario({
   }
 
   function cancelEditPersonal() {
-    setEditLocation(profile.location);
+    setEditAvailability(profile.availability);
     setEditEmail(profile.email);
     setEditBio(profile.bio);
     setIsEditingPersonal(false);
   }
 
   function cancelEditHero() {
-    setEditRole(profile.role);
+    setEditSpecialty(profile.specialty);
     setEditProgram(profile.program);
     setIsEditingHero(false);
   }
 
   // ── Derived values ─────────────────────────────────────────────────────────
 
-  const unreadCount = [...MOCK_NOTIFICATIONS_HOY, ...MOCK_NOTIFICATIONS_AYER].filter((n) => n.unread).length;
+  const unreadCount = 0;
   const filteredApplications = applications.filter(
     (app) => filterStatus === "todas" || app.status === filterStatus
   );
@@ -398,16 +256,16 @@ export default function PerfilUsuario({
                 >
                   <div>
                     <label
-                      htmlFor="edit-role"
+                      htmlFor="edit-specialty"
                       className="block text-xs font-semibold uppercase tracking-wider text-white/70 mb-1"
                     >
                       {t("hero.role_label")}
                     </label>
                     <input
-                      id="edit-role"
+                      id="edit-specialty"
                       type="text"
-                      value={editRole}
-                      onChange={(e) => setEditRole(e.target.value)}
+                      value={editSpecialty}
+                      onChange={(e) => setEditSpecialty(e.target.value)}
                       className="w-full bg-white/10 border border-white/20 rounded-lg px-3 py-1.5 text-sm text-white focus:outline-none focus:bg-white/20"
                       required
                     />
@@ -452,7 +310,7 @@ export default function PerfilUsuario({
                       <span className="text-highlight">.</span>
                     </h1>
                     <p className="text-lg md:text-xl font-medium text-white/95">
-                      {profile.role} &mdash; <span className="opacity-90">{profile.program}</span>
+                      {profile.specialty} &mdash; <span className="opacity-90">{profile.program}</span>
                     </p>
                   </div>
 
@@ -500,7 +358,7 @@ export default function PerfilUsuario({
             let badge: number | null = null;
             if (tabId === "postulaciones") badge = applications.length;
             if (tabId === "notificaciones") badge = unreadCount;
-            if (tabId === "sugeridos") badge = MOCK_SUGGESTED_PROJECTS.length;
+            if (tabId === "sugeridos") badge = 0;
 
             return (
               <button
@@ -549,16 +407,16 @@ export default function PerfilUsuario({
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                       <div>
                         <label
-                          htmlFor="edit-location"
+                          htmlFor="edit-availability"
                           className="block text-xs font-semibold uppercase tracking-wider text-ink-muted mb-1"
                         >
                           {t("personal.location_field")}
                         </label>
                         <input
-                          id="edit-location"
+                          id="edit-availability"
                           type="text"
-                          value={editLocation}
-                          onChange={(e) => setEditLocation(e.target.value)}
+                          value={editAvailability}
+                          onChange={(e) => setEditAvailability(e.target.value)}
                           className="w-full bg-surface-sunken border border-border text-ink rounded-lg px-3 py-2 text-sm focus:outline-primary"
                           required
                         />
@@ -616,10 +474,10 @@ export default function PerfilUsuario({
                   <>
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-4 text-sm">
                       <div className="flex items-center gap-3 bg-surface-sunken p-3.5 rounded-xl border border-border">
-                        <MapPin className="w-5 h-5 text-primary shrink-0" />
+                        <Clock className="w-5 h-5 text-primary shrink-0" />
                         <div>
                           <span className="block text-xs text-ink-muted">{t("personal.location_display")}</span>
-                          <span className="font-semibold text-ink-strong">{profile.location}</span>
+                          <span className="font-semibold text-ink-strong">{profile.availability}</span>
                         </div>
                       </div>
                       <div className="flex items-center gap-3 bg-surface-sunken p-3.5 rounded-xl border border-border">
@@ -849,47 +707,13 @@ export default function PerfilUsuario({
               <p className="text-sm text-ink-muted leading-relaxed">{t("work.description")}</p>
             </div>
 
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-6 pt-4">
-              {MOCK_WORK_PROJECTS.map((project: WorkProject) => (
-                <div
-                  key={project.id}
-                  className="bg-surface rounded-2xl border border-border overflow-hidden shadow-soft hover:shadow-md hover:border-primary/20 transition-all duration-300 flex flex-col"
-                >
-                  <div className="bg-surface-sunken border-b border-border px-4 py-2.5 flex items-center gap-2 text-xs shrink-0 select-none">
-                    <div className="flex gap-1.5">
-                      <span className="w-2.5 h-2.5 rounded-full bg-magenta/80" />
-                      <span className="w-2.5 h-2.5 rounded-full bg-warning/80" />
-                      <span className="w-2.5 h-2.5 rounded-full bg-accent/80" />
-                    </div>
-                    <div className="flex-grow max-w-xs mx-auto bg-surface border border-border/60 rounded-md px-3 py-0.5 text-ink-subtle text-[10px] flex items-center gap-1 font-mono">
-                      <span className="text-primary/70">fwd-talent.io</span>/{project.browserBar.replace("fwd-talent.io/", "")}
-                    </div>
-                  </div>
-                  {buildWorkProjectPreview(project)}
-                  <div className="p-5 flex-grow flex flex-col justify-between gap-2">
-                    <div className="flex justify-between items-start gap-4">
-                      <h3 className="text-base font-bold text-ink-strong leading-tight">{project.title}</h3>
-                      <span className="text-[9px] font-extrabold uppercase tracking-widest px-2 py-0.5 rounded bg-primary/10 text-primary border border-primary/20 shrink-0">
-                        {t("work.badge_product")}
-                      </span>
-                    </div>
-                    <p className="text-xs text-ink-muted leading-relaxed">{project.description}</p>
-                  </div>
-                </div>
-              ))}
-
-              {/* Add project card */}
-              <div
-                role="button"
-                tabIndex={0}
-                onKeyDown={(e) => { if (e.key === "Enter" || e.key === " ") e.currentTarget.click(); }}
-                className="bg-surface border-2 border-dashed border-border hover:border-primary/50 transition-colors flex flex-col items-center justify-center p-8 text-center cursor-pointer min-h-[260px] rounded-2xl group"
-              >
-                <div className="w-12 h-12 rounded-full bg-primary/10 text-primary flex items-center justify-center mb-3 group-hover:scale-105 transition-transform duration-200">
-                  <Plus className="w-6 h-6" />
-                </div>
-                <h3 className="font-bold text-ink-strong text-base mb-1">{t("work.add_title")}</h3>
-                <p className="text-xs text-ink-subtle">{t("work.add_formats")}</p>
+            <div className="pt-8 border-t border-border/60">
+              <div className="rounded-2xl border border-dashed border-border bg-surface p-8 text-center">
+                <Sparkles className="mx-auto mb-3 w-7 h-7 text-primary" />
+                <h2 className="text-xl md:text-2xl font-heading font-extrabold tracking-tight text-ink-strong">
+                  {t("two_point_zero.title")}<span className="text-primary">.</span>
+                </h2>
+                <p className="mt-2 text-sm text-ink-muted">{t("two_point_zero.work")}</p>
               </div>
             </div>
           </section>
@@ -1014,57 +838,13 @@ export default function PerfilUsuario({
             </div>
 
             {/* More opportunities */}
-            <div className="pt-8 border-t border-border/60 space-y-6">
-              <div className="space-y-1">
+            <div className="pt-8 border-t border-border/60">
+              <div className="rounded-2xl border border-dashed border-border bg-surface p-8 text-center">
+                <Sparkles className="mx-auto mb-3 w-7 h-7 text-primary" />
                 <h2 className="text-xl md:text-2xl font-heading font-extrabold tracking-tight text-ink-strong">
-                  {t("applications.opportunities_title")}<span className="text-primary">.</span>
+                  {t("two_point_zero.title")}<span className="text-primary">.</span>
                 </h2>
-                <p className="text-sm text-ink-muted">{t("applications.opportunities_description")}</p>
-              </div>
-              <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 items-stretch">
-                <div className="lg:col-span-2 flex flex-col gap-4">
-                  {MOCK_OPPORTUNITIES.map((opp: OpportunityItem, index: number) => (
-                    <div
-                      key={opp.id}
-                      className="bg-surface rounded-2xl border border-border/80 p-5 flex items-center justify-between shadow-soft hover:shadow-md hover:border-primary/20 transition-all duration-200"
-                    >
-                      <div className="flex items-center gap-4">
-                        <div className="w-12 h-12 rounded-xl border border-border/60 flex items-center justify-center bg-surface-sunken shrink-0">
-                          {getOpportunityIcon(index)}
-                        </div>
-                        <div className="space-y-1">
-                          <h3 className="text-sm md:text-base font-bold text-ink-strong leading-tight">{opp.title}</h3>
-                          <p className="text-xs md:text-sm text-ink-muted">{opp.location}</p>
-                        </div>
-                      </div>
-                      <button
-                        type="button"
-                        className="text-[10px] md:text-xs font-bold text-primary hover:text-primary/80 transition-colors uppercase tracking-wider flex items-center gap-1 cursor-pointer shrink-0"
-                      >
-                        {t("applications.view_details")} <ArrowUpRight className="w-3.5 h-3.5" />
-                      </button>
-                    </div>
-                  ))}
-                </div>
-                <div className="relative bg-gradient-to-br from-primary/5 to-secondary/15 rounded-3xl border border-border/40 p-6 flex items-center justify-center min-h-[180px] overflow-hidden group">
-                  <div className="absolute -left-6 -bottom-6 w-16 h-16 rounded-full bg-primary/10 pointer-events-none transition-transform group-hover:scale-110 duration-500" />
-                  <div className="absolute -right-4 -top-4 w-12 h-12 rounded-lg bg-secondary/10 rotate-12 pointer-events-none transition-transform group-hover:rotate-45 duration-500" />
-                  <div className="relative z-10 bg-surface rounded-2xl p-6 shadow-soft hover:shadow-md transition-shadow duration-200 w-full max-w-[220px] flex flex-col items-center justify-center text-center space-y-4 border border-border/40">
-                    <div className="flex flex-col items-center gap-1.5 w-full">
-                      <div className="w-10 h-1 rounded-full bg-primary/40" />
-                      <div className="w-6 h-1 rounded-full bg-primary/20" />
-                    </div>
-                    <div className="relative w-12 h-12 flex items-center justify-center rounded-full bg-primary/10 text-primary">
-                      <Search className="w-6 h-6" />
-                      <span className="absolute -bottom-1 -right-1 bg-primary text-white rounded-full p-0.5 border-2 border-surface flex items-center justify-center">
-                        <Check className="w-2.5 h-2.5 stroke-[3]" />
-                      </span>
-                    </div>
-                    <span className="text-[10px] font-extrabold text-primary tracking-wider uppercase">
-                      {t("applications.explore_routes")}
-                    </span>
-                  </div>
-                </div>
+                <p className="mt-2 text-sm text-ink-muted">{t("two_point_zero.applications")}</p>
               </div>
             </div>
           </section>
@@ -1085,94 +865,14 @@ export default function PerfilUsuario({
               </button>
             </div>
 
-            {/* Today */}
-            <div className="space-y-4">
-              <div className="flex items-center gap-4">
-                <h2 className="text-xl font-bold font-heading text-ink-strong shrink-0">
-                  {t("notifications.today")}
+            <div className="pt-8 border-t border-border/60">
+              <div className="rounded-2xl border border-dashed border-border bg-surface p-8 text-center">
+                <Sparkles className="mx-auto mb-3 w-7 h-7 text-primary" />
+                <h2 className="text-xl md:text-2xl font-heading font-extrabold tracking-tight text-ink-strong">
+                  {t("two_point_zero.title")}<span className="text-primary">.</span>
                 </h2>
-                <div className="flex-grow border-t border-border/80" />
+                <p className="mt-2 text-sm text-ink-muted">{t("two_point_zero.notifications")}</p>
               </div>
-              <div className="space-y-4">
-                {MOCK_NOTIFICATIONS_HOY.map((notif: MockNotification) => (
-                  <div
-                    key={notif.id}
-                    className="bg-surface border border-border rounded-2xl px-6 py-5 flex items-center gap-6 shadow-soft hover:shadow-md hover:border-border-strong transition-all duration-200"
-                  >
-                    <div className="relative shrink-0">
-                      <div
-                        className={`w-12 h-12 rounded-full flex items-center justify-center border ${getNotifIconStyle(notif.type)}`}
-                      >
-                        {getNotifIcon(notif.type)}
-                      </div>
-                      {notif.unread && (
-                        <span className="absolute top-0 right-0.5 w-3 h-3 bg-primary rounded-full border-2 border-surface" />
-                      )}
-                    </div>
-                    <div className="flex-grow min-w-0 space-y-1">
-                      <div className="flex items-center justify-between gap-3">
-                        <span className="text-[10px] font-extrabold uppercase tracking-wider text-ink-muted">
-                          {notif.category}
-                        </span>
-                        <span className="text-xs text-ink-subtle shrink-0 font-medium">{notif.time}</span>
-                      </div>
-                      <p className="text-sm text-ink leading-relaxed">{renderBoldMessage(notif.message)}</p>
-                      {notif.tags.length > 0 && (
-                        <div className="flex flex-wrap gap-2 pt-1.5">
-                          {notif.tags.map((tag) => (
-                            <span
-                              key={tag}
-                              className="text-[11px] font-medium bg-surface-sunken border border-border text-ink-muted px-2.5 py-0.5 rounded"
-                            >
-                              {tag}
-                            </span>
-                          ))}
-                        </div>
-                      )}
-                    </div>
-                  </div>
-                ))}
-              </div>
-            </div>
-
-            {/* Yesterday */}
-            <div className="space-y-4">
-              <div className="flex items-center gap-4">
-                <h2 className="text-xl font-bold font-heading text-ink-strong shrink-0">
-                  {t("notifications.yesterday")}
-                </h2>
-                <div className="flex-grow border-t border-border/80" />
-              </div>
-              <div className="space-y-4">
-                {MOCK_NOTIFICATIONS_AYER.map((notif: MockNotification) => (
-                  <div
-                    key={notif.id}
-                    className="bg-surface border border-border rounded-2xl px-6 py-5 flex items-center gap-6 shadow-soft hover:shadow-md hover:border-border-strong transition-all duration-200"
-                  >
-                    <div className="relative shrink-0">
-                      <div
-                        className={`w-12 h-12 rounded-full flex items-center justify-center border ${getNotifIconStyle(notif.type)}`}
-                      >
-                        {getNotifIcon(notif.type)}
-                      </div>
-                    </div>
-                    <div className="flex-grow min-w-0 space-y-1">
-                      <div className="flex items-center justify-between gap-3">
-                        <span className="text-[10px] font-extrabold uppercase tracking-wider text-ink-muted">
-                          {notif.category}
-                        </span>
-                        <span className="text-xs text-ink-subtle shrink-0 font-medium">{notif.time}</span>
-                      </div>
-                      <p className="text-sm text-ink leading-relaxed">{renderBoldMessage(notif.message)}</p>
-                    </div>
-                  </div>
-                ))}
-              </div>
-            </div>
-
-            <div className="flex flex-col items-center justify-center gap-3 py-14 bg-surface rounded-2xl border border-dashed border-border-strong/50">
-              <History className="w-8 h-8 text-ink-subtle" />
-              <span className="text-sm text-ink-subtle font-medium">{t("notifications.older_empty")}</span>
             </div>
           </section>
         )}
@@ -1191,49 +891,14 @@ export default function PerfilUsuario({
             </div>
             <p className="text-sm text-ink-muted">{t("suggested.description")}</p>
 
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-              {MOCK_SUGGESTED_PROJECTS.map((project: MockSuggestedProject) => (
-                <div
-                  key={project.id}
-                  className="bg-surface-sunken rounded-xl border border-border p-5 flex flex-col justify-between space-y-4 hover:border-primary/50 hover:shadow-soft transition-all"
-                >
-                  <div className="space-y-3">
-                    <div className="flex justify-between items-start gap-4">
-                      <div>
-                        <h3 className="text-base font-bold text-ink-strong leading-snug">{project.title}</h3>
-                        <span className="text-xs text-ink-muted font-medium">{project.company}</span>
-                      </div>
-                      <span className="bg-accent/15 text-accent text-[10px] font-bold px-2 py-0.5 rounded-md border border-accent/20">
-                        {project.match} {t("suggested.match_label")}
-                      </span>
-                    </div>
-                    <p className="text-xs text-ink leading-relaxed line-clamp-3">{project.description}</p>
-                  </div>
-                  <div className="space-y-3 pt-2">
-                    <div className="flex flex-wrap gap-1.5">
-                      {project.skills.map((skill) => (
-                        <span
-                          key={skill}
-                          className="bg-surface text-[10px] font-semibold text-ink px-2 py-0.5 rounded border border-border"
-                        >
-                          {skill}
-                        </span>
-                      ))}
-                    </div>
-                    <div className="flex justify-between items-center pt-1 border-t border-border/60">
-                      <span className="text-xs text-ink-muted font-medium">
-                        {t("suggested.duration_prefix")} {project.duration}
-                      </span>
-                      <button
-                        type="button"
-                        className="text-primary hover:text-primary/95 text-xs font-bold inline-flex items-center gap-1 cursor-pointer"
-                      >
-                        {t("suggested.apply")} <ArrowUpRight className="w-3.5 h-3.5" />
-                      </button>
-                    </div>
-                  </div>
-                </div>
-              ))}
+            <div className="pt-8 border-t border-border/60">
+              <div className="rounded-2xl border border-dashed border-border bg-surface p-8 text-center">
+                <Sparkles className="mx-auto mb-3 w-7 h-7 text-primary" />
+                <h2 className="text-xl md:text-2xl font-heading font-extrabold tracking-tight text-ink-strong">
+                  {t("two_point_zero.title")}<span className="text-primary">.</span>
+                </h2>
+                <p className="mt-2 text-sm text-ink-muted">{t("two_point_zero.suggested")}</p>
+              </div>
             </div>
           </section>
         )}

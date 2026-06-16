@@ -497,7 +497,8 @@
   },
   "app_header": {
     "notifications": "Notifications",
-    "user_menu": "User menu"
+    "user_menu": "User menu",
+    "logout": "Log out"
   },
   "empresa_subnav": {
     "back": "Back",
@@ -517,7 +518,7 @@
     },
     "hero": {
       "edit_profile": "Edit profile",
-      "role_label": "Role",
+      "role_label": "Specialty",
       "program_label": "Program / Cohort",
       "save": "Save",
       "cancel": "Cancel"
@@ -525,10 +526,10 @@
     "personal": {
       "title": "Personal Information",
       "edit": "Edit",
-      "location_field": "Location",
+      "location_field": "Availability",
       "email_field": "Email Address",
       "bio_field": "Professional bio",
-      "location_display": "Location",
+      "location_display": "Availability",
       "email_display": "Contact",
       "bio_heading": "About Me",
       "save_changes": "Save changes",
@@ -619,7 +620,21 @@
       "terms": "Terms of Service",
       "privacy": "Privacy Policy",
       "support": "Support"
+    },
+    "two_point_zero": {
+      "title": "Coming soon",
+      "work": "2.0: Project portfolio",
+      "applications": "2.0: More opportunities for you",
+      "notifications": "2.0: Matching and activity notifications",
+      "suggested": "2.0: Algorithmic matching and recommendations"
     }
+  },
+  "junior_subnav": {
+    "back": "Back to marketplace",
+    "inicio": "Home",
+    "marketplace": "Marketplace",
+    "viaje": "My journey",
+    "perfil": "My profile"
   },
   "viaje": {
     "title": "Your sky",
@@ -746,6 +761,127 @@
       "onsite": "On-site"
     }
   },
+  "empresa_dashboard": {
+    "title": "GLOBAL TECH SOLUTIONS",
+    "company_desc": "Global leader in technology solutions for Industry 4.0, focused on optimizing production processes through specialized FWD talent.",
+    "label_empresa": "Company",
+    "tag_socio": "Industrial Partner",
+    "tag_location": "Costa Rica",
+    "tag_size": "1-10 employees",
+    "edit_profile_btn": "Edit profile",
+    "view_projects_btn": "View projects",
+    "stats": {
+      "active_projects": "Active projects",
+      "applications": "Applications",
+      "reviewed": "Reviewed",
+      "pending_match": "Pending match"
+    },
+    "projects": {
+      "title": "Your projects",
+      "new_btn": "New",
+      "paused": "Paused",
+      "published_days": "Published {days} days ago",
+      "label_applied": "Applied"
+    },
+    "compatibility": {
+      "title": "Candidate compatibility",
+      "subtitle": "Select a project to filter",
+      "match_total": "Total match",
+      "tech_stack": "Tech stack",
+      "availability": "Availability",
+      "modality": "Modality",
+      "empty_state": "No recommended candidates for this project yet."
+    },
+    "applications": {
+      "title": "Who applied",
+      "empty_state": "No applications registered.",
+      "table": {
+        "junior": "Talent",
+        "project": "Project",
+        "match": "Match",
+        "status": "Status",
+        "actions": "Actions"
+      },
+      "status": {
+        "reviewed": "Reviewed",
+        "pending": "Pending",
+        "interview": "Interview",
+        "accepted": "Accepted",
+        "rejected": "Rejected"
+      },
+      "actions": {
+        "view": "View profile",
+        "accept": "Accept",
+        "reject": "Reject",
+        "completed": "Completed"
+      }
+    },
+    "new_project_modal": {
+      "title": "New project",
+      "name_label": "Project name",
+      "placeholder": "e.g. E-commerce Mobile Sync",
+      "status_label": "Initial status",
+      "active": "Active",
+      "paused": "Paused",
+      "cancel": "Cancel",
+      "submit": "Create project",
+      "success_message": "Project created successfully."
+    },
+    "notifications": {
+      "accepted": "{name} has been accepted to the project.",
+      "rejected": "{name} has been notified that they were not selected."
+    }
+  },
+  "mis_proyectos": {
+    "published_on": "Published on {date}",
+    "modality_label": "Modality",
+    "level_label": "Level",
+    "budget_label": "Budget",
+    "edit_btn": "Edit Project",
+    "pause_btn": "Pause Project",
+    "reactivate_btn": "Reactivate Project",
+    "status_active": "ACTIVE",
+    "status_paused": "PAUSED",
+    "tabs": {
+      "project": "Project",
+      "mockups": "Mockups",
+      "applications": "Applications"
+    },
+    "objective_title": "Project Objective",
+    "scope_title": "Scope and Requirements",
+    "deliverables_title": "Expected Deliverables",
+    "stack_title": "TECH STACK",
+    "metrics_title": "PROGRESS METRICS",
+    "metrics_talent_match": "Talent Match",
+    "metrics_active_applicants": "Active Applicants",
+    "mockups_empty": "No mockups loaded for this project.",
+    "applications_empty": "No applications registered yet.",
+    "edit_modal": {
+      "title": "Edit project",
+      "name_label": "Project name",
+      "modality_label": "Modality",
+      "budget_label": "Budget",
+      "cancel": "Cancel",
+      "save": "Save changes",
+      "success": "Project updated successfully."
+    },
+    "notifications": {
+      "paused": "The project has been paused.",
+      "reactivated": "The project has been reactivated."
+    }
+  },
+  "app_header": {
+    "notifications": "Notifications",
+    "user_menu": "User menu",
+    "logout": "Log out"
+  },
+  "empresa_subnav": {
+    "back": "Back",
+    "mis_proyectos": "My projects",
+    "matches": "Matches",
+    "postulaciones": "Applications",
+    "mi_empresa": "My company"
+  },
   "matches_empresa": {
     "viewing_matches": "Viewing matches for:",
     "filters_title": "Filters",
@@ -768,7 +904,7 @@
     "load_more": "Load more matches",
     "toast_invited": "{name} has been invited to apply to the project.",
     "toast_cleared": "Search filters have been cleared.",
-    "toast_profile_edit": "Profile editing functionality under development (Phase 3)."
+    "toast_profile_edit": "Profile editing feature in development (Phase 3)."
   },
   "postulaciones_empresa": {
     "title": "APPLICATIONS",
@@ -802,10 +938,120 @@
     "engine_insight": "This candidate highly matches your technical and cultural requirements.",
     "engine_signature": "FWD Matching Engine"
   },
+  "mi_empresa": {
+    "sections": {
+      "general": "General Information",
+      "culture": "Identity and Culture",
+      "interests": "Hiring Interests",
+      "needs": "Current Needs",
+      "modalities": "Collaboration Modalities",
+      "schedules": "Work Schedules",
+      "matching": "Matching Algorithm Weights",
+      "contacts": "Recruitment Contacts"
+    },
+    "fields": {
+      "comercial_name": "Commercial name",
+      "website": "Website",
+      "location": "Location",
+      "sector": "Sector",
+      "mission": "Mission",
+      "vision": "Vision",
+      "values": "Values",
+      "organization": "Organizational culture"
+    },
+    "hero": {
+      "edit_profile": "Edit profile",
+      "view_projects": "View projects"
+    },
+    "modalities": {
+      "remote": "Remote",
+      "onsite": "On-site",
+      "hybrid": "Hybrid",
+      "nomad": "Digital Nomad"
+    },
+    "matching_weights": {
+      "skills": "Technical skills",
+      "experience": "Experience",
+      "cultural": "Cultural fit",
+      "availability": "Availability"
+    },
+    "schedules": {
+      "flexible": "Flexible Hours",
+      "fixed": "Fixed Hours",
+      "timezone": "Timezone (GMT-6)"
+    }
+  },
   "done_page": {
     "eyebrow": "Request received",
     "title": "Your account is under review",
     "description": "The FWD team will review your account and notify you by email once it is approved. This usually takes 24 to 48 hours.",
     "cta": "Back to home"
+  },
+  "admin": {
+    "title": "Administration Panel",
+    "subtitle": "FWD Marketplace Management",
+    "stats": {
+      "total_students": "Total Students",
+      "active_companies": "Approved Companies",
+      "active_projects": "Active Projects",
+      "pending_approvals": "Pending Approvals"
+    },
+    "tabs": {
+      "applications": "Graduate Requests",
+      "users": "Users",
+      "projects": "Projects",
+      "companies": "Companies"
+    },
+    "applications": {
+      "title": "Graduate entry applications",
+      "empty": "No pending applications for review.",
+      "name": "Graduate",
+      "specialization": "Specialization",
+      "date": "Request Date",
+      "status": "Status",
+      "actions": "Actions",
+      "approve": "Approve",
+      "reject": "Reject",
+      "approved": "Approved",
+      "rejected": "Rejected",
+      "pending": "Pending"
+    },
+    "users": {
+      "title": "User Management",
+      "search_placeholder": "Search by name or email...",
+      "filter_role": "All roles",
+      "role_student": "Student",
+      "role_company": "Company",
+      "role_admin": "Admin",
+      "status_active": "Active",
+      "status_suspended": "Suspended",
+      "actions": "Actions",
+      "change_role": "Change Role",
+      "suspend": "Suspend",
+      "activate": "Activate"
+    },
+    "projects": {
+      "title": "Project Management",
+      "company": "Company",
+      "budget": "Budget",
+      "status": "Status",
+      "status_active": "Active",
+      "status_paused": "Paused",
+      "status_moderation": "Pending Moderation",
+      "approve": "Approve",
+      "pause": "Pause",
+      "delete": "Delete"
+    },
+    "companies": {
+      "title": "Company Management",
+      "sector": "Sector",
+      "status": "Status",
+      "status_approved": "Approved",
+      "status_pending": "Pending Approval",
+      "status_rejected": "Rejected",
+      "approve": "Approve",
+      "reject": "Reject",
+      "suspend": "Suspend"
+    }
   }
 }

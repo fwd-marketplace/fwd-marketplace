@@ -85,14 +85,43 @@ export async function getUserFromToken(accessToken: string) {
   return data.user;
 }
 
+/** Columnas de `estudiante` que muestra la página de perfil del junior. */
+const ESTUDIANTE_DETAIL_SELECT =
+  "id, descripcion, especialidad, modalidad_preferida, disponibilidad, titulo_fwd, reputacion, url_github, url_linkedin, url_portfolio";
+
+/** Nombres de las skills de un estudiante (catálogo `skills` vía `student_skills`). */
+async function getEstudianteSkills(
+  client: ReturnType<typeof supabaseForToken>,
+  estudianteId: string,
+): Promise<string[]> {
+  const { data: links, error: linksError } = await client
+    .from("student_skills")
+    .select("id_skill")
+    .eq("id_estudiante", estudianteId);
+  if (linksError) throw new ApiError(500, linksError.message);
+
+  const skillIds = (links ?? []).map((link) => link.id_skill);
+  if (skillIds.length === 0) return [];
+
+  const { data: skills, error: skillsError } = await client
+    .from("skills")
+    .select("nombre")
+    .in("id", skillIds);
+  if (skillsError) throw new ApiError(500, skillsError.message);
+
+  return (skills ?? []).map((skill) => skill.nombre);
+}
+
 /**
  * Devuelve el perfil del usuario en la BD (fila `users` + nombre del rol),
- * o `null` si todavía no completó el onboarding. Usa el cliente con la
- * identidad del usuario para que el RLS resuelva `auth.uid()`.
+ * o `null` si todavía no completó el onboarding. Para el junior anida además
+ * los datos de su fila `estudiante` y sus skills, que son los que muestra la
+ * página de perfil. Usa el cliente con la identidad del usuario para que el
+ * RLS resuelva `auth.uid()`.
  */
 export async function getMyProfile(accessToken: string, userId: string) {
   const client = supabaseForToken(accessToken);
-  const { data, error } = await client
+  const { data: user, error } = await client
     .from("users")
     .select(
       "id, nombre, apellido1, apellido2, cedula, correo, estado_cuenta, fecha_registro, role:roles(nombre)",
@@ -101,5 +130,34 @@ export async function getMyProfile(accessToken: string, userId: string) {
     .maybeSingle();
 
   if (error) throw new ApiError(500, error.message);
-  return data;
+  if (!user) return null;
+
+  if (user.role?.nombre === "student") {
+    const { data: estudiante, error: estudianteError } = await client
+      .from("estudiante")
+      .select(ESTUDIANTE_DETAIL_SELECT)
+      .eq("id_usuario", userId)
+      .maybeSingle();
+    if (estudianteError) throw new ApiError(500, estudianteError.message);
+    if (!estudiante) return { ...user, estudiante: null };
+
+    const skills = await getEstudianteSkills(client, estudiante.id);
+    return {
+      ...user,
+      estudiante: {
+        descripcion: estudiante.descripcion,
+        especialidad: estudiante.especialidad,
+        modalidad_preferida: estudiante.modalidad_preferida,
+        disponibilidad: estudiante.disponibilidad,
+        titulo_fwd: estudiante.titulo_fwd,
+        reputacion: estudiante.reputacion,
+        url_github: estudiante.url_github,
+        url_linkedin: estudiante.url_linkedin,
+        url_portfolio: estudiante.url_portfolio,
+        skills,
+      },
+    };
+  }
+
+  return user;
 }
