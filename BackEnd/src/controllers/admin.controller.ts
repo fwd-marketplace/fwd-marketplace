@@ -29,10 +29,7 @@ export async function listPending(req: Request, res: Response) {
 
 /** PATCH /api/admin/users/:id/aprobar */
 export async function approve(req: Request, res: Response) {
-  const id = req.params.id;
-  if (typeof id !== "string" || !id) {
-    throw new ApiError(400, "Falta el id del usuario");
-  }
+  const id = readUuid(req.params.id, "del usuario");
   const user = await approveUser(getToken(req), id);
   res.status(200).json({ user });
 }

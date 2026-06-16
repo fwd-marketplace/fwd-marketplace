@@ -17,13 +17,13 @@ function readCredentials(body: unknown): { email: string; password: string; name
 }
 
 function readResetInput(body: unknown): { email: string } {
-  const { email, password } = (body ?? {}) as Record<string, unknown>;
+  // Recuperación de contraseña: solo necesita el email. NO se pide la contraseña
+  // (quien la olvidó no la sabe); Supabase Auth manda el correo con el enlace para
+  // fijar una nueva.
+  const { email } = (body ?? {}) as Record<string, unknown>;
 
   if (typeof email !== "string" || !email.trim()) {
     throw new ApiError(400, "El email es obligatorio");
-  }
-  if (typeof password !== "string" || password.length < 8) {
-    throw new ApiError(400, "La contraseña debe tener al menos 8 caracteres");
   }
 
   return { email: email.trim() };
