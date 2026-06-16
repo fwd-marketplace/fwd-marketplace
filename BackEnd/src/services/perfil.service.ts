@@ -54,6 +54,50 @@ function toEmpresarioUpdate(input: PerfilEmpresarioInput): EmpresarioUpdate {
 }
 
 /**
+ * Devuelve el perfil propio del usuario para precargar el formulario de edición:
+ * el junior su fila `estudiante`, la empresa o emprendedor su fila `empresario`.
+ * Mismas columnas que devuelve `updateMyPerfil`. El RLS de lectura del propio
+ * perfil (`estudiante_ver_perfil` / `empresario_ver_perfil`) ya lo permite.
+ */
+export async function getMyPerfil(accessToken: string, userId: string) {
+  const client = supabaseForToken(accessToken);
+
+  const { data: cuenta, error: cuentaError } = await client
+    .from("users")
+    .select("role:roles(nombre)")
+    .eq("id", userId)
+    .maybeSingle();
+  if (cuentaError) throw new ApiError(500, cuentaError.message);
+  if (!cuenta) throw new ApiError(403, "Completá tu onboarding antes de ver tu perfil");
+
+  const rol = cuenta.role?.nombre;
+
+  if (rol === "student") {
+    const { data, error } = await client
+      .from("estudiante")
+      .select(ESTUDIANTE_SELECT)
+      .eq("id_usuario", userId)
+      .maybeSingle();
+    if (error) throw new ApiError(500, error.message);
+    if (!data) throw new ApiError(404, "No tenés un perfil de estudiante");
+    return data;
+  }
+
+  if (rol === "company") {
+    const { data, error } = await client
+      .from("empresario")
+      .select(EMPRESARIO_SELECT)
+      .eq("id_usuario", userId)
+      .maybeSingle();
+    if (error) throw new ApiError(500, error.message);
+    if (!data) throw new ApiError(404, "No tenés un perfil de empresa");
+    return data;
+  }
+
+  throw new ApiError(403, "Tu rol no tiene un perfil editable");
+}
+
+/**
  * El usuario edita su propio perfil: el junior su fila `estudiante`, la empresa
  * o emprendedor su fila `empresario`. La validación depende del rol (que vive en
  * la BD, no en el body), por eso se resuelve el rol primero y luego se valida el
