@@ -1,6 +1,6 @@
 import type { Request, Response } from "express";
 import { ApiError } from "../utils/ApiError";
-import { updateMyPerfil, updateMyAvatar } from "../services/perfil.service";
+import { getMyPerfil, updateMyPerfil, updateMyAvatar } from "../services/perfil.service";
 
 /** Token + id del usuario autenticado (los inyecta `authenticate`). */
 function requireAuth(req: Request): { token: string; userId: string } {
