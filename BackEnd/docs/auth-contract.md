@@ -141,6 +141,15 @@ Crea `users` (`pendiente`) + `empresario` (`tipo='emprendedor'`).
 ```
 → `201 { "role": "company", "estado_cuenta": "pendiente" }`
 
+### GET /api/users/me/perfil  (Bearer)
+Devuelve el **propio** perfil para precargar el formulario de edición: el junior su fila
+`estudiante`, la empresa o emprendedor su fila `empresario` (el BackEnd elige según el rol).
+Mismas columnas que devuelve el `PATCH`.
+→ `200 { "perfil": { ...la fila de BD... } }`
+Errores: `403` sin onboarding o rol sin perfil editable (ej. admin); `404` si no existe la fila.
+Los arrays (`modalidad_preferida`, `sector`, `tipos_proyecto`, `apoyo_tecnico_necesario`)
+vienen como **JSON string** (hay que `JSON.parse()`).
+
 ### PATCH /api/users/me/perfil  (Bearer)
 El usuario edita su **propio** perfil: el junior su fila `estudiante`, la empresa o
 emprendedor su fila `empresario`. El BackEnd elige la tabla según el rol del usuario
@@ -181,6 +190,18 @@ Rechaza una cuenta pendiente. → `200 { user: { id, estado_cuenta: "rechazada" 
 
 ### PATCH /api/admin/users/:id/suspender  (Bearer admin)
 Suspende una cuenta activa. → `200 { user: { id, estado_cuenta: "suspendida" } }`
+
+---
+
+## Pendientes para el FrontEnd
+
+Trabajo de FrontEnd que habilitan los endpoints de arriba (lo construye el grupo de FrontEnd;
+el BackEnd ya expone la API). Marcá cada ítem como hecho cuando la pantalla lo consuma.
+
+- **Edición de perfil.** Pantalla para que el junior edite su perfil (`estudiante`) y la
+  empresa/emprendedor el suyo (`empresario`). Precargar el formulario con `GET /api/users/me/perfil`
+  y guardar con `PATCH /api/users/me/perfil` (actualización parcial: mandar solo los campos
+  cambiados, al menos uno). Usar los mismos enums del onboarding.
 
 ---
 

@@ -135,6 +135,16 @@ Los links del `estudiante` pueden venir `null`/`""` si el junior no los complet�
 | `GET /api/admin/projects` | Bearer admin | `{ projects: [...] }` (todos, incluye borradores) |
 | `PATCH /api/admin/projects/:id/cancelar` | Bearer admin | `{ project: {...} }` (estado → cancelado) |
 
+## Pendientes para el FrontEnd
+
+Trabajo de FrontEnd que habilitan los endpoints de arriba (lo construye el grupo de FrontEnd;
+el BackEnd ya expone la API). Marcá cada ítem como hecho cuando la pantalla lo consuma.
+
+- **Detalle de postulación con contacto del junior.** En la vista de una postulación recibida
+  (empresa), consumir `GET /api/ofertas/:id` para mostrar el contacto del junior (`correo` +
+  `url_github` / `url_linkedin` / `url_portfolio`) y un CTA para contactarlo (mailto / abrir
+  link). Cierra el paso final del flujo de la empresa tras adjudicar.
+
 ## Notas para el FrontEnd
 
 - **Campos de array guardados como JSON string**: `estudiante.modalidad_preferida`,
