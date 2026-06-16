@@ -10,7 +10,13 @@ const { state } = vi.hoisted(() => ({
       data: { user: unknown; session: unknown };
       error: unknown;
     },
+    verifyOtpResult: { data: { session: null }, error: null } as {
+      data: { session: unknown };
+      error: unknown;
+    },
+    updateUserResult: { error: null } as { error: unknown },
     signOutCalls: 0,
+    updateUserCalls: 0,
   },
 }));
 
@@ -24,15 +30,24 @@ vi.mock("../../config/supabase", () => ({
         state.signOutCalls += 1;
         return Promise.resolve({ error: null });
       },
+      verifyOtp: (_args: { token_hash: string; type: string }) =>
+        Promise.resolve(state.verifyOtpResult),
+      updateUser: (_args: { password: string }) => {
+        state.updateUserCalls += 1;
+        return Promise.resolve(state.updateUserResult);
+      },
     },
   }),
 }));
 
-import { refreshSession, logoutUser } from "../user.service";
+import { refreshSession, logoutUser, confirmPasswordReset } from "../user.service";
 
 beforeEach(() => {
   state.refreshResult = { data: { user: null, session: null }, error: null };
+  state.verifyOtpResult = { data: { session: null }, error: null };
+  state.updateUserResult = { error: null };
   state.signOutCalls = 0;
+  state.updateUserCalls = 0;
 });
 
 describe("refreshSession", () => {
@@ -89,5 +104,33 @@ describe("logoutUser", () => {
 
     await expect(logoutUser("bad")).resolves.toBeUndefined();
     expect(state.signOutCalls).toBe(0);
+  });
+});
+
+describe("confirmPasswordReset", () => {
+  it("actualiza la contraseña cuando el token de recovery es válido", async () => {
+    state.verifyOtpResult = { data: { session: { access_token: "recovery" } }, error: null };
+    state.updateUserResult = { error: null };
+
+    await expect(confirmPasswordReset("token-ok", "nuevaClave123")).resolves.toBeUndefined();
+    expect(state.updateUserCalls).toBe(1);
+  });
+
+  it("lanza 400 si el token es inválido/expiró (sin sesión)", async () => {
+    state.verifyOtpResult = { data: { session: null }, error: { message: "invalid" } };
+
+    await expect(confirmPasswordReset("bad", "nuevaClave123")).rejects.toMatchObject({
+      statusCode: 400,
+    });
+    expect(state.updateUserCalls).toBe(0);
+  });
+
+  it("lanza 400 si updateUser falla", async () => {
+    state.verifyOtpResult = { data: { session: { access_token: "recovery" } }, error: null };
+    state.updateUserResult = { error: { message: "weak password" } };
+
+    await expect(confirmPasswordReset("token-ok", "nuevaClave123")).rejects.toMatchObject({
+      statusCode: 400,
+    });
   });
 });

@@ -75,12 +75,40 @@ export async function logoutUser(refreshToken: string) {
   await client.auth.signOut();
 }
 
+/**
+ * Paso 1 de recuperación: envía el correo con el enlace de recovery. El enlace
+ * lleva a la página donde el usuario define la clave nueva. No revela si el
+ * correo existe (respuesta uniforme); solo falla si el proveedor de correo cae.
+ */
 export async function requestPasswordReset(email: string): Promise<void> {
-  const redirectTo = `${env.frontendUrl}/es/login`;
+  const redirectTo = `${env.frontendUrl}/es/nueva-contrasena`;
   const { error } = await supabase.auth.resetPasswordForEmail(email, { redirectTo });
 
   if (error && error.status && error.status >= 500) {
     throw new ApiError(502, "No se pudo enviar el correo de recuperación");
+  }
+}
+
+/**
+ * Paso 2 de recuperación: confirma el cambio con el `token_hash` que viene en el
+ * enlace del correo. Verifica el OTP de tipo 'recovery' (que abre una sesión
+ * temporal) y con esa sesión actualiza la contraseña. Cliente efímero para no
+ * contaminar el cliente compartido.
+ */
+export async function confirmPasswordReset(tokenHash: string, newPassword: string): Promise<void> {
+  const client = createEphemeralClient();
+
+  const { data, error } = await client.auth.verifyOtp({
+    token_hash: tokenHash,
+    type: "recovery",
+  });
+  if (error || !data.session) {
+    throw new ApiError(400, "El enlace de recuperación es inválido o expiró");
+  }
+
+  const { error: updateError } = await client.auth.updateUser({ password: newPassword });
+  if (updateError) {
+    throw new ApiError(400, updateError.message);
   }
 }
 

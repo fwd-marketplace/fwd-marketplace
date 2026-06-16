@@ -17,16 +17,27 @@ function readCredentials(body: unknown): { email: string; password: string; name
 }
 
 function readResetInput(body: unknown): { email: string } {
-  const { email, password } = (body ?? {}) as Record<string, unknown>;
+  const { email } = (body ?? {}) as Record<string, unknown>;
 
   if (typeof email !== "string" || !email.trim()) {
     throw new ApiError(400, "El email es obligatorio");
+  }
+
+  return { email: email.trim() };
+}
+
+/** Lee el token del enlace de recovery + la contraseña nueva (paso 2). */
+function readConfirmResetInput(body: unknown): { tokenHash: string; password: string } {
+  const { token_hash, password } = (body ?? {}) as Record<string, unknown>;
+
+  if (typeof token_hash !== "string" || !token_hash.trim()) {
+    throw new ApiError(400, "Falta el token de recuperación");
   }
   if (typeof password !== "string" || password.length < 8) {
     throw new ApiError(400, "La contraseña debe tener al menos 8 caracteres");
   }
 
-  return { email: email.trim() };
+  return { tokenHash: token_hash, password };
 }
 
 /** Lee y valida el `refresh_token` del body. */
@@ -54,9 +65,17 @@ export async function login(req: Request, res: Response) {
   res.status(200).json(result);
 }
 
+/** POST /api/users/reset-password (paso 1: pide el correo de recuperación) */
 export async function resetPassword(req: Request, res: Response) {
   const { email } = readResetInput(req.body);
   await userService.requestPasswordReset(email);
+  res.status(200).json({ ok: true });
+}
+
+/** POST /api/users/reset-password/confirm (paso 2: define la clave nueva) */
+export async function confirmResetPassword(req: Request, res: Response) {
+  const { tokenHash, password } = readConfirmResetInput(req.body);
+  await userService.confirmPasswordReset(tokenHash, password);
   res.status(200).json({ ok: true });
 }
 
