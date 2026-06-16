@@ -109,6 +109,34 @@
     "no_account": "Don't have an account?",
     "register_link": "Sign up here"
   },
+  "reset_password": {
+    "brand": "FWD Talent",
+    "back_to_login": "Back to login",
+    "title": "Reset your password",
+    "description": "Enter your new details to securely recover access to your account.",
+    "email_label": "Email address",
+    "email_placeholder": "name@example.com",
+    "password_label": "New password",
+    "password_placeholder": "Your new password",
+    "confirm_label": "Confirm new password",
+    "confirm_placeholder": "Repeat your new password",
+    "show_password": "Show password",
+    "hide_password": "Hide password",
+    "hint": "Password must be at least 8 characters.",
+    "submit": "Reset password",
+    "submitting": "Sending...",
+    "secure_connection": "Secure encrypted connection",
+    "success_title": "Check your email",
+    "success_message": "If an account exists for {email}, we sent you a secure link to confirm your new password.",
+    "error_email": "Enter a valid email address.",
+    "error_password_length": "Password must be at least 8 characters.",
+    "error_mismatch": "Passwords do not match.",
+    "error_generic": "We couldn't process your request. Please try again.",
+    "footer_privacy": "Privacy Policy",
+    "footer_terms": "Terms of Service",
+    "footer_security": "Security Center",
+    "footer_copyright": "© 2026 FWD Talent. Secure encrypted connection."
+  },
   "register": {
     "brand": "FWD",
     "brand_suffix": "Talent",
@@ -520,15 +548,48 @@
       "edit_profile": "Edit profile",
       "role_label": "Specialty",
       "program_label": "Program / Cohort",
+      "name_label": "First name",
+      "lastname1_label": "Last name",
+      "lastname2_label": "Second last name",
+      "modality_label": "Preferred work mode",
+      "name_required": "First name and last name are required.",
+      "unnamed": "Unnamed",
       "save": "Save",
       "cancel": "Cancel"
+    },
+    "avatar": {
+      "alt": "Profile photo",
+      "change": "Change profile photo",
+      "invalid_type": "The file must be an image.",
+      "too_large": "The image exceeds the 5 MB limit."
+    },
+    "specialty_options": {
+      "placeholder": "Choose a specialty",
+      "frontend": "Frontend",
+      "backend": "Backend",
+      "fullstack": "Fullstack",
+      "ia": "Artificial Intelligence"
+    },
+    "availability_options": {
+      "placeholder": "Choose your availability",
+      "immediate": "Immediate",
+      "two_weeks": "In two weeks",
+      "one_month": "In a month",
+      "unavailable": "Unavailable"
+    },
+    "modality_options": {
+      "remote": "Remote",
+      "hybrid": "Hybrid",
+      "onsite": "On-site"
     },
     "personal": {
       "title": "Personal Information",
       "edit": "Edit",
       "location_field": "Availability",
       "email_field": "Email Address",
+      "email_readonly": "Your email is managed from your account and can't be changed here.",
       "bio_field": "Professional bio",
+      "bio_empty": "You haven't added a bio yet.",
       "location_display": "Availability",
       "email_display": "Contact",
       "bio_heading": "About Me",
@@ -542,13 +603,21 @@
       "add_btn": "Add",
       "cancel_btn": "Cancel",
       "remove_skill": "Remove {skill}",
-      "empty": "No technologies added yet."
+      "empty": "No technologies added yet.",
+      "catalog_hint": "Only technologies recognized in our catalog are saved."
     },
     "links": {
       "title": "Talent Links",
       "github": "GitHub",
       "linkedin": "LinkedIn",
-      "portfolio": "Portfolio"
+      "portfolio": "Portfolio",
+      "edit": "Edit",
+      "save": "Save",
+      "cancel": "Cancel",
+      "empty": "You haven't added links yet.",
+      "github_placeholder": "https://github.com/your-username",
+      "linkedin_placeholder": "https://linkedin.com/in/your-username",
+      "portfolio_placeholder": "https://your-portfolio.com"
     },
     "activity": {
       "title": "Recent Activity",

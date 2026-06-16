@@ -300,6 +300,7 @@ export type Database = {
           modalidad_preferida: string | null
           reputacion: number | null
           titulo_fwd: string | null
+          url_avatar: string | null
           url_github: string | null
           url_linkedin: string | null
           url_portfolio: string | null
@@ -314,6 +315,7 @@ export type Database = {
           modalidad_preferida?: string | null
           reputacion?: number | null
           titulo_fwd?: string | null
+          url_avatar?: string | null
           url_github?: string | null
           url_linkedin?: string | null
           url_portfolio?: string | null
@@ -328,6 +330,7 @@ export type Database = {
           modalidad_preferida?: string | null
           reputacion?: number | null
           titulo_fwd?: string | null
+          url_avatar?: string | null
           url_github?: string
           url_linkedin?: string
           url_portfolio?: string | null

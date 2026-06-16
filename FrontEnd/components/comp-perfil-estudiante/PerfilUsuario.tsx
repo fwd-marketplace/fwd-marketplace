@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState } from "react";
+import React, { useRef, useState, useTransition } from "react";
 import { useTranslations } from "next-intl";
 import {
   Mail,
@@ -23,13 +23,24 @@ import {
   BarChart2,
   Code2,
   Palette,
+  Camera,
+  Loader2,
+  AlertCircle,
 } from "lucide-react";
 import {
-  StudentProfile,
-  Activity,
-  Application,
-  ApplicationStats,
+  fullName,
+  type StudentProfile,
+  type Activity,
+  type Application,
+  type ApplicationStats,
 } from "@/app/[locale]/(public)/perfil-estudiante/types";
+import type {
+  StudentAvailability,
+  StudentProfileUpdate,
+  StudentSpecialty,
+} from "@/lib/api/types";
+import { updateStudentProfile, uploadStudentAvatar } from "@/lib/actions/perfil";
+import { getInitials } from "@/lib/api/safe-json";
 
 // ── Inline SVG icons ───────────────────────────────────────────────────────────
 
@@ -84,6 +95,14 @@ function getCategoryBg(category: Application["category"]): string {
   }
 }
 
+function toHref(url: string): string {
+  return /^https?:\/\//i.test(url) ? url : `https://${url}`;
+}
+
+function stripProtocol(url: string): string {
+  return url.replace(/^https?:\/\//i, "");
+}
+
 
 
 // ── Tab and filter types ───────────────────────────────────────────────────────
@@ -93,6 +112,17 @@ type FilterStatus = "todas" | Application["status"];
 
 const TAB_IDS: TabId[] = ["perfil", "trabajo", "postulaciones", "notificaciones", "sugeridos"];
 const FILTER_VALUES: FilterStatus[] = ["todas", "enviada", "vista", "en_proceso", "aceptada", "rechazada"];
+
+const SPECIALTY_VALUES: StudentSpecialty[] = ["frontend", "backend", "fullstack", "ia"];
+const AVAILABILITY_VALUES: StudentAvailability[] = [
+  "immediate",
+  "two_weeks",
+  "one_month",
+  "unavailable",
+];
+const MODALITY_VALUES = ["remote", "hybrid", "onsite"] as const;
+
+const MAX_AVATAR_BYTES = 5 * 1024 * 1024;
 
 // ── Component ──────────────────────────────────────────────────────────────────
 
@@ -119,17 +149,35 @@ export default function PerfilUsuario({
   const [activities, setActivities] = useState<Activity[]>(initialActivities);
   const [applications] = useState<Application[]>(initialApplications);
 
+  const [isPending, startTransition] = useTransition();
+
   const [isEditingPersonal, setIsEditingPersonal] = useState(false);
   const [editAvailability, setEditAvailability] = useState(profile.availability);
-  const [editEmail, setEditEmail] = useState(profile.email);
   const [editBio, setEditBio] = useState(profile.bio);
+  const [personalError, setPersonalError] = useState("");
 
   const [isEditingHero, setIsEditingHero] = useState(false);
+  const [editFirstName, setEditFirstName] = useState(profile.firstName);
+  const [editLastName1, setEditLastName1] = useState(profile.lastName1);
+  const [editLastName2, setEditLastName2] = useState(profile.lastName2);
   const [editSpecialty, setEditSpecialty] = useState(profile.specialty);
   const [editProgram, setEditProgram] = useState(profile.program);
+  const [editModalities, setEditModalities] = useState<string[]>(profile.badges);
+  const [heroError, setHeroError] = useState("");
+
+  const [isEditingLinks, setIsEditingLinks] = useState(false);
+  const [editGithub, setEditGithub] = useState(profile.links.github ?? "");
+  const [editLinkedin, setEditLinkedin] = useState(profile.links.linkedin ?? "");
+  const [editPortfolio, setEditPortfolio] = useState(profile.links.portfolio ?? "");
+  const [linksError, setLinksError] = useState("");
 
   const [newSkill, setNewSkill] = useState("");
   const [isAddingSkill, setIsAddingSkill] = useState(false);
+  const [skillError, setSkillError] = useState("");
+
+  const avatarInputRef = useRef<HTMLInputElement>(null);
+  const [isUploadingAvatar, setIsUploadingAvatar] = useState(false);
+  const [avatarError, setAvatarError] = useState("");
 
   // ── Label maps — avoids dynamic key access ─────────────────────────────────
 
@@ -150,6 +198,36 @@ export default function PerfilUsuario({
     rechazada: t("applications.filter.rejected"),
   };
 
+  const SPECIALTY_LABELS: Record<StudentSpecialty, string> = {
+    frontend: t("specialty_options.frontend"),
+    backend: t("specialty_options.backend"),
+    fullstack: t("specialty_options.fullstack"),
+    ia: t("specialty_options.ia"),
+  };
+
+  const AVAILABILITY_LABELS: Record<StudentAvailability, string> = {
+    immediate: t("availability_options.immediate"),
+    two_weeks: t("availability_options.two_weeks"),
+    one_month: t("availability_options.one_month"),
+    unavailable: t("availability_options.unavailable"),
+  };
+
+  const MODALITY_LABELS: Record<(typeof MODALITY_VALUES)[number], string> = {
+    remote: t("modality_options.remote"),
+    hybrid: t("modality_options.hybrid"),
+    onsite: t("modality_options.onsite"),
+  };
+
+  function specialtyLabel(code: string): string {
+    return code in SPECIALTY_LABELS ? SPECIALTY_LABELS[code as StudentSpecialty] : code;
+  }
+  function availabilityLabel(code: string): string {
+    return code in AVAILABILITY_LABELS ? AVAILABILITY_LABELS[code as StudentAvailability] : code;
+  }
+  function badgeLabel(code: string): string {
+    return code in MODALITY_LABELS ? MODALITY_LABELS[code as keyof typeof MODALITY_LABELS] : code;
+  }
+
   // ── Status styles ──────────────────────────────────────────────────────────
 
   function getStatusStyles(status: Application["status"]) {
@@ -169,54 +247,188 @@ export default function PerfilUsuario({
 
   // ── Handlers ───────────────────────────────────────────────────────────────
 
-  function savePersonalInfo(e: React.FormEvent<HTMLFormElement>) {
-    e.preventDefault();
-    setProfile((prev) => ({ ...prev, availability: editAvailability, email: editEmail, bio: editBio }));
-    setIsEditingPersonal(false);
+  function addActivity(description: string) {
     setActivities((prev) => [
-      { id: `act-${Date.now()}`, description: t("activity.updated_personal"), timestamp: t("activity.just_now") },
+      { id: `act-${Date.now()}`, description, timestamp: t("activity.just_now") },
       ...prev,
     ]);
+  }
+
+  function persistProfile(
+    update: StudentProfileUpdate,
+    optimistic: Partial<StudentProfile>,
+    setError: (message: string) => void,
+    onSuccess?: () => void,
+  ) {
+    setError("");
+    startTransition(async () => {
+      const result = await updateStudentProfile(update);
+      if (!result.ok) {
+        setError(result.error);
+        return;
+      }
+      setProfile((prev) => ({
+        ...prev,
+        ...optimistic,
+        ...(result.data.skills !== undefined ? { skills: result.data.skills } : {}),
+      }));
+      onSuccess?.();
+    });
+  }
+
+  function openEditHero() {
+    setEditFirstName(profile.firstName);
+    setEditLastName1(profile.lastName1);
+    setEditLastName2(profile.lastName2);
+    setEditSpecialty(profile.specialty);
+    setEditProgram(profile.program);
+    setEditModalities(profile.badges);
+    setHeroError("");
+    setIsEditingHero(true);
+  }
+
+  function toggleModality(code: string) {
+    setEditModalities((prev) =>
+      prev.includes(code) ? prev.filter((value) => value !== code) : [...prev, code],
+    );
   }
 
   function saveHeroInfo(e: React.FormEvent<HTMLFormElement>) {
     e.preventDefault();
-    setProfile((prev) => ({ ...prev, specialty: editSpecialty, program: editProgram }));
-    setIsEditingHero(false);
+    const firstName = editFirstName.trim();
+    const lastName1 = editLastName1.trim();
+    const lastName2 = editLastName2.trim();
+    if (!firstName || !lastName1) {
+      setHeroError(t("hero.name_required"));
+      return;
+    }
+    const update: StudentProfileUpdate = {
+      nombre: firstName,
+      apellido1: lastName1,
+      apellido2: lastName2,
+      titulo_fwd: editProgram.trim(),
+      modalidad: editModalities,
+    };
+    if (editSpecialty) update.especializacion = editSpecialty as StudentSpecialty;
+    persistProfile(
+      update,
+      {
+        firstName,
+        lastName1,
+        lastName2,
+        specialty: editSpecialty,
+        program: editProgram.trim(),
+        badges: editModalities,
+      },
+      setHeroError,
+      () => setIsEditingHero(false),
+    );
   }
 
-  function removeSkill(skillToRemove: string) {
-    setProfile((prev) => ({ ...prev, skills: prev.skills.filter((s) => s !== skillToRemove) }));
-    setActivities((prev) => [
-      { id: `act-${Date.now()}`, description: t("activity.removed_skill", { skill: skillToRemove }), timestamp: t("activity.just_now") },
-      ...prev,
-    ]);
+  function cancelEditHero() {
+    setIsEditingHero(false);
+    setHeroError("");
+  }
+
+  function openEditPersonal() {
+    setEditAvailability(profile.availability);
+    setEditBio(profile.bio);
+    setPersonalError("");
+    setIsEditingPersonal(true);
+  }
+
+  function savePersonalInfo(e: React.FormEvent<HTMLFormElement>) {
+    e.preventDefault();
+    const update: StudentProfileUpdate = { bio: editBio };
+    if (editAvailability) update.disponibilidad = editAvailability as StudentAvailability;
+    persistProfile(
+      update,
+      { availability: editAvailability, bio: editBio },
+      setPersonalError,
+      () => {
+        setIsEditingPersonal(false);
+        addActivity(t("activity.updated_personal"));
+      },
+    );
+  }
+
+  function cancelEditPersonal() {
+    setIsEditingPersonal(false);
+    setPersonalError("");
+  }
+
+  function openEditLinks() {
+    setEditGithub(profile.links.github ?? "");
+    setEditLinkedin(profile.links.linkedin ?? "");
+    setEditPortfolio(profile.links.portfolio ?? "");
+    setLinksError("");
+    setIsEditingLinks(true);
+  }
+
+  function saveLinks(e: React.FormEvent<HTMLFormElement>) {
+    e.preventDefault();
+    const github = editGithub.trim();
+    const linkedin = editLinkedin.trim();
+    const portfolio = editPortfolio.trim();
+    const nextLinks: StudentProfile["links"] = {};
+    if (github) nextLinks.github = github;
+    if (linkedin) nextLinks.linkedin = linkedin;
+    if (portfolio) nextLinks.portfolio = portfolio;
+    persistProfile(
+      { link_github: github, link_linkedin: linkedin, link_portfolio: portfolio },
+      { links: nextLinks },
+      setLinksError,
+      () => setIsEditingLinks(false),
+    );
+  }
+
+  function cancelEditLinks() {
+    setIsEditingLinks(false);
+    setLinksError("");
   }
 
   function addSkill(e: React.FormEvent<HTMLFormElement>) {
     e.preventDefault();
     const trimmed = newSkill.trim();
     if (!trimmed || profile.skills.includes(trimmed)) return;
-    setProfile((prev) => ({ ...prev, skills: [...prev.skills, trimmed] }));
-    setActivities((prev) => [
-      { id: `act-${Date.now()}`, description: t("activity.added_skill", { skill: trimmed }), timestamp: t("activity.just_now") },
-      ...prev,
-    ]);
-    setNewSkill("");
-    setIsAddingSkill(false);
+    const next = [...profile.skills, trimmed];
+    persistProfile({ skills: next }, {}, setSkillError, () => {
+      addActivity(t("activity.added_skill", { skill: trimmed }));
+      setNewSkill("");
+      setIsAddingSkill(false);
+    });
   }
 
-  function cancelEditPersonal() {
-    setEditAvailability(profile.availability);
-    setEditEmail(profile.email);
-    setEditBio(profile.bio);
-    setIsEditingPersonal(false);
+  function removeSkill(skillToRemove: string) {
+    const next = profile.skills.filter((skill) => skill !== skillToRemove);
+    persistProfile({ skills: next }, {}, setSkillError, () => {
+      addActivity(t("activity.removed_skill", { skill: skillToRemove }));
+    });
   }
 
-  function cancelEditHero() {
-    setEditSpecialty(profile.specialty);
-    setEditProgram(profile.program);
-    setIsEditingHero(false);
+  async function handleAvatarChange(e: React.ChangeEvent<HTMLInputElement>) {
+    const file = e.target.files?.[0];
+    if (avatarInputRef.current) avatarInputRef.current.value = "";
+    if (!file) return;
+    setAvatarError("");
+    if (!file.type.startsWith("image/")) {
+      setAvatarError(t("avatar.invalid_type"));
+      return;
+    }
+    if (file.size > MAX_AVATAR_BYTES) {
+      setAvatarError(t("avatar.too_large"));
+      return;
+    }
+    const formData = new FormData();
+    formData.append("file", file);
+    setIsUploadingAvatar(true);
+    const result = await uploadStudentAvatar(formData);
+    setIsUploadingAvatar(false);
+    if (!result.ok) {
+      setAvatarError(result.error);
+      return;
+    }
+    setProfile((prev) => ({ ...prev, avatarUrl: result.data.url_avatar }));
   }
 
   // ── Derived values ─────────────────────────────────────────────────────────
@@ -247,97 +459,233 @@ export default function PerfilUsuario({
             </svg>
           </div>
 
-          <div className="relative z-10 flex flex-col md:flex-row justify-between items-start md:items-center gap-6">
-            <div className="space-y-4">
-              {isEditingHero ? (
-                <form
-                  onSubmit={saveHeroInfo}
-                  className="space-y-3 max-w-md bg-black/30 p-4 rounded-xl backdrop-blur-sm"
-                >
-                  <div>
-                    <label
-                      htmlFor="edit-specialty"
-                      className="block text-xs font-semibold uppercase tracking-wider text-white/70 mb-1"
-                    >
-                      {t("hero.role_label")}
-                    </label>
-                    <input
-                      id="edit-specialty"
-                      type="text"
-                      value={editSpecialty}
-                      onChange={(e) => setEditSpecialty(e.target.value)}
-                      className="w-full bg-white/10 border border-white/20 rounded-lg px-3 py-1.5 text-sm text-white focus:outline-none focus:bg-white/20"
-                      required
-                    />
-                  </div>
-                  <div>
-                    <label
-                      htmlFor="edit-program"
-                      className="block text-xs font-semibold uppercase tracking-wider text-white/70 mb-1"
-                    >
-                      {t("hero.program_label")}
-                    </label>
-                    <input
-                      id="edit-program"
-                      type="text"
-                      value={editProgram}
-                      onChange={(e) => setEditProgram(e.target.value)}
-                      className="w-full bg-white/10 border border-white/20 rounded-lg px-3 py-1.5 text-sm text-white focus:outline-none focus:bg-white/20"
-                      required
-                    />
-                  </div>
-                  <div className="flex gap-2 pt-2">
-                    <button
-                      type="submit"
-                      className="bg-accent hover:opacity-95 text-accent-foreground text-xs font-semibold py-1.5 px-3 rounded-lg flex items-center gap-1 cursor-pointer"
-                    >
-                      <Check className="w-3.5 h-3.5" /> {t("hero.save")}
-                    </button>
-                    <button
-                      type="button"
-                      onClick={cancelEditHero}
-                      className="bg-white/10 hover:bg-white/20 text-white text-xs font-semibold py-1.5 px-3 rounded-lg cursor-pointer"
-                    >
-                      {t("hero.cancel")}
-                    </button>
-                  </div>
-                </form>
-              ) : (
-                <>
-                  <div className="space-y-1">
-                    <h1 className="text-3xl md:text-5xl font-heading font-extrabold tracking-tight uppercase">
-                      {profile.name}
-                      <span className="text-highlight">.</span>
-                    </h1>
-                    <p className="text-lg md:text-xl font-medium text-white/95">
-                      {profile.specialty} &mdash; <span className="opacity-90">{profile.program}</span>
-                    </p>
-                  </div>
+          <div className="relative z-10 flex flex-col gap-6 md:flex-row md:items-start md:justify-between">
+            <div className="flex flex-col gap-5 sm:flex-row sm:items-start flex-grow">
 
-                  <div className="flex flex-wrap gap-2 pt-2">
-                    {profile.badges.map((badge) => {
-                      const badgeLower = badge.toLowerCase();
-                      let badgeStyle = "bg-white/10 text-white border border-white/20";
-                      if (badgeLower === "disponible") badgeStyle = "bg-accent text-accent-foreground font-semibold";
-                      if (badgeLower === "frontend") badgeStyle = "bg-highlight text-highlight-foreground font-semibold";
-                      return (
+              <div className="shrink-0 space-y-2">
+                <div className="relative">
+                  <div className="size-24 md:size-28 overflow-hidden rounded-2xl border border-white/20 bg-white/10 flex items-center justify-center">
+                    {profile.avatarUrl ? (
+                      // eslint-disable-next-line @next/next/no-img-element -- URL externa (Cloudinary)
+                      <img
+                        src={profile.avatarUrl}
+                        alt={t("avatar.alt")}
+                        className="size-full object-cover"
+                      />
+                    ) : (
+                      <span className="font-heading text-3xl font-extrabold text-white/90">
+                        {getInitials(fullName(profile))}
+                      </span>
+                    )}
+                  </div>
+                  <button
+                    type="button"
+                    onClick={() => avatarInputRef.current?.click()}
+                    disabled={isUploadingAvatar}
+                    aria-label={t("avatar.change")}
+                    className="absolute -bottom-2 -right-2 flex size-9 items-center justify-center rounded-full bg-highlight text-highlight-foreground shadow-soft transition-opacity duration-[var(--duration-fast)] hover:opacity-90 disabled:cursor-not-allowed disabled:opacity-60 cursor-pointer"
+                  >
+                    {isUploadingAvatar ? (
+                      <Loader2 className="size-4 animate-spin" />
+                    ) : (
+                      <Camera className="size-4" />
+                    )}
+                  </button>
+                  <input
+                    ref={avatarInputRef}
+                    type="file"
+                    accept="image/*"
+                    onChange={handleAvatarChange}
+                    className="hidden"
+                  />
+                </div>
+                {avatarError && (
+                  <p className="flex items-center gap-1 text-xs font-medium text-highlight max-w-28">
+                    <AlertCircle className="size-3.5 shrink-0" /> {avatarError}
+                  </p>
+                )}
+              </div>
+
+              <div className="space-y-4 flex-grow">
+                {isEditingHero ? (
+                  <form
+                    onSubmit={saveHeroInfo}
+                    className="space-y-3 max-w-lg bg-black/30 p-4 rounded-xl backdrop-blur-sm"
+                  >
+                    <div className="grid grid-cols-1 sm:grid-cols-3 gap-2">
+                      <div>
+                        <label
+                          htmlFor="edit-first-name"
+                          className="block text-xs font-semibold uppercase tracking-wider text-white/70 mb-1"
+                        >
+                          {t("hero.name_label")}
+                        </label>
+                        <input
+                          id="edit-first-name"
+                          type="text"
+                          value={editFirstName}
+                          onChange={(e) => setEditFirstName(e.target.value)}
+                          className="w-full bg-white/10 border border-white/20 rounded-lg px-3 py-1.5 text-sm text-white focus:outline-none focus:bg-white/20"
+                          required
+                        />
+                      </div>
+                      <div>
+                        <label
+                          htmlFor="edit-last-name-1"
+                          className="block text-xs font-semibold uppercase tracking-wider text-white/70 mb-1"
+                        >
+                          {t("hero.lastname1_label")}
+                        </label>
+                        <input
+                          id="edit-last-name-1"
+                          type="text"
+                          value={editLastName1}
+                          onChange={(e) => setEditLastName1(e.target.value)}
+                          className="w-full bg-white/10 border border-white/20 rounded-lg px-3 py-1.5 text-sm text-white focus:outline-none focus:bg-white/20"
+                          required
+                        />
+                      </div>
+                      <div>
+                        <label
+                          htmlFor="edit-last-name-2"
+                          className="block text-xs font-semibold uppercase tracking-wider text-white/70 mb-1"
+                        >
+                          {t("hero.lastname2_label")}
+                        </label>
+                        <input
+                          id="edit-last-name-2"
+                          type="text"
+                          value={editLastName2}
+                          onChange={(e) => setEditLastName2(e.target.value)}
+                          className="w-full bg-white/10 border border-white/20 rounded-lg px-3 py-1.5 text-sm text-white focus:outline-none focus:bg-white/20"
+                        />
+                      </div>
+                    </div>
+                    <div>
+                      <label
+                        htmlFor="edit-specialty"
+                        className="block text-xs font-semibold uppercase tracking-wider text-white/70 mb-1"
+                      >
+                        {t("hero.role_label")}
+                      </label>
+                      <select
+                        id="edit-specialty"
+                        value={editSpecialty}
+                        onChange={(e) => setEditSpecialty(e.target.value)}
+                        className="w-full bg-white/10 border border-white/20 rounded-lg px-3 py-1.5 text-sm text-white focus:outline-none focus:bg-white/20 [&>option]:text-ink-strong"
+                      >
+                        <option value="">{t("specialty_options.placeholder")}</option>
+                        {SPECIALTY_VALUES.map((value) => (
+                          <option key={value} value={value}>
+                            {SPECIALTY_LABELS[value]}
+                          </option>
+                        ))}
+                      </select>
+                    </div>
+                    <div>
+                      <label
+                        htmlFor="edit-program"
+                        className="block text-xs font-semibold uppercase tracking-wider text-white/70 mb-1"
+                      >
+                        {t("hero.program_label")}
+                      </label>
+                      <input
+                        id="edit-program"
+                        type="text"
+                        value={editProgram}
+                        onChange={(e) => setEditProgram(e.target.value)}
+                        className="w-full bg-white/10 border border-white/20 rounded-lg px-3 py-1.5 text-sm text-white focus:outline-none focus:bg-white/20"
+                      />
+                    </div>
+                    <div>
+                      <span className="block text-xs font-semibold uppercase tracking-wider text-white/70 mb-1.5">
+                        {t("hero.modality_label")}
+                      </span>
+                      <div className="flex flex-wrap gap-2">
+                        {MODALITY_VALUES.map((value) => {
+                          const isSelected = editModalities.includes(value);
+                          return (
+                            <button
+                              key={value}
+                              type="button"
+                              aria-pressed={isSelected}
+                              onClick={() => toggleModality(value)}
+                              className={`px-3 py-1 text-xs uppercase tracking-wider rounded-full border transition-colors cursor-pointer ${
+                                isSelected
+                                  ? "bg-highlight text-highlight-foreground border-highlight font-semibold"
+                                  : "bg-white/10 text-white border-white/20 hover:bg-white/20"
+                              }`}
+                            >
+                              {MODALITY_LABELS[value]}
+                            </button>
+                          );
+                        })}
+                      </div>
+                    </div>
+                    {heroError && (
+                      <p className="flex items-center gap-1.5 text-xs font-medium text-highlight">
+                        <AlertCircle className="size-3.5 shrink-0" /> {heroError}
+                      </p>
+                    )}
+                    <div className="flex gap-2 pt-2">
+                      <button
+                        type="submit"
+                        disabled={isPending}
+                        className="bg-accent hover:opacity-95 text-accent-foreground text-xs font-semibold py-1.5 px-3 rounded-lg flex items-center gap-1 cursor-pointer disabled:opacity-60 disabled:cursor-not-allowed"
+                      >
+                        {isPending ? (
+                          <Loader2 className="w-3.5 h-3.5 animate-spin" />
+                        ) : (
+                          <Check className="w-3.5 h-3.5" />
+                        )}{" "}
+                        {t("hero.save")}
+                      </button>
+                      <button
+                        type="button"
+                        onClick={cancelEditHero}
+                        disabled={isPending}
+                        className="bg-white/10 hover:bg-white/20 text-white text-xs font-semibold py-1.5 px-3 rounded-lg cursor-pointer disabled:opacity-60"
+                      >
+                        {t("hero.cancel")}
+                      </button>
+                    </div>
+                  </form>
+                ) : (
+                  <>
+                    <div className="space-y-1">
+                      <h1 className="text-3xl md:text-5xl font-heading font-extrabold tracking-tight uppercase">
+                        {fullName(profile) || t("hero.unnamed")}
+                        <span className="text-highlight">.</span>
+                      </h1>
+                      <p className="text-lg md:text-xl font-medium text-white/95">
+                        {profile.specialty ? specialtyLabel(profile.specialty) : t("specialty_options.placeholder")}
+                        {profile.program && (
+                          <>
+                            {" "}&mdash; <span className="opacity-90">{profile.program}</span>
+                          </>
+                        )}
+                      </p>
+                    </div>
+
+                    <div className="flex flex-wrap gap-2 pt-2">
+                      {profile.badges.map((badge) => (
                         <span
                           key={badge}
-                          className={`px-3 py-1 text-xs uppercase tracking-wider rounded-full shadow-sm ${badgeStyle}`}
+                          className="px-3 py-1 text-xs uppercase tracking-wider rounded-full shadow-sm bg-white/10 text-white border border-white/20"
                         >
-                          {badge}
+                          {badgeLabel(badge)}
                         </span>
-                      );
-                    })}
-                  </div>
-                </>
-              )}
+                      ))}
+                    </div>
+                  </>
+                )}
+              </div>
             </div>
 
             {!isEditingHero && (
               <button
                 type="button"
-                onClick={() => setIsEditingHero(true)}
+                onClick={openEditHero}
                 className="flex items-center gap-2 bg-white/10 hover:bg-white/20 active:scale-[0.98] transition-all px-4 py-2 rounded-xl text-sm font-semibold border border-white/20 backdrop-blur-sm cursor-pointer self-start md:self-auto"
               >
                 <Edit2 className="w-4 h-4" />
@@ -394,7 +742,7 @@ export default function PerfilUsuario({
                   {!isEditingPersonal && (
                     <button
                       type="button"
-                      onClick={() => setIsEditingPersonal(true)}
+                      onClick={openEditPersonal}
                       className="text-primary hover:text-primary/80 transition-colors flex items-center gap-1.5 text-sm font-semibold cursor-pointer"
                     >
                       <Edit2 className="w-3.5 h-3.5" /> {t("personal.edit")}
@@ -412,14 +760,19 @@ export default function PerfilUsuario({
                         >
                           {t("personal.location_field")}
                         </label>
-                        <input
+                        <select
                           id="edit-availability"
-                          type="text"
                           value={editAvailability}
                           onChange={(e) => setEditAvailability(e.target.value)}
                           className="w-full bg-surface-sunken border border-border text-ink rounded-lg px-3 py-2 text-sm focus:outline-primary"
-                          required
-                        />
+                        >
+                          <option value="">{t("availability_options.placeholder")}</option>
+                          {AVAILABILITY_VALUES.map((value) => (
+                            <option key={value} value={value}>
+                              {AVAILABILITY_LABELS[value]}
+                            </option>
+                          ))}
+                        </select>
                       </div>
                       <div>
                         <label
@@ -431,11 +784,14 @@ export default function PerfilUsuario({
                         <input
                           id="edit-email"
                           type="email"
-                          value={editEmail}
-                          onChange={(e) => setEditEmail(e.target.value)}
-                          className="w-full bg-surface-sunken border border-border text-ink rounded-lg px-3 py-2 text-sm focus:outline-primary"
-                          required
+                          value={profile.email}
+                          readOnly
+                          aria-describedby="email-readonly-note"
+                          className="w-full bg-surface-sunken/60 border border-border text-ink-muted rounded-lg px-3 py-2 text-sm cursor-not-allowed"
                         />
+                        <p id="email-readonly-note" className="mt-1 text-xs text-ink-muted">
+                          {t("personal.email_readonly")}
+                        </p>
                       </div>
                     </div>
                     <div>
@@ -450,21 +806,33 @@ export default function PerfilUsuario({
                         value={editBio}
                         onChange={(e) => setEditBio(e.target.value)}
                         rows={4}
+                        maxLength={500}
                         className="w-full bg-surface-sunken border border-border text-ink rounded-lg px-3 py-2 text-sm focus:outline-primary resize-none"
-                        required
                       />
                     </div>
+                    {personalError && (
+                      <p className="flex items-center gap-1.5 text-xs font-medium text-magenta">
+                        <AlertCircle className="size-3.5 shrink-0" /> {personalError}
+                      </p>
+                    )}
                     <div className="flex gap-2">
                       <button
                         type="submit"
-                        className="bg-primary hover:opacity-95 text-primary-foreground text-sm font-semibold py-2 px-4 rounded-xl flex items-center gap-1.5 cursor-pointer"
+                        disabled={isPending}
+                        className="bg-primary hover:opacity-95 text-primary-foreground text-sm font-semibold py-2 px-4 rounded-xl flex items-center gap-1.5 cursor-pointer disabled:opacity-60 disabled:cursor-not-allowed"
                       >
-                        <Check className="w-4 h-4" /> {t("personal.save_changes")}
+                        {isPending ? (
+                          <Loader2 className="w-4 h-4 animate-spin" />
+                        ) : (
+                          <Check className="w-4 h-4" />
+                        )}{" "}
+                        {t("personal.save_changes")}
                       </button>
                       <button
                         type="button"
                         onClick={cancelEditPersonal}
-                        className="bg-surface-sunken hover:bg-border/30 text-ink text-sm font-semibold py-2 px-4 rounded-xl cursor-pointer"
+                        disabled={isPending}
+                        className="bg-surface-sunken hover:bg-border/30 text-ink text-sm font-semibold py-2 px-4 rounded-xl cursor-pointer disabled:opacity-60"
                       >
                         {t("personal.cancel")}
                       </button>
@@ -477,7 +845,9 @@ export default function PerfilUsuario({
                         <Clock className="w-5 h-5 text-primary shrink-0" />
                         <div>
                           <span className="block text-xs text-ink-muted">{t("personal.location_display")}</span>
-                          <span className="font-semibold text-ink-strong">{profile.availability}</span>
+                          <span className="font-semibold text-ink-strong">
+                            {profile.availability ? availabilityLabel(profile.availability) : "—"}
+                          </span>
                         </div>
                       </div>
                       <div className="flex items-center gap-3 bg-surface-sunken p-3.5 rounded-xl border border-border">
@@ -492,7 +862,9 @@ export default function PerfilUsuario({
                       <h3 className="text-xs font-semibold uppercase tracking-wider text-ink-muted">
                         {t("personal.bio_heading")}
                       </h3>
-                      <p className="text-ink leading-relaxed text-sm md:text-base font-normal">{profile.bio}</p>
+                      <p className="text-ink leading-relaxed text-sm md:text-base font-normal">
+                        {profile.bio || t("personal.bio_empty")}
+                      </p>
                     </div>
                   </>
                 )}
@@ -530,13 +902,14 @@ export default function PerfilUsuario({
                     />
                     <button
                       type="submit"
-                      className="bg-primary hover:opacity-95 text-primary-foreground text-sm font-semibold px-4 rounded-xl cursor-pointer"
+                      disabled={isPending}
+                      className="bg-primary hover:opacity-95 text-primary-foreground text-sm font-semibold px-4 rounded-xl cursor-pointer disabled:opacity-60 disabled:cursor-not-allowed"
                     >
-                      {t("stack.add_btn")}
+                      {isPending ? <Loader2 className="w-4 h-4 animate-spin" /> : t("stack.add_btn")}
                     </button>
                     <button
                       type="button"
-                      onClick={() => { setNewSkill(""); setIsAddingSkill(false); }}
+                      onClick={() => { setNewSkill(""); setIsAddingSkill(false); setSkillError(""); }}
                       className="bg-surface-sunken hover:bg-border/30 text-ink text-sm font-semibold px-3 rounded-xl cursor-pointer"
                       aria-label={t("stack.cancel_btn")}
                     >
@@ -556,7 +929,8 @@ export default function PerfilUsuario({
                         <button
                           type="button"
                           onClick={() => removeSkill(skill)}
-                          className="text-ink-subtle hover:text-magenta transition-colors focus:outline-none cursor-pointer"
+                          disabled={isPending}
+                          className="text-ink-subtle hover:text-magenta transition-colors focus:outline-none cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed"
                           aria-label={t("stack.remove_skill", { skill })}
                         >
                           <X className="w-3.5 h-3.5" />
@@ -567,68 +941,176 @@ export default function PerfilUsuario({
                     <p className="text-sm text-ink-muted italic">{t("stack.empty")}</p>
                   )}
                 </div>
+
+                {skillError && (
+                  <p className="flex items-center gap-1.5 text-xs font-medium text-magenta">
+                    <AlertCircle className="size-3.5 shrink-0" /> {skillError}
+                  </p>
+                )}
+                <p className="text-xs text-ink-muted">{t("stack.catalog_hint")}</p>
               </section>
 
               {/* Links */}
               <section className="bg-surface rounded-2xl border border-border shadow-soft p-6 md:p-8 space-y-6">
-                <h2 className="text-xl font-bold text-ink-strong">{t("links.title")}</h2>
-                <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                  {profile.links.github && (
-                    <a
-                      href={`https://${profile.links.github}`}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      className="flex items-center justify-between p-4 rounded-xl bg-surface-sunken border border-border hover:border-primary/50 transition-all group cursor-pointer"
+                <div className="flex justify-between items-center">
+                  <h2 className="text-xl font-bold text-ink-strong">{t("links.title")}</h2>
+                  {!isEditingLinks && (
+                    <button
+                      type="button"
+                      onClick={openEditLinks}
+                      className="text-primary hover:text-primary/80 transition-colors flex items-center gap-1.5 text-sm font-semibold cursor-pointer"
                     >
-                      <div className="flex items-center gap-3">
-                        <GithubIcon className="w-5 h-5 text-primary shrink-0" />
-                        <div>
-                          <span className="block text-xs text-ink-muted">{t("links.github")}</span>
-                          <span className="text-sm font-bold text-ink-strong break-all">
-                            {profile.links.github.replace("github.com/", "")}
-                          </span>
-                        </div>
-                      </div>
-                      <ArrowUpRight className="w-4 h-4 text-ink-subtle group-hover:text-primary transition-colors shrink-0" />
-                    </a>
-                  )}
-                  {profile.links.linkedin && (
-                    <a
-                      href={`https://${profile.links.linkedin}`}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      className="flex items-center justify-between p-4 rounded-xl bg-surface-sunken border border-border hover:border-primary/50 transition-all group cursor-pointer"
-                    >
-                      <div className="flex items-center gap-3">
-                        <LinkedinIcon className="w-5 h-5 text-primary shrink-0" />
-                        <div>
-                          <span className="block text-xs text-ink-muted">{t("links.linkedin")}</span>
-                          <span className="text-sm font-bold text-ink-strong break-all">
-                            {profile.links.linkedin.replace("linkedin.com/in/", "")}
-                          </span>
-                        </div>
-                      </div>
-                      <ArrowUpRight className="w-4 h-4 text-ink-subtle group-hover:text-primary transition-colors shrink-0" />
-                    </a>
-                  )}
-                  {profile.links.portfolio && (
-                    <a
-                      href={`https://${profile.links.portfolio}`}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      className="flex items-center justify-between p-4 rounded-xl bg-surface-sunken border border-border hover:border-primary/50 transition-all group cursor-pointer"
-                    >
-                      <div className="flex items-center gap-3">
-                        <Globe className="w-5 h-5 text-primary shrink-0" />
-                        <div>
-                          <span className="block text-xs text-ink-muted">{t("links.portfolio")}</span>
-                          <span className="text-sm font-bold text-ink-strong break-all">{profile.links.portfolio}</span>
-                        </div>
-                      </div>
-                      <ArrowUpRight className="w-4 h-4 text-ink-subtle group-hover:text-primary transition-colors shrink-0" />
-                    </a>
+                      <Edit2 className="w-3.5 h-3.5" /> {t("links.edit")}
+                    </button>
                   )}
                 </div>
+
+                {isEditingLinks ? (
+                  <form onSubmit={saveLinks} className="space-y-4">
+                    <div className="space-y-3">
+                      <div>
+                        <label
+                          htmlFor="edit-github"
+                          className="block text-xs font-semibold uppercase tracking-wider text-ink-muted mb-1"
+                        >
+                          {t("links.github")}
+                        </label>
+                        <input
+                          id="edit-github"
+                          type="url"
+                          inputMode="url"
+                          placeholder={t("links.github_placeholder")}
+                          value={editGithub}
+                          onChange={(e) => setEditGithub(e.target.value)}
+                          className="w-full bg-surface-sunken border border-border text-ink rounded-lg px-3 py-2 text-sm focus:outline-primary"
+                        />
+                      </div>
+                      <div>
+                        <label
+                          htmlFor="edit-linkedin"
+                          className="block text-xs font-semibold uppercase tracking-wider text-ink-muted mb-1"
+                        >
+                          {t("links.linkedin")}
+                        </label>
+                        <input
+                          id="edit-linkedin"
+                          type="url"
+                          inputMode="url"
+                          placeholder={t("links.linkedin_placeholder")}
+                          value={editLinkedin}
+                          onChange={(e) => setEditLinkedin(e.target.value)}
+                          className="w-full bg-surface-sunken border border-border text-ink rounded-lg px-3 py-2 text-sm focus:outline-primary"
+                        />
+                      </div>
+                      <div>
+                        <label
+                          htmlFor="edit-portfolio"
+                          className="block text-xs font-semibold uppercase tracking-wider text-ink-muted mb-1"
+                        >
+                          {t("links.portfolio")}
+                        </label>
+                        <input
+                          id="edit-portfolio"
+                          type="url"
+                          inputMode="url"
+                          placeholder={t("links.portfolio_placeholder")}
+                          value={editPortfolio}
+                          onChange={(e) => setEditPortfolio(e.target.value)}
+                          className="w-full bg-surface-sunken border border-border text-ink rounded-lg px-3 py-2 text-sm focus:outline-primary"
+                        />
+                      </div>
+                    </div>
+                    {linksError && (
+                      <p className="flex items-center gap-1.5 text-xs font-medium text-magenta">
+                        <AlertCircle className="size-3.5 shrink-0" /> {linksError}
+                      </p>
+                    )}
+                    <div className="flex gap-2">
+                      <button
+                        type="submit"
+                        disabled={isPending}
+                        className="bg-primary hover:opacity-95 text-primary-foreground text-sm font-semibold py-2 px-4 rounded-xl flex items-center gap-1.5 cursor-pointer disabled:opacity-60 disabled:cursor-not-allowed"
+                      >
+                        {isPending ? (
+                          <Loader2 className="w-4 h-4 animate-spin" />
+                        ) : (
+                          <Check className="w-4 h-4" />
+                        )}{" "}
+                        {t("links.save")}
+                      </button>
+                      <button
+                        type="button"
+                        onClick={cancelEditLinks}
+                        disabled={isPending}
+                        className="bg-surface-sunken hover:bg-border/30 text-ink text-sm font-semibold py-2 px-4 rounded-xl cursor-pointer disabled:opacity-60"
+                      >
+                        {t("links.cancel")}
+                      </button>
+                    </div>
+                  </form>
+                ) : profile.links.github || profile.links.linkedin || profile.links.portfolio ? (
+                  <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                    {profile.links.github && (
+                      <a
+                        href={toHref(profile.links.github)}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="flex items-center justify-between p-4 rounded-xl bg-surface-sunken border border-border hover:border-primary/50 transition-all group cursor-pointer"
+                      >
+                        <div className="flex items-center gap-3">
+                          <GithubIcon className="w-5 h-5 text-primary shrink-0" />
+                          <div>
+                            <span className="block text-xs text-ink-muted">{t("links.github")}</span>
+                            <span className="text-sm font-bold text-ink-strong break-all">
+                              {stripProtocol(profile.links.github).replace("github.com/", "")}
+                            </span>
+                          </div>
+                        </div>
+                        <ArrowUpRight className="w-4 h-4 text-ink-subtle group-hover:text-primary transition-colors shrink-0" />
+                      </a>
+                    )}
+                    {profile.links.linkedin && (
+                      <a
+                        href={toHref(profile.links.linkedin)}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="flex items-center justify-between p-4 rounded-xl bg-surface-sunken border border-border hover:border-primary/50 transition-all group cursor-pointer"
+                      >
+                        <div className="flex items-center gap-3">
+                          <LinkedinIcon className="w-5 h-5 text-primary shrink-0" />
+                          <div>
+                            <span className="block text-xs text-ink-muted">{t("links.linkedin")}</span>
+                            <span className="text-sm font-bold text-ink-strong break-all">
+                              {stripProtocol(profile.links.linkedin).replace("linkedin.com/in/", "")}
+                            </span>
+                          </div>
+                        </div>
+                        <ArrowUpRight className="w-4 h-4 text-ink-subtle group-hover:text-primary transition-colors shrink-0" />
+                      </a>
+                    )}
+                    {profile.links.portfolio && (
+                      <a
+                        href={toHref(profile.links.portfolio)}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="flex items-center justify-between p-4 rounded-xl bg-surface-sunken border border-border hover:border-primary/50 transition-all group cursor-pointer"
+                      >
+                        <div className="flex items-center gap-3">
+                          <Globe className="w-5 h-5 text-primary shrink-0" />
+                          <div>
+                            <span className="block text-xs text-ink-muted">{t("links.portfolio")}</span>
+                            <span className="text-sm font-bold text-ink-strong break-all">
+                              {stripProtocol(profile.links.portfolio)}
+                            </span>
+                          </div>
+                        </div>
+                        <ArrowUpRight className="w-4 h-4 text-ink-subtle group-hover:text-primary transition-colors shrink-0" />
+                      </a>
+                    )}
+                  </div>
+                ) : (
+                  <p className="text-sm text-ink-muted italic">{t("links.empty")}</p>
+                )}
               </section>
             </div>
 

@@ -16,6 +16,19 @@ function readCredentials(body: unknown): { email: string; password: string; name
   return { email, password, name: typeof name === "string" ? name : undefined };
 }
 
+function readResetInput(body: unknown): { email: string } {
+  const { email, password } = (body ?? {}) as Record<string, unknown>;
+
+  if (typeof email !== "string" || !email.trim()) {
+    throw new ApiError(400, "El email es obligatorio");
+  }
+  if (typeof password !== "string" || password.length < 8) {
+    throw new ApiError(400, "La contraseña debe tener al menos 8 caracteres");
+  }
+
+  return { email: email.trim() };
+}
+
 /** Lee y valida el `refresh_token` del body. */
 function readRefreshToken(body: unknown): string {
   const { refresh_token } = (body ?? {}) as Record<string, unknown>;
@@ -39,6 +52,12 @@ export async function login(req: Request, res: Response) {
   const { email, password } = readCredentials(req.body);
   const result = await userService.loginUser({ email, password });
   res.status(200).json(result);
+}
+
+export async function resetPassword(req: Request, res: Response) {
+  const { email } = readResetInput(req.body);
+  await userService.requestPasswordReset(email);
+  res.status(200).json({ ok: true });
 }
 
 /** POST /api/users/refresh */

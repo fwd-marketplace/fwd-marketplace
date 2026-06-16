@@ -105,10 +105,43 @@ export type ApiEstudianteDetail = {
   disponibilidad: string | null;
   titulo_fwd: string | null;
   reputacion: number | null;
+  url_avatar: string | null;
   url_github: string | null;
   url_linkedin: string | null;
   url_portfolio: string | null;
   skills: string[];
+};
+
+export type StudentSpecialty = "frontend" | "backend" | "fullstack" | "ia";
+export type StudentAvailability = "immediate" | "two_weeks" | "one_month" | "unavailable";
+
+export type StudentProfileUpdate = {
+  nombre?: string;
+  apellido1?: string;
+  apellido2?: string;
+  bio?: string;
+  especializacion?: StudentSpecialty;
+  titulo_fwd?: string;
+  disponibilidad?: StudentAvailability;
+  modalidad?: string[];
+  skills?: string[];
+  link_github?: string;
+  link_linkedin?: string;
+  link_portfolio?: string;
+};
+
+export type StudentPerfilResponse = {
+  id: string;
+  descripcion: string | null;
+  especialidad: string | null;
+  modalidad_preferida: string | null;
+  disponibilidad: string | null;
+  titulo_fwd: string | null;
+  url_avatar: string | null;
+  url_github: string | null;
+  url_linkedin: string | null;
+  url_portfolio: string | null;
+  skills?: string[];
 };
 
 export type ApiMeProfile = {

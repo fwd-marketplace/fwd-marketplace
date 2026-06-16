@@ -1,7 +1,9 @@
 "use client";
 
+import { useTransition } from "react";
 import Link from "next/link";
-import { usePathname } from "next/navigation";
+import { usePathname, useRouter } from "next/navigation";
+import { useLocale } from "next-intl";
 import {
   LayoutDashboard,
   Users,
@@ -10,6 +12,7 @@ import {
   Settings,
   LogOut,
 } from "lucide-react";
+import { logoutUser } from "@/lib/actions/auth";
 import { cn } from "@/lib/utils";
 
 const NAV_ITEMS = [
@@ -22,6 +25,18 @@ const NAV_ITEMS = [
 
 export function AdminSidebar() {
   const pathname = usePathname();
+  const router = useRouter();
+  const locale = useLocale();
+  const [isPending, startTransition] = useTransition();
+
+  function handleLogout() {
+    startTransition(async () => {
+      // Borra las cookies de sesión (access + refresh); no toca la BD.
+      await logoutUser();
+      router.replace(`/${locale}`);
+      router.refresh();
+    });
+  }
 
   return (
     <aside
@@ -66,7 +81,9 @@ export function AdminSidebar() {
         </div>
         <button
           type="button"
-          className="flex w-full items-center gap-2.5 rounded-lg px-3 py-2 font-body text-sm font-medium text-white/60 transition-colors duration-[var(--duration-fast)] hover:bg-white/5 hover:text-white/90"
+          onClick={handleLogout}
+          disabled={isPending}
+          className="flex w-full items-center gap-2.5 rounded-lg px-3 py-2 font-body text-sm font-medium text-white/60 transition-colors duration-[var(--duration-fast)] hover:bg-white/5 hover:text-white/90 disabled:cursor-not-allowed disabled:opacity-60"
         >
           <LogOut className="size-4 shrink-0" aria-hidden="true" />
           Cerrar sesión

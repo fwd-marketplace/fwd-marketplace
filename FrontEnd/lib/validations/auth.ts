@@ -49,6 +49,20 @@ export const EmprendedorProfileSchema = z.object({
   description:   z.string().max(400).optional(),
 });
 
+export const MIN_PASSWORD_LENGTH = 8;
+
+export const ResetPasswordSchema = z
+  .object({
+    email: z.string().min(1).email(),
+    password: z.string().min(MIN_PASSWORD_LENGTH),
+    confirmPassword: z.string().min(1),
+  })
+  .refine((data) => data.password === data.confirmPassword, {
+    path: ["confirmPassword"],
+    message: "Las contraseñas no coinciden",
+  });
+
 export type JuniorProfile      = z.infer<typeof JuniorProfileSchema>;
 export type EmpresaProfile     = z.infer<typeof EmpresaProfileSchema>;
 export type EmprendedorProfile = z.infer<typeof EmprendedorProfileSchema>;
+export type ResetPasswordInput = z.infer<typeof ResetPasswordSchema>;

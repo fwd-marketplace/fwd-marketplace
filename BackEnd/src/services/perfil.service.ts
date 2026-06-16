@@ -1,6 +1,7 @@
 import { supabaseForToken } from "../config/supabase";
 import { ApiError } from "../utils/ApiError";
 import { parseBody } from "../utils/parseBody";
+import { uploadImage } from "./upload.service";
 import type { Database } from "../types/database.types";
 import {
   PerfilEstudianteSchema,
@@ -9,20 +10,33 @@ import {
   type PerfilEmpresarioInput,
 } from "../validations/perfil";
 
+type Client = ReturnType<typeof supabaseForToken>;
+type UsersUpdate = Database["public"]["Tables"]["users"]["Update"];
 type EstudianteUpdate = Database["public"]["Tables"]["estudiante"]["Update"];
 type EmpresarioUpdate = Database["public"]["Tables"]["empresario"]["Update"];
 
+const AVATAR_FOLDER = "fwd/avatars";
+
 /** Columnas que se devuelven tras editar cada perfil. */
 const ESTUDIANTE_SELECT =
-  "id, descripcion, especialidad, modalidad_preferida, disponibilidad, url_github, url_linkedin, url_portfolio";
+  "id, descripcion, especialidad, modalidad_preferida, disponibilidad, titulo_fwd, url_avatar, url_github, url_linkedin, url_portfolio";
 const EMPRESARIO_SELECT =
   "id, tipo, nombre_comercial, descripcion, sector, tipos_proyecto, apoyo_tecnico_necesario, cedula_juridica, direccion, url_sitio_web, etapa, presupuesto";
+
+function toUserUpdate(input: PerfilEstudianteInput): UsersUpdate {
+  const updates: UsersUpdate = {};
+  if (input.nombre !== undefined) updates.nombre = input.nombre;
+  if (input.apellido1 !== undefined) updates.apellido1 = input.apellido1;
+  if (input.apellido2 !== undefined) updates.apellido2 = input.apellido2 || null;
+  return updates;
+}
 
 /** Traduce los nombres FE del junior a columnas de `estudiante` (solo los enviados). */
 function toEstudianteUpdate(input: PerfilEstudianteInput): EstudianteUpdate {
   const updates: EstudianteUpdate = {};
   if (input.bio !== undefined) updates.descripcion = input.bio;
   if (input.especializacion !== undefined) updates.especialidad = input.especializacion;
+  if (input.titulo_fwd !== undefined) updates.titulo_fwd = input.titulo_fwd;
   if (input.modalidad !== undefined) updates.modalidad_preferida = JSON.stringify(input.modalidad);
   if (input.disponibilidad !== undefined) updates.disponibilidad = input.disponibilidad;
   // Los links se guardan tal cual (cadena vacía = "sin link"); el Update generado
@@ -31,6 +45,71 @@ function toEstudianteUpdate(input: PerfilEstudianteInput): EstudianteUpdate {
   if (input.link_linkedin !== undefined) updates.url_linkedin = input.link_linkedin;
   if (input.link_portfolio !== undefined) updates.url_portfolio = input.link_portfolio;
   return updates;
+}
+
+async function syncStudentSkills(
+  client: Client,
+  estudianteId: string,
+  names: string[],
+): Promise<string[]> {
+  const { data: catalog, error } = await client.from("skills").select("id, nombre");
+  if (error) throw new ApiError(500, error.message);
+
+  const idByName = new Map((catalog ?? []).map((skill) => [skill.nombre.toLowerCase(), skill]));
+  const matched = new Map<string, string>();
+  for (const name of names) {
+    const hit = idByName.get(name.trim().toLowerCase());
+    if (hit) matched.set(hit.id, hit.nombre);
+  }
+
+  const { error: deleteError } = await client
+    .from("student_skills")
+    .delete()
+    .eq("id_estudiante", estudianteId);
+  if (deleteError) throw new ApiError(400, deleteError.message);
+
+  if (matched.size > 0) {
+    const rows = [...matched.keys()].map((id_skill) => ({ id_estudiante: estudianteId, id_skill }));
+    const { error: insertError } = await client.from("student_skills").insert(rows);
+    if (insertError) throw new ApiError(400, insertError.message);
+  }
+
+  return [...matched.values()];
+}
+
+async function updateEstudiante(client: Client, userId: string, body: unknown) {
+  const input = parseBody(PerfilEstudianteSchema, body);
+
+  const userUpdates = toUserUpdate(input);
+  if (Object.keys(userUpdates).length > 0) {
+    const { error } = await client.from("users").update(userUpdates).eq("id", userId);
+    if (error) throw new ApiError(400, error.message);
+  }
+
+  const estudianteUpdates = toEstudianteUpdate(input);
+  const result =
+    Object.keys(estudianteUpdates).length > 0
+      ? await client
+          .from("estudiante")
+          .update(estudianteUpdates)
+          .eq("id_usuario", userId)
+          .select(ESTUDIANTE_SELECT)
+          .maybeSingle()
+      : await client
+          .from("estudiante")
+          .select(ESTUDIANTE_SELECT)
+          .eq("id_usuario", userId)
+          .maybeSingle();
+  if (result.error) throw new ApiError(400, result.error.message);
+  const estudiante = result.data;
+  if (!estudiante) throw new ApiError(404, "No tenés un perfil de estudiante");
+
+  if (input.skills !== undefined) {
+    const skills = await syncStudentSkills(client, estudiante.id, input.skills);
+    return { ...estudiante, skills };
+  }
+
+  return estudiante;
 }
 
 /** Traduce los nombres FE de empresa/emprendedor a columnas de `empresario`. */
@@ -119,16 +198,7 @@ export async function updateMyPerfil(accessToken: string, userId: string, body: 
   const rol = cuenta.role?.nombre;
 
   if (rol === "student") {
-    const updates = toEstudianteUpdate(parseBody(PerfilEstudianteSchema, body));
-    const { data, error } = await client
-      .from("estudiante")
-      .update(updates)
-      .eq("id_usuario", userId)
-      .select(ESTUDIANTE_SELECT)
-      .maybeSingle();
-    if (error) throw new ApiError(400, error.message);
-    if (!data) throw new ApiError(404, "No tenés un perfil de estudiante");
-    return data;
+    return updateEstudiante(client, userId, body);
   }
 
   if (rol === "company") {
@@ -145,4 +215,24 @@ export async function updateMyPerfil(accessToken: string, userId: string, body: 
   }
 
   throw new ApiError(403, "Tu rol no tiene un perfil editable");
+}
+
+export async function updateMyAvatar(
+  accessToken: string,
+  userId: string,
+  fileBuffer: Buffer,
+): Promise<{ url_avatar: string }> {
+  const url = await uploadImage(fileBuffer, AVATAR_FOLDER);
+
+  const client = supabaseForToken(accessToken);
+  const { data, error } = await client
+    .from("estudiante")
+    .update({ url_avatar: url })
+    .eq("id_usuario", userId)
+    .select("url_avatar")
+    .maybeSingle();
+  if (error) throw new ApiError(400, error.message);
+  if (!data) throw new ApiError(404, "No tenés un perfil de estudiante");
+
+  return { url_avatar: data.url_avatar ?? url };
 }

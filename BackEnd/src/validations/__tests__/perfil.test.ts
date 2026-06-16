@@ -21,6 +21,25 @@ describe("PerfilEstudianteSchema", () => {
   it("acepta un link vacío", () => {
     expect(PerfilEstudianteSchema.safeParse({ link_github: "" }).success).toBe(true);
   });
+
+  it("acepta editar nombre y apellidos", () => {
+    expect(
+      PerfilEstudianteSchema.safeParse({ nombre: "Ana", apellido1: "Mora" }).success,
+    ).toBe(true);
+  });
+
+  it("acepta el título FWD (programa) como texto libre", () => {
+    expect(PerfilEstudianteSchema.safeParse({ titulo_fwd: "Cohorte 2026" }).success).toBe(true);
+  });
+
+  it("acepta un arreglo de skills (incluido vacío para limpiarlas)", () => {
+    expect(PerfilEstudianteSchema.safeParse({ skills: ["React", "Node.js"] }).success).toBe(true);
+    expect(PerfilEstudianteSchema.safeParse({ skills: [] }).success).toBe(true);
+  });
+
+  it("rechaza un nombre vacío", () => {
+    expect(PerfilEstudianteSchema.safeParse({ nombre: "" }).success).toBe(false);
+  });
 });
 
 describe("PerfilEmpresarioSchema", () => {
