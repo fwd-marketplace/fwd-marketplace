@@ -5,9 +5,10 @@ import type {
   EmprendedorOnboarding,
 } from "../../validations/onboarding";
 
-/** Respuestas que el cliente Supabase mockeado devuelve por tabla. */
-const { responses } = vi.hoisted(() => ({
+/** Respuestas por tabla + registro de los `delete()` para verificar el rollback. */
+const { responses, tracker } = vi.hoisted(() => ({
   responses: {} as Record<string, { data: unknown; error: unknown }>,
+  tracker: { deletes: [] as string[] },
 }));
 
 // Builder encadenable: los terminales (maybeSingle/single) y el await directo
@@ -27,7 +28,10 @@ vi.mock("../../config/supabase", () => ({
       select: chain,
       insert: chain,
       update: chain,
-      delete: chain,
+      delete: () => {
+        tracker.deletes.push(table);
+        return builder;
+      },
       eq: chain,
       in: chain,
       order: chain,
@@ -81,6 +85,7 @@ const emprendedorInput: EmprendedorOnboarding = {
 
 beforeEach(() => {
   for (const key of Object.keys(responses)) delete responses[key];
+  tracker.deletes = [];
 });
 
 describe("onboardJunior", () => {
@@ -121,6 +126,15 @@ describe("onboardJunior", () => {
     await expect(onboardJunior(TOKEN, USER, CORREO, juniorInput)).rejects.toMatchObject({
       statusCode: 400,
     });
+  });
+
+  it("limpia la fila users (rollback) si falla un paso posterior", async () => {
+    happyPath();
+    responses["estudiante"] = { data: null, error: { message: "boom" } };
+    await expect(onboardJunior(TOKEN, USER, CORREO, juniorInput)).rejects.toMatchObject({
+      statusCode: 400,
+    });
+    expect(tracker.deletes).toContain("users");
   });
 });
 
