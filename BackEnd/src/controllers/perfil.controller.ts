@@ -1,6 +1,6 @@
 import type { Request, Response } from "express";
 import { ApiError } from "../utils/ApiError";
-import { updateMyPerfil } from "../services/perfil.service";
+import { getMyPerfil, updateMyPerfil } from "../services/perfil.service";
 
 /** Token + id del usuario autenticado (los inyecta `authenticate`). */
 function requireAuth(req: Request): { token: string; userId: string } {
@@ -8,6 +8,13 @@ function requireAuth(req: Request): { token: string; userId: string } {
     throw new ApiError(401, "No autenticado");
   }
   return { token: req.accessToken, userId: req.user.id };
+}
+
+/** GET /api/users/me/perfil (el usuario ve su propio perfil para editarlo) */
+export async function getMe(req: Request, res: Response) {
+  const { token, userId } = requireAuth(req);
+  const perfil = await getMyPerfil(token, userId);
+  res.status(200).json({ perfil });
 }
 
 /** PATCH /api/users/me/perfil (el usuario edita su propio perfil) */

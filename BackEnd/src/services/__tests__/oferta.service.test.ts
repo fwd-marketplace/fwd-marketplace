@@ -24,7 +24,9 @@ vi.mock("../../config/supabase", () => ({
       insert: chain,
       update: chain,
       eq: chain,
-      order: chain,
+      // En oferta.service, .order() es siempre el terminal de las queries de lista,
+      // así que resuelve la respuesta (igual que maybeSingle/single).
+      order: () => Promise.resolve(responses[table] ?? { data: null, error: null }),
       maybeSingle: () => Promise.resolve(responses[table] ?? { data: null, error: null }),
       single: () => Promise.resolve(responses[table] ?? { data: null, error: null }),
     });
@@ -32,7 +34,13 @@ vi.mock("../../config/supabase", () => ({
   },
 }));
 
-import { createOferta, decideOferta, getOfertaContacto } from "../oferta.service";
+import {
+  createOferta,
+  decideOferta,
+  getOfertaContacto,
+  listMyOfertas,
+  listProjectOfertas,
+} from "../oferta.service";
 
 const TOKEN = "token";
 const USER = "user-1";
@@ -187,5 +195,43 @@ describe("getOfertaContacto", () => {
     contactoHappyPath();
     responses["proyecto"] = { data: { empresa: { id_usuario: "otra-empresa" } }, error: null };
     await expect(getOfertaContacto(TOKEN, USER, OFERTA)).rejects.toMatchObject({ statusCode: 403 });
+  });
+});
+
+describe("listMyOfertas", () => {
+  it("devuelve las postulaciones del junior autenticado", async () => {
+    responses["oferta"] = {
+      data: [{ id: OFERTA, estado: { nombre: "enviada" }, proyecto: { id: PROJECT, titulo: "Landing" } }],
+      error: null,
+    };
+    const ofertas = await listMyOfertas(TOKEN, USER);
+    expect(ofertas).toMatchObject([{ id: OFERTA, estado: { nombre: "enviada" } }]);
+  });
+
+  it("propaga un error de la consulta como 500", async () => {
+    responses["oferta"] = { data: null, error: { message: "boom" } };
+    await expect(listMyOfertas(TOKEN, USER)).rejects.toMatchObject({ statusCode: 500 });
+  });
+});
+
+describe("listProjectOfertas", () => {
+  it("devuelve las postulaciones cuando el proyecto es del usuario", async () => {
+    responses["proyecto"] = { data: { id: PROJECT, empresa: { id_usuario: USER } }, error: null };
+    responses["oferta"] = {
+      data: [{ id: OFERTA, junior: { id: "junior-1", nombre: "Ana", apellido1: "Soto" } }],
+      error: null,
+    };
+    const ofertas = await listProjectOfertas(TOKEN, USER, PROJECT);
+    expect(ofertas).toMatchObject([{ id: OFERTA, junior: { nombre: "Ana" } }]);
+  });
+
+  it("rechaza (404) si el proyecto no existe", async () => {
+    responses["proyecto"] = { data: null, error: null };
+    await expect(listProjectOfertas(TOKEN, USER, PROJECT)).rejects.toMatchObject({ statusCode: 404 });
+  });
+
+  it("rechaza (403) si el proyecto no es del usuario", async () => {
+    responses["proyecto"] = { data: { id: PROJECT, empresa: { id_usuario: "otra-empresa" } }, error: null };
+    await expect(listProjectOfertas(TOKEN, USER, PROJECT)).rejects.toMatchObject({ statusCode: 403 });
   });
 });
