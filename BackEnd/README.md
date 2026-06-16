@@ -76,12 +76,44 @@ Otros scripts: `npm run build` (compila a `dist/`), `npm start` (producción),
 
 ## Endpoints
 
-| Método | Ruta                  | Auth | Descripción                                   |
-| ------ | --------------------- | ---- | --------------------------------------------- |
-| GET    | `/api/health`         | —    | Healthcheck                                   |
-| POST   | `/api/users/register` | —    | `signUp` en Supabase → `{ user, session }`    |
-| POST   | `/api/users/login`    | —    | `signInWithPassword` → `{ user, session }`    |
-| GET    | `/api/users/me`       | JWT  | Usuario autenticado (`{ user }`)              |
+Vista general por grupo. Las **especificaciones completas** (bodies, respuestas y errores)
+viven en los contratos de `docs/`:
+
+- `docs/auth-contract.md` — auth, sesión, onboarding, **perfil** y aprobación de cuentas.
+- `docs/marketplace-contract.md` — catálogos, proyectos, postulaciones (ofertas) y admin.
+
+| Método | Ruta | Auth | Descripción |
+| --- | --- | --- | --- |
+| GET | `/api/health` | — | Healthcheck |
+| POST | `/api/users/register` | — | Registro (`signUp`) → `{ user, session }` |
+| POST | `/api/users/login` | — | Login (`signInWithPassword`) → `{ user, session }` |
+| POST | `/api/users/reset-password` | — | Envía el correo de recuperación de contraseña |
+| POST | `/api/users/refresh` | — | Renueva la sesión con el `refresh_token` |
+| POST | `/api/users/logout` | — | Revoca el `refresh_token` |
+| GET | `/api/users/me` | JWT | Usuario autenticado + perfil (`{ user, profile }`) |
+| POST | `/api/users/onboarding/junior` | JWT | Onboarding junior (crea `estudiante`) |
+| POST | `/api/users/onboarding/empresa` | JWT | Onboarding empresa |
+| POST | `/api/users/onboarding/emprendedor` | JWT | Onboarding emprendedor |
+| GET | `/api/users/me/perfil` | JWT | Lee el perfil propio (estudiante/empresario) |
+| PATCH | `/api/users/me/perfil` | JWT | Edita el perfil propio (parcial) |
+| POST | `/api/users/me/perfil/avatar` | JWT | Sube la foto de perfil (multipart → Cloudinary) |
+| GET | `/api/catalogs` | JWT | Áreas, skills y estados para selects/filtros |
+| GET | `/api/projects` | JWT | Listado de proyectos visibles |
+| GET | `/api/projects/mias` | JWT | Proyectos propios de la empresa |
+| POST | `/api/projects` | JWT | Publica un proyecto (empresa) |
+| GET | `/api/projects/:id` | JWT | Detalle de un proyecto |
+| PATCH | `/api/projects/:id/estado` | JWT | Cambia el estado (empresa dueña) |
+| POST | `/api/projects/:id/ofertas` | JWT | El junior postula |
+| GET | `/api/projects/:id/ofertas` | JWT | Postulaciones recibidas (empresa dueña) |
+| GET | `/api/ofertas/mias` | JWT | Mis postulaciones (junior) |
+| GET | `/api/ofertas/:id` | JWT | Detalle de postulación con contacto (empresa dueña) |
+| PATCH | `/api/ofertas/:id` | JWT | La empresa acepta/rechaza |
+| GET | `/api/admin/users/pending` | JWT admin | Cuentas pendientes |
+| PATCH | `/api/admin/users/:id/aprobar` | JWT admin | Aprueba una cuenta |
+| PATCH | `/api/admin/users/:id/rechazar` | JWT admin | Rechaza una cuenta |
+| PATCH | `/api/admin/users/:id/suspender` | JWT admin | Suspende una cuenta |
+| GET | `/api/admin/projects` | JWT admin | Todos los proyectos (incluye borradores) |
+| PATCH | `/api/admin/projects/:id/cancelar` | JWT admin | Cancela (modera) un proyecto |
 
 El `access_token` que devuelve Supabase en `session` es el que el FrontEnd envía
 en las rutas protegidas: `Authorization: Bearer <access_token>`.

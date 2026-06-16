@@ -144,8 +144,13 @@ Crea `users` (`pendiente`) + `empresario` (`tipo='emprendedor'`).
 ### GET /api/users/me/perfil  (Bearer)
 Devuelve el **propio** perfil para precargar el formulario de edición: el junior su fila
 `estudiante`, la empresa o emprendedor su fila `empresario` (el BackEnd elige según el rol).
-Mismas columnas que devuelve el `PATCH`.
-→ `200 { "perfil": { ...la fila de BD... } }`
+→ `200 { "perfil": { ...columnas de la fila... } }`, según el rol:
+- **estudiante:** `id, descripcion, especialidad, titulo_fwd, modalidad_preferida,
+  disponibilidad, url_avatar, url_github, url_linkedin, url_portfolio`.
+- **empresario:** `id, tipo, nombre_comercial, descripcion, sector, tipos_proyecto,
+  apoyo_tecnico_necesario, cedula_juridica, direccion, url_sitio_web, etapa, presupuesto`.
+
+El GET **no** incluye `skills` (el `PATCH` sí las devuelve al sincronizarlas).
 Errores: `403` sin onboarding o rol sin perfil editable (ej. admin); `404` si no existe la fila.
 Los arrays (`modalidad_preferida`, `sector`, `tipos_proyecto`, `apoyo_tecnico_necesario`)
 vienen como **JSON string** (hay que `JSON.parse()`).
@@ -158,26 +163,39 @@ cambiar, pero **al menos uno** (body vacío → `400`). Los enums son los mismos
 onboarding (valor fuera de lista → `400`).
 
 Campos aceptados (todos opcionales, nombres del FE):
-```
-junior (estudiante):   bio, especializacion, modalidad[], disponibilidad,
-                       link_github, link_linkedin, link_portfolio
-empresa/emprendedor:   nombre_comercial, descripcion, sector[], tipos_proyecto[],
-(empresario)           soporte_tecnico[], ruc, direccion, url_sitio_web,
-                       etapa, presupuesto
-```
+
+- **junior** (se reparten entre `users`, `estudiante` y `student_skills`):
+  `nombre`, `apellido1`, `apellido2`, `bio`, `especializacion`, `titulo_fwd`,
+  `modalidad[]`, `disponibilidad`, `skills[]`, `link_github`, `link_linkedin`, `link_portfolio`.
+- **empresa / emprendedor** (`empresario`):
+  `nombre_comercial`, `descripcion`, `sector[]`, `tipos_proyecto[]`, `soporte_tecnico[]`,
+  `ruc`, `direccion`, `url_sitio_web`, `etapa`, `presupuesto`.
+
+`skills[]` se sincroniza contra el catálogo `skills` (solo se guardan las que coinciden por
+nombre; la respuesta del `PATCH` trae las realmente guardadas). `modalidad` puede ir vacía.
+
 Body de ejemplo (junior):
 ```json
-{ "bio": "Actualicé mi bio", "link_github": "https://github.com/ana", "modalidad": ["remote"] }
+{ "nombre": "Ana", "bio": "Actualicé mi bio", "skills": ["React", "TypeScript"],
+  "link_github": "https://github.com/ana", "modalidad": ["remote"] }
 ```
-→ `200 { "perfil": { ...la fila actualizada (columnas de BD)... } }`
-Los arrays se devuelven como **JSON string** (igual que en las lecturas: hay que
-`JSON.parse()`). Errores: `400` body inválido/vacío; `403` sin onboarding o rol sin
-perfil editable (ej. admin); `404` si no existe la fila de perfil.
+→ `200 { "perfil": { ...la fila actualizada (columnas de BD)..., "skills": ["React"] } }`
+Los arrays se devuelven como **JSON string** (hay que `JSON.parse()`); `skills` viene como
+array de nombres. Errores: `400` body inválido/vacío; `403` sin onboarding o rol sin perfil
+editable (ej. admin); `404` si no existe la fila de perfil.
 
-Notas de alcance: este endpoint **no** edita identidad (`nombre`, `apellido`, `cedula`,
-`correo`), ni `estado_cuenta`/`estado_verificacion`, ni el `tech_stack` (skills). El
-campo `nombre_comercial` actualiza el nombre visible de la empresa en el marketplace
-(no toca `users.nombre`).
+Notas de alcance: edita `users` (`nombre`, `apellido1`, `apellido2`), el perfil
+(`estudiante` / `empresario`) y las `skills` del junior. **No** edita `cedula` ni `correo`
+(los gestiona Supabase Auth) ni `estado_cuenta`/`estado_verificacion`. La foto de perfil se
+sube por el endpoint aparte de abajo.
+
+### POST /api/users/me/perfil/avatar  (Bearer)
+Sube la foto de perfil del junior. Es **multipart/form-data** con el archivo en el campo
+`file` (imagen, máx. 5 MB). El BackEnd la sube a Cloudinary (la API key/secret viven solo en
+el BackEnd) y guarda la URL en `estudiante.url_avatar`.
+→ `200 { "perfil": { "url_avatar": "https://..." } }`
+Errores: `400` si no llega imagen o el tipo no es imagen; `500` si faltan las variables
+`CLOUDINARY_*` en el `.env` del BackEnd.
 
 ### GET /api/admin/users/pending  (Bearer admin)
 → `200 { users: [...] }` — cuentas en `pendiente`.
