@@ -8,7 +8,28 @@ import {
   SESSION_COOKIE,
 } from "@/lib/api-client";
 import { ok, err, type Result } from "@/lib/result";
-import type { StudentPerfilResponse, StudentProfileUpdate } from "@/lib/api/types";
+import type {
+  StudentPerfilResponse,
+  StudentProfileUpdate,
+  EmpresarioUpdateInput,
+} from "@/lib/api/types";
+
+export async function updateEmpresarioProfile(
+  input: EmpresarioUpdateInput,
+): Promise<Result<void>> {
+  if (Object.keys(input).length === 0) {
+    return err("No hay cambios para guardar");
+  }
+  try {
+    await apiAuth("/users/me/perfil", {
+      method: "PATCH",
+      body: JSON.stringify(input),
+    });
+    return ok(undefined);
+  } catch (e) {
+    return err(e instanceof ApiError ? e.message : "Error de conexión");
+  }
+}
 
 export async function updateStudentProfile(
   input: StudentProfileUpdate,

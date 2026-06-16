@@ -7,10 +7,10 @@ import { ChevronLeft } from "lucide-react";
 import { cn } from "@/lib/utils";
 
 const NAV_HREFS = [
-  { key: "mis_proyectos", href: "/dashboard" },
-  { key: "matches", href: "/matches", badge: { count: 18, variant: "warning" } },
-  { key: "postulaciones", href: "/postulaciones", badge: { count: 48, variant: "primary" } },
   { key: "mi_empresa", href: "/perfil-empresa" },
+  { key: "mis_proyectos", href: "/dashboard" },
+  { key: "postulaciones", href: "/postulaciones", badge: { count: 48, variant: "primary" } },
+  { key: "matches", href: "/matches", badge: { count: 18, variant: "warning" } },
 ] as const;
 
 export function EmpresaSubnav() {

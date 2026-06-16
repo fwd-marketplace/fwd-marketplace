@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useTransition } from "react";
+import { useState, useTransition, useEffect } from "react";
 import { useRouter, useParams } from "next/navigation";
 import { useTranslations } from "next-intl";
 import { ArrowRight } from "lucide-react";
@@ -23,9 +23,16 @@ const BIO_MAX_CHARS = 500;
 
 type Step1Value = { nombre: string; apellido1: string; apellido2: string; cedula: string };
 
-function Step1({ onChange }: { onChange: (val: Step1Value) => void }) {
+function Step1({
+  onChange,
+  showErrors = false,
+}: {
+  onChange: (val: Step1Value) => void;
+  showErrors?: boolean;
+}) {
   const t = useTranslations("register.junior.step1");
   const [fields, setFields] = useState<Step1Value>({ nombre: "", apellido1: "", apellido2: "", cedula: "" });
+  const [touched, setTouched] = useState<Partial<Record<keyof Step1Value, true>>>({});
 
   function update(key: keyof Step1Value, value: string) {
     const next = { ...fields, [key]: value };
@@ -33,7 +40,30 @@ function Step1({ onChange }: { onChange: (val: Step1Value) => void }) {
     onChange(next);
   }
 
-  const inputClass = "w-full rounded-2xl bg-surface-sunken px-5 py-4 font-body text-sm text-ink-strong placeholder:text-ink-subtle outline-none focus:ring-2 focus:ring-primary/40";
+  function touch(key: keyof Step1Value) {
+    setTouched((prev) => ({ ...prev, [key]: true }));
+  }
+
+  function getError(key: keyof Step1Value): string | null {
+    if (!showErrors && !touched[key]) return null;
+    const value = fields[key].trim();
+    if (!value) return t("error_required");
+    const minLen = key === "cedula" ? 5 : 2;
+    if (value.length < minLen) return key === "cedula" ? t("error_min_5") : t("error_min_2");
+    return null;
+  }
+
+  const FIELD_DEFS: {
+    key: keyof Step1Value;
+    labelKey: string;
+    placeholderKey: string;
+    id: string;
+  }[] = [
+    { key: "nombre",    labelKey: "label_nombre",    placeholderKey: "placeholder_nombre",    id: "junior-nombre" },
+    { key: "apellido1", labelKey: "label_apellido1", placeholderKey: "placeholder_apellido1", id: "junior-apellido1" },
+    { key: "apellido2", labelKey: "label_apellido2", placeholderKey: "placeholder_apellido2", id: "junior-apellido2" },
+    { key: "cedula",    labelKey: "label_cedula",    placeholderKey: "placeholder_cedula",    id: "junior-cedula" },
+  ];
 
   return (
     <div className="flex flex-col gap-6">
@@ -48,43 +78,36 @@ function Step1({ onChange }: { onChange: (val: Step1Value) => void }) {
       </div>
 
       <div className="flex flex-col gap-3">
-        <label htmlFor="junior-nombre" className="sr-only">{t("label_nombre")}</label>
-        <input
-          id="junior-nombre"
-          type="text"
-          value={fields.nombre}
-          onChange={(e) => update("nombre", e.target.value)}
-          placeholder={t("placeholder_nombre")}
-          autoFocus
-          className={inputClass}
-        />
-        <label htmlFor="junior-apellido1" className="sr-only">{t("label_apellido1")}</label>
-        <input
-          id="junior-apellido1"
-          type="text"
-          value={fields.apellido1}
-          onChange={(e) => update("apellido1", e.target.value)}
-          placeholder={t("placeholder_apellido1")}
-          className={inputClass}
-        />
-        <label htmlFor="junior-apellido2" className="sr-only">{t("label_apellido2")}</label>
-        <input
-          id="junior-apellido2"
-          type="text"
-          value={fields.apellido2}
-          onChange={(e) => update("apellido2", e.target.value)}
-          placeholder={t("placeholder_apellido2")}
-          className={inputClass}
-        />
-        <label htmlFor="junior-cedula" className="sr-only">{t("label_cedula")}</label>
-        <input
-          id="junior-cedula"
-          type="text"
-          value={fields.cedula}
-          onChange={(e) => update("cedula", e.target.value)}
-          placeholder={t("placeholder_cedula")}
-          className={inputClass}
-        />
+        {FIELD_DEFS.map(({ key, labelKey, placeholderKey, id }, idx) => {
+          const error = getError(key);
+          return (
+            <div key={key} className="flex flex-col gap-1">
+              <label htmlFor={id} className="sr-only">{t(labelKey)}</label>
+              <input
+                id={id}
+                type="text"
+                value={fields[key]}
+                onChange={(e) => update(key, e.target.value)}
+                onBlur={() => touch(key)}
+                placeholder={t(placeholderKey)}
+                autoFocus={idx === 0}
+                aria-describedby={error ? `${id}-error` : undefined}
+                aria-invalid={error ? true : undefined}
+                className={[
+                  "w-full rounded-2xl bg-surface-sunken px-5 py-4 font-body text-sm text-ink-strong placeholder:text-ink-subtle outline-none focus:ring-2",
+                  error
+                    ? "ring-1 ring-red-400/60 focus:ring-red-400/60"
+                    : "focus:ring-primary/40",
+                ].join(" ")}
+              />
+              {error && (
+                <p id={`${id}-error`} role="alert" className="px-1 font-body text-xs text-red-500">
+                  {error}
+                </p>
+              )}
+            </div>
+          );
+        })}
       </div>
       <div className="h-2" />
     </div>
@@ -460,10 +483,35 @@ export function JuniorOnboarding() {
 
   const [pendingValue, setPendingValue] = useState<unknown>(null);
   const [submitError, setSubmitError] = useState<string | null>(null);
+  const [showStepErrors, setShowStepErrors] = useState(false);
   const [isSubmitting, startTransition] = useTransition();
+
+  useEffect(() => {
+    setPendingValue(null);
+    setShowStepErrors(false);
+  }, [currentStep]);
+
+  function getStepValidationMessage(): string | null {
+    if (!showStepErrors || OPTIONAL_STEPS.has(currentStep) || pendingValue !== null) return null;
+    switch (currentStep) {
+      case 1: return t("nav.error_step1");
+      case 2: return t("nav.error_select_one");
+      case 3: return t("nav.error_select_several");
+      case 4: return t("nav.error_select_one");
+      case 5: return t("nav.error_select_several");
+      default: return null;
+    }
+  }
 
   function handleNext() {
     setSubmitError(null);
+
+    if (!OPTIONAL_STEPS.has(currentStep) && !pendingValue) {
+      setShowStepErrors(true);
+      return;
+    }
+
+    setShowStepErrors(false);
     saveStep("junior", currentStep, pendingValue);
 
     if (currentStep < TOTAL_STEPS) {
@@ -499,7 +547,8 @@ export function JuniorOnboarding() {
     }
   }
 
-  const canContinue = !isSubmitting && (OPTIONAL_STEPS.has(currentStep) || Boolean(pendingValue));
+  const stepValidationMessage = getStepValidationMessage();
+  const footerMessage = submitError ?? stepValidationMessage;
 
   return (
     <div className="relative flex min-h-[100dvh] flex-col bg-secondary">
@@ -518,10 +567,13 @@ export function JuniorOnboarding() {
       <div className="relative flex flex-1 items-center justify-center px-4">
         <div className="w-full max-w-md rounded-[2rem] bg-surface px-6 py-8 shadow-elevated sm:px-10 sm:py-10">
           {currentStep === 1 && (
-            <Step1 onChange={(val) => {
-              const filled = val.nombre.trim() && val.apellido1.trim() && val.apellido2.trim() && val.cedula.trim();
-              setPendingValue(filled ? val : null);
-            }} />
+            <Step1
+              showErrors={showStepErrors}
+              onChange={(val) => {
+                const filled = val.nombre.trim() && val.apellido1.trim() && val.apellido2.trim() && val.cedula.trim();
+                setPendingValue(filled ? val : null);
+              }}
+            />
           )}
           {currentStep === 2 && (
             <Step2 onChange={(val) => setPendingValue(val)} />
@@ -541,9 +593,9 @@ export function JuniorOnboarding() {
       </div>
 
       <footer className="relative flex flex-col items-center gap-2 px-4 py-5 sm:px-8 sm:py-6">
-        {submitError && (
+        {footerMessage && (
           <p role="alert" className="w-full max-w-md text-center font-body text-xs text-red-500">
-            {submitError}
+            {footerMessage}
           </p>
         )}
         <div className="flex w-full items-center justify-between">
@@ -565,7 +617,7 @@ export function JuniorOnboarding() {
           <button
             type="button"
             onClick={handleNext}
-            disabled={!canContinue}
+            disabled={isSubmitting}
             className="flex items-center gap-2 rounded-full bg-primary px-5 py-2.5 font-body text-sm font-semibold text-white transition-opacity duration-[--duration-fast] hover:opacity-90 disabled:cursor-not-allowed disabled:opacity-40 sm:px-6"
           >
             {isSubmitting ? t("nav.finishing") : currentStep === TOTAL_STEPS ? t("nav.finish") : t("nav.next")}

@@ -158,8 +158,7 @@ export function PerfilEmpresa({
           project.id === projectId ? { ...project, estado: { ...project.estado, nombre: estado } } : project,
         ),
       );
-      // Actualizar el selectedProject si es necesario
-      triggerToast(t("notifications.state_changed") || "Estado actualizado");
+      triggerToast(t("notifications.state_changed"));
     });
   }
 
@@ -302,7 +301,7 @@ export function PerfilEmpresa({
                     disabled={isPending || selectedProject.estado.nombre === "cancelado"}
                     className="rounded-lg border border-border bg-surface-sunken px-3 py-1.5 font-body text-xs font-medium text-ink-strong focus:outline-none focus:ring-2 focus:ring-primary/40 cursor-pointer"
                   >
-                    <option value="borrador" disabled>Borrador</option>
+                    <option value="borrador" disabled>{t("states.borrador")}</option>
                     <option value="en_recepcion">{t("states.en_recepcion")}</option>
                     <option value="en_evaluacion">{t("states.en_evaluacion")}</option>
                     <option value="adjudicado">{t("states.adjudicado")}</option>
