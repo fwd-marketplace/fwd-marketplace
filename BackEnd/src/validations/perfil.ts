@@ -12,13 +12,17 @@ const optionalUrl = z.union([z.string().url(), z.literal("")]).optional();
 
 const NON_EMPTY = { message: "Enviá al menos un campo para actualizar" };
 
-/** PATCH del perfil del junior: columnas editables de `estudiante`. */
 export const PerfilEstudianteSchema = z
   .object({
+    nombre: z.string().min(1).max(100).optional(),
+    apellido1: z.string().min(1).max(100).optional(),
+    apellido2: z.string().max(100).optional(),
     bio: z.string().max(500).optional(),
     especializacion: z.enum(["frontend", "backend", "fullstack", "ia"]).optional(),
-    modalidad: z.array(z.string().min(1)).min(1).optional(),
+    titulo_fwd: z.string().max(100).optional(),
+    modalidad: z.array(z.string().min(1)).optional(),
     disponibilidad: z.enum(["immediate", "two_weeks", "one_month", "unavailable"]).optional(),
+    skills: z.array(z.string().min(1)).optional(),
     link_github: optionalUrl,
     link_linkedin: optionalUrl,
     link_portfolio: optionalUrl,

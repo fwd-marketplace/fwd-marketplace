@@ -1,4 +1,5 @@
 import { supabase, supabaseForToken, createEphemeralClient } from "../config/supabase";
+import { env } from "../config/env";
 import { ApiError } from "../utils/ApiError";
 
 type RegisterInput = { email: string; password: string; name?: string };
@@ -74,6 +75,15 @@ export async function logoutUser(refreshToken: string) {
   await client.auth.signOut();
 }
 
+export async function requestPasswordReset(email: string): Promise<void> {
+  const redirectTo = `${env.frontendUrl}/es/login`;
+  const { error } = await supabase.auth.resetPasswordForEmail(email, { redirectTo });
+
+  if (error && error.status && error.status >= 500) {
+    throw new ApiError(502, "No se pudo enviar el correo de recuperación");
+  }
+}
+
 /** Valida un access_token de Supabase y devuelve el usuario asociado. */
 export async function getUserFromToken(accessToken: string) {
   const { data, error } = await supabase.auth.getUser(accessToken);
@@ -87,7 +97,7 @@ export async function getUserFromToken(accessToken: string) {
 
 /** Columnas de `estudiante` que muestra la página de perfil del junior. */
 const ESTUDIANTE_DETAIL_SELECT =
-  "id, descripcion, especialidad, modalidad_preferida, disponibilidad, titulo_fwd, reputacion, url_github, url_linkedin, url_portfolio";
+  "id, descripcion, especialidad, modalidad_preferida, disponibilidad, titulo_fwd, reputacion, url_avatar, url_github, url_linkedin, url_portfolio";
 
 /** Nombres de las skills de un estudiante (catálogo `skills` vía `student_skills`). */
 async function getEstudianteSkills(
@@ -151,6 +161,7 @@ export async function getMyProfile(accessToken: string, userId: string) {
         disponibilidad: estudiante.disponibilidad,
         titulo_fwd: estudiante.titulo_fwd,
         reputacion: estudiante.reputacion,
+        url_avatar: estudiante.url_avatar,
         url_github: estudiante.url_github,
         url_linkedin: estudiante.url_linkedin,
         url_portfolio: estudiante.url_portfolio,

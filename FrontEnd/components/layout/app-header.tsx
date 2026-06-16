@@ -9,7 +9,13 @@ import { DropdownMenu } from "radix-ui";
 import { logoutUser } from "@/lib/actions/auth";
 import { getInitials } from "@/lib/api/safe-json";
 
-export function AppHeader({ userName = "" }: { userName?: string }) {
+export function AppHeader({
+  userName = "",
+  avatarUrl = "",
+}: {
+  userName?: string;
+  avatarUrl?: string;
+}) {
   const locale = useLocale();
 
   return (
@@ -24,7 +30,7 @@ export function AppHeader({ userName = "" }: { userName?: string }) {
 
         <div className="flex items-center gap-1">
           <NotificationBell />
-          <UserMenu userName={userName} />
+          <UserMenu userName={userName} avatarUrl={avatarUrl} />
         </div>
       </div>
     </header>
@@ -46,7 +52,7 @@ function NotificationBell() {
   );
 }
 
-function UserMenu({ userName = "" }: { userName?: string }) {
+function UserMenu({ userName = "", avatarUrl = "" }: { userName?: string; avatarUrl?: string }) {
   const t = useTranslations("app_header");
   const locale = useLocale();
   const router = useRouter();
@@ -58,7 +64,7 @@ function UserMenu({ userName = "" }: { userName?: string }) {
     startTransition(async () => {
       // Borra las cookies de sesión (access + refresh); no toca la BD.
       await logoutUser();
-      router.replace(`/${locale}/login`);
+      router.replace(`/${locale}`);
       router.refresh();
     });
   }
@@ -69,9 +75,14 @@ function UserMenu({ userName = "" }: { userName?: string }) {
         <button
           type="button"
           aria-label={t("user_menu")}
-          className="flex size-8 items-center justify-center rounded-full bg-secondary font-body text-xs font-bold text-secondary-foreground transition-opacity duration-[var(--duration-fast)] hover:opacity-85 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/40"
+          className="flex size-8 items-center justify-center overflow-hidden rounded-full bg-secondary font-body text-xs font-bold text-secondary-foreground transition-opacity duration-[var(--duration-fast)] hover:opacity-85 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/40"
         >
-          {initials}
+          {avatarUrl ? (
+            // eslint-disable-next-line @next/next/no-img-element -- URL externa (Cloudinary)
+            <img src={avatarUrl} alt={userName} className="size-full object-cover" />
+          ) : (
+            initials
+          )}
         </button>
       </DropdownMenu.Trigger>
       <DropdownMenu.Portal>

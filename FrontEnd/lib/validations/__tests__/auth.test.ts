@@ -3,7 +3,44 @@ import {
   JuniorProfileSchema,
   EmpresaProfileSchema,
   EmprendedorProfileSchema,
+  ResetPasswordSchema,
 } from "../auth";
+
+describe("ResetPasswordSchema", () => {
+  const VALID_RESET = {
+    email: "maria@ejemplo.com",
+    password: "supersegura",
+    confirmPassword: "supersegura",
+  };
+
+  it("acepta datos válidos", () => {
+    expect(ResetPasswordSchema.safeParse(VALID_RESET).success).toBe(true);
+  });
+
+  it("rechaza un correo inválido", () => {
+    expect(
+      ResetPasswordSchema.safeParse({ ...VALID_RESET, email: "no-es-correo" }).success,
+    ).toBe(false);
+  });
+
+  it("rechaza una contraseña de menos de 8 caracteres", () => {
+    expect(
+      ResetPasswordSchema.safeParse({ ...VALID_RESET, password: "1234", confirmPassword: "1234" })
+        .success,
+    ).toBe(false);
+  });
+
+  it("rechaza cuando las contraseñas no coinciden", () => {
+    const result = ResetPasswordSchema.safeParse({
+      ...VALID_RESET,
+      confirmPassword: "otraDistinta",
+    });
+    expect(result.success).toBe(false);
+    if (!result.success) {
+      expect(result.error.issues[0]?.path).toContain("confirmPassword");
+    }
+  });
+});
 
 /* ── JuniorProfileSchema ─────────────────────────────────── */
 describe("JuniorProfileSchema", () => {

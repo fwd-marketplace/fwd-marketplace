@@ -2,11 +2,12 @@ import { setRequestLocale } from "next-intl/server";
 import PerfilUsuario from "@/components/comp-perfil-estudiante/PerfilUsuario";
 import { AppHeader } from "@/components/layout/app-header";
 import { JuniorSubnav } from "@/components/layout/junior-subnav";
-import type {
-  Activity,
-  Application,
-  ApplicationStats,
-  StudentProfile,
+import {
+  fullName,
+  type Activity,
+  type Application,
+  type ApplicationStats,
+  type StudentProfile,
 } from "@/app/[locale]/(public)/perfil-estudiante/types";
 import { getMyOffers } from "@/lib/api/marketplace";
 import { getMe } from "@/lib/api/profile";
@@ -18,7 +19,9 @@ interface Props {
 }
 
 const EMPTY_PROFILE: StudentProfile = {
-  name: "",
+  firstName: "",
+  lastName1: "",
+  lastName2: "",
   specialty: "",
   program: "",
   availability: "",
@@ -26,6 +29,7 @@ const EMPTY_PROFILE: StudentProfile = {
   bio: "",
   badges: [],
   skills: [],
+  avatarUrl: "",
   links: {},
 };
 
@@ -56,14 +60,17 @@ function mapProfile(profile: ApiMeProfile | null): StudentProfile {
   if (estudiante?.url_portfolio) links.portfolio = estudiante.url_portfolio;
 
   return {
-    name: [profile.nombre, profile.apellido1, profile.apellido2].filter(Boolean).join(" "),
-    specialty: estudiante?.especialidad ?? profile.role.nombre,
-    program: estudiante?.titulo_fwd ?? profile.estado_cuenta,
+    firstName: profile.nombre,
+    lastName1: profile.apellido1 ?? "",
+    lastName2: profile.apellido2 ?? "",
+    specialty: estudiante?.especialidad ?? "",
+    program: estudiante?.titulo_fwd ?? "",
     availability: estudiante?.disponibilidad ?? "",
     email: profile.correo,
     bio: estudiante?.descripcion ?? "",
     badges: modalidades,
     skills: estudiante?.skills ?? [],
+    avatarUrl: estudiante?.url_avatar ?? "",
     links,
   };
 }
@@ -97,7 +104,7 @@ export default async function EstudianteProfile({ params }: Props) {
 
   return (
     <div className="flex min-h-[100dvh] flex-col bg-canvas">
-      <AppHeader userName={profile.name} />
+      <AppHeader userName={fullName(profile)} avatarUrl={profile.avatarUrl} />
       <JuniorSubnav />
       <PerfilUsuario
         initialProfile={profile}
