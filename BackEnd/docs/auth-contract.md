@@ -59,6 +59,13 @@ Body: `{ "email": string, "password": string }`
 Body: `{ "email": string, "password": string }`
 → `200 { user, session }`
 
+### POST /api/users/reset-password
+Dispara el correo de recuperación de contraseña (Supabase Auth). **No** lleva Bearer.
+Body: `{ "email": string }` — **solo el email** (no se manda contraseña: quien la olvidó
+no la sabe; el usuario fija la nueva desde el enlace del correo).
+→ `200 { "ok": true }` — idempotente: responde `200` aunque el email no exista, para no
+revelar qué cuentas están registradas.
+
 ### GET /api/users/me  (Bearer)
 → `200 { user, profile }`
 `profile` es `null` si aún no hizo onboarding. Si existe:
@@ -220,6 +227,30 @@ el BackEnd ya expone la API). Marcá cada ítem como hecho cuando la pantalla lo
   empresa/emprendedor el suyo (`empresario`). Precargar el formulario con `GET /api/users/me/perfil`
   y guardar con `PATCH /api/users/me/perfil` (actualización parcial: mandar solo los campos
   cambiados, al menos uno). Usar los mismos enums del onboarding.
+
+- **Almacenamiento de sesión: SOLO cookies httpOnly, nunca localStorage.** El BackEnd
+  devuelve los tokens en el JSON (no setea cookies él mismo); decidir dónde se guardan es
+  responsabilidad del FrontEnd. Regla del proyecto: `access_token` y `refresh_token` viven
+  **únicamente** en cookies **httpOnly** que escribe el route handler de Next (servidor), y
+  **nunca** en `localStorage`, `sessionStorage` ni ninguna variable accesible por el JS del
+  navegador (mitiga robo de token por XSS). El ejemplo de `fetch` del `BackEnd/README.md` que
+  guarda `session.access_token` en una const es **solo ilustrativo del contrato**, no la forma
+  de almacenarlo. Ver "Manejo de sesión (httpOnly)" arriba.
+
+- **Recuperación de contraseña ("olvidé mi contraseña").** Pantalla con un input de email
+  que llama `POST /api/users/reset-password` (solo `{ email }`) y muestra "te enviamos un
+  correo" sin revelar si la cuenta existe. El enlace del correo de Supabase devuelve al
+  usuario al FrontEnd para fijar la nueva contraseña (esa pantalla la resuelve el FE con el
+  flujo de Supabase del lado del route handler de Next).
+
+- **Registro con confirmación de email: `session` puede venir `null`.** Si el proyecto de
+  Supabase tiene la confirmación por email activada (hoy lo está, ver
+  `postman/RESULTADOS-PRUEBAS-TOKENS.md`), `POST /register` responde `201` con `session: null`
+  (todavía no hay tokens). En ese caso el flujo `register -> onboarding (Bearer)` **no** puede
+  seguir de corrido: el usuario debe confirmar el correo y hacer `login` para recién entonces
+  tener token y completar el onboarding. La UI debe contemplar el estado "confirmá tu correo"
+  tras el registro y no asumir que `register` siempre trae sesión. (Si el equipo decide
+  desactivar la confirmación por email en Supabase para el MVP, este ítem desaparece.)
 
 ---
 

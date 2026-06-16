@@ -131,9 +131,14 @@ Define la URL base del BackEnd en el FrontEnd (`FrontEnd/.env.local`):
 NEXT_PUBLIC_API_URL=http://localhost:3001/api
 ```
 
-Login y uso del token:
+Login y manejo del token. El almacenamiento de la sesion lo hace el **route handler
+de Next** (lado servidor) en **cookies httpOnly**, nunca el JS del navegador ni
+`localStorage`. Detalle en `docs/auth-contract.md` ("Manejo de sesion (httpOnly)").
+`cookieStore` es `await cookies()` de `next/headers` (disponible en route handlers y
+server actions):
 
 ```ts
+// 1. El route handler de Next pide el login al BackEnd.
 const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/users/login`, {
   method: "POST",
   headers: { "Content-Type": "application/json" },
@@ -145,10 +150,20 @@ if (!res.ok) {
   throw new Error(error);
 }
 
-const { user, session } = await res.json();
-const accessToken = session.access_token;
+const { user, session } = await res.json(); // user: para enrutar por rol/estado.
 
-// Ruta protegida
+// 2. Los tokens NO se guardan en una variable de cliente ni en localStorage:
+//    el route handler los escribe en cookies httpOnly (el JS del navegador no
+//    las puede leer, lo que mitiga el robo de token por XSS).
+cookieStore.set("access_token", session.access_token, { httpOnly: true, secure: true, sameSite: "lax" });
+cookieStore.set("refresh_token", session.refresh_token, { httpOnly: true, secure: true, sameSite: "lax" });
+```
+
+En una ruta protegida, el `access_token` se lee de la cookie (lado servidor) y se
+reenvia como `Bearer`; el navegador nunca lo manipula:
+
+```ts
+const accessToken = cookieStore.get("access_token")?.value;
 const meRes = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/users/me`, {
   headers: { Authorization: `Bearer ${accessToken}` },
 });
