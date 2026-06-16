@@ -1,575 +1,277 @@
-'use client';
+"use client";
 
-import React from 'react';
-import { useTranslations } from 'next-intl';
-import { 
-  Users, 
-  Building2, 
-  FolderKanban, 
-  Clock, 
-  Search, 
-  Filter, 
-  Check, 
-  X, 
-  Shield, 
-  UserMinus, 
-  UserCheck 
-} from 'lucide-react';
-import { Card } from '@/components/ui/card';
-import { Badge } from '@/components/ui/badge';
-import { Button } from '@/components/ui/button';
-import { cn } from '@/lib/utils';
+import React from "react";
+import { useTranslations } from "next-intl";
+import { Building2, Check, Clock, FolderKanban, UserMinus, Users, X } from "lucide-react";
+import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
+import { Card } from "@/components/ui/card";
+import {
+  approveAdminUserAction,
+  cancelAdminProjectAction,
+  rejectAdminUserAction,
+  suspendAdminUserAction,
+} from "@/lib/actions/admin";
+import type { AdminPendingUser, AdminProject } from "@/lib/api/types";
 
-// Mock Data Inicial
-const INITIAL_APPLICATIONS = [
-  { id: '1', name: 'Alonso Chaves', email: 'alonso.chaves@fwd.cr', specialty: 'Frontend Developer', date: '2026-06-12', status: 'pending' },
-  { id: '2', name: 'Fiorella Mora', email: 'fiorella.mora@fwd.cr', specialty: 'Fullstack Developer', date: '2026-06-14', status: 'pending' },
-  { id: '3', name: 'Kendall Rojas', email: 'kendall.rojas@fwd.cr', specialty: 'Backend Developer', date: '2026-06-10', status: 'pending' }
-];
+type TabType = "applications" | "projects";
 
-const INITIAL_USERS = [
-  { id: '101', name: 'Andrés Solano', email: 'andres.s@gmail.com', role: 'student', status: 'active' },
-  { id: '102', name: 'Acme Corporación', email: 'contacto@acme.com', role: 'company', status: 'active' },
-  { id: '103', name: 'Valeria Fonseca', email: 'valeria.f@fwd.cr', role: 'admin', status: 'active' },
-  { id: '104', name: 'Juan Gabriel', email: 'juan.g@gmail.com', role: 'student', status: 'suspended' },
-  { id: '105', name: 'Innovatech S.A.', email: 'hr@innovatech.cr', role: 'company', status: 'active' }
-];
+export function Administrador({
+  initialPendingUsers,
+  initialProjects,
+}: {
+  initialPendingUsers: AdminPendingUser[];
+  initialProjects: AdminProject[];
+}) {
+  const t = useTranslations("admin");
+  const [activeTab, setActiveTab] = React.useState<TabType>("applications");
+  const [pendingUsers, setPendingUsers] = React.useState(initialPendingUsers);
+  const [projects, setProjects] = React.useState(initialProjects);
+  const [message, setMessage] = React.useState<string | null>(null);
+  const [isPending, startTransition] = React.useTransition();
 
-const INITIAL_PROJECTS = [
-  { id: '201', title: 'Portal E-commerce Pymes', company: 'Acme Corporación', budget: 1200, status: 'moderation' },
-  { id: '202', title: 'Dashboard de Analítica', company: 'Innovatech S.A.', budget: 900, status: 'active' },
-  { id: '203', title: 'App Móvil Inventario', company: 'TechFlow Systems', budget: 1500, status: 'paused' }
-];
+  const activeProjects = projects.filter((project) => project.estado.nombre !== "cancelado").length;
+  const companyCount = pendingUsers.filter((user) => user.role?.nombre === "company").length;
 
-const INITIAL_COMPANIES = [
-  { id: '301', name: 'Acme Corporación', sector: 'Tecnología', status: 'approved' },
-  { id: '302', name: 'Pixel Studio', sector: 'Diseño / UX', status: 'pending' },
-  { id: '303', name: 'Agrotica S.A.', sector: 'Agricultura / Exportación', status: 'pending' }
-];
+  function showMessage(nextMessage: string) {
+    setMessage(nextMessage);
+    window.setTimeout(() => setMessage(null), 4000);
+  }
 
-type TabType = 'applications' | 'users' | 'projects' | 'companies';
-
-export function Administrador() {
-  const t = useTranslations('admin');
-
-  // Estados reactivos locales para simulación
-  const [activeTab, setActiveTab] = React.useState<TabType>('applications');
-  const [applications, setApplications] = React.useState(INITIAL_APPLICATIONS);
-  const [users, setUsers] = React.useState(INITIAL_USERS);
-  const [projects, setProjects] = React.useState(INITIAL_PROJECTS);
-  const [companies, setCompanies] = React.useState(INITIAL_COMPANIES);
-
-  // Filtros de usuarios
-  const [userSearch, setUserSearch] = React.useState('');
-  const [userRoleFilter, setUserRoleFilter] = React.useState('all');
-
-  // Cálculos de KPIs dinámicos
-  const pendingAppsCount = applications.filter(a => a.status === 'pending').length;
-  const totalStudents = users.filter(u => u.role === 'student').length + applications.filter(a => a.status === 'approved').length;
-  const approvedCompanies = companies.filter(c => c.status === 'approved').length;
-  const activeProjCount = projects.filter(p => p.status === 'active').length;
-
-  // Acciones: Solicitudes
-  const handleApproveApp = (id: string) => {
-    setApplications(prev => prev.map(a => a.id === id ? { ...a, status: 'approved' } : a));
-    // Opcionalmente agregar al listado de usuarios como estudiante
-    const app = applications.find(a => a.id === id);
-    if (app) {
-      setUsers(prev => [...prev, { id: `new-${id}`, name: app.name, email: app.email, role: 'student', status: 'active' }]);
-    }
-  };
-
-  const handleRejectApp = (id: string) => {
-    setApplications(prev => prev.map(a => a.id === id ? { ...a, status: 'rejected' } : a));
-  };
-
-  // Acciones: Usuarios
-  const handleToggleUserStatus = (id: string) => {
-    setUsers(prev => prev.map(u => u.id === id ? { ...u, status: u.status === 'active' ? 'suspended' : 'active' } : u));
-  };
-
-  const handleChangeUserRole = (id: string) => {
-    setUsers(prev => prev.map(u => {
-      if (u.id === id) {
-        const nextRole = u.role === 'student' ? 'company' : u.role === 'company' ? 'admin' : 'student';
-        return { ...u, role: nextRole };
+  function approveUser(userId: string) {
+    startTransition(async () => {
+      const result = await approveAdminUserAction(userId);
+      if (!result.ok) {
+        showMessage(result.error);
+        return;
       }
-      return u;
-    }));
-  };
+      setPendingUsers((current) => current.filter((user) => user.id !== userId));
+      showMessage(t("messages.user_approved"));
+    });
+  }
 
-  // Acciones: Proyectos
-  const handleApproveProject = (id: string) => {
-    setProjects(prev => prev.map(p => p.id === id ? { ...p, status: 'active' } : p));
-  };
-
-  const handlePauseProject = (id: string) => {
-    setProjects(prev => prev.map(p => {
-      if (p.id === id) {
-        return { ...p, status: p.status === 'active' ? 'paused' : 'active' };
+  function rejectUser(userId: string) {
+    startTransition(async () => {
+      const result = await rejectAdminUserAction(userId);
+      if (!result.ok) {
+        showMessage(result.error);
+        return;
       }
-      return p;
-    }));
-  };
+      setPendingUsers((current) => current.filter((user) => user.id !== userId));
+      showMessage(t("messages.user_rejected"));
+    });
+  }
 
-  const handleDeleteProject = (id: string) => {
-    setProjects(prev => prev.filter(p => p.id !== id));
-  };
-
-  // Acciones: Empresas
-  const handleApproveCompany = (id: string) => {
-    setCompanies(prev => prev.map(c => c.id === id ? { ...c, status: 'approved' } : c));
-  };
-
-  const handleRejectCompany = (id: string) => {
-    setCompanies(prev => prev.map(c => c.id === id ? { ...c, status: 'rejected' } : c));
-  };
-
-  const handleSuspendCompany = (id: string) => {
-    setCompanies(prev => prev.map(c => {
-      if (c.id === id) {
-        return { ...c, status: c.status === 'approved' ? 'pending' : 'approved' };
+  function suspendUser(userId: string) {
+    startTransition(async () => {
+      const result = await suspendAdminUserAction(userId);
+      if (!result.ok) {
+        showMessage(result.error);
+        return;
       }
-      return c;
-    }));
-  };
+      setPendingUsers((current) => current.filter((user) => user.id !== userId));
+      showMessage(t("messages.user_suspended"));
+    });
+  }
 
-  // Filtrado de usuarios
-  const filteredUsers = users.filter(user => {
-    const matchesSearch = user.name.toLowerCase().includes(userSearch.toLowerCase()) || 
-                          user.email.toLowerCase().includes(userSearch.toLowerCase());
-    const matchesRole = userRoleFilter === 'all' || user.role === userRoleFilter;
-    return matchesSearch && matchesRole;
-  });
+  function cancelProject(projectId: string) {
+    startTransition(async () => {
+      const result = await cancelAdminProjectAction(projectId);
+      if (!result.ok) {
+        showMessage(result.error);
+        return;
+      }
+      setProjects((current) =>
+        current.map((project) =>
+          project.id === projectId ? { ...project, estado: { nombre: "cancelado" } } : project,
+        ),
+      );
+      showMessage(t("messages.project_cancelled"));
+    });
+  }
 
   return (
-    <div className="p-6 md:p-10 space-y-8 min-h-screen bg-canvas font-sans text-ink">
-      {/* Header */}
+    <div className="min-h-screen space-y-8 bg-canvas p-6 font-sans text-ink md:p-10">
+      {message && (
+        <div className="fixed bottom-5 right-5 z-50 rounded-xl border border-border-strong bg-surface px-4 py-3 font-body text-sm font-semibold text-ink-strong shadow-[var(--shadow-elevated)]">
+          {message}
+        </div>
+      )}
+
       <div className="space-y-1">
-        <h1 className="font-heading text-3xl md:text-4xl font-extrabold text-ink-strong tracking-tight">
-          {t('title')}<span className="text-primary">.</span>
+        <h1 className="font-heading text-3xl font-extrabold tracking-tight text-ink-strong md:text-4xl">
+          {t("title")}<span className="text-primary">.</span>
         </h1>
-        <p className="text-ink-muted text-sm md:text-base">
-          {t('subtitle')}
-        </p>
+        <p className="text-sm text-ink-muted md:text-base">{t("subtitle")}</p>
       </div>
 
-      {/* KPI Cards Grid */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-5">
-        <Card className="p-5 border-border bg-surface flex items-center gap-4">
-          <div className="p-3 bg-primary/10 text-primary rounded-xl">
+      <div className="grid grid-cols-1 gap-5 sm:grid-cols-2 lg:grid-cols-4">
+        <Card className="flex items-center gap-4 border-border bg-surface p-5">
+          <div className="rounded-xl bg-primary/10 p-3 text-primary">
             <Users className="size-6" />
           </div>
           <div>
-            <p className="text-xs font-bold text-ink-subtle uppercase tracking-wider">{t('stats.total_students')}</p>
-            <p className="text-2xl font-heading font-black text-ink-strong">{totalStudents}</p>
+            <p className="text-xs font-bold uppercase tracking-wider text-ink-subtle">{t("stats.pending_approvals")}</p>
+            <p className="font-heading text-2xl font-black text-ink-strong">{pendingUsers.length}</p>
           </div>
         </Card>
 
-        <Card className="p-5 border-border bg-surface flex items-center gap-4">
-          <div className="p-3 bg-accent/10 text-accent rounded-xl">
+        <Card className="flex items-center gap-4 border-border bg-surface p-5">
+          <div className="rounded-xl bg-accent/10 p-3 text-accent">
             <Building2 className="size-6" />
           </div>
           <div>
-            <p className="text-xs font-bold text-ink-subtle uppercase tracking-wider">{t('stats.active_companies')}</p>
-            <p className="text-2xl font-heading font-black text-ink-strong">{approvedCompanies}</p>
+            <p className="text-xs font-bold uppercase tracking-wider text-ink-subtle">{t("stats.active_companies")}</p>
+            <p className="font-heading text-2xl font-black text-ink-strong">{companyCount}</p>
           </div>
         </Card>
 
-        <Card className="p-5 border-border bg-surface flex items-center gap-4">
-          <div className="p-3 bg-highlight/10 text-primary rounded-xl">
+        <Card className="flex items-center gap-4 border-border bg-surface p-5">
+          <div className="rounded-xl bg-highlight/10 p-3 text-primary">
             <FolderKanban className="size-6" />
           </div>
           <div>
-            <p className="text-xs font-bold text-ink-subtle uppercase tracking-wider">{t('stats.active_projects')}</p>
-            <p className="text-2xl font-heading font-black text-ink-strong">{activeProjCount}</p>
+            <p className="text-xs font-bold uppercase tracking-wider text-ink-subtle">{t("stats.active_projects")}</p>
+            <p className="font-heading text-2xl font-black text-ink-strong">{activeProjects}</p>
           </div>
         </Card>
 
-        <Card className="p-5 border-border bg-surface flex items-center gap-4">
-          <div className="p-3 bg-warning/10 text-warning rounded-xl">
+        <Card className="flex items-center gap-4 border-border bg-surface p-5">
+          <div className="rounded-xl bg-warning/10 p-3 text-warning">
             <Clock className="size-6" />
           </div>
           <div>
-            <p className="text-xs font-bold text-ink-subtle uppercase tracking-wider">{t('stats.pending_approvals')}</p>
-            <p className="text-2xl font-heading font-black text-ink-strong">{pendingAppsCount}</p>
+            <p className="text-xs font-bold uppercase tracking-wider text-ink-subtle">{t("stats.total_students")}</p>
+            <p className="font-heading text-2xl font-black text-ink-strong">2.0</p>
           </div>
         </Card>
       </div>
 
-      {/* Tabs Navigation */}
-      <div className="border-b border-border flex overflow-x-auto no-scrollbar gap-2">
-        {(['applications', 'users', 'projects', 'companies'] as TabType[]).map((tab) => (
+      <div className="flex gap-2 overflow-x-auto border-b border-border">
+        {(["applications", "projects"] as TabType[]).map((tab) => (
           <button
             key={tab}
+            type="button"
             onClick={() => setActiveTab(tab)}
-            className={cn(
-              "py-3 px-5 font-heading text-xs md:text-sm font-bold tracking-wider whitespace-nowrap transition-colors border-b-2 -mb-px",
+            className={`-mb-px whitespace-nowrap border-b-2 px-5 py-3 font-heading text-xs font-bold tracking-wider transition-colors md:text-sm ${
               activeTab === tab
-                ? "text-primary border-primary"
-                : "text-ink-muted border-transparent hover:text-ink hover:border-border"
-            )}
+                ? "border-primary text-primary"
+                : "border-transparent text-ink-muted hover:border-border hover:text-ink"
+            }`}
           >
             {t(`tabs.${tab}`).toUpperCase()}
           </button>
         ))}
       </div>
 
-      {/* Tab Contents */}
-      <div className="space-y-6">
-        
-        {/* VIEW: SOLICITUDES DE ESTUDIANTES */}
-        {activeTab === 'applications' && (
-          <div className="space-y-4">
-            <h2 className="font-heading text-lg md:text-xl font-extrabold text-ink-strong uppercase tracking-tight">
-              {t('applications.title')}
-            </h2>
-            <Card className="overflow-hidden border-border bg-surface">
-              <div className="overflow-x-auto">
-                <table className="w-full text-left border-collapse text-sm">
-                  <thead>
-                    <tr className="bg-surface-sunken border-b border-border">
-                      <th className="p-4 font-bold text-ink-strong uppercase tracking-wider text-xs">{t('applications.name')}</th>
-                      <th className="p-4 font-bold text-ink-strong uppercase tracking-wider text-xs">{t('applications.specialization')}</th>
-                      <th className="p-4 font-bold text-ink-strong uppercase tracking-wider text-xs">{t('applications.date')}</th>
-                      <th className="p-4 font-bold text-ink-strong uppercase tracking-wider text-xs">{t('applications.status')}</th>
-                      <th className="p-4 font-bold text-ink-strong uppercase tracking-wider text-xs text-right">{t('applications.actions')}</th>
-                    </tr>
-                  </thead>
-                  <tbody className="divide-y divide-border">
-                    {applications.length === 0 ? (
-                      <tr>
-                        <td colSpan={5} className="p-8 text-center text-ink-muted">
-                          {t('applications.empty')}
+      {activeTab === "applications" && (
+        <section className="space-y-4">
+          <h2 className="font-heading text-lg font-extrabold uppercase tracking-tight text-ink-strong md:text-xl">
+            {t("applications.title")}
+          </h2>
+          <Card className="overflow-hidden border-border bg-surface">
+            <div className="overflow-x-auto">
+              <table className="w-full border-collapse text-left text-sm">
+                <thead>
+                  <tr className="border-b border-border bg-surface-sunken">
+                    <th className="p-4 text-xs font-bold uppercase tracking-wider text-ink-strong">{t("applications.name")}</th>
+                    <th className="p-4 text-xs font-bold uppercase tracking-wider text-ink-strong">{t("applications.specialization")}</th>
+                    <th className="p-4 text-xs font-bold uppercase tracking-wider text-ink-strong">{t("applications.status")}</th>
+                    <th className="p-4 text-right text-xs font-bold uppercase tracking-wider text-ink-strong">{t("applications.actions")}</th>
+                  </tr>
+                </thead>
+                <tbody className="divide-y divide-border">
+                  {pendingUsers.length > 0 ? (
+                    pendingUsers.map((user) => (
+                      <tr key={user.id} className="transition-colors hover:bg-surface-sunken/40">
+                        <td className="p-4">
+                          <p className="font-semibold text-ink-strong">{[user.nombre, user.apellido1].filter(Boolean).join(" ")}</p>
+                          <p className="text-xs text-ink-muted">{user.correo}</p>
+                        </td>
+                        <td className="p-4 text-ink-muted">{user.role?.nombre ? t(`users.role_${user.role.nombre}`) : "2.0"}</td>
+                        <td className="p-4">
+                          <Badge className="border-none bg-warning/15 text-warning">{t("applications.pending")}</Badge>
+                        </td>
+                        <td className="p-4 text-right">
+                          <div className="flex justify-end gap-2">
+                            <Button size="sm" variant="accent" onClick={() => approveUser(user.id)} disabled={isPending}>
+                              <Check className="size-3" />
+                              {t("applications.approve")}
+                            </Button>
+                            <Button size="sm" variant="magenta" onClick={() => rejectUser(user.id)} disabled={isPending}>
+                              <X className="size-3" />
+                              {t("applications.reject")}
+                            </Button>
+                            <Button size="sm" variant="outline" onClick={() => suspendUser(user.id)} disabled={isPending}>
+                              <UserMinus className="size-3" />
+                              {t("companies.suspend")}
+                            </Button>
+                          </div>
                         </td>
                       </tr>
-                    ) : (
-                      applications.map(app => (
-                        <tr key={app.id} className="hover:bg-surface-sunken/40 transition-colors">
-                          <td className="p-4">
-                            <p className="font-semibold text-ink-strong">{app.name}</p>
-                            <p className="text-xs text-ink-muted">{app.email}</p>
-                          </td>
-                          <td className="p-4 text-ink-muted">{app.specialty}</td>
-                          <td className="p-4 text-ink-muted">{app.date}</td>
-                          <td className="p-4">
-                            <Badge className={cn(
-                              "border-none",
-                              app.status === 'pending' && "bg-warning/15 text-warning",
-                              app.status === 'approved' && "bg-accent/15 text-accent",
-                              app.status === 'rejected' && "bg-magenta/15 text-magenta"
-                            )}>
-                              {t(`applications.${app.status}`)}
-                            </Badge>
-                          </td>
-                          <td className="p-4 text-right">
-                            {app.status === 'pending' ? (
-                              <div className="flex justify-end gap-2">
-                                <Button 
-                                  size="sm" 
-                                  onClick={() => handleApproveApp(app.id)}
-                                  className="bg-accent hover:bg-accent/90 text-white gap-1 rounded-full text-xs font-bold px-3 py-1 h-7"
-                                >
-                                  <Check className="size-3" /> {t('applications.approve')}
-                                </Button>
-                                <Button 
-                                  size="sm" 
-                                  onClick={() => handleRejectApp(app.id)}
-                                  className="bg-magenta hover:bg-magenta/90 text-white gap-1 rounded-full text-xs font-bold px-3 py-1 h-7"
-                                >
-                                  <X className="size-3" /> {t('applications.reject')}
-                                </Button>
-                              </div>
-                            ) : (
-                              <span className="text-xs text-ink-subtle font-medium italic">Procesada</span>
-                            )}
-                          </td>
-                        </tr>
-                      ))
-                    )}
-                  </tbody>
-                </table>
-              </div>
-            </Card>
-          </div>
-        )}
-
-        {/* VIEW: GESTION DE USUARIOS */}
-        {activeTab === 'users' && (
-          <div className="space-y-4">
-            <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
-              <h2 className="font-heading text-lg md:text-xl font-extrabold text-ink-strong uppercase tracking-tight">
-                {t('users.title')}
-              </h2>
-              <div className="flex flex-wrap gap-2 w-full sm:w-auto">
-                <div className="relative flex-1 sm:flex-none">
-                  <Search className="absolute left-3 top-2.5 size-4 text-ink-subtle" />
-                  <input
-                    type="text"
-                    placeholder={t('users.search_placeholder')}
-                    value={userSearch}
-                    onChange={(e) => setUserSearch(e.target.value)}
-                    className="pl-9 pr-4 py-2 w-full sm:w-60 bg-surface border border-border rounded-xl text-sm focus:border-primary focus:outline-none"
-                  />
-                </div>
-                <div className="relative">
-                  <select
-                    value={userRoleFilter}
-                    onChange={(e) => setUserRoleFilter(e.target.value)}
-                    className="appearance-none pl-3 pr-8 py-2 bg-surface border border-border rounded-xl text-sm text-ink focus:border-primary focus:outline-none cursor-pointer"
-                  >
-                    <option value="all">{t('users.filter_role')}</option>
-                    <option value="student">{t('users.role_student')}</option>
-                    <option value="company">{t('users.role_company')}</option>
-                    <option value="admin">{t('users.role_admin')}</option>
-                  </select>
-                  <Filter className="absolute right-3 top-3 size-3 text-ink-subtle pointer-events-none" />
-                </div>
-              </div>
+                    ))
+                  ) : (
+                    <tr>
+                      <td colSpan={4} className="p-8 text-center text-ink-muted">{t("applications.empty")}</td>
+                    </tr>
+                  )}
+                </tbody>
+              </table>
             </div>
+          </Card>
+        </section>
+      )}
 
-            <Card className="overflow-hidden border-border bg-surface">
-              <div className="overflow-x-auto">
-                <table className="w-full text-left border-collapse text-sm">
-                  <thead>
-                    <tr className="bg-surface-sunken border-b border-border">
-                      <th className="p-4 font-bold text-ink-strong uppercase tracking-wider text-xs">Usuario</th>
-                      <th className="p-4 font-bold text-ink-strong uppercase tracking-wider text-xs">Rol</th>
-                      <th className="p-4 font-bold text-ink-strong uppercase tracking-wider text-xs">Estado</th>
-                      <th className="p-4 font-bold text-ink-strong uppercase tracking-wider text-xs text-right">{t('users.actions')}</th>
-                    </tr>
-                  </thead>
-                  <tbody className="divide-y divide-border">
-                    {filteredUsers.length === 0 ? (
-                      <tr>
-                        <td colSpan={4} className="p-8 text-center text-ink-muted">
-                          No se encontraron usuarios.
+      {activeTab === "projects" && (
+        <section className="space-y-4">
+          <h2 className="font-heading text-lg font-extrabold uppercase tracking-tight text-ink-strong md:text-xl">
+            {t("projects.title")}
+          </h2>
+          <Card className="overflow-hidden border-border bg-surface">
+            <div className="overflow-x-auto">
+              <table className="w-full border-collapse text-left text-sm">
+                <thead>
+                  <tr className="border-b border-border bg-surface-sunken">
+                    <th className="p-4 text-xs font-bold uppercase tracking-wider text-ink-strong">{t("projects.project")}</th>
+                    <th className="p-4 text-xs font-bold uppercase tracking-wider text-ink-strong">{t("projects.company")}</th>
+                    <th className="p-4 text-xs font-bold uppercase tracking-wider text-ink-strong">{t("projects.status")}</th>
+                    <th className="p-4 text-right text-xs font-bold uppercase tracking-wider text-ink-strong">{t("projects.actions")}</th>
+                  </tr>
+                </thead>
+                <tbody className="divide-y divide-border">
+                  {projects.length > 0 ? (
+                    projects.map((project) => (
+                      <tr key={project.id} className="transition-colors hover:bg-surface-sunken/40">
+                        <td className="p-4 font-semibold text-ink-strong">{project.titulo}</td>
+                        <td className="p-4 text-ink-muted">{project.empresa?.nombre_comercial ?? "2.0"}</td>
+                        <td className="p-4">
+                          <Badge className={project.estado.nombre === "cancelado" ? "border-none bg-magenta/15 text-magenta" : "border-none bg-accent/15 text-accent"}>
+                            {t(`project_states.${project.estado.nombre}`)}
+                          </Badge>
+                        </td>
+                        <td className="p-4 text-right">
+                          <Button
+                            size="sm"
+                            variant="magenta"
+                            onClick={() => cancelProject(project.id)}
+                            disabled={isPending || project.estado.nombre === "cancelado"}
+                          >
+                            {t("projects.cancel")}
+                          </Button>
                         </td>
                       </tr>
-                    ) : (
-                      filteredUsers.map(user => (
-                        <tr key={user.id} className="hover:bg-surface-sunken/40 transition-colors">
-                          <td className="p-4">
-                            <p className="font-semibold text-ink-strong">{user.name}</p>
-                            <p className="text-xs text-ink-muted">{user.email}</p>
-                          </td>
-                          <td className="p-4">
-                            <Badge className="bg-secondary/5 text-secondary border border-secondary/10 font-bold uppercase tracking-wider text-[10px] px-2 py-0.5">
-                              {t(`users.role_${user.role}`)}
-                            </Badge>
-                          </td>
-                          <td className="p-4">
-                            <Badge className={cn(
-                              "border-none",
-                              user.status === 'active' ? "bg-accent/15 text-accent" : "bg-magenta/15 text-magenta"
-                            )}>
-                              {t(`users.status_${user.status}`)}
-                            </Badge>
-                          </td>
-                          <td className="p-4 text-right">
-                            <div className="flex justify-end gap-2">
-                              <Button
-                                size="sm"
-                                variant="outline"
-                                onClick={() => handleChangeUserRole(user.id)}
-                                className="h-7 text-xs border-border-strong text-ink hover:bg-canvas"
-                              >
-                                <Shield className="size-3 mr-1" /> {t('users.change_role')}
-                              </Button>
-                              <Button
-                                size="sm"
-                                variant="ghost"
-                                onClick={() => handleToggleUserStatus(user.id)}
-                                className={cn(
-                                  "h-7 text-xs font-bold gap-1 rounded-md px-2",
-                                  user.status === 'active' ? "text-magenta hover:bg-magenta/5" : "text-accent hover:bg-accent/5"
-                                )}
-                              >
-                                {user.status === 'active' ? (
-                                  <>
-                                    <UserMinus className="size-3.5" /> {t('users.suspend')}
-                                  </>
-                                ) : (
-                                  <>
-                                    <UserCheck className="size-3.5" /> {t('users.activate')}
-                                  </>
-                                )}
-                              </Button>
-                            </div>
-                          </td>
-                        </tr>
-                      ))
-                    )}
-                  </tbody>
-                </table>
-              </div>
-            </Card>
-          </div>
-        )}
-
-        {/* VIEW: GESTION DE PROYECTOS */}
-        {activeTab === 'projects' && (
-          <div className="space-y-4">
-            <h2 className="font-heading text-lg md:text-xl font-extrabold text-ink-strong uppercase tracking-tight">
-              {t('projects.title')}
-            </h2>
-            <Card className="overflow-hidden border-border bg-surface">
-              <div className="overflow-x-auto">
-                <table className="w-full text-left border-collapse text-sm">
-                  <thead>
-                    <tr className="bg-surface-sunken border-b border-border">
-                      <th className="p-4 font-bold text-ink-strong uppercase tracking-wider text-xs">Proyecto</th>
-                      <th className="p-4 font-bold text-ink-strong uppercase tracking-wider text-xs">{t('projects.company')}</th>
-                      <th className="p-4 font-bold text-ink-strong uppercase tracking-wider text-xs">{t('projects.budget')}</th>
-                      <th className="p-4 font-bold text-ink-strong uppercase tracking-wider text-xs">Estado</th>
-                      <th className="p-4 font-bold text-ink-strong uppercase tracking-wider text-xs text-right">Acciones</th>
+                    ))
+                  ) : (
+                    <tr>
+                      <td colSpan={4} className="p-8 text-center text-ink-muted">{t("projects.empty")}</td>
                     </tr>
-                  </thead>
-                  <tbody className="divide-y divide-border">
-                    {projects.length === 0 ? (
-                      <tr>
-                        <td colSpan={5} className="p-8 text-center text-ink-muted">
-                          No hay proyectos publicados.
-                        </td>
-                      </tr>
-                    ) : (
-                      projects.map(proj => (
-                        <tr key={proj.id} className="hover:bg-surface-sunken/40 transition-colors">
-                          <td className="p-4 font-semibold text-ink-strong">{proj.title}</td>
-                          <td className="p-4 text-ink-muted">{proj.company}</td>
-                          <td className="p-4 font-mono font-bold text-primary">${proj.budget} USD</td>
-                          <td className="p-4">
-                            <Badge className={cn(
-                              "border-none",
-                              proj.status === 'active' && "bg-accent/15 text-accent",
-                              proj.status === 'paused' && "bg-ink-muted/15 text-ink-muted",
-                              proj.status === 'moderation' && "bg-warning/15 text-warning"
-                            )}>
-                              {t(`projects.status_${proj.status}`)}
-                            </Badge>
-                          </td>
-                          <td className="p-4 text-right">
-                            <div className="flex justify-end gap-2">
-                              {proj.status === 'moderation' && (
-                                <Button
-                                  size="sm"
-                                  onClick={() => handleApproveProject(proj.id)}
-                                  className="bg-accent hover:bg-accent/90 text-white rounded-full text-xs font-bold px-3 py-1 h-7"
-                                >
-                                  {t('projects.approve')}
-                                </Button>
-                              )}
-                              {proj.status !== 'moderation' && (
-                                <Button
-                                  size="sm"
-                                  variant="outline"
-                                  onClick={() => handlePauseProject(proj.id)}
-                                  className="h-7 text-xs border-border-strong text-ink hover:bg-canvas"
-                                >
-                                  {proj.status === 'active' ? t('projects.pause') : 'Reactivar'}
-                                </Button>
-                              )}
-                              <Button
-                                size="sm"
-                                variant="ghost"
-                                onClick={() => handleDeleteProject(proj.id)}
-                                className="h-7 text-xs text-magenta hover:bg-magenta/5 font-bold"
-                              >
-                                {t('projects.delete')}
-                              </Button>
-                            </div>
-                          </td>
-                        </tr>
-                      ))
-                    )}
-                  </tbody>
-                </table>
-              </div>
-            </Card>
-          </div>
-        )}
-
-        {/* VIEW: GESTION DE EMPRESAS */}
-        {activeTab === 'companies' && (
-          <div className="space-y-4">
-            <h2 className="font-heading text-lg md:text-xl font-extrabold text-ink-strong uppercase tracking-tight">
-              {t('companies.title')}
-            </h2>
-            <Card className="overflow-hidden border-border bg-surface">
-              <div className="overflow-x-auto">
-                <table className="w-full text-left border-collapse text-sm">
-                  <thead>
-                    <tr className="bg-surface-sunken border-b border-border">
-                      <th className="p-4 font-bold text-ink-strong uppercase tracking-wider text-xs">Empresa</th>
-                      <th className="p-4 font-bold text-ink-strong uppercase tracking-wider text-xs">{t('companies.sector')}</th>
-                      <th className="p-4 font-bold text-ink-strong uppercase tracking-wider text-xs">Estado</th>
-                      <th className="p-4 font-bold text-ink-strong uppercase tracking-wider text-xs text-right">Acciones</th>
-                    </tr>
-                  </thead>
-                  <tbody className="divide-y divide-border">
-                    {companies.length === 0 ? (
-                      <tr>
-                        <td colSpan={4} className="p-8 text-center text-ink-muted">
-                          No hay empresas registradas.
-                        </td>
-                      </tr>
-                    ) : (
-                      companies.map(comp => (
-                        <tr key={comp.id} className="hover:bg-surface-sunken/40 transition-colors">
-                          <td className="p-4 font-semibold text-ink-strong">{comp.name}</td>
-                          <td className="p-4 text-ink-muted">{comp.sector}</td>
-                          <td className="p-4">
-                            <Badge className={cn(
-                              "border-none",
-                              comp.status === 'approved' && "bg-accent/15 text-accent",
-                              comp.status === 'pending' && "bg-warning/15 text-warning",
-                              comp.status === 'rejected' && "bg-magenta/15 text-magenta"
-                            )}>
-                              {t(`companies.status_${comp.status}`)}
-                            </Badge>
-                          </td>
-                          <td className="p-4 text-right">
-                            <div className="flex justify-end gap-2">
-                              {comp.status === 'pending' && (
-                                <>
-                                  <Button
-                                    size="sm"
-                                    onClick={() => handleApproveCompany(comp.id)}
-                                    className="bg-accent hover:bg-accent/90 text-white rounded-full text-xs font-bold px-3 py-1 h-7"
-                                  >
-                                    {t('companies.approve')}
-                                  </Button>
-                                  <Button
-                                    size="sm"
-                                    onClick={() => handleRejectCompany(comp.id)}
-                                    className="bg-magenta hover:bg-magenta/90 text-white rounded-full text-xs font-bold px-3 py-1 h-7"
-                                  >
-                                    {t('companies.reject')}
-                                  </Button>
-                                </>
-                              )}
-                              {comp.status === 'approved' && (
-                                <Button
-                                  size="sm"
-                                  variant="outline"
-                                  onClick={() => handleSuspendCompany(comp.id)}
-                                  className="h-7 text-xs border-border-strong text-ink hover:bg-canvas"
-                                >
-                                  {t('companies.suspend')}
-                                </Button>
-                              )}
-                            </div>
-                          </td>
-                        </tr>
-                      ))
-                    )}
-                  </tbody>
-                </table>
-              </div>
-            </Card>
-          </div>
-        )}
-      </div>
+                  )}
+                </tbody>
+              </table>
+            </div>
+          </Card>
+        </section>
+      )}
     </div>
   );
 }

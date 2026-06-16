@@ -1,0 +1,156 @@
+export type ApiRoleName = "student" | "company" | "admin";
+
+export type AccountState = "activa" | "pendiente" | "suspendida" | "rechazada";
+
+export type ProjectState =
+  | "borrador"
+  | "en_recepcion"
+  | "en_evaluacion"
+  | "adjudicado"
+  | "en_desarrollo"
+  | "cerrado"
+  | "cancelado";
+
+export type CompanyProjectState = Exclude<ProjectState, "borrador" | "cancelado">;
+
+export type OfferState = "enviada" | "en_revision" | "adjudicada" | "no_seleccionada";
+
+export type CatalogArea = {
+  id: string;
+  nombre: string;
+  descripcion?: string | null;
+};
+
+export type CatalogSkill = {
+  id: string;
+  nombre: string;
+  tipo: string;
+  categoria: string | null;
+};
+
+export type CatalogProjectState = {
+  id: string;
+  nombre: ProjectState;
+  orden: number;
+};
+
+export type CatalogsResponse = {
+  areas: CatalogArea[];
+  skills: CatalogSkill[];
+  projectStates: CatalogProjectState[];
+};
+
+export type ApiProject = {
+  id: string;
+  titulo: string;
+  descripcion: string;
+  usa_ia: boolean;
+  plazo_dias: number;
+  fecha_publicacion: string | null;
+  fecha_cierre: string | null;
+  estado: { id?: string; nombre: ProjectState };
+  area: { id: string; nombre: string } | null;
+  empresa: { id?: string; nombre_comercial: string; tipo: "empresa" | "emprendedor" } | null;
+  skills: Array<{ skill: CatalogSkill | null }>;
+};
+
+export type ProjectsResponse = {
+  projects: ApiProject[];
+};
+
+export type CreateProjectInput = {
+  titulo: string;
+  descripcion: string;
+  id_area_negocio: string;
+  plazo_dias: number;
+  usa_ia: boolean;
+  skills: string[];
+  publicar: boolean;
+};
+
+export type ProjectOffer = {
+  id: string;
+  propuesta: string;
+  prototipo_url: string | null;
+  fecha_envio: string;
+  estado: { nombre: OfferState };
+  junior: {
+    id: string;
+    nombre: string;
+    apellido1: string | null;
+  };
+};
+
+export type ProjectOffersResponse = {
+  ofertas: ProjectOffer[];
+};
+
+export type MyOffer = {
+  id: string;
+  propuesta: string;
+  prototipo_url: string | null;
+  fecha_envio: string;
+  estado: { nombre: OfferState };
+  proyecto: { id: string; titulo: string } | null;
+};
+
+export type MyOffersResponse = {
+  ofertas: MyOffer[];
+};
+
+export type ApiEstudianteDetail = {
+  descripcion: string | null;
+  especialidad: string | null;
+  modalidad_preferida: string | null;
+  disponibilidad: string | null;
+  titulo_fwd: string | null;
+  reputacion: number | null;
+  url_github: string | null;
+  url_linkedin: string | null;
+  url_portfolio: string | null;
+  skills: string[];
+};
+
+export type ApiMeProfile = {
+  id: string;
+  nombre: string;
+  apellido1: string | null;
+  apellido2: string | null;
+  cedula: string | null;
+  correo: string;
+  estado_cuenta: AccountState;
+  fecha_registro: string;
+  role: { nombre: ApiRoleName };
+  estudiante?: ApiEstudianteDetail | null;
+};
+
+export type MeResponse = {
+  user: unknown;
+  profile: ApiMeProfile | null;
+};
+
+export type AdminPendingUser = {
+  id: string;
+  nombre: string;
+  apellido1: string | null;
+  correo: string;
+  estado_cuenta: AccountState;
+  fecha_registro: string;
+  role: { nombre: ApiRoleName } | null;
+};
+
+export type AdminPendingUsersResponse = {
+  users: AdminPendingUser[];
+};
+
+export type AdminProject = {
+  id: string;
+  titulo: string;
+  fecha_publicacion: string | null;
+  estado: { nombre: ProjectState };
+  empresa: { nombre_comercial: string; tipo: "empresa" | "emprendedor" } | null;
+};
+
+export type AdminProjectsResponse = {
+  projects: AdminProject[];
+};

@@ -8,7 +8,10 @@ import {
 /* ── JuniorProfileSchema ─────────────────────────────────── */
 describe("JuniorProfileSchema", () => {
   const VALID_JUNIOR = {
-    fullName: "María García",
+    nombre: "María",
+    apellido1: "García",
+    apellido2: "López",
+    cedula: "1-1234-5678",
     specialization: "frontend" as const,
     modalities: ["remote"] as const,
     availability: "immediate" as const,
@@ -34,9 +37,9 @@ describe("JuniorProfileSchema", () => {
     expect(result.success).toBe(true);
   });
 
-  it("rejects when fullName is too short", () => {
+  it("rejects when nombre is too short", () => {
     expect(
-      JuniorProfileSchema.safeParse({ ...VALID_JUNIOR, fullName: "A" }).success
+      JuniorProfileSchema.safeParse({ ...VALID_JUNIOR, nombre: "A" }).success
     ).toBe(false);
   });
 
@@ -79,6 +82,7 @@ describe("EmpresaProfileSchema", () => {
     description: "Empresa de software enfocada en soluciones logísticas.",
     websiteUrl: "https://techcr.com",
     cedulaJuridica: "3-101-123456",
+    direccion: "San José, Costa Rica",
     projectTypes: ["web"] as const,
     logoUrl: undefined,
   };

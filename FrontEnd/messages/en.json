@@ -497,7 +497,8 @@
   },
   "app_header": {
     "notifications": "Notifications",
-    "user_menu": "User menu"
+    "user_menu": "User menu",
+    "logout": "Log out"
   },
   "empresa_subnav": {
     "back": "Back",
@@ -517,7 +518,7 @@
     },
     "hero": {
       "edit_profile": "Edit profile",
-      "role_label": "Role",
+      "role_label": "Specialty",
       "program_label": "Program / Cohort",
       "save": "Save",
       "cancel": "Cancel"
@@ -525,10 +526,10 @@
     "personal": {
       "title": "Personal Information",
       "edit": "Edit",
-      "location_field": "Location",
+      "location_field": "Availability",
       "email_field": "Email Address",
       "bio_field": "Professional bio",
-      "location_display": "Location",
+      "location_display": "Availability",
       "email_display": "Contact",
       "bio_heading": "About Me",
       "save_changes": "Save changes",
@@ -619,7 +620,21 @@
       "terms": "Terms of Service",
       "privacy": "Privacy Policy",
       "support": "Support"
+    },
+    "two_point_zero": {
+      "title": "Coming soon",
+      "work": "2.0: Project portfolio",
+      "applications": "2.0: More opportunities for you",
+      "notifications": "2.0: Matching and activity notifications",
+      "suggested": "2.0: Algorithmic matching and recommendations"
     }
+  },
+  "junior_subnav": {
+    "back": "Back to marketplace",
+    "inicio": "Home",
+    "marketplace": "Marketplace",
+    "viaje": "My journey",
+    "perfil": "My profile"
   },
   "viaje": {
     "title": "Your sky",
@@ -857,7 +872,8 @@
   },
   "app_header": {
     "notifications": "Notifications",
-    "user_menu": "User menu"
+    "user_menu": "User menu",
+    "logout": "Log out"
   },
   "empresa_subnav": {
     "back": "Back",

@@ -139,7 +139,7 @@ export function BienvenidaDashboard() {
                 <ArrowRight className="ml-2 h-5 w-5" />
               </Link>
               <Link
-                href={`/${locale}/perfil`}
+                href={`/${locale}/perfil-estudiante`}
                 className="inline-flex h-12 items-center justify-center rounded-full border border-white/30 px-8 font-semibold text-white transition-colors hover:bg-white/10"
               >
                 {t('hero.btn_edit')}
@@ -414,7 +414,7 @@ export function BienvenidaDashboard() {
                   {t('progress.card_desc')}
                 </p>
                 <Link
-                  href={`/${locale}/perfil`}
+                  href={`/${locale}/perfil-estudiante`}
                   className="inline-flex h-9 w-full items-center justify-center rounded-full border-2 border-secondary font-semibold text-secondary hover:bg-secondary/5 transition-colors"
                 >
                   {t('progress.btn_profile')}

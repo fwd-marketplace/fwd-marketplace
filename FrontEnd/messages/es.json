@@ -497,7 +497,8 @@
   },
   "app_header": {
     "notifications": "Notificaciones",
-    "user_menu": "Menú de usuario"
+    "user_menu": "Menú de usuario",
+    "logout": "Cerrar sesión"
   },
   "empresa_subnav": {
     "back": "Volver",
@@ -517,7 +518,7 @@
     },
     "hero": {
       "edit_profile": "Editar perfil",
-      "role_label": "Rol",
+      "role_label": "Especialidad",
       "program_label": "Programa / Cohorte",
       "save": "Guardar",
       "cancel": "Cancelar"
@@ -525,10 +526,10 @@
     "personal": {
       "title": "Información Personal",
       "edit": "Editar",
-      "location_field": "Ubicación",
+      "location_field": "Disponibilidad",
       "email_field": "Correo Electrónico",
       "bio_field": "Biografía profesional",
-      "location_display": "Ubicación",
+      "location_display": "Disponibilidad",
       "email_display": "Contacto",
       "bio_heading": "Sobre Mí",
       "save_changes": "Guardar cambios",
@@ -619,7 +620,21 @@
       "terms": "Términos de Servicio",
       "privacy": "Política de Privacidad",
       "support": "Soporte"
+    },
+    "two_point_zero": {
+      "title": "Próximamente",
+      "work": "2.0: Portafolio de proyectos",
+      "applications": "2.0: Más oportunidades para vos",
+      "notifications": "2.0: Notificaciones de matching y actividad",
+      "suggested": "2.0: Match algorítmico y recomendaciones"
     }
+  },
+  "junior_subnav": {
+    "back": "Volver al marketplace",
+    "inicio": "Inicio",
+    "marketplace": "Marketplace",
+    "viaje": "Mi viaje",
+    "perfil": "Mi perfil"
   },
   "viaje": {
     "title": "Tu cielo",
