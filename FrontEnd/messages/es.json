@@ -109,6 +109,13 @@
     "no_account": "¿No tienes cuenta?",
     "register_link": "Regístrate aquí"
   },
+  "oauth_callback": {
+    "loading": "Completando inicio de sesión...",
+    "error_title": "No pudimos iniciar sesión",
+    "error_no_session": "No se recibió la sesión del proveedor. Intentá iniciar sesión de nuevo.",
+    "error_suspended": "Tu cuenta está suspendida o rechazada.",
+    "back_to_login": "Volver al inicio de sesión"
+  },
   "reset_password": {
     "brand": "FWD Talent",
     "back_to_login": "Volver al inicio de sesión",

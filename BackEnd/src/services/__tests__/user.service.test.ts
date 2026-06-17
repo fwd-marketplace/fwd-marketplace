@@ -16,6 +16,10 @@ const { state } = vi.hoisted(() => ({
     },
     setSessionResult: { error: null } as { error: unknown },
     updateUserResult: { error: null } as { error: unknown },
+    oauthResult: { data: { url: null as string | null }, error: null } as {
+      data: { url: string | null };
+      error: unknown;
+    },
     signOutCalls: 0,
     updateUserCalls: 0,
   },
@@ -41,15 +45,27 @@ vi.mock("../../config/supabase", () => ({
       },
     },
   }),
+  createOAuthClient: () => ({
+    auth: {
+      signInWithOAuth: (_args: unknown) => Promise.resolve(state.oauthResult),
+    },
+  }),
 }));
 
-import { refreshSession, logoutUser, confirmPasswordReset } from "../user.service";
+import {
+  refreshSession,
+  logoutUser,
+  confirmPasswordReset,
+  isOAuthProvider,
+  getOAuthUrl,
+} from "../user.service";
 
 beforeEach(() => {
   state.refreshResult = { data: { user: null, session: null }, error: null };
   state.verifyOtpResult = { data: { session: null }, error: null };
   state.setSessionResult = { error: null };
   state.updateUserResult = { error: null };
+  state.oauthResult = { data: { url: null }, error: null };
   state.signOutCalls = 0;
   state.updateUserCalls = 0;
 });
@@ -155,5 +171,35 @@ describe("confirmPasswordReset", () => {
     await expect(
       confirmPasswordReset({ tokenHash: "token-ok", password: "nuevaClave123" }),
     ).rejects.toMatchObject({ statusCode: 400 });
+  });
+});
+
+describe("isOAuthProvider", () => {
+  it("acepta google y github", () => {
+    expect(isOAuthProvider("google")).toBe(true);
+    expect(isOAuthProvider("github")).toBe(true);
+  });
+
+  it("rechaza proveedores no soportados", () => {
+    expect(isOAuthProvider("facebook")).toBe(false);
+    expect(isOAuthProvider("")).toBe(false);
+  });
+});
+
+describe("getOAuthUrl", () => {
+  it("devuelve la URL de autorización del provider", async () => {
+    state.oauthResult = {
+      data: { url: "https://accounts.google.com/o/oauth2/auth?client_id=x" },
+      error: null,
+    };
+
+    const url = await getOAuthUrl("google", "es");
+    expect(url).toContain("https://");
+  });
+
+  it("lanza 502 si Supabase no devuelve URL", async () => {
+    state.oauthResult = { data: { url: null }, error: { message: "fail" } };
+
+    await expect(getOAuthUrl("google", "es")).rejects.toMatchObject({ statusCode: 502 });
   });
 });
