@@ -7,6 +7,8 @@ import { useLocale } from "next-intl";
 import {
   LayoutDashboard,
   Users,
+  Building2,
+  ClipboardList,
   FolderKanban,
   BarChart2,
   Settings,
@@ -18,6 +20,8 @@ import { cn } from "@/lib/utils";
 const NAV_ITEMS = [
   { label: "Dashboard", href: "/admin/dashboard", icon: LayoutDashboard },
   { label: "Talento", href: "/admin/talento", icon: Users },
+  { label: "Empresas", href: "/admin/empresas", icon: Building2 },
+  { label: "Solicitudes", href: "/admin/solicitudes", icon: ClipboardList },
   { label: "Proyectos", href: "/admin/proyectos", icon: FolderKanban },
   { label: "Reportes", href: "/admin/reportes", icon: BarChart2 },
   { label: "Configuración", href: "/admin/configuracion", icon: Settings },
