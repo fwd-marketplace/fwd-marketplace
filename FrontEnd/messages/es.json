@@ -755,13 +755,13 @@
       "manage": "Gestionar postulaciones"
     },
     "work": {
-      "title": "Mi trabajo",
+      "title": "Mi PORTAFOLIOS",
       "description": "Gestioná y exhibí tus desarrollos más impactantes. Visualizá tus productos terminados y añadí nuevas piezas a tu portafolio profesional.",
       "badge_product": "Product",
-      "add_title": "Agregar proyecto",
+      "add_title": "Agregar PORTAFOLIO",
       "add_formats": "Formatos soportados: Link, Figma, GitHub",
-      "add_project": "Agregar proyecto",
-      "my_projects": "Mis proyectos",
+      "add_project": "Agregar PORTAFOLIO",
+      "my_projects": "Mis PORTAFOLIOS",
       "my_projects_help": "Gestioná y exhibí tus desarrollos más impactantes.",
       "preview_btn": "Vista previa",
       "open_btn": "Abrir",
@@ -769,10 +769,10 @@
       "open_in_new_tab": "Abrir en nueva pestaña",
       "close": "Cerrar",
       "iframe_error": "Este sitio no permite ser embebido. Podés abrirlo directamente.",
-      "no_projects": "Todavía no hay proyectos en tu portfolio.",
-      "add_modal_title": "Agregar nuevo proyecto",
+      "no_projects": "Todavía no hay PORTAFOLIOS en tu portfolio.",
+      "add_modal_title": "Agregar nuevo PORTAFOLIO",
       "fields": {
-        "name": "Nombre del proyecto",
+        "name": "Nombre del PORTAFOLIO",
         "url": "URL / Enlace",
         "description": "Descripción breve",
         "techs": "Tecnologías (separadas por comas)",
@@ -780,9 +780,9 @@
       },
       "create": "Crear proyecto",
       "cancel": "Cancelar",
-      "errors": {
-        "name_required": "El nombre del proyecto es obligatorio.",
-        "url_required": "La URL del proyecto es obligatoria."
+        "errors": {
+        "name_required": "El nombre del PORTAFOLIO es obligatorio.",
+        "url_required": "La URL del PORTAFOLIO es obligatoria."
       }
       ,
       "confirm_delete": {
@@ -793,15 +793,15 @@
       }
       ,
       "work": {
-        "add_modal_title": "Agregar nuevo proyecto",
+        "add_modal_title": "Agregar nuevo PORTAFOLIO",
         "fields": {
-          "name": "Nombre del proyecto",
+          "name": "Nombre del PORTAFOLIO",
           "url": "URL / Enlace",
           "description": "Descripción breve",
           "techs": "Tecnologías (separadas por comas)",
           "techs_placeholder": "Ej. React, Tailwind, Next.js"
         },
-        "create": "Crear proyecto",
+        "create": "Crear PORTAFOLIO",
         "cancel": "Cancelar"
       }
     },

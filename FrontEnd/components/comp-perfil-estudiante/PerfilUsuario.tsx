@@ -1688,13 +1688,8 @@ function AddProjectModal({ onClose, onCreate }: { onClose: () => void; onCreate:
     });
   }
 
-  const OTHER_COLORS = [
-    "bg-violet-500 text-white",
-    "bg-rose-500 text-white",
-    "bg-amber-500 text-white",
-    "bg-emerald-500 text-white",
-    "bg-sky-600 text-white",
-  ];
+  // use design token CSS variables for other tech pills
+  const OTHER_COLORS = ["--primary", "--secondary", "--accent", "--highlight", "--magenta"];
 
   function addOther() {
     const v = otherValue.trim();
@@ -1721,7 +1716,7 @@ function AddProjectModal({ onClose, onCreate }: { onClose: () => void; onCreate:
 
   return (
     <div className="fixed inset-0 z-[100] flex items-center justify-center bg-ink-strong/60 p-4" onClick={onClose}>
-      <div className="w-full max-w-2xl bg-surface rounded-2xl shadow-elevated p-6 transform transition-all duration-200 ease-[var(--ease-out)] scale-95 opacity-0" onClick={e => e.stopPropagation()} role="dialog" aria-modal="true">
+      <div className="w-full max-w-2xl bg-surface rounded-2xl shadow-elevated p-6 transform transition-all duration-200 ease-[var(--ease-out)]" onClick={e => e.stopPropagation()} role="dialog" aria-modal="true">
         <div className="flex items-center justify-between mb-4">
           <h3 className="text-lg font-bold">{t("work.add_modal_title")}</h3>
           <button onClick={onClose} className="text-ink-muted"><X className="w-5 h-5" /></button>
