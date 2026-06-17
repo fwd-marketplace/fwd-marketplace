@@ -275,7 +275,6 @@ export function CompanyProfile({
   const tStage = useTranslations('register.emprendedor.step2');
   const tTechSupport = useTranslations('register.emprendedor.step3');
   const tBudget = useTranslations('register.emprendedor.step4');
-  const tDash = useTranslations('empresa_dashboard');
   const tPT = useTranslations('register.empresa.step5');
 
   const [isEditing, setIsEditing] = useState(false);
