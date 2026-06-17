@@ -1,6 +1,7 @@
 import { createHash, randomInt } from "node:crypto";
 import { supabase, createEphemeralClient } from "../config/supabase";
 import { ApiError } from "../utils/ApiError";
+import { logger } from "../utils/logger";
 import { sendEmail } from "./email.service";
 
 /** El código de 2FA vive 10 minutos. */
@@ -35,6 +36,7 @@ export async function startEmailMfa(input: {
     p_ttl_segundos: OTP_TTL_SECONDS,
   });
   if (error || !ticket) {
+    logger.error("crear_pending_login falló", { error: error?.message, code: error?.code });
     throw new ApiError(500, "No se pudo iniciar la verificación en dos pasos");
   }
 
@@ -61,6 +63,7 @@ export async function verifyEmailMfa(ticket: string, code: string) {
     p_codigo_hash: hashCode(code),
   });
   if (error) {
+    logger.error("consumir_pending_login falló", { error: error.message, code: error.code });
     throw new ApiError(500, error.message);
   }
   if (!refreshToken) {
