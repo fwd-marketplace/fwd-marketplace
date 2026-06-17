@@ -81,12 +81,28 @@ export async function logoutUser(refreshToken: string) {
 }
 
 /**
- * Paso 1 de recuperación: envía el correo con el enlace de recovery. El enlace
- * lleva a la página donde el usuario define la clave nueva. No revela si el
- * correo existe (respuesta uniforme); solo falla si el proveedor de correo cae.
+ * Idiomas que enruta el FrontEnd (next-intl `i18n/routing.ts`). El enlace del
+ * correo debe abrir la página en el idioma del usuario; si el FrontEnd no manda
+ * `locale` o manda uno no soportado, se usa el idioma por defecto.
  */
-export async function requestPasswordReset(email: string): Promise<void> {
-  const redirectTo = `${env.frontendUrl}/es/nueva-contrasena`;
+const SUPPORTED_LOCALES = ["es", "en"] as const;
+const DEFAULT_LOCALE = "es";
+
+function normalizeLocale(locale?: string): string {
+  return locale && (SUPPORTED_LOCALES as readonly string[]).includes(locale)
+    ? locale
+    : DEFAULT_LOCALE;
+}
+
+/**
+ * Paso 1 de recuperación: envía el correo con el enlace de recovery. El enlace
+ * lleva a la página donde el usuario define la clave nueva, en el idioma que
+ * indique el FrontEnd (`locale`). No revela si el correo existe (respuesta
+ * uniforme); solo falla si el proveedor de correo cae.
+ */
+export async function requestPasswordReset(email: string, locale?: string): Promise<void> {
+  const lang = normalizeLocale(locale);
+  const redirectTo = `${env.frontendUrl}/${lang}/nueva-contrasena`;
   const { error } = await supabase.auth.resetPasswordForEmail(email, { redirectTo });
 
   if (error && error.status && error.status >= 500) {

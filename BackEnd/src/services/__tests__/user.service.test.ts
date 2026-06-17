@@ -16,6 +16,8 @@ const { state } = vi.hoisted(() => ({
     },
     setSessionResult: { error: null } as { error: unknown },
     updateUserResult: { error: null } as { error: unknown },
+    resetPasswordResult: { error: null } as { error: unknown },
+    resetRedirectTo: "" as string,
     oauthResult: { data: { url: null as string | null }, error: null } as {
       data: { url: string | null };
       error: unknown;
@@ -26,7 +28,14 @@ const { state } = vi.hoisted(() => ({
 }));
 
 vi.mock("../../config/supabase", () => ({
-  supabase: {},
+  supabase: {
+    auth: {
+      resetPasswordForEmail: (_email: string, opts: { redirectTo: string }) => {
+        state.resetRedirectTo = opts.redirectTo;
+        return Promise.resolve(state.resetPasswordResult);
+      },
+    },
+  },
   supabaseForToken: () => ({}),
   createEphemeralClient: () => ({
     auth: {
@@ -56,6 +65,7 @@ import {
   refreshSession,
   logoutUser,
   confirmPasswordReset,
+  requestPasswordReset,
   isOAuthProvider,
   getOAuthUrl,
 } from "../user.service";
@@ -65,6 +75,8 @@ beforeEach(() => {
   state.verifyOtpResult = { data: { session: null }, error: null };
   state.setSessionResult = { error: null };
   state.updateUserResult = { error: null };
+  state.resetPasswordResult = { error: null };
+  state.resetRedirectTo = "";
   state.oauthResult = { data: { url: null }, error: null };
   state.signOutCalls = 0;
   state.updateUserCalls = 0;
@@ -171,6 +183,40 @@ describe("confirmPasswordReset", () => {
     await expect(
       confirmPasswordReset({ tokenHash: "token-ok", password: "nuevaClave123" }),
     ).rejects.toMatchObject({ statusCode: 400 });
+  });
+});
+
+describe("requestPasswordReset", () => {
+  it("usa el locale 'es' por defecto cuando el FrontEnd no lo manda", async () => {
+    await requestPasswordReset("user@example.com");
+
+    expect(state.resetRedirectTo).toMatch(/\/es\/nueva-contrasena$/);
+  });
+
+  it("respeta el locale 'en' en el enlace del correo", async () => {
+    await requestPasswordReset("user@example.com", "en");
+
+    expect(state.resetRedirectTo).toMatch(/\/en\/nueva-contrasena$/);
+  });
+
+  it("cae a 'es' si el locale no está soportado", async () => {
+    await requestPasswordReset("user@example.com", "fr");
+
+    expect(state.resetRedirectTo).toMatch(/\/es\/nueva-contrasena$/);
+  });
+
+  it("lanza 502 si el proveedor de correo cae (error 5xx)", async () => {
+    state.resetPasswordResult = { error: { status: 503, message: "smtp down" } };
+
+    await expect(requestPasswordReset("user@example.com")).rejects.toMatchObject({
+      statusCode: 502,
+    });
+  });
+
+  it("no revela si el correo existe: no lanza ante errores que no son 5xx", async () => {
+    state.resetPasswordResult = { error: { status: 400, message: "rate limit" } };
+
+    await expect(requestPasswordReset("user@example.com")).resolves.toBeUndefined();
   });
 });
 

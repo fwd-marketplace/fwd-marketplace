@@ -61,8 +61,10 @@ Body: `{ "email": string, "password": string }`
 
 ### POST /api/users/reset-password
 Dispara el correo de recuperación de contraseña (Supabase Auth). **No** lleva Bearer.
-Body: `{ "email": string }` — **solo el email** (no se manda contraseña: quien la olvidó
-no la sabe; el usuario fija la nueva desde el enlace del correo).
+Body: `{ "email": string, "locale"?: "es" | "en" }` — el email (no se manda contraseña: quien
+la olvidó no la sabe; el usuario fija la nueva desde el enlace del correo) y, opcional, el
+`locale` activo para que el enlace del correo abra la página en ese idioma (default `es` si no
+se manda o no es soportado).
 → `200 { "ok": true }` — idempotente: responde `200` aunque el email no exista, para no
 revelar qué cuentas están registradas.
 
@@ -93,22 +95,23 @@ El FE debe además **borrar las cookies** httpOnly. Ver **"Manejo de sesión"** 
 
 Flujo correcto: pedir el correo → el usuario hace clic en el enlace → define la clave nueva.
 ```
-1. POST /users/reset-password          { email }              -> Supabase envia el correo
-2. el correo lleva a: /es/nueva-contrasena?token_hash=...&type=recovery
+1. POST /users/reset-password          { email, locale? }     -> Supabase envia el correo
+2. el correo lleva a: /{locale}/nueva-contrasena?token_hash=...&type=recovery   (locale: es|en, default es)
 3. POST /users/reset-password/confirm  { token_hash, password } -> cambia la clave
 ```
 
-**POST /api/users/reset-password** — Body `{ "email": string }`
+**POST /api/users/reset-password** — Body `{ "email": string, "locale"?: "es" | "en" }`
 → `200 { "ok": true }` siempre (no revela si el correo existe). El FE muestra "si el correo
-existe, te enviamos un enlace".
+existe, te enviamos un enlace". El `locale` (opcional) fija el idioma del enlace del correo;
+default `es`.
 
 **POST /api/users/reset-password/confirm** — Body `{ "token_hash": string, "password": string }`
 - `token_hash`: viene en la query del enlace del correo (`?token_hash=...`).
 - `password`: nueva contraseña (mínimo 8).
 → `200 { "ok": true }`. → `400` si el token es inválido/expiró o la clave es débil.
 
-La página `/es/nueva-contrasena` lee `token_hash` de la URL y llama al confirm. Requiere
-SMTP configurado en Supabase (Resend) para que el correo llegue.
+La página `/{locale}/nueva-contrasena` (p. ej. `/es/...` o `/en/...`) lee `token_hash` de la
+URL y llama al confirm. Requiere SMTP configurado en Supabase (Resend) para que el correo llegue.
 
 ### Login social (OAuth Google / GitHub)
 
@@ -283,10 +286,12 @@ el BackEnd ya expone la API). Marcá cada ítem como hecho cuando la pantalla lo
   de almacenarlo. Ver "Manejo de sesión (httpOnly)" arriba.
 
 - **Recuperación de contraseña ("olvidé mi contraseña").** Pantalla con un input de email
-  que llama `POST /api/users/reset-password` (solo `{ email }`) y muestra "te enviamos un
-  correo" sin revelar si la cuenta existe. El enlace del correo de Supabase devuelve al
-  usuario al FrontEnd para fijar la nueva contraseña (esa pantalla la resuelve el FE con el
-  flujo de Supabase del lado del route handler de Next).
+  que llama `POST /api/users/reset-password` con `{ email, locale }` (mandar el `locale` activo
+  —`es` o `en`— para que el enlace del correo abra `/{locale}/nueva-contrasena` en el idioma del
+  usuario; si se omite, el BackEnd usa `es`) y muestra "te enviamos un correo" sin revelar si la
+  cuenta existe. El enlace del correo de Supabase devuelve al usuario al FrontEnd para fijar la
+  nueva contraseña (esa pantalla la resuelve el FE con el flujo de Supabase del lado del route
+  handler de Next).
 
 - **Registro con confirmación de email: `session` puede venir `null`.** Si el proyecto de
   Supabase tiene la confirmación por email activada (hoy lo está, ver

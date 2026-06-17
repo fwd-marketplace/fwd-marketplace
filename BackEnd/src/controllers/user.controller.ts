@@ -16,17 +16,20 @@ function readCredentials(body: unknown): { email: string; password: string; name
   return { email, password, name: typeof name === "string" ? name : undefined };
 }
 
-function readResetInput(body: unknown): { email: string } {
+function readResetInput(body: unknown): { email: string; locale?: string } {
   // Recuperación de contraseña: solo necesita el email. NO se pide la contraseña
   // (quien la olvidó no la sabe); Supabase Auth manda el correo con el enlace para
-  // fijar una nueva.
-  const { email } = (body ?? {}) as Record<string, unknown>;
+  // fijar una nueva. `locale` (opcional) decide el idioma del enlace del correo.
+  const { email, locale } = (body ?? {}) as Record<string, unknown>;
 
   if (typeof email !== "string" || !email.trim()) {
     throw new ApiError(400, "El email es obligatorio");
   }
 
-  return { email: email.trim() };
+  return {
+    email: email.trim(),
+    locale: typeof locale === "string" ? locale : undefined,
+  };
 }
 
 /**
@@ -89,8 +92,8 @@ export async function login(req: Request, res: Response) {
 
 /** POST /api/users/reset-password (paso 1: pide el correo de recuperación) */
 export async function resetPassword(req: Request, res: Response) {
-  const { email } = readResetInput(req.body);
-  await userService.requestPasswordReset(email);
+  const { email, locale } = readResetInput(req.body);
+  await userService.requestPasswordReset(email, locale);
   res.status(200).json({ ok: true });
 }
 
