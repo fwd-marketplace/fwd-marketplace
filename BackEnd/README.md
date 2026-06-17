@@ -76,12 +76,44 @@ Otros scripts: `npm run build` (compila a `dist/`), `npm start` (producción),
 
 ## Endpoints
 
-| Método | Ruta                  | Auth | Descripción                                   |
-| ------ | --------------------- | ---- | --------------------------------------------- |
-| GET    | `/api/health`         | —    | Healthcheck                                   |
-| POST   | `/api/users/register` | —    | `signUp` en Supabase → `{ user, session }`    |
-| POST   | `/api/users/login`    | —    | `signInWithPassword` → `{ user, session }`    |
-| GET    | `/api/users/me`       | JWT  | Usuario autenticado (`{ user }`)              |
+Vista general por grupo. Las **especificaciones completas** (bodies, respuestas y errores)
+viven en los contratos de `docs/`:
+
+- `docs/auth-contract.md` — auth, sesión, onboarding, **perfil** y aprobación de cuentas.
+- `docs/marketplace-contract.md` — catálogos, proyectos, postulaciones (ofertas) y admin.
+
+| Método | Ruta | Auth | Descripción |
+| --- | --- | --- | --- |
+| GET | `/api/health` | — | Healthcheck |
+| POST | `/api/users/register` | — | Registro (`signUp`) → `{ user, session }` |
+| POST | `/api/users/login` | — | Login (`signInWithPassword`) → `{ user, session }` |
+| POST | `/api/users/reset-password` | — | Envía el correo de recuperación de contraseña |
+| POST | `/api/users/refresh` | — | Renueva la sesión con el `refresh_token` |
+| POST | `/api/users/logout` | — | Revoca el `refresh_token` |
+| GET | `/api/users/me` | JWT | Usuario autenticado + perfil (`{ user, profile }`) |
+| POST | `/api/users/onboarding/junior` | JWT | Onboarding junior (crea `estudiante`) |
+| POST | `/api/users/onboarding/empresa` | JWT | Onboarding empresa |
+| POST | `/api/users/onboarding/emprendedor` | JWT | Onboarding emprendedor |
+| GET | `/api/users/me/perfil` | JWT | Lee el perfil propio (estudiante/empresario) |
+| PATCH | `/api/users/me/perfil` | JWT | Edita el perfil propio (parcial) |
+| POST | `/api/users/me/perfil/avatar` | JWT | Sube la foto de perfil (multipart → Cloudinary) |
+| GET | `/api/catalogs` | JWT | Áreas, skills y estados para selects/filtros |
+| GET | `/api/projects` | JWT | Listado de proyectos visibles |
+| GET | `/api/projects/mias` | JWT | Proyectos propios de la empresa |
+| POST | `/api/projects` | JWT | Publica un proyecto (empresa) |
+| GET | `/api/projects/:id` | JWT | Detalle de un proyecto |
+| PATCH | `/api/projects/:id/estado` | JWT | Cambia el estado (empresa dueña) |
+| POST | `/api/projects/:id/ofertas` | JWT | El junior postula |
+| GET | `/api/projects/:id/ofertas` | JWT | Postulaciones recibidas (empresa dueña) |
+| GET | `/api/ofertas/mias` | JWT | Mis postulaciones (junior) |
+| GET | `/api/ofertas/:id` | JWT | Detalle de postulación con contacto (empresa dueña) |
+| PATCH | `/api/ofertas/:id` | JWT | La empresa acepta/rechaza |
+| GET | `/api/admin/users/pending` | JWT admin | Cuentas pendientes |
+| PATCH | `/api/admin/users/:id/aprobar` | JWT admin | Aprueba una cuenta |
+| PATCH | `/api/admin/users/:id/rechazar` | JWT admin | Rechaza una cuenta |
+| PATCH | `/api/admin/users/:id/suspender` | JWT admin | Suspende una cuenta |
+| GET | `/api/admin/projects` | JWT admin | Todos los proyectos (incluye borradores) |
+| PATCH | `/api/admin/projects/:id/cancelar` | JWT admin | Cancela (modera) un proyecto |
 
 El `access_token` que devuelve Supabase en `session` es el que el FrontEnd envía
 en las rutas protegidas: `Authorization: Bearer <access_token>`.
@@ -99,9 +131,14 @@ Define la URL base del BackEnd en el FrontEnd (`FrontEnd/.env.local`):
 NEXT_PUBLIC_API_URL=http://localhost:3001/api
 ```
 
-Login y uso del token:
+Login y manejo del token. El almacenamiento de la sesion lo hace el **route handler
+de Next** (lado servidor) en **cookies httpOnly**, nunca el JS del navegador ni
+`localStorage`. Detalle en `docs/auth-contract.md` ("Manejo de sesion (httpOnly)").
+`cookieStore` es `await cookies()` de `next/headers` (disponible en route handlers y
+server actions):
 
 ```ts
+// 1. El route handler de Next pide el login al BackEnd.
 const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/users/login`, {
   method: "POST",
   headers: { "Content-Type": "application/json" },
@@ -113,10 +150,20 @@ if (!res.ok) {
   throw new Error(error);
 }
 
-const { user, session } = await res.json();
-const accessToken = session.access_token;
+const { user, session } = await res.json(); // user: para enrutar por rol/estado.
 
-// Ruta protegida
+// 2. Los tokens NO se guardan en una variable de cliente ni en localStorage:
+//    el route handler los escribe en cookies httpOnly (el JS del navegador no
+//    las puede leer, lo que mitiga el robo de token por XSS).
+cookieStore.set("access_token", session.access_token, { httpOnly: true, secure: true, sameSite: "lax" });
+cookieStore.set("refresh_token", session.refresh_token, { httpOnly: true, secure: true, sameSite: "lax" });
+```
+
+En una ruta protegida, el `access_token` se lee de la cookie (lado servidor) y se
+reenvia como `Bearer`; el navegador nunca lo manipula:
+
+```ts
+const accessToken = cookieStore.get("access_token")?.value;
 const meRes = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/users/me`, {
   headers: { Authorization: `Bearer ${accessToken}` },
 });

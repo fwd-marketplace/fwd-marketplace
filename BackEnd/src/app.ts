@@ -2,6 +2,7 @@ import express from "express";
 import cors from "cors";
 import { env } from "./config/env";
 import routes from "./routes";
+import { requestLogger } from "./middlewares/requestLogger.middleware";
 import { notFound, errorHandler } from "./middlewares/error.middleware";
 
 export const app = express();
@@ -16,6 +17,9 @@ app.use(
 
 // Parseo del body JSON de las peticiones.
 app.use(express.json());
+
+// Log de cada request (método, ruta, status, duración) con el logger estructurado.
+app.use(requestLogger);
 
 // Todas las rutas cuelgan de /api.
 app.use("/api", routes);

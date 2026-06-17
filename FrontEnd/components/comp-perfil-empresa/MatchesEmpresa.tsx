@@ -1,19 +1,15 @@
 "use client";
 
-import React, { useState, useMemo } from "react";
+import { useState, useMemo } from "react";
 import { useTranslations, useLocale } from "next-intl";
-import { useRouter } from "next/navigation";
-import Image from "next/image";
 import {
   X,
   CheckCircle2,
   ChevronDown,
   Sparkles,
   RotateCcw,
-  Plus
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { FwdGeoBackdrop } from "@/components/ui/fwd-geo-backdrop";
 
 interface ProjectOption {
   id: string;
@@ -210,10 +206,8 @@ const CANDIDATES: Candidate[] = [
 export function MatchesEmpresa() {
   const tDashboard = useTranslations("empresa_dashboard");
   const tMatches = useTranslations("matches_empresa");
-  const router = useRouter();
   const locale = useLocale();
 
-  const [logoError, setLogoError] = useState(false);
   const [selectedProjectId, setSelectedProjectId] = useState<string>("p1");
   const [toastMessage, setToastMessage] = useState<string | null>(null);
 
@@ -239,14 +233,6 @@ export function MatchesEmpresa() {
     setTimeout(() => {
       setToastMessage(null);
     }, 4000);
-  };
-
-  const handleEditProfile = () => {
-    triggerToast(tMatches("toast_profile_edit"));
-  };
-
-  const handleViewProjects = () => {
-    router.push(`/${locale}/perfil-empresa`);
   };
 
   const handleClearFilters = () => {
@@ -334,80 +320,6 @@ export function MatchesEmpresa() {
           </button>
         </div>
       )}
-
-      {/* --- HERO BANNER --- */}
-      <section className="relative overflow-hidden rounded-3xl bg-gradient-to-br from-secondary via-secondary/95 to-primary p-6 text-white shadow-[var(--shadow-soft)] md:p-10">
-        <FwdGeoBackdrop />
-
-        <div className="relative z-10 flex flex-col gap-6 md:flex-row md:items-center md:justify-between">
-          <div className="flex flex-col gap-6 md:flex-row md:items-center">
-            {/* Logo */}
-            <div className="relative size-20 md:size-24 shrink-0 overflow-hidden rounded-2xl border border-white/20 bg-white shadow-[var(--shadow-soft)] flex items-center justify-center">
-              {!logoError ? (
-                <Image
-                  src="/company_logo.png"
-                  alt="Logo"
-                  width={96}
-                  height={96}
-                  className="size-full object-contain p-2"
-                  onError={() => setLogoError(true)}
-                />
-              ) : (
-                <div className="flex size-full items-center justify-center bg-gradient-to-br from-accent to-secondary font-heading text-2xl font-extrabold text-white">
-                  FWD
-                </div>
-              )}
-            </div>
-
-            {/* Info */}
-            <div className="space-y-2">
-              <span className="font-body text-[10px] font-bold uppercase tracking-wider text-white/70">
-                {tDashboard("label_empresa")}
-              </span>
-              <h1 className="font-heading text-2xl font-bold tracking-tight md:text-3.5xl uppercase leading-none">
-                {tDashboard("title")}
-                <span className="text-primary" aria-hidden="true">
-                  .
-                </span>
-              </h1>
-              <p className="font-body text-sm text-white/80 max-w-2xl leading-relaxed">
-                {tDashboard("company_desc")}
-              </p>
-
-              {/* Tags */}
-              <div className="flex flex-wrap gap-2 pt-2">
-                <span className="rounded-full bg-white/10 px-3 py-1 font-body text-xs font-semibold text-white">
-                  {tDashboard("tag_socio")}
-                </span>
-                <span className="rounded-full bg-white/10 px-3 py-1 font-body text-xs font-semibold text-white">
-                  {tDashboard("tag_location")}
-                </span>
-                <span className="rounded-full bg-white/10 px-3 py-1 font-body text-xs font-semibold text-white">
-                  {tDashboard("tag_size")}
-                </span>
-              </div>
-            </div>
-          </div>
-
-          {/* Actions */}
-          <div className="flex flex-wrap gap-3 shrink-0 self-start md:self-center">
-            <Button
-              variant="outline"
-              onClick={handleEditProfile}
-              className="h-10 rounded-full border-white/20 px-5 text-sm font-bold text-white hover:bg-white/10 hover:text-white"
-            >
-              {tDashboard("edit_profile_btn")}
-            </Button>
-            <Button
-              variant="default"
-              onClick={handleViewProjects}
-              className="h-10 rounded-full bg-highlight px-5 text-sm font-bold text-secondary hover:bg-highlight/90"
-            >
-              {tDashboard("view_projects_btn")}
-            </Button>
-          </div>
-        </div>
-      </section>
 
       {/* --- MAIN BODY (2 Columns) --- */}
       <div className="grid grid-cols-1 gap-8 lg:grid-cols-12">
@@ -524,7 +436,7 @@ export function MatchesEmpresa() {
                     onChange={() => setSelectedAvailability("all")}
                     className="accent-primary size-4"
                   />
-                  <span>Ver todas</span>
+                  <span>{tMatches("availability_all")}</span>
                 </label>
                 <label className="flex items-center gap-2.5 font-body text-sm text-ink hover:text-ink-strong cursor-pointer">
                   <input
@@ -558,7 +470,7 @@ export function MatchesEmpresa() {
               </span>
               <div className="grid grid-cols-2 gap-2">
                 {[
-                  { key: "all", label: "Todas" },
+                  { key: "all", label: tMatches("modality_all") },
                   { key: "remote", label: tMatches("modality_remote") },
                   { key: "hybrid", label: tMatches("modality_hybrid") },
                   { key: "onsite", label: tMatches("modality_onsite") }
@@ -600,7 +512,7 @@ export function MatchesEmpresa() {
                 className="pl-3 pr-8 py-1.5 bg-surface border border-border rounded-xl text-xs font-semibold text-ink-muted appearance-none focus:outline-none focus:border-primary focus:ring-1 focus:ring-primary"
               >
                 <option value="best">{tMatches("sort_best")}</option>
-                <option value="worst">Menor match</option>
+                <option value="worst">{tMatches("sort_worst")}</option>
               </select>
             </div>
           </div>
@@ -696,7 +608,7 @@ export function MatchesEmpresa() {
                         {/* Experience */}
                         <div className="space-y-1">
                           <div className="flex justify-between text-xs font-semibold text-ink-muted">
-                            <span>Experiencia</span>
+                            <span>{tDashboard("compatibility.experience")}</span>
                             <span className="text-ink-strong">{candidate.stats.experience}%</span>
                           </div>
                           <div className="h-1.5 w-full rounded-full bg-surface-sunken">
@@ -767,10 +679,10 @@ export function MatchesEmpresa() {
             <div className="flex h-64 flex-col items-center justify-center rounded-2xl border border-border bg-surface p-6 text-center">
               <Sparkles className="size-8 text-ink-subtle mb-3 animate-pulse" />
               <p className="font-heading text-base font-bold text-ink-strong">
-                No hay candidatos recomendados
+                {tMatches("empty_no_candidates_title")}
               </p>
               <p className="font-body text-sm text-ink-muted max-w-sm mt-1">
-                Intenta ajustar los filtros de especialidad o reducir el nivel de match mínimo.
+                {tMatches("empty_no_candidates_desc")}
               </p>
             </div>
           )}

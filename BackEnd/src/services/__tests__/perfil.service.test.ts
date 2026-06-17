@@ -33,13 +33,48 @@ vi.mock("../../config/supabase", () => ({
   },
 }));
 
-import { updateMyPerfil } from "../perfil.service";
+import { getMyPerfil, updateMyPerfil } from "../perfil.service";
 
 const TOKEN = "token";
 const USER = "user-1";
 
 beforeEach(() => {
   for (const key of Object.keys(responses)) delete responses[key];
+});
+
+describe("getMyPerfil", () => {
+  it("devuelve el perfil del estudiante", async () => {
+    responses["users"] = { data: { role: { nombre: "student" } }, error: null };
+    responses["estudiante"] = {
+      data: { id: "est-1", descripcion: "Hola", url_github: "https://github.com/ana" },
+      error: null,
+    };
+    const perfil = await getMyPerfil(TOKEN, USER);
+    expect(perfil).toMatchObject({ id: "est-1", descripcion: "Hola" });
+  });
+
+  it("devuelve el perfil de la empresa", async () => {
+    responses["users"] = { data: { role: { nombre: "company" } }, error: null };
+    responses["empresario"] = { data: { id: "emp-1", nombre_comercial: "Acme CR" }, error: null };
+    const perfil = await getMyPerfil(TOKEN, USER);
+    expect(perfil).toMatchObject({ id: "emp-1", nombre_comercial: "Acme CR" });
+  });
+
+  it("rechaza (403) si el usuario no completó onboarding", async () => {
+    responses["users"] = { data: null, error: null };
+    await expect(getMyPerfil(TOKEN, USER)).rejects.toMatchObject({ statusCode: 403 });
+  });
+
+  it("rechaza (403) si el rol no tiene perfil editable", async () => {
+    responses["users"] = { data: { role: { nombre: "admin" } }, error: null };
+    await expect(getMyPerfil(TOKEN, USER)).rejects.toMatchObject({ statusCode: 403 });
+  });
+
+  it("rechaza (404) si no existe la fila de perfil", async () => {
+    responses["users"] = { data: { role: { nombre: "student" } }, error: null };
+    responses["estudiante"] = { data: null, error: null };
+    await expect(getMyPerfil(TOKEN, USER)).rejects.toMatchObject({ statusCode: 404 });
+  });
 });
 
 describe("updateMyPerfil", () => {

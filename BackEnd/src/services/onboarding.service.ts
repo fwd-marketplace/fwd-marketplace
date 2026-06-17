@@ -1,6 +1,7 @@
 import type { SupabaseClient } from "@supabase/supabase-js";
 import { supabaseForToken } from "../config/supabase";
 import { ApiError } from "../utils/ApiError";
+import { logger } from "../utils/logger";
 import type { Database } from "../types/database.types";
 import type {
   JuniorOnboarding,
@@ -63,6 +64,24 @@ async function createUserRow(
   if (error) throw new ApiError(400, error.message);
 }
 
+/**
+ * Borra la fila `users` recién creada cuando un paso posterior del onboarding
+ * falla, para que el usuario pueda reintentarlo (sin esto, `ensureNotOnboarded`
+ * lo bloquearía con 409 y la cuenta quedaría a medias). El ON DELETE CASCADE
+ * limpia las filas asociadas (estudiante/empresario/student_skills). Es
+ * best-effort: si la propia limpieza falla, se loguea y se propaga el error
+ * original (que es el que importa para el usuario).
+ */
+async function rollbackUserRow(client: Client, userId: string): Promise<void> {
+  const { error } = await client.from("users").delete().eq("id", userId);
+  if (error) {
+    logger.error("No se pudo limpiar el onboarding parcial", {
+      userId,
+      error: error.message,
+    });
+  }
+}
+
 /** Vincula el tech_stack (nombres libres) con el catálogo `skills` (match por nombre). */
 async function linkStudentSkills(
   client: Client,
@@ -105,23 +124,31 @@ export async function onboardJunior(
     cedula: input.cedula,
   });
 
-  const { data: estudiante, error } = await client
-    .from("estudiante")
-    .insert({
-      id_usuario: userId,
-      especialidad: input.especializacion,
-      modalidad_preferida: JSON.stringify(input.modalidad),
-      disponibilidad: input.disponibilidad,
-      url_github: input.link_github || null,
-      url_linkedin: input.link_linkedin || null,
-      url_portfolio: input.link_portfolio || null,
-      descripcion: input.bio ?? null,
-    })
-    .select("id")
-    .single();
-  if (error) throw new ApiError(400, error.message);
+  // Ya existe la fila `users`; si un paso siguiente falla, se limpia para que el
+  // onboarding pueda reintentarse (evita dejar la cuenta a medias).
+  try {
+    const { data: estudiante, error } = await client
+      .from("estudiante")
+      .insert({
+        id_usuario: userId,
+        especialidad: input.especializacion,
+        modalidad_preferida: JSON.stringify(input.modalidad),
+        disponibilidad: input.disponibilidad,
+        url_github: input.link_github || null,
+        url_linkedin: input.link_linkedin || null,
+        url_portfolio: input.link_portfolio || null,
+        descripcion: input.bio ?? null,
+      })
+      .select("id")
+      .single();
+    if (error) throw new ApiError(400, error.message);
 
-  await linkStudentSkills(client, estudiante.id, input.tech_stack);
+    await linkStudentSkills(client, estudiante.id, input.tech_stack);
+  } catch (err) {
+    await rollbackUserRow(client, userId);
+    throw err;
+  }
+
   return { role: "student", estado_cuenta: "pendiente" };
 }
 
@@ -138,17 +165,23 @@ export async function onboardEmpresa(
   const companyRoleId = await getRoleId(client, "company");
   await createUserRow(client, userId, correo, companyRoleId, input.nombre_empresa);
 
-  const { error } = await client.from("empresario").insert({
-    id_usuario: userId,
-    tipo: "empresa",
-    nombre_comercial: input.nombre_empresa,
-    sector: JSON.stringify(input.sector),
-    descripcion: input.descripcion,
-    cedula_juridica: input.datos_legales.ruc,
-    direccion: input.datos_legales.direccion,
-    tipos_proyecto: JSON.stringify(input.tipos_proyecto),
-  });
-  if (error) throw new ApiError(400, error.message);
+  // Ya existe la fila `users`; si la creación del perfil falla, se limpia.
+  try {
+    const { error } = await client.from("empresario").insert({
+      id_usuario: userId,
+      tipo: "empresa",
+      nombre_comercial: input.nombre_empresa,
+      sector: JSON.stringify(input.sector),
+      descripcion: input.descripcion,
+      cedula_juridica: input.datos_legales.ruc,
+      direccion: input.datos_legales.direccion,
+      tipos_proyecto: JSON.stringify(input.tipos_proyecto),
+    });
+    if (error) throw new ApiError(400, error.message);
+  } catch (err) {
+    await rollbackUserRow(client, userId);
+    throw err;
+  }
 
   return { role: "company", estado_cuenta: "pendiente" };
 }
@@ -166,16 +199,22 @@ export async function onboardEmprendedor(
   const companyRoleId = await getRoleId(client, "company");
   await createUserRow(client, userId, correo, companyRoleId, input.nombre_proyecto);
 
-  const { error } = await client.from("empresario").insert({
-    id_usuario: userId,
-    tipo: "emprendedor",
-    nombre_comercial: input.nombre_proyecto,
-    etapa: input.etapa,
-    apoyo_tecnico_necesario: JSON.stringify(input.soporte_tecnico),
-    presupuesto: input.presupuesto,
-    descripcion: input.descripcion ?? null,
-  });
-  if (error) throw new ApiError(400, error.message);
+  // Ya existe la fila `users`; si la creación del perfil falla, se limpia.
+  try {
+    const { error } = await client.from("empresario").insert({
+      id_usuario: userId,
+      tipo: "emprendedor",
+      nombre_comercial: input.nombre_proyecto,
+      etapa: input.etapa,
+      apoyo_tecnico_necesario: JSON.stringify(input.soporte_tecnico),
+      presupuesto: input.presupuesto,
+      descripcion: input.descripcion ?? null,
+    });
+    if (error) throw new ApiError(400, error.message);
+  } catch (err) {
+    await rollbackUserRow(client, userId);
+    throw err;
+  }
 
   return { role: "company", estado_cuenta: "pendiente" };
 }
