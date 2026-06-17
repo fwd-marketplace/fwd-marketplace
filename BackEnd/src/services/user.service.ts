@@ -101,7 +101,7 @@ const ESTUDIANTE_DETAIL_SELECT =
 
 /** Columnas de `empresario` que muestra la página de perfil de empresa/emprendedor. */
 const EMPRESARIO_DETAIL_SELECT =
-  "id, tipo, nombre_comercial, descripcion, sector, tipos_proyecto, apoyo_tecnico_necesario, cedula_juridica, direccion, url_sitio_web, etapa, presupuesto";
+  "id, tipo, nombre_comercial, descripcion, sector, tipos_proyecto, apoyo_tecnico_necesario, cedula_juridica, direccion, url_sitio_web, etapa, presupuesto, mision, vision, cultura, valores, contactos";
 
 /** Nombres de las skills de un estudiante (catálogo `skills` vía `student_skills`). */
 async function getEstudianteSkills(

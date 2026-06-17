@@ -27,6 +27,7 @@ import { FwdGeoBackdrop } from '@/components/ui/fwd-geo-backdrop';
 import { cn } from '@/lib/utils';
 import type { ApiMeProfile } from '@/lib/api/types';
 import { updateEmpresarioProfile, uploadEmpresarioLogo } from '@/lib/actions/perfil';
+import { EmpresaSubnav } from '@/components/layout/empresa-subnav';
 
 type ProjectType =
   | 'web'
@@ -150,33 +151,29 @@ type CompanyData = {
 };
 
 const MOCK_DATA: CompanyData = {
-  name: 'Global Tech Solutions',
-  description: 'Líderes en transformación digital y manufactura inteligente para la región centroamericana.',
-  comercialName: 'Global Tech Solutions S.A.',
-  website: 'www.globaltechsolutions.cr',
+  name: '',
+  description: '',
+  comercialName: '',
+  website: '',
   provincia: 'San José',
-  canton: 'Escazú',
+  canton: 'San José',
   logoUrl: null,
-  modalities: ['remote', 'hybrid'],
+  modalities: [],
   scheduleType: 'flexible',
-  contacts: [
-    { name: 'Andrea Villalobos', role: 'Talent Acquisition Manager', email: 'a.villalobos@gt.com', initial: 'AV' },
-    { name: 'Roberto Méndez', role: 'Technical Recruiter', email: 'r.mendez@gt.com', initial: 'RM' },
-  ],
+  contacts: [],
   // empresa
-  empleados: '51-200',
-  sector: 'Tecnología e Industria 4.0',
-  sectors: ['tech', 'manufacturing'],
-  mission: 'Acelerar la competitividad industrial a través de soluciones de software de alta precisión.',
-  vision: 'Ser el socio tecnológico preferido para el sector productivo de Latam en 2030.',
-  values: ['Integridad', 'Innovación Disruptiva', 'Excelencia en la ejecución'],
-  culture:
-    'Fomentamos un ambiente de aprendizaje continuo donde la curiosidad tecnológica es premiada. Creemos en la autonomía, el trabajo por objetivos y el balance vida-trabajo genuino.',
-  projectTypes: ['web', 'ai', 'dashboards'],
+  empleados: '1-10',
+  sector: '',
+  sectors: [],
+  mission: '',
+  vision: '',
+  values: [],
+  culture: '',
+  projectTypes: [],
   // emprendedor
-  stage: 'mvp',
-  neededSupport: ['web', 'ux'],
-  budget: 'range_500_1000',
+  stage: 'idea',
+  neededSupport: [],
+  budget: 'flexible',
   projectDescription: '',
 };
 
@@ -207,6 +204,21 @@ function parseJsonArray<T extends string>(raw: string | null | undefined, fallba
   } catch {
     const result = raw.split(',').map((s) => s.trim()).filter(Boolean) as T[];
     return result.length > 0 ? result : fallback;
+  }
+}
+
+function parseContacts(raw: string | null | undefined): Contact[] {
+  if (!raw) return MOCK_DATA.contacts;
+  try {
+    const parsed = JSON.parse(raw) as Array<{ name: string; role: string; email: string }>;
+    return parsed.map((c) => ({
+      name: c.name,
+      role: c.role,
+      email: c.email,
+      initial: (c.name.trim().split(' ').map((n) => n[0]).join('').substring(0, 2) || 'C').toUpperCase(),
+    }));
+  } catch {
+    return MOCK_DATA.contacts;
   }
 }
 
@@ -242,6 +254,12 @@ function buildInitialData(profile: ApiMeProfile | null): CompanyData {
     neededSupport,
     budget: (emp?.presupuesto as BudgetRange | null) ?? MOCK_DATA.budget,
     projectDescription: emp?.descripcion ?? MOCK_DATA.projectDescription,
+    mission: emp?.mision ?? MOCK_DATA.mission,
+    vision: emp?.vision ?? MOCK_DATA.vision,
+    culture: emp?.cultura ?? MOCK_DATA.culture,
+    values: parseJsonArray<string>(emp?.valores, MOCK_DATA.values),
+    contacts: parseContacts(emp?.contactos),
+    empleados: (emp?.cantidad_empleados as EmployeeRange | null) ?? MOCK_DATA.empleados,
   };
 }
 
@@ -268,6 +286,9 @@ export function CompanyProfile({
   const [contactForm, setContactForm] = useState({ name: '', role: '', email: '' });
   const [saveStatus, setSaveStatus] = useState<'idle' | 'success' | 'error'>('idle');
   const [saveError, setSaveError] = useState<string | null>(null);
+  const [fieldErrors, setFieldErrors] = useState<Record<string, string>>({});
+  // Keep websiteError as a derived alias for the existing inline check
+  const websiteError = fieldErrors['website'] ?? null;
   const [isSaving, startSaveTransition] = useTransition();
   const [isUploadingLogo, setIsUploadingLogo] = useState(false);
   const [logoError, setLogoError] = useState<string | null>(null);
@@ -291,34 +312,65 @@ export function CompanyProfile({
     }
   }
 
+  function validate(): boolean {
+    const errors: Record<string, string> = {};
+    const isUrl = (v: string) => /^https?:\/\/.+/.test(v);
+
+    if (company.website && !isUrl(company.website)) {
+      errors['website'] = t('validation.url_invalid');
+    }
+    if (tipo === 'empresa') {
+      if (company.comercialName && company.comercialName.length > 255) errors['comercialName'] = t('validation.max_255');
+      if (company.description && company.description.length > 400) errors['description'] = t('validation.max_400');
+      if (company.mission && company.mission.length > 1000) errors['mission'] = t('validation.max_1000');
+      if (company.vision && company.vision.length > 1000) errors['vision'] = t('validation.max_1000');
+      if (company.culture && company.culture.length > 1000) errors['culture'] = t('validation.max_1000');
+    } else {
+      if (company.name && company.name.length > 255) errors['name'] = t('validation.max_255');
+      if (company.projectDescription && company.projectDescription.length > 400) errors['projectDescription'] = t('validation.max_400');
+    }
+    setFieldErrors(errors);
+    return Object.keys(errors).length === 0;
+  }
+
   function handleSave() {
+    if (!validate()) return;
     setSaveStatus('idle');
     setSaveError(null);
     startSaveTransition(async () => {
       const direccion = JSON.stringify({ provincia: company.provincia, canton: company.canton });
+      const contactosPayload = company.contacts.map(({ name, role, email }) => ({ name, role, email }));
       const payload = tipo === 'empresa'
         ? {
-            nombre_comercial: company.comercialName,
-            sector: [company.sector],
-            descripcion: company.description,
+            ...(company.comercialName && { nombre_comercial: company.comercialName }),
+            ...(company.sector && { sector: [company.sector] }),
+            ...(company.description && { descripcion: company.description }),
             url_sitio_web: company.website,
             direccion,
-            tipos_proyecto: company.projectTypes,
+            ...(company.projectTypes.length > 0 && { tipos_proyecto: company.projectTypes }),
+            mision: company.mission,
+            vision: company.vision,
+            cultura: company.culture,
+            valores: company.values,
+            contactos: contactosPayload,
+            cantidad_empleados: company.empleados,
           }
         : {
-            nombre_comercial: company.name,
-            descripcion: company.projectDescription,
+            ...(company.name && { nombre_comercial: company.name }),
+            ...(company.projectDescription && { descripcion: company.projectDescription }),
             url_sitio_web: company.website,
             direccion,
             etapa: company.stage,
-            soporte_tecnico: company.neededSupport,
+            ...(company.neededSupport.length > 0 && { soporte_tecnico: company.neededSupport }),
             presupuesto: company.budget,
+            contactos: contactosPayload,
           };
 
       const result = await updateEmpresarioProfile(payload);
       if (result.ok) {
         setSaveStatus('success');
         setIsEditing(false);
+        setFieldErrors({});
         setTimeout(() => setSaveStatus('idle'), 3000);
       } else {
         setSaveStatus('error');
@@ -449,7 +501,7 @@ export function CompanyProfile({
       {/* Hero */}
       <div className="relative overflow-hidden bg-secondary px-6 pb-16 pt-10">
         <FwdGeoBackdrop />
-        <div className="relative z-10 mx-auto flex max-w-6xl flex-col items-center gap-8 md:flex-row md:items-center">
+        <div className="relative z-10 mx-auto flex max-w-7xl flex-col items-center gap-8 px-4 md:flex-row md:items-center md:px-6">
           {/* Logo con upload */}
           <div className="shrink-0 space-y-1">
             <div className="relative">
@@ -494,76 +546,20 @@ export function CompanyProfile({
               <Badge className="border-none bg-highlight font-bold text-secondary">
                 {t(`badge.${tipo}`).toUpperCase()}
               </Badge>
-              {isEditing ? (
-                <input
-                  type="text"
-                  value={company.name}
-                  onChange={(e) => setCompany({ ...company, name: e.target.value })}
-                  aria-label={t('fields.company_name')}
-                  className="w-full border-b-2 border-white/40 bg-transparent font-heading text-4xl font-extrabold tracking-tight text-white placeholder-white/40 focus:border-highlight focus:outline-none md:text-5xl"
-                />
-              ) : (
                 <h1 className="font-heading text-4xl font-extrabold tracking-tight text-white md:text-5xl">
-                  {company.name}<span className="text-primary">.</span>
+                  {company.name || <span className="opacity-40">{t('placeholders.company_name')}</span>}<span className="text-primary">.</span>
                 </h1>
-              )}
             </div>
             <p className="max-w-2xl text-lg leading-relaxed text-white/80">{company.description}</p>
             <div className="flex flex-wrap justify-center gap-4 text-sm text-white/60 md:justify-start">
-              {isEditing ? (
-                <>
-                  <span className="flex flex-wrap items-center gap-1">
-                    <MapPin className="size-4 shrink-0" />
-                    <select
-                      value={company.provincia}
-                      onChange={(e) => handleProvinciaChange(e.target.value)}
-                      aria-label={t('fields.provincia')}
-                      className="border-b border-white/30 bg-transparent text-sm text-white/80 focus:border-highlight focus:outline-none"
-                    >
-                      {CR_PROVINCES.map((p) => (
-                        <option key={p} value={p} className="bg-secondary text-white">{p}</option>
-                      ))}
-                    </select>
-                    <span className="text-white/40">/</span>
-                    <select
-                      value={company.canton}
-                      onChange={(e) => setCompany({ ...company, canton: e.target.value })}
-                      aria-label={t('fields.canton')}
-                      className="border-b border-white/30 bg-transparent text-sm text-white/80 focus:border-highlight focus:outline-none"
-                    >
-                      {(CR_CANTONS[company.provincia] ?? []).map((c) => (
-                        <option key={c} value={c} className="bg-secondary text-white">{c}</option>
-                      ))}
-                    </select>
-                  </span>
-                  {tipo === 'empresa' && (
-                    <span className="flex items-center gap-1">
-                      <Users className="size-4 shrink-0" />
-                      <select
-                        value={company.empleados}
-                        onChange={(e) => setCompany({ ...company, empleados: e.target.value as EmployeeRange })}
-                        aria-label={t('fields.employees')}
-                        className="border-b border-white/30 bg-transparent text-sm text-white/80 focus:border-highlight focus:outline-none"
-                      >
-                        {EMPLOYEE_RANGES.map((r) => (
-                          <option key={r} value={r} className="bg-secondary text-white">{r}</option>
-                        ))}
-                      </select>
-                    </span>
-                  )}
-                </>
-              ) : (
-                <>
-                  <span className="flex items-center gap-1">
-                    <MapPin className="size-4" />
-                    {company.canton}, {company.provincia}, Costa Rica
-                  </span>
-                  {tipo === 'empresa' && (
-                    <span className="flex items-center gap-1">
-                      <Users className="size-4" /> {company.empleados} {t('fields.employees_unit')}
-                    </span>
-                  )}
-                </>
+              <span className="flex items-center gap-1">
+                <MapPin className="size-4" />
+                {company.canton}, {company.provincia}, Costa Rica
+              </span>
+              {tipo === 'empresa' && (
+                <span className="flex items-center gap-1">
+                  <Users className="size-4" /> {company.empleados} {t('fields.employees_unit')}
+                </span>
               )}
             </div>
           </div>
@@ -571,75 +567,77 @@ export function CompanyProfile({
         </div>
       </div>
 
+      {/* Subnav below hero — edit/save/cancel live here */}
+      <EmpresaSubnav
+        actionSlot={
+          isEditing ? (
+            <>
+              <Button
+                onClick={handleSave}
+                disabled={isSaving}
+                size="sm"
+                className="h-7 gap-1 rounded-full bg-primary px-3 text-xs font-bold text-white hover:bg-primary/90 disabled:opacity-60"
+              >
+                {isSaving ? <Loader2 className="size-3 animate-spin" /> : <CheckCircle2 className="size-3" />}
+                {isSaving ? t('hero.saving') : t('hero.save')}
+              </Button>
+              <Button
+                onClick={() => { setIsEditing(false); setSaveStatus('idle'); setSaveError(null); setFieldErrors({}); }}
+                variant="outline"
+                size="sm"
+                disabled={isSaving}
+                className="h-7 rounded-full px-3 text-xs disabled:opacity-40"
+              >
+                {t('hero.cancel')}
+              </Button>
+            </>
+          ) : (
+            <Button
+              onClick={() => { setIsEditing(true); setSaveStatus('idle'); }}
+              variant="outline"
+              size="sm"
+              className="h-7 gap-1 rounded-full border-primary/30 px-3 text-xs text-primary hover:bg-primary/5"
+            >
+              <Edit2 className="size-3" />
+              {t('hero.edit_profile')}
+            </Button>
+          )
+        }
+      />
+
       {/* Save feedback banner */}
       {saveStatus !== 'idle' && (
         <div className={cn(
-          'px-6 py-3 text-center text-sm font-medium transition-all duration-[var(--duration-base)]',
+          'px-4 py-2 text-center text-xs font-medium',
           saveStatus === 'success' && 'bg-accent/10 text-accent',
           saveStatus === 'error' && 'bg-magenta/10 text-magenta',
         )}>
-          <span className="inline-flex items-center gap-2">
+          <span className="inline-flex items-center gap-1.5">
             {saveStatus === 'success' ? (
-              <><CheckCircle2 className="size-4" /> {t('hero.save_success')}</>
+              <><CheckCircle2 className="size-3.5" /> {t('hero.save_success')}</>
             ) : (
-              <><AlertCircle className="size-4" /> {saveError ?? t('hero.save_error')}</>
+              <><AlertCircle className="size-3.5" /> {saveError ?? t('hero.save_error')}</>
             )}
           </span>
         </div>
       )}
 
       {/* Content */}
-      <main className="mx-auto max-w-6xl space-y-12 px-6 py-12">
-        <div className="grid grid-cols-1 gap-12 lg:grid-cols-3">
+      <main className="mx-auto max-w-7xl space-y-8 px-4 py-8 md:px-6">
+        <div className="grid grid-cols-1 gap-8 lg:grid-cols-3">
 
           {/* Left: main sections */}
-          <div className="space-y-12 lg:col-span-2">
+          <div className="space-y-8 lg:col-span-2">
             {tipo === 'emprendedor' && (
               <>
                 {/* Información General — Emprendedor */}
-                <section className="space-y-6">
-                  <div className="flex items-center justify-between gap-4">
-                    <h2 className="flex items-center gap-3 font-heading text-2xl font-extrabold uppercase tracking-tight text-ink-strong">
-                      <Building2 className="size-6 text-primary" />
-                      {t('sections.general')}<span className="text-primary">.</span>
-                    </h2>
-                    <div className="flex shrink-0 gap-2">
-                      {isEditing ? (
-                        <>
-                          <Button
-                            onClick={handleSave}
-                            disabled={isSaving}
-                            size="sm"
-                            className="gap-1.5 rounded-full bg-primary font-bold text-white hover:bg-primary/90 disabled:opacity-60"
-                          >
-                            {isSaving ? <Loader2 className="size-3.5 animate-spin" /> : <CheckCircle2 className="size-3.5" />}
-                            {isSaving ? t('hero.saving') : t('hero.save')}
-                          </Button>
-                          <Button
-                            onClick={() => { setIsEditing(false); setSaveStatus('idle'); setSaveError(null); }}
-                            variant="outline"
-                            size="sm"
-                            disabled={isSaving}
-                            className="rounded-full disabled:opacity-40"
-                          >
-                            {t('hero.cancel')}
-                          </Button>
-                        </>
-                      ) : (
-                        <Button
-                          onClick={() => { setIsEditing(true); setSaveStatus('idle'); }}
-                          variant="outline"
-                          size="sm"
-                          className="gap-1.5 rounded-full border-primary/30 text-primary hover:bg-primary/5"
-                        >
-                          <Edit2 className="size-3.5" />
-                          {t('hero.edit_profile')}
-                        </Button>
-                      )}
-                    </div>
-                  </div>
-                  <Card className="space-y-8 border-border bg-surface p-8">
-                    <div className="grid grid-cols-1 gap-8 md:grid-cols-2">
+                <section className="space-y-4">
+                  <h2 className="flex items-center gap-3 font-heading text-lg font-bold uppercase tracking-tight text-ink-strong">
+                    <Building2 className="size-6 text-primary" />
+                    {t('sections.general')}<span className="text-primary">.</span>
+                  </h2>
+                  <Card className="space-y-5 border-border bg-surface p-5">
+                    <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
                       <div>
                         <label className="text-xs font-bold uppercase tracking-widest text-ink-subtle">
                           {t('fields.project_name')}
@@ -647,10 +645,10 @@ export function CompanyProfile({
                         {isEditing ? (
                           <input type="text" value={company.name}
                             onChange={(e) => setCompany({ ...company, name: e.target.value })}
-                            className="w-full border-b border-border bg-transparent py-1 text-lg font-medium text-ink focus:border-primary focus:outline-none"
+                            className="w-full border-b border-border bg-transparent py-1 text-sm font-medium text-ink focus:border-primary focus:outline-none"
                           />
                         ) : (
-                          <p className="text-lg font-medium text-ink">{company.name}</p>
+                          <p className="text-sm font-medium text-ink">{company.name}</p>
                         )}
                       </div>
                       <div>
@@ -658,12 +656,34 @@ export function CompanyProfile({
                           {t('fields.website')}
                         </label>
                         {isEditing ? (
-                          <input type="text" value={company.website}
-                            onChange={(e) => setCompany({ ...company, website: e.target.value })}
-                            className="w-full border-b border-border bg-transparent py-1 text-lg font-medium text-ink focus:border-primary focus:outline-none"
-                          />
+                          <div>
+                            <input
+                              type="text"
+                              value={company.website}
+                              placeholder="https://tuproyecto.com"
+                              onChange={(e) => {
+                                const val = e.target.value;
+                                setCompany({ ...company, website: val });
+                                setFieldErrors((prev) => {
+                                  const next = { ...prev };
+                                  if (val && !val.startsWith('http://') && !val.startsWith('https://')) {
+                                    next['website'] = t('validation.url_invalid');
+                                  } else {
+                                    delete next['website'];
+                                  }
+                                  return next;
+                                });
+                              }}
+                              className="w-full border-b border-border bg-transparent py-1 text-sm font-medium text-ink placeholder-ink-muted/50 focus:border-primary focus:outline-none"
+                            />
+                            {websiteError && (
+                              <p className="mt-1 flex items-center gap-1 text-[11px] text-magenta">
+                                <AlertCircle className="size-3 shrink-0" />{websiteError}
+                              </p>
+                            )}
+                          </div>
                         ) : (
-                          <p className="text-lg font-medium text-primary">
+                          <p className="text-sm font-medium text-primary">
                             <Globe className="mr-1 inline size-4" />{company.website}
                           </p>
                         )}
@@ -672,7 +692,7 @@ export function CompanyProfile({
                         <label className="text-xs font-bold uppercase tracking-widest text-ink-subtle">
                           {t('fields.country')}
                         </label>
-                        <p className="text-lg font-medium text-ink">Costa Rica</p>
+                        <p className="text-sm font-medium text-ink">Costa Rica</p>
                       </div>
                       <div>
                         <label className="text-xs font-bold uppercase tracking-widest text-ink-subtle">
@@ -680,12 +700,12 @@ export function CompanyProfile({
                         </label>
                         {isEditing ? (
                           <select value={company.provincia} onChange={(e) => handleProvinciaChange(e.target.value)}
-                            className="w-full border-b border-border bg-transparent py-1 text-lg font-medium text-ink focus:border-primary focus:outline-none"
+                            className="w-full border-b border-border bg-transparent py-1 text-sm font-medium text-ink focus:border-primary focus:outline-none"
                           >
                             {CR_PROVINCES.map((p) => <option key={p} value={p}>{p}</option>)}
                           </select>
                         ) : (
-                          <p className="text-lg font-medium text-ink">{company.provincia}</p>
+                          <p className="text-sm font-medium text-ink">{company.provincia}</p>
                         )}
                       </div>
                       <div>
@@ -694,12 +714,12 @@ export function CompanyProfile({
                         </label>
                         {isEditing ? (
                           <select value={company.canton} onChange={(e) => setCompany({ ...company, canton: e.target.value })}
-                            className="w-full border-b border-border bg-transparent py-1 text-lg font-medium text-ink focus:border-primary focus:outline-none"
+                            className="w-full border-b border-border bg-transparent py-1 text-sm font-medium text-ink focus:border-primary focus:outline-none"
                           >
                             {(CR_CANTONS[company.provincia] ?? []).map((c) => <option key={c} value={c}>{c}</option>)}
                           </select>
                         ) : (
-                          <p className="text-lg font-medium text-ink">{company.canton}</p>
+                          <p className="text-sm font-medium text-ink">{company.canton}</p>
                         )}
                       </div>
                     </div>
@@ -707,12 +727,12 @@ export function CompanyProfile({
                 </section>
 
                 {/* Acerca del Proyecto — Emprendedor */}
-                <section className="space-y-6">
-                  <h2 className="flex items-center gap-3 font-heading text-2xl font-extrabold uppercase tracking-tight text-ink-strong">
+                <section className="space-y-4">
+                  <h2 className="flex items-center gap-3 font-heading text-lg font-bold uppercase tracking-tight text-ink-strong">
                     <Target className="size-6 text-primary" />
                     {t('sections.project_description')}<span className="text-primary">.</span>
                   </h2>
-                  <Card className="border-border bg-surface p-8">
+                  <Card className="border-border bg-surface p-5">
                     <textarea
                       rows={6}
                       value={company.projectDescription}
@@ -728,49 +748,13 @@ export function CompanyProfile({
             {tipo === 'empresa' && (
             <>
             {/* Información General */}
-            <section className="space-y-6">
-              <div className="flex items-center justify-between gap-4">
-                <h2 className="flex items-center gap-3 font-heading text-2xl font-extrabold uppercase tracking-tight text-ink-strong">
-                  <Building2 className="size-6 text-primary" />
-                  {t('sections.general')}<span className="text-primary">.</span>
-                </h2>
-                <div className="flex shrink-0 gap-2">
-                  {isEditing ? (
-                    <>
-                      <Button
-                        onClick={handleSave}
-                        disabled={isSaving}
-                        size="sm"
-                        className="gap-1.5 rounded-full bg-primary font-bold text-white hover:bg-primary/90 disabled:opacity-60"
-                      >
-                        {isSaving ? <Loader2 className="size-3.5 animate-spin" /> : <CheckCircle2 className="size-3.5" />}
-                        {isSaving ? t('hero.saving') : t('hero.save')}
-                      </Button>
-                      <Button
-                        onClick={() => { setIsEditing(false); setSaveStatus('idle'); setSaveError(null); }}
-                        variant="outline"
-                        size="sm"
-                        disabled={isSaving}
-                        className="rounded-full disabled:opacity-40"
-                      >
-                        {t('hero.cancel')}
-                      </Button>
-                    </>
-                  ) : (
-                    <Button
-                      onClick={() => { setIsEditing(true); setSaveStatus('idle'); }}
-                      variant="outline"
-                      size="sm"
-                      className="gap-1.5 rounded-full border-primary/30 text-primary hover:bg-primary/5"
-                    >
-                      <Edit2 className="size-3.5" />
-                      {t('hero.edit_profile')}
-                    </Button>
-                  )}
-                </div>
-              </div>
-              <Card className="space-y-8 border-border bg-surface p-8">
-                <div className="grid grid-cols-1 gap-8 md:grid-cols-2">
+            <section className="space-y-4">
+              <h2 className="flex items-center gap-3 font-heading text-lg font-bold uppercase tracking-tight text-ink-strong">
+                <Building2 className="size-6 text-primary" />
+                {t('sections.general')}<span className="text-primary">.</span>
+              </h2>
+              <Card className="space-y-5 border-border bg-surface p-5">
+                <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
 
                   {/* Nombre comercial */}
                   <div>
@@ -778,14 +762,22 @@ export function CompanyProfile({
                       {t('fields.comercial_name')}
                     </label>
                     {isEditing ? (
-                      <input
-                        type="text"
-                        value={company.comercialName}
-                        onChange={(e) => setCompany({ ...company, comercialName: e.target.value })}
-                        className="w-full border-b border-border bg-transparent py-1 text-lg font-medium text-ink focus:border-primary focus:outline-none"
-                      />
+                      <>
+                        <input
+                          type="text"
+                          value={company.comercialName}
+                          placeholder={t('placeholders.company_name')}
+                          onChange={(e) => setCompany({ ...company, comercialName: e.target.value, name: e.target.value })}
+                          className="w-full border-b border-border bg-transparent py-1 text-sm font-medium text-ink placeholder-ink-muted/50 focus:border-primary focus:outline-none"
+                        />
+                        {fieldErrors['comercialName'] && (
+                          <p className="mt-1 flex items-center gap-1 text-[11px] text-magenta"><AlertCircle className="size-3 shrink-0" />{fieldErrors['comercialName']}</p>
+                        )}
+                      </>
                     ) : (
-                      <p className="text-lg font-medium text-ink">{company.comercialName}</p>
+                      <p className="text-sm font-medium text-ink">
+                        {company.comercialName || <span className="italic text-ink-muted/60">{t('placeholders.company_name')}</span>}
+                      </p>
                     )}
                   </div>
 
@@ -795,14 +787,34 @@ export function CompanyProfile({
                       {t('fields.website')}
                     </label>
                     {isEditing ? (
-                      <input
-                        type="text"
-                        value={company.website}
-                        onChange={(e) => setCompany({ ...company, website: e.target.value })}
-                        className="w-full border-b border-border bg-transparent py-1 text-lg font-medium text-ink focus:border-primary focus:outline-none"
-                      />
+                      <div>
+                        <input
+                          type="text"
+                          value={company.website}
+                          placeholder="https://tuempresa.com"
+                          onChange={(e) => {
+                            const val = e.target.value;
+                            setCompany({ ...company, website: val });
+                            setFieldErrors((prev) => {
+                              const next = { ...prev };
+                              if (val && !val.startsWith('http://') && !val.startsWith('https://')) {
+                                next['website'] = t('validation.url_invalid');
+                              } else {
+                                delete next['website'];
+                              }
+                              return next;
+                            });
+                          }}
+                          className="w-full border-b border-border bg-transparent py-1 text-sm font-medium text-ink placeholder-ink-muted/50 focus:border-primary focus:outline-none"
+                        />
+                        {websiteError && (
+                          <p className="mt-1 flex items-center gap-1 text-[11px] text-magenta">
+                            <AlertCircle className="size-3 shrink-0" />{websiteError}
+                          </p>
+                        )}
+                      </div>
                     ) : (
-                      <p className="text-lg font-medium text-primary">
+                      <p className="text-sm font-medium text-primary">
                         <Globe className="mr-1 inline size-4" />{company.website}
                       </p>
                     )}
@@ -813,7 +825,7 @@ export function CompanyProfile({
                     <label className="text-xs font-bold uppercase tracking-widest text-ink-subtle">
                       {t('fields.country')}
                     </label>
-                    <p className="text-lg font-medium text-ink">Costa Rica</p>
+                    <p className="text-sm font-medium text-ink">Costa Rica</p>
                   </div>
 
                   {/* Provincia */}
@@ -825,14 +837,14 @@ export function CompanyProfile({
                       <select
                         value={company.provincia}
                         onChange={(e) => handleProvinciaChange(e.target.value)}
-                        className="w-full border-b border-border bg-transparent py-1 text-lg font-medium text-ink focus:border-primary focus:outline-none"
+                        className="w-full border-b border-border bg-transparent py-1 text-sm font-medium text-ink focus:border-primary focus:outline-none"
                       >
                         {CR_PROVINCES.map((p) => (
                           <option key={p} value={p}>{p}</option>
                         ))}
                       </select>
                     ) : (
-                      <p className="text-lg font-medium text-ink">{company.provincia}</p>
+                      <p className="text-sm font-medium text-ink">{company.provincia}</p>
                     )}
                   </div>
 
@@ -845,14 +857,14 @@ export function CompanyProfile({
                       <select
                         value={company.canton}
                         onChange={(e) => setCompany({ ...company, canton: e.target.value })}
-                        className="w-full border-b border-border bg-transparent py-1 text-lg font-medium text-ink focus:border-primary focus:outline-none"
+                        className="w-full border-b border-border bg-transparent py-1 text-sm font-medium text-ink focus:border-primary focus:outline-none"
                       >
                         {(CR_CANTONS[company.provincia] ?? []).map((c) => (
                           <option key={c} value={c}>{c}</option>
                         ))}
                       </select>
                     ) : (
-                      <p className="text-lg font-medium text-ink">{company.canton}</p>
+                      <p className="text-sm font-medium text-ink">{company.canton}</p>
                     )}
                   </div>
 
@@ -865,39 +877,49 @@ export function CompanyProfile({
                       <select
                         value={company.empleados}
                         onChange={(e) => setCompany({ ...company, empleados: e.target.value as EmployeeRange })}
-                        className="w-full border-b border-border bg-transparent py-1 text-lg font-medium text-ink focus:border-primary focus:outline-none"
+                        className="w-full border-b border-border bg-transparent py-1 text-sm font-medium text-ink focus:border-primary focus:outline-none"
                       >
                         {EMPLOYEE_RANGES.map((r) => (
                           <option key={r} value={r}>{r} {t('fields.employees_unit')}</option>
                         ))}
                       </select>
                     ) : (
-                      <p className="text-lg font-medium text-ink">
+                      <p className="text-sm font-medium text-ink">
                         {company.empleados} {t('fields.employees_unit')}
                       </p>
                     )}
                   </div>
 
-                  {/* Sector */}
-                  <div>
-                    <label className="text-xs font-bold uppercase tracking-widest text-ink-subtle">
-                      {t('fields.sector')}
-                    </label>
-                    {isEditing ? (
-                      <input
-                        type="text"
-                        value={company.sector}
-                        onChange={(e) => setCompany({ ...company, sector: e.target.value })}
-                        className="w-full border-b border-border bg-transparent py-1 text-lg font-medium text-ink focus:border-primary focus:outline-none"
+                </div>
+
+                {/* Descripción */}
+                <div className="border-t border-border pt-4">
+                  <label className="text-xs font-bold uppercase tracking-widest text-ink-subtle">
+                    {t('fields.description')}
+                  </label>
+                  {isEditing ? (
+                    <>
+                      <textarea
+                        rows={3}
+                        value={company.description}
+                        placeholder={t('placeholders.description')}
+                        onChange={(e) => setCompany({ ...company, description: e.target.value })}
+                        className="mt-1 w-full resize-none rounded-lg border border-border bg-surface-sunken px-3 py-2 text-sm leading-relaxed text-ink placeholder-ink-muted/50 focus:border-primary focus:outline-none"
                       />
-                    ) : (
-                      <p className="text-lg font-medium text-ink">{company.sector}</p>
-                    )}
-                  </div>
+                      <p className="mt-1 text-right text-[11px] text-ink-muted/60">{company.description.length}/400</p>
+                      {fieldErrors['description'] && (
+                        <p className="flex items-center gap-1 text-[11px] text-magenta"><AlertCircle className="size-3 shrink-0" />{fieldErrors['description']}</p>
+                      )}
+                    </>
+                  ) : (
+                    <p className="mt-1 text-sm leading-relaxed text-ink">
+                      {company.description || <span className="italic text-ink-muted/60">{t('placeholders.description')}</span>}
+                    </p>
+                  )}
                 </div>
 
                 {/* Áreas de negocio */}
-                <div className="border-t border-border pt-6">
+                <div className="border-t border-border pt-4">
                   <p className="mb-3 text-xs font-bold uppercase tracking-widest text-ink-subtle">
                     {t('sections.business_areas')}
                   </p>
@@ -913,6 +935,7 @@ export function CompanyProfile({
                         <button
                           key={s}
                           type="button"
+                          disabled={!isEditing}
                           onClick={() =>
                             setCompany((prev) => ({
                               ...prev,
@@ -922,10 +945,11 @@ export function CompanyProfile({
                             }))
                           }
                           className={cn(
-                            'rounded-full border px-3 py-1 text-xs font-semibold transition-colors duration-[var(--duration-fast)] ease-[var(--ease-out)]',
+                            'rounded-full border px-3 py-1 text-xs font-semibold transition-colors duration-[var(--duration-fast)] ease-[var(--ease-out)] disabled:cursor-default',
                             isSelected
                               ? 'border-secondary bg-secondary text-white'
-                              : 'border-border bg-canvas text-ink-muted hover:border-border-strong hover:text-ink',
+                              : 'border-border bg-canvas text-ink-muted',
+                            isEditing && !isSelected && 'hover:border-border-strong hover:text-ink',
                           )}
                         >
                           {tSector(s)}
@@ -937,67 +961,125 @@ export function CompanyProfile({
               </Card>
             </section>
 
-            {/* Identidad y Cultura — siempre editable */}
-            <section className="space-y-6">
-              <h2 className="flex items-center gap-3 font-heading text-2xl font-extrabold uppercase tracking-tight text-ink-strong">
+            {/* Identidad y Cultura */}
+            <section className="space-y-4">
+              <h2 className="flex items-center gap-3 font-heading text-lg font-bold uppercase tracking-tight text-ink-strong">
                 <Target className="size-6 text-primary" />
                 {t('sections.culture')}<span className="text-primary">.</span>
               </h2>
-              <Card className="space-y-8 border-border bg-surface p-8">
-                <div className="grid grid-cols-1 gap-8 md:grid-cols-2">
+              <Card className="space-y-5 border-border bg-surface p-5">
+                <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
                   <div className="space-y-2">
                     <h3 className="text-sm font-bold uppercase tracking-widest text-secondary">{t('fields.mission')}</h3>
-                    <textarea
-                      rows={4}
-                      value={company.mission}
-                      onChange={(e) => setCompany({ ...company, mission: e.target.value })}
-                      className="w-full resize-none rounded-lg border border-border bg-surface-sunken px-3 py-2 text-sm leading-relaxed text-ink focus:border-primary focus:outline-none"
-                    />
+                    {isEditing ? (
+                      <>
+                        <textarea
+                          rows={4}
+                          value={company.mission}
+                          placeholder={t('placeholders.mission')}
+                          onChange={(e) => setCompany({ ...company, mission: e.target.value })}
+                          className="w-full resize-none rounded-lg border border-border bg-surface-sunken px-3 py-2 text-sm leading-relaxed text-ink placeholder-ink-muted/50 focus:border-primary focus:outline-none"
+                        />
+                        <p className="mt-1 text-right text-[11px] text-ink-muted/60">{company.mission.length}/1000</p>
+                        {fieldErrors['mission'] && (
+                          <p className="flex items-center gap-1 text-[11px] text-magenta"><AlertCircle className="size-3 shrink-0" />{fieldErrors['mission']}</p>
+                        )}
+                      </>
+                    ) : (
+                      <p className="text-sm leading-relaxed text-ink">
+                        {company.mission || <span className="italic text-ink-muted/60">{t('placeholders.mission')}</span>}
+                      </p>
+                    )}
                   </div>
                   <div className="space-y-2">
                     <h3 className="text-sm font-bold uppercase tracking-widest text-secondary">{t('fields.vision')}</h3>
-                    <textarea
-                      rows={4}
-                      value={company.vision}
-                      onChange={(e) => setCompany({ ...company, vision: e.target.value })}
-                      className="w-full resize-none rounded-lg border border-border bg-surface-sunken px-3 py-2 text-sm leading-relaxed text-ink focus:border-primary focus:outline-none"
-                    />
+                    {isEditing ? (
+                      <>
+                        <textarea
+                          rows={4}
+                          value={company.vision}
+                          placeholder={t('placeholders.vision')}
+                          onChange={(e) => setCompany({ ...company, vision: e.target.value })}
+                          className="w-full resize-none rounded-lg border border-border bg-surface-sunken px-3 py-2 text-sm leading-relaxed text-ink placeholder-ink-muted/50 focus:border-primary focus:outline-none"
+                        />
+                        <p className="mt-1 text-right text-[11px] text-ink-muted/60">{company.vision.length}/1000</p>
+                        {fieldErrors['vision'] && (
+                          <p className="flex items-center gap-1 text-[11px] text-magenta"><AlertCircle className="size-3 shrink-0" />{fieldErrors['vision']}</p>
+                        )}
+                      </>
+                    ) : (
+                      <p className="text-sm leading-relaxed text-ink">
+                        {company.vision || <span className="italic text-ink-muted/60">{t('placeholders.vision')}</span>}
+                      </p>
+                    )}
                   </div>
                 </div>
 
-                <div className="space-y-2 border-t border-border pt-6">
+                <div className="space-y-2 border-t border-border pt-4">
                   <h3 className="text-sm font-bold uppercase tracking-widest text-secondary">{t('fields.organization')}</h3>
-                  <textarea
-                    rows={3}
-                    value={company.culture}
-                    onChange={(e) => setCompany({ ...company, culture: e.target.value })}
-                    className="w-full resize-none rounded-lg border border-border bg-surface-sunken px-3 py-2 text-sm leading-relaxed text-ink focus:border-primary focus:outline-none"
-                  />
+                  {isEditing ? (
+                    <>
+                      <textarea
+                        rows={3}
+                        value={company.culture}
+                        placeholder={t('placeholders.culture')}
+                        onChange={(e) => setCompany({ ...company, culture: e.target.value })}
+                        className="w-full resize-none rounded-lg border border-border bg-surface-sunken px-3 py-2 text-sm leading-relaxed text-ink placeholder-ink-muted/50 focus:border-primary focus:outline-none"
+                      />
+                      <p className="mt-1 text-right text-[11px] text-ink-muted/60">{company.culture.length}/1000</p>
+                      {fieldErrors['culture'] && (
+                        <p className="flex items-center gap-1 text-[11px] text-magenta"><AlertCircle className="size-3 shrink-0" />{fieldErrors['culture']}</p>
+                      )}
+                    </>
+                  ) : (
+                    <p className="text-sm leading-relaxed text-ink">
+                      {company.culture || <span className="italic text-ink-muted/60">{t('placeholders.culture')}</span>}
+                    </p>
+                  )}
                 </div>
 
-                <div className="space-y-4 border-t border-border pt-6">
+                <div className="space-y-3 border-t border-border pt-4">
                   <h3 className="text-sm font-bold uppercase tracking-widest text-secondary">{t('fields.values')}</h3>
                   <div className="flex flex-wrap items-center gap-2">
                     {company.values.map((v, idx) => (
                       <Badge
                         key={v}
                         variant="secondary"
-                        className="flex cursor-pointer items-center gap-1 border-secondary/10 bg-secondary/5 px-4 py-1 text-secondary hover:bg-magenta/10 hover:text-magenta"
-                        onClick={() => handleRemoveValue(idx)}
+                        className={cn(
+                          'flex items-center gap-1 border-secondary/10 bg-secondary/5 px-4 py-1 text-secondary',
+                          isEditing && 'cursor-pointer hover:bg-magenta/10 hover:text-magenta',
+                        )}
+                        onClick={() => isEditing && handleRemoveValue(idx)}
                       >
                         {v}
-                        <X className="size-3" />
+                        {isEditing && <X className="size-3" />}
                       </Badge>
                     ))}
-                    <form onSubmit={handleAddValue} className="inline-flex items-center">
-                      <input
-                        type="text"
-                        placeholder={t('culture.add_value_placeholder')}
-                        value={newValueInput}
-                        onChange={(e) => setNewValueInput(e.target.value)}
-                        className="w-32 rounded border border-border bg-surface-sunken px-2 py-1 text-xs text-ink focus:border-primary focus:outline-none"
-                      />
-                    </form>
+                    {company.values.length === 0 && !isEditing && (
+                      <>
+                        {[t('placeholders.values_example_1'), t('placeholders.values_example_2'), t('placeholders.values_example_3')].map((v) => (
+                          <Badge
+                            key={v}
+                            variant="secondary"
+                            className="border border-dashed border-secondary/25 bg-transparent px-4 py-1 italic text-secondary/40"
+                          >
+                            {v}
+                          </Badge>
+                        ))}
+                        <p className="w-full text-xs italic text-ink-muted/60">{t('placeholders.values_hint')}</p>
+                      </>
+                    )}
+                    {isEditing && (
+                      <form onSubmit={handleAddValue} className="inline-flex items-center">
+                        <input
+                          type="text"
+                          placeholder={t('culture.add_value_placeholder')}
+                          value={newValueInput}
+                          onChange={(e) => setNewValueInput(e.target.value)}
+                          className="w-32 rounded border border-border bg-surface-sunken px-2 py-1 text-xs text-ink focus:border-primary focus:outline-none"
+                        />
+                      </form>
+                    )}
                   </div>
                 </div>
               </Card>
@@ -1007,16 +1089,16 @@ export function CompanyProfile({
           </div>
 
           {/* Right sidebar */}
-          <aside className="space-y-12">
+          <aside className="space-y-8">
 
             {/* Empresa: Necesidades Actuales */}
             {tipo === 'empresa' && (
-              <section className="space-y-6">
-                <h2 className="flex items-center gap-2 font-heading text-xl font-extrabold uppercase tracking-tight text-ink-strong">
+              <section className="space-y-4">
+                <h2 className="flex items-center gap-2 font-heading text-base font-bold uppercase tracking-tight text-ink-strong">
                   <ShieldCheck className="size-5 text-primary" />
                   {t('sections.needs')}
                 </h2>
-                <Card className="border-border bg-surface p-6">
+                <Card className="border-border bg-surface p-4">
                   <div className="flex flex-wrap gap-2">
                     {ALL_PROJECT_TYPES.map((pt) => {
                       const isSelected = company.projectTypes.includes(pt);
@@ -1024,12 +1106,14 @@ export function CompanyProfile({
                         <button
                           key={pt}
                           type="button"
+                          disabled={!isEditing}
                           onClick={() => handleToggleProjectType(pt)}
                           className={cn(
-                            'rounded-full border px-3 py-1.5 text-xs font-semibold transition-colors duration-[var(--duration-fast)] ease-[var(--ease-out)]',
+                            'rounded-full border px-3 py-1.5 text-xs font-semibold transition-colors duration-[var(--duration-fast)] ease-[var(--ease-out)] disabled:cursor-default',
                             isSelected
                               ? 'border-primary bg-primary text-white'
-                              : 'border-border bg-canvas text-ink-muted hover:border-border-strong hover:text-ink',
+                              : 'border-border bg-canvas text-ink-muted',
+                            isEditing && !isSelected && 'hover:border-border-strong hover:text-ink',
                           )}
                         >
                           {tPT(pt)}
@@ -1044,7 +1128,7 @@ export function CompanyProfile({
             {/* Emprendedor: Etapa del Proyecto */}
             {tipo === 'emprendedor' && (
               <section className="space-y-4">
-                <h2 className="flex items-center gap-2 font-heading text-xl font-extrabold uppercase tracking-tight text-ink-strong">
+                <h2 className="flex items-center gap-2 font-heading text-base font-bold uppercase tracking-tight text-ink-strong">
                   <Target className="size-5 text-accent" />
                   {t('sections.stage')}<span className="text-accent">.</span>
                 </h2>
@@ -1055,12 +1139,14 @@ export function CompanyProfile({
                       <button
                         key={s}
                         type="button"
+                        disabled={!isEditing}
                         onClick={() => setCompany((prev) => ({ ...prev, stage: s }))}
                         className={cn(
-                          'flex w-full items-center gap-3 rounded-xl border p-3 text-left transition-colors duration-[var(--duration-fast)] ease-[var(--ease-out)]',
+                          'flex w-full items-center gap-3 rounded-xl border p-3 text-left transition-colors duration-[var(--duration-fast)] ease-[var(--ease-out)] disabled:cursor-default',
                           isSelected
                             ? 'border-accent bg-accent/10'
-                            : 'border-border bg-surface hover:border-border-strong hover:bg-surface-sunken',
+                            : 'border-border bg-surface',
+                          isEditing && !isSelected && 'hover:border-border-strong hover:bg-surface-sunken',
                         )}
                       >
                         <span className={cn(
@@ -1085,7 +1171,7 @@ export function CompanyProfile({
             {/* Emprendedor: Apoyo Técnico */}
             {tipo === 'emprendedor' && (
               <section className="space-y-4">
-                <h2 className="flex items-center gap-2 font-heading text-xl font-extrabold uppercase tracking-tight text-ink-strong">
+                <h2 className="flex items-center gap-2 font-heading text-base font-bold uppercase tracking-tight text-ink-strong">
                   <ShieldCheck className="size-5 text-primary" />
                   {t('sections.tech_support')}<span className="text-primary">.</span>
                 </h2>
@@ -1097,12 +1183,14 @@ export function CompanyProfile({
                         <button
                           key={ts}
                           type="button"
+                          disabled={!isEditing}
                           onClick={() => handleToggleNeededSupport(ts)}
                           className={cn(
-                            'rounded-full border px-3 py-1.5 text-xs font-semibold transition-colors duration-[var(--duration-fast)] ease-[var(--ease-out)]',
+                            'rounded-full border px-3 py-1.5 text-xs font-semibold transition-colors duration-[var(--duration-fast)] ease-[var(--ease-out)] disabled:cursor-default',
                             isSelected
                               ? 'border-primary bg-primary text-white'
-                              : 'border-border bg-canvas text-ink-muted hover:border-border-strong hover:text-ink',
+                              : 'border-border bg-canvas text-ink-muted',
+                            isEditing && !isSelected && 'hover:border-border-strong hover:text-ink',
                           )}
                         >
                           {tTechSupport(ts)}
@@ -1117,7 +1205,7 @@ export function CompanyProfile({
             {/* Emprendedor: Presupuesto */}
             {tipo === 'emprendedor' && (
               <section className="space-y-4">
-                <h2 className="font-heading text-xl font-extrabold uppercase tracking-tight text-ink-strong">
+                <h2 className="font-heading text-base font-bold uppercase tracking-tight text-ink-strong">
                   {t('sections.budget')}
                 </h2>
                 <div className="space-y-2">
@@ -1127,12 +1215,14 @@ export function CompanyProfile({
                       <button
                         key={b}
                         type="button"
+                        disabled={!isEditing}
                         onClick={() => setCompany((prev) => ({ ...prev, budget: b }))}
                         className={cn(
-                          'flex w-full items-center gap-3 rounded-xl border px-4 py-3 text-left text-sm font-medium transition-colors duration-[var(--duration-fast)] ease-[var(--ease-out)]',
+                          'flex w-full items-center gap-3 rounded-xl border px-4 py-3 text-left text-sm font-medium transition-colors duration-[var(--duration-fast)] ease-[var(--ease-out)] disabled:cursor-default',
                           isSelected
                             ? 'border-highlight bg-highlight/10 font-bold text-secondary'
-                            : 'border-border bg-surface text-ink-muted hover:border-border-strong hover:text-ink',
+                            : 'border-border bg-surface text-ink-muted',
+                          isEditing && !isSelected && 'hover:border-border-strong hover:text-ink',
                         )}
                       >
                         {tBudget(b)}
@@ -1144,8 +1234,8 @@ export function CompanyProfile({
             )}
 
             {/* Modalidades y Horarios */}
-            <section className="space-y-6">
-              <h2 className="font-heading text-xl font-extrabold uppercase tracking-tight text-ink-strong">
+            <section className="space-y-4">
+              <h2 className="font-heading text-base font-bold uppercase tracking-tight text-ink-strong">
                 {t('sections.modalities')}
               </h2>
               <div className="grid grid-cols-2 gap-3">
@@ -1154,12 +1244,14 @@ export function CompanyProfile({
                   return (
                     <div
                       key={m}
-                      onClick={() => handleToggleModality(m)}
+                      onClick={() => isEditing && handleToggleModality(m)}
                       className={cn(
-                        'cursor-pointer select-none rounded-xl border p-3 text-center text-[10px] font-bold uppercase tracking-tighter transition-colors duration-[var(--duration-fast)] ease-[var(--ease-out)]',
+                        'select-none rounded-xl border p-3 text-center text-[10px] font-bold uppercase tracking-tighter transition-colors duration-[var(--duration-fast)] ease-[var(--ease-out)]',
                         isActive
                           ? 'border-accent bg-accent/10 text-accent'
-                          : 'border-border bg-surface text-ink-muted hover:border-ink-muted/55',
+                          : 'border-border bg-surface text-ink-muted',
+                        isEditing ? 'cursor-pointer' : 'cursor-default',
+                        isEditing && !isActive && 'hover:border-ink-muted/55',
                       )}
                     >
                       {t(`modalities.${m}`)}
@@ -1168,8 +1260,11 @@ export function CompanyProfile({
                 })}
               </div>
               <Card
-                onClick={handleToggleSchedule}
-                className="flex cursor-pointer select-none items-center gap-3 border-border bg-surface-sunken p-4 transition-colors hover:bg-surface"
+                onClick={() => isEditing && handleToggleSchedule()}
+                className={cn(
+                  'flex select-none items-center gap-3 border-border bg-surface-sunken p-4 transition-colors',
+                  isEditing ? 'cursor-pointer hover:bg-surface' : 'cursor-default',
+                )}
               >
                 <Clock className="size-5 text-warning" />
                 <div>
@@ -1182,13 +1277,13 @@ export function CompanyProfile({
             </section>
 
             {/* Contactos de Reclutamiento */}
-            <section className="space-y-6">
+            <section className="space-y-4">
               <div className="flex items-center justify-between">
-                <h2 className="font-heading text-xl font-extrabold uppercase tracking-tight text-ink-strong">
+                <h2 className="font-heading text-base font-bold uppercase tracking-tight text-ink-strong">
                   {t('sections.contacts')}
                 </h2>
                 <Button
-                  onClick={handleOpenAddContact}
+                  onClick={() => { if (!isEditing) setIsEditing(true); handleOpenAddContact(); }}
                   variant="outline"
                   size="sm"
                   className="h-8 gap-1 rounded-full border-primary/20 text-xs text-primary hover:bg-primary/5"
@@ -1200,8 +1295,11 @@ export function CompanyProfile({
                 {company.contacts.map((contact, i) => (
                   <Card
                     key={i}
-                    onClick={() => handleOpenEditContact(i)}
-                    className="flex cursor-pointer items-center gap-4 border-border bg-surface p-4 transition-shadow hover:shadow-[var(--shadow-soft)]"
+                    onClick={() => isEditing && handleOpenEditContact(i)}
+                    className={cn(
+                      'flex items-center gap-4 border-border bg-surface p-4 transition-shadow',
+                      isEditing ? 'cursor-pointer hover:shadow-[var(--shadow-soft)]' : 'cursor-default',
+                    )}
                   >
                     <Avatar className="size-10">
                       <AvatarFallback className="bg-secondary font-bold text-white">{contact.initial}</AvatarFallback>
@@ -1213,6 +1311,21 @@ export function CompanyProfile({
                     </div>
                   </Card>
                 ))}
+                {company.contacts.length === 0 && !isEditing && (
+                  <>
+                    <Card className="flex items-center gap-4 border border-dashed border-border bg-surface/50 p-4 opacity-50">
+                      <Avatar className="size-10">
+                        <AvatarFallback className="bg-secondary/20 font-bold text-secondary/50">AR</AvatarFallback>
+                      </Avatar>
+                      <div className="min-w-0 flex-1">
+                        <p className="truncate text-sm font-bold italic text-ink-muted/70">{t('placeholders.contact_example_name')}</p>
+                        <p className="truncate text-[10px] uppercase tracking-wider text-ink-muted/60">{t('placeholders.contact_example_role')}</p>
+                        <p className="truncate text-[10px] italic text-primary/50">{t('placeholders.contact_example_email')}</p>
+                      </div>
+                    </Card>
+                    <p className="text-xs italic text-ink-muted/60">{t('placeholders.contact_hint')}</p>
+                  </>
+                )}
               </div>
             </section>
           </aside>
@@ -1222,7 +1335,7 @@ export function CompanyProfile({
       {/* Contact modal */}
       {isModalOpen && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-ink-strong/50 p-4 backdrop-blur-xs">
-          <Card className="relative w-full max-w-md space-y-6 border-border bg-surface p-6 shadow-[var(--shadow-elevated)]">
+          <Card className="relative w-full max-w-md space-y-6 border-border bg-surface p-4 shadow-[var(--shadow-elevated)]">
             <button
               onClick={() => setIsModalOpen(false)}
               className="absolute right-4 top-4 text-ink-muted transition-colors hover:text-ink"
@@ -1231,7 +1344,7 @@ export function CompanyProfile({
             </button>
 
             <div className="space-y-2">
-              <h3 className="font-heading text-xl font-extrabold uppercase tracking-tight text-ink-strong">
+              <h3 className="font-heading text-base font-bold uppercase tracking-tight text-ink-strong">
                 {editingContactIndex !== null ? t('contacts.edit_title') : t('contacts.add_title')}
               </h3>
               <p className="text-xs text-ink-muted">{t('contacts.subtitle')}</p>

@@ -121,48 +121,66 @@ export type Database = {
       empresario: {
         Row: {
           apoyo_tecnico_necesario: string | null
+          cantidad_empleados: string | null
           cedula_juridica: string | null
+          contactos: string | null
+          cultura: string | null
           descripcion: string | null
           direccion: string | null
           etapa: string | null
           id: string
           id_usuario: string
+          mision: string | null
           nombre_comercial: string | null
           presupuesto: string | null
           sector: string | null
           tipo: string
           tipos_proyecto: string | null
           url_sitio_web: string | null
+          valores: string | null
+          vision: string | null
         }
         Insert: {
           apoyo_tecnico_necesario?: string | null
+          cantidad_empleados?: string | null
           cedula_juridica?: string | null
+          contactos?: string | null
+          cultura?: string | null
           descripcion?: string | null
           direccion?: string | null
           etapa?: string | null
           id?: string
           id_usuario: string
+          mision?: string | null
           nombre_comercial?: string | null
           presupuesto?: string | null
           sector?: string | null
           tipo: string
           tipos_proyecto?: string | null
           url_sitio_web?: string | null
+          valores?: string | null
+          vision?: string | null
         }
         Update: {
           apoyo_tecnico_necesario?: string | null
+          cantidad_empleados?: string | null
           cedula_juridica?: string | null
+          contactos?: string | null
+          cultura?: string | null
           descripcion?: string | null
           direccion?: string | null
           etapa?: string | null
           id?: string
           id_usuario?: string
+          mision?: string | null
           nombre_comercial?: string | null
           presupuesto?: string | null
           sector?: string | null
           tipo?: string
           tipos_proyecto?: string | null
           url_sitio_web?: string | null
+          valores?: string | null
+          vision?: string | null
         }
         Relationships: [
           {
