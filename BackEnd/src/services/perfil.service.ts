@@ -22,7 +22,7 @@ const LOGO_FOLDER = "fwd/logos";
 const ESTUDIANTE_SELECT =
   "id, descripcion, especialidad, modalidad_preferida, disponibilidad, titulo_fwd, url_avatar, url_github, url_linkedin, url_portfolio";
 const EMPRESARIO_SELECT =
-  "id, tipo, nombre_comercial, descripcion, sector, tipos_proyecto, apoyo_tecnico_necesario, cedula_juridica, direccion, url_sitio_web, etapa, presupuesto";
+  "id, tipo, nombre_comercial, descripcion, sector, tipos_proyecto, apoyo_tecnico_necesario, cedula_juridica, direccion, url_sitio_web, etapa, presupuesto, cantidad_empleados";
 
 function toUserUpdate(input: PerfilEstudianteInput): UsersUpdate {
   const updates: UsersUpdate = {};
@@ -130,6 +130,12 @@ function toEmpresarioUpdate(input: PerfilEmpresarioInput): EmpresarioUpdate {
   if (input.url_sitio_web !== undefined) updates.url_sitio_web = input.url_sitio_web || null;
   if (input.etapa !== undefined) updates.etapa = input.etapa;
   if (input.presupuesto !== undefined) updates.presupuesto = input.presupuesto;
+  if (input.mision !== undefined) updates.mision = input.mision;
+  if (input.vision !== undefined) updates.vision = input.vision;
+  if (input.cultura !== undefined) updates.cultura = input.cultura;
+  if (input.valores !== undefined) updates.valores = JSON.stringify(input.valores);
+  if (input.contactos !== undefined) updates.contactos = JSON.stringify(input.contactos);
+  if (input.cantidad_empleados !== undefined) updates.cantidad_empleados = input.cantidad_empleados;
   return updates;
 }
 
