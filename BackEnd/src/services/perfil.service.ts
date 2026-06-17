@@ -16,6 +16,7 @@ type EstudianteUpdate = Database["public"]["Tables"]["estudiante"]["Update"];
 type EmpresarioUpdate = Database["public"]["Tables"]["empresario"]["Update"];
 
 const AVATAR_FOLDER = "fwd/avatars";
+const LOGO_FOLDER = "fwd/logos";
 
 /** Columnas que se devuelven tras editar cada perfil. */
 const ESTUDIANTE_SELECT =
@@ -215,6 +216,38 @@ export async function updateMyPerfil(accessToken: string, userId: string, body: 
   }
 
   throw new ApiError(403, "Tu rol no tiene un perfil editable");
+}
+
+export async function uploadMyLogo(
+  accessToken: string,
+  userId: string,
+  fileBuffer: Buffer,
+  fileSize: number,
+): Promise<{ url_logo: string }> {
+  const url = await uploadImage(fileBuffer, LOGO_FOLDER);
+
+  const client = supabaseForToken(accessToken);
+
+  const { data: empresario, error: empError } = await client
+    .from("empresario")
+    .select("id")
+    .eq("id_usuario", userId)
+    .maybeSingle();
+  if (empError) throw new ApiError(500, empError.message);
+  if (!empresario) throw new ApiError(404, "No tenés un perfil de empresa");
+
+  // Eliminar logo anterior si existe
+  await client.from("files").delete().eq("id_empresario", empresario.id).eq("tipo", "logo");
+
+  const { error: insertError } = await client.from("files").insert({
+    id_empresario: empresario.id,
+    tipo: "logo",
+    tamano: fileSize,
+    storage_path: url,
+  });
+  if (insertError) throw new ApiError(400, insertError.message);
+
+  return { url_logo: url };
 }
 
 export async function updateMyAvatar(

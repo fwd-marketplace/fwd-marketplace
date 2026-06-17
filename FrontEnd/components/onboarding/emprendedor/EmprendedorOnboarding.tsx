@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useTransition } from "react";
+import { useState, useTransition, useEffect } from "react";
 import { useRouter, useParams } from "next/navigation";
 import { useTranslations } from "next-intl";
 import { ArrowRight } from "lucide-react";
@@ -13,9 +13,26 @@ const TOTAL_STEPS = 5;
 const OPTIONAL_STEPS = new Set([5]);
 const DESC_MAX_CHARS = 400;
 
-function Step1({ onChange }: { onChange: (val: string) => void }) {
+function Step1({
+  onChange,
+  showErrors = false,
+}: {
+  onChange: (val: string) => void;
+  showErrors?: boolean;
+}) {
   const t = useTranslations("register.emprendedor.step1");
   const [nameValue, setNameValue] = useState("");
+  const [touched, setTouched] = useState(false);
+
+  function getError(): string | null {
+    if (!showErrors && !touched) return null;
+    const value = nameValue.trim();
+    if (!value) return t("error_required");
+    if (value.length < 2) return t("error_min_2");
+    return null;
+  }
+
+  const error = getError();
 
   return (
     <div className="flex flex-col gap-6">
@@ -29,16 +46,29 @@ function Step1({ onChange }: { onChange: (val: string) => void }) {
         <p className="mt-2 font-body text-sm text-ink-muted">{t("description")}</p>
       </div>
 
-      <label htmlFor="emprendedor-name" className="sr-only">{t("label")}</label>
-      <input
-        id="emprendedor-name"
-        type="text"
-        value={nameValue}
-        onChange={(e) => { setNameValue(e.target.value); onChange(e.target.value); }}
-        placeholder={t("placeholder")}
-        autoFocus
-        className="w-full rounded-2xl bg-surface-sunken px-5 py-4 font-body text-sm text-ink-strong placeholder:text-ink-subtle outline-none focus:ring-2 focus:ring-primary/40"
-      />
+      <div className="flex flex-col gap-1">
+        <label htmlFor="emprendedor-name" className="sr-only">{t("label")}</label>
+        <input
+          id="emprendedor-name"
+          type="text"
+          value={nameValue}
+          onChange={(e) => { setNameValue(e.target.value); onChange(e.target.value); }}
+          onBlur={() => setTouched(true)}
+          placeholder={t("placeholder")}
+          autoFocus
+          aria-describedby={error ? "emprendedor-name-error" : undefined}
+          aria-invalid={error ? true : undefined}
+          className={[
+            "w-full rounded-2xl bg-surface-sunken px-5 py-4 font-body text-sm text-ink-strong placeholder:text-ink-subtle outline-none focus:ring-2",
+            error ? "ring-1 ring-red-400/60 focus:ring-red-400/60" : "focus:ring-primary/40",
+          ].join(" ")}
+        />
+        {error && (
+          <p id="emprendedor-name-error" role="alert" className="px-1 font-body text-xs text-red-500">
+            {error}
+          </p>
+        )}
+      </div>
       <div className="h-2" />
     </div>
   );
@@ -293,10 +323,34 @@ export function EmprendedorOnboarding() {
 
   const [pendingValue, setPendingValue] = useState<unknown>(null);
   const [submitError, setSubmitError] = useState<string | null>(null);
+  const [showStepErrors, setShowStepErrors] = useState(false);
   const [isSubmitting, startTransition] = useTransition();
+
+  useEffect(() => {
+    setPendingValue(null);
+    setShowStepErrors(false);
+  }, [currentStep]);
+
+  function getStepValidationMessage(): string | null {
+    if (!showStepErrors || OPTIONAL_STEPS.has(currentStep) || pendingValue !== null) return null;
+    switch (currentStep) {
+      case 1: return t("nav.error_field_required");
+      case 2: return t("nav.error_select_one");
+      case 3: return t("nav.error_select_several");
+      case 4: return t("nav.error_select_one");
+      default: return null;
+    }
+  }
 
   function handleNext() {
     setSubmitError(null);
+
+    if (!OPTIONAL_STEPS.has(currentStep) && !pendingValue) {
+      setShowStepErrors(true);
+      return;
+    }
+
+    setShowStepErrors(false);
     saveStep("emprendedor", currentStep, pendingValue);
 
     if (currentStep < TOTAL_STEPS) {
@@ -330,7 +384,8 @@ export function EmprendedorOnboarding() {
     }
   }
 
-  const canContinue = !isSubmitting && (OPTIONAL_STEPS.has(currentStep) || Boolean(pendingValue));
+  const stepValidationMessage = getStepValidationMessage();
+  const footerMessage = submitError ?? stepValidationMessage;
 
   return (
     <div className="relative flex min-h-[100dvh] flex-col bg-secondary">
@@ -349,7 +404,10 @@ export function EmprendedorOnboarding() {
       <div className="relative flex flex-1 items-center justify-center px-4">
         <div className="w-full max-w-md rounded-[2rem] bg-surface px-6 py-8 shadow-elevated sm:px-10 sm:py-10">
           {currentStep === 1 && (
-            <Step1 onChange={(val) => setPendingValue(val.trim() || null)} />
+            <Step1
+              showErrors={showStepErrors}
+              onChange={(val) => setPendingValue(val.trim() || null)}
+            />
           )}
           {currentStep === 2 && (
             <Step2 onChange={(val) => setPendingValue(val)} />
@@ -365,9 +423,9 @@ export function EmprendedorOnboarding() {
       </div>
 
       <footer className="relative flex flex-col items-center gap-2 px-4 py-5 sm:px-8 sm:py-6">
-        {submitError && (
+        {footerMessage && (
           <p role="alert" className="w-full max-w-md text-center font-body text-xs text-red-500">
-            {submitError}
+            {footerMessage}
           </p>
         )}
         <div className="flex w-full items-center justify-between">
@@ -389,7 +447,7 @@ export function EmprendedorOnboarding() {
           <button
             type="button"
             onClick={handleNext}
-            disabled={!canContinue}
+            disabled={isSubmitting}
             className="flex items-center gap-2 rounded-full bg-primary px-5 py-2.5 font-body text-sm font-semibold text-white transition-opacity duration-[--duration-fast] hover:opacity-90 disabled:cursor-not-allowed disabled:opacity-40 sm:px-6"
           >
             {isSubmitting ? t("nav.finishing") : currentStep === TOTAL_STEPS ? t("nav.finish") : t("nav.next")}

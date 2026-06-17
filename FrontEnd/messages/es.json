@@ -155,7 +155,11 @@
       "back": "Volver",
       "next": "Continuar",
       "finish": "Finalizar",
-      "finishing": "Guardando..."
+      "finishing": "Guardando...",
+      "error_step1": "Completá todos los campos para continuar",
+      "error_select_one": "Seleccioná una opción para continuar",
+      "error_select_several": "Seleccioná al menos una opción para continuar",
+      "error_field_required": "Este campo es requerido para continuar"
     },
     "role": {
       "eyebrow": "Empieza aquí",
@@ -207,6 +211,9 @@
         "label_nombre": "Nombre",
         "placeholder_nombre": "Ej. María",
         "label_apellido1": "Primer apellido",
+        "error_required": "Requerido",
+        "error_min_2": "Mínimo 2 caracteres",
+        "error_min_5": "Mínimo 5 caracteres",
         "placeholder_apellido1": "Ej. García",
         "label_apellido2": "Segundo apellido",
         "placeholder_apellido2": "Ej. López",
@@ -287,7 +294,9 @@
         "title": "¿Cómo se llama tu empresa?",
         "description": "Este nombre aparecerá en tu perfil y en los proyectos que publiques.",
         "label": "Nombre de la empresa",
-        "placeholder": "Ej. Acme Technologies S.A."
+        "placeholder": "Ej. Acme Technologies S.A.",
+        "error_required": "Requerido",
+        "error_min_2": "Mínimo 2 caracteres"
       },
       "step2": {
         "eyebrow": "Tu sector",
@@ -310,7 +319,9 @@
         "title": "¿A qué se dedica tu empresa?",
         "description": "Una descripción breve que ayude a los talentos a conocerte.",
         "label": "Descripción",
-        "placeholder": "Describe el enfoque, propósito y cultura de tu empresa..."
+        "placeholder": "Describe el enfoque, propósito y cultura de tu empresa...",
+        "error_required": "Requerido",
+        "error_min_10": "Mínimo 10 caracteres"
       },
       "step4": {
         "eyebrow": "Datos de contacto",
@@ -319,7 +330,9 @@
         "direccion_label": "Dirección",
         "direccion_placeholder": "Av. Principal 123, San José",
         "cedula_label": "Cédula jurídica",
-        "cedula_placeholder": "3-101-XXXXXX"
+        "cedula_placeholder": "3-101-XXXXXX",
+        "error_required": "Requerido",
+        "error_min_5": "Mínimo 5 caracteres"
       },
       "step5": {
         "eyebrow": "Tipo de proyectos",
@@ -359,7 +372,9 @@
         "title": "¿Cómo se llama tu proyecto?",
         "description": "El nombre de tu startup, producto o idea que querés desarrollar.",
         "label": "Nombre del proyecto",
-        "placeholder": "Ej. EcoTrack App"
+        "placeholder": "Ej. EcoTrack App",
+        "error_required": "Requerido",
+        "error_min_2": "Mínimo 2 caracteres"
       },
       "step2": {
         "eyebrow": "Etapa del proyecto",
@@ -428,7 +443,8 @@
       "new_btn": "Nuevo",
       "paused": "Pausado",
       "published_days": "Publicado hace {days} días",
-      "label_applied": "Aplicaron"
+      "label_applied": "Aplicaron",
+      "empty": "Aún no tenés proyectos publicados."
     },
     "compatibility": {
       "title": "Compatibilidad de candidatos",
@@ -437,11 +453,15 @@
       "tech_stack": "Stack técnico",
       "availability": "Disponibilidad",
       "modality": "Modalidad",
-      "empty_state": "No hay candidatos recomendados para este proyecto aún."
+      "experience": "Experiencia",
+      "empty_state": "No hay candidatos recomendados para este proyecto aún.",
+      "placeholder_2_0": "El algoritmo de compatibilidad estará disponible en la Fase 2.0."
     },
     "applications": {
       "title": "Quiénes se postularon",
       "empty_state": "No hay postulaciones registradas.",
+      "no_project": "Seleccioná un proyecto para ver las postulaciones.",
+      "load": "Cargar postulaciones",
       "table": {
         "junior": "Talento",
         "project": "Proyecto",
@@ -464,9 +484,24 @@
       }
     },
     "new_project_modal": {
+      "ai": {
+        "section_title": "Asistente IA",
+        "badge_soon": "Próximamente",
+        "idea_label": "Contanos la idea del proyecto",
+        "idea_placeholder": "Ej: Necesito una app web para que mis clientes agenden citas online, vean su historial y reciban recordatorios por correo. No tenemos equipo técnico interno.",
+        "fill_btn": "Rellenar con IA",
+        "divider": "o completá manualmente",
+        "conversation_empty": "El asistente te hará preguntas para entender mejor tu proyecto y completará los campos técnicos por vos."
+      },
       "title": "Nuevo proyecto",
       "name_label": "Nombre del proyecto",
       "placeholder": "Ej. E-commerce Mobile Sync",
+      "description_label": "Descripción",
+      "area_label": "Área de negocio",
+      "deadline_label": "Plazo (días)",
+      "skills_label": "Habilidades requeridas",
+      "ai_label": "Usa inteligencia artificial",
+      "publish_label": "Publicar inmediatamente",
       "status_label": "Estado inicial",
       "active": "Activo",
       "paused": "Pausado",
@@ -476,10 +511,34 @@
     },
     "notifications": {
       "accepted": "{name} ha sido aceptado al proyecto.",
-      "rejected": "Se ha notificado a {name} que no fue seleccionado."
-    }
+      "rejected": "Se ha notificado a {name} que no fue seleccionado.",
+      "accepted_short": "Postulación aceptada.",
+      "rejected_short": "Postulación rechazada.",
+      "state_changed": "Estado del proyecto actualizado."
+    },
+    "states": {
+      "borrador": "Borrador",
+      "en_recepcion": "En recepción",
+      "en_evaluacion": "En evaluación",
+      "adjudicado": "Adjudicado",
+      "en_desarrollo": "En desarrollo",
+      "cerrado": "Cerrado",
+      "cancelado": "Cancelado"
+    },
+    "offer_states": {
+      "en_revision": "En revisión",
+      "adjudicada": "Aceptada",
+      "no_seleccionada": "Rechazada",
+      "pendiente": "Pendiente"
+    },
+    "toast_close": "Cerrar"
   },
   "mis_proyectos": {
+    "page_title": "Mis proyectos",
+    "create_btn": "Crear proyecto",
+    "back_btn": "Volver",
+    "no_projects_title": "Aún no tenés proyectos",
+    "no_projects_desc": "Creá tu primer proyecto para empezar a recibir postulaciones de juniors.",
     "published_on": "Publicado el {date}",
     "modality_label": "Modalidad",
     "level_label": "Nivel",
@@ -514,10 +573,45 @@
     },
     "notifications": {
       "paused": "El proyecto ha sido pausado.",
-      "reactivated": "El proyecto ha sido reactivado."
+      "reactivated": "El proyecto ha sido reactivado.",
+      "state_updated": "Estado del proyecto actualizado.",
+      "accepted": "Postulación aceptada.",
+      "rejected": "Postulación rechazada."
     },
+    "states": {
+      "borrador": "Borrador",
+      "en_recepcion": "En recepción",
+      "en_evaluacion": "En evaluación",
+      "adjudicado": "Adjudicado",
+      "en_desarrollo": "En desarrollo",
+      "cerrado": "Cerrado",
+      "cancelado": "Cancelado"
+    },
+    "offer_states": {
+      "en_revision": "En revisión",
+      "adjudicada": "Aceptada",
+      "no_seleccionada": "Rechazada",
+      "pendiente": "Pendiente"
+    },
+    "applications": {
+      "accept": "Aceptar",
+      "reject": "Rechazar"
+    },
+    "state_label": "Estado del proyecto",
+    "area_label": "Área",
+    "deadline_label": "Plazo",
+    "ai_label": "Usa IA",
+    "yes": "Sí",
+    "no": "No",
+    "days": "días",
+    "two_point_zero": "Disponible en Fase 2.0",
+    "two_point_zero_placeholder": "Las maquetas estarán disponibles en la Fase 2.0.",
+    "loading": "Cargando...",
+    "prototype_link": "Ver prototipo",
+    "toast_close": "Cerrar",
     "filters": {
       "title": "Filtros",
+      "search_label": "Buscar proyecto",
       "search_placeholder": "Buscar por título...",
       "status_label": "Estado",
       "status_all": "Todos los estados",
@@ -855,11 +949,16 @@
     "modality_hybrid": "Híbrido",
     "showing_count": "Mostrando {count} candidatos automáticos para este perfil",
     "sort_best": "Mayor match",
+    "sort_worst": "Menor match",
+    "availability_all": "Todas",
+    "modality_all": "Todas",
     "invite_btn": "Invitar a postularse",
     "invited_btn": "Invitado",
     "view_profile": "Ver perfil",
     "compare": "Comparar",
     "load_more": "Cargar más matches",
+    "empty_no_candidates_title": "No hay candidatos recomendados",
+    "empty_no_candidates_desc": "Ajustá los filtros o reducí el nivel de match mínimo.",
     "toast_invited": "Se ha invitado a {name} a postularse al proyecto.",
     "toast_cleared": "Se han limpiado los filtros de búsqueda.",
     "toast_profile_edit": "Funcionalidad de edición de perfil en desarrollo (Fase 3)."
@@ -889,14 +988,32 @@
     "toast_invited": "Invitación para entrevista enviada a {name}.",
     "toast_info_requested": "Solicitud de información adicional enviada a {name}.",
     "toast_accepted": "Postulación de {name} aceptada con éxito.",
+    "toast_accepted_short": "Postulación aceptada.",
     "toast_rejected": "Postulación de {name} rechazada.",
+    "toast_rejected_short": "Postulación rechazada.",
     "toast_pdf": "Visualización del documento PDF de {name} en desarrollo.",
     "toast_figma": "Enlace a Figma de {name} en desarrollo.",
     "toast_full_profile": "Cargando perfil completo de {name}...",
+    "toast_close": "Cerrar",
+    "empty_projects": "Aún no tenés proyectos publicados.",
+    "load_applications": "Cargar postulaciones",
+    "empty_applications": "Aún no hay postulaciones para este proyecto.",
+    "no_project": "Seleccioná un proyecto para ver las postulaciones.",
+    "prototype_link": "Ver prototipo",
+    "offer_states": {
+      "en_revision": "En revisión",
+      "adjudicada": "Aceptada",
+      "no_seleccionada": "Rechazada",
+      "pendiente": "Pendiente"
+    },
     "engine_insight": "Este candidato coincide altamente con sus requisitos técnicos y culturales.",
     "engine_signature": "FWD Matching Engine"
   },
   "mi_empresa": {
+    "badge": {
+      "empresa": "Empresa",
+      "emprendedor": "Emprendedor"
+    },
     "sections": {
       "general": "Información General",
       "culture": "Identidad y Cultura",
@@ -904,10 +1021,23 @@
       "needs": "Necesidades Actuales",
       "modalities": "Modalidades de Colaboración",
       "schedules": "Horarios de Trabajo",
+      "business_areas": "Áreas de Negocio",
       "matching": "Pesos del Algoritmo Matching",
-      "contacts": "Contactos de Reclutamiento"
+      "contacts": "Contactos de Reclutamiento",
+      "stage": "Etapa del Proyecto",
+      "tech_support": "Apoyo Técnico Requerido",
+      "budget": "Presupuesto Estimado",
+      "project_description": "Acerca del Proyecto"
     },
     "fields": {
+      "company_name": "Nombre de la empresa",
+      "project_name": "Nombre del proyecto",
+      "project_description_placeholder": "Describí tu proyecto, el problema que resuelve y tu visión a largo plazo...",
+      "employees": "Empleados",
+      "employees_unit": "personas",
+      "country": "País",
+      "provincia": "Provincia",
+      "canton": "Cantón",
       "comercial_name": "Nombre comercial",
       "website": "Sitio web",
       "location": "Ubicación",
@@ -917,9 +1047,51 @@
       "values": "Valores",
       "organization": "Cultura organizacional"
     },
+    "sector_labels": {
+      "tech": "Tecnología e Innovación",
+      "fintech": "Fintech",
+      "health": "Salud y Bienestar",
+      "logistics": "Logística y Operaciones",
+      "education": "Educación",
+      "energy": "Energía y Sostenibilidad",
+      "retail": "Retail y Comercio",
+      "manufacturing": "Manufactura e Industria",
+      "consulting": "Consultoría y Servicios",
+      "other": "Otro"
+    },
     "hero": {
       "edit_profile": "Editar perfil",
+      "save": "Guardar cambios",
+      "saving": "Guardando...",
+      "cancel": "Cancelar",
+      "save_success": "Cambios guardados correctamente.",
+      "save_error": "Ocurrió un error al guardar. Intentá de nuevo.",
       "view_projects": "Ver proyectos"
+    },
+    "logo": {
+      "alt": "Logo de la empresa",
+      "change": "Cambiar logo",
+      "invalid_type": "El archivo debe ser una imagen.",
+      "too_large": "La imagen supera el máximo de 5 MB.",
+      "upload_error": "No se pudo subir el logo. Intentá de nuevo."
+    },
+    "contacts": {
+      "add_btn": "Reclutador",
+      "add_title": "Agregar Reclutador",
+      "edit_title": "Editar Reclutador",
+      "subtitle": "Completá los datos de contacto del encargado de reclutamiento.",
+      "name_label": "Nombre Completo",
+      "role_label": "Rol / Puesto",
+      "email_label": "Correo Electrónico",
+      "delete_btn": "Eliminar",
+      "cancel_btn": "Cancelar",
+      "save_btn": "Guardar"
+    },
+    "interests": {
+      "add_placeholder": "Añadir stack..."
+    },
+    "culture": {
+      "add_value_placeholder": "Nuevo valor..."
     },
     "modalities": {
       "remote": "Remoto",

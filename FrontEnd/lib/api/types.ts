@@ -144,6 +144,33 @@ export type StudentPerfilResponse = {
   skills?: string[];
 };
 
+export type ApiEmpresarioDetail = {
+  tipo: 'empresa' | 'emprendedor';
+  nombre_comercial: string | null;
+  sector: string | null;
+  descripcion: string | null;
+  url_sitio_web: string | null;
+  cedula_juridica: string | null;
+  etapa: 'idea' | 'mvp' | 'validating' | 'scaling' | null;
+  apoyo_tecnico_necesario: string | null;
+  presupuesto: 'under_500' | 'range_500_1000' | 'range_1000_2500' | 'flexible' | null;
+  tipos_proyecto: string | null;
+  direccion: string | null;
+  url_logo: string | null;
+};
+
+export type EmpresarioUpdateInput = {
+  nombre_comercial?: string;
+  sector?: string[];
+  descripcion?: string;
+  url_sitio_web?: string;
+  direccion?: string;
+  tipos_proyecto?: string[];
+  soporte_tecnico?: string[];
+  etapa?: 'idea' | 'mvp' | 'validating' | 'scaling';
+  presupuesto?: 'under_500' | 'range_500_1000' | 'range_1000_2500' | 'flexible';
+};
+
 export type ApiMeProfile = {
   id: string;
   nombre: string;
@@ -155,6 +182,7 @@ export type ApiMeProfile = {
   fecha_registro: string;
   role: { nombre: ApiRoleName };
   estudiante?: ApiEstudianteDetail | null;
+  empresario?: ApiEmpresarioDetail | null;
 };
 
 export type MeResponse = {
