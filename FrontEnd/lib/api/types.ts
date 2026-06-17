@@ -187,3 +187,28 @@ export type AdminProject = {
 export type AdminProjectsResponse = {
   projects: AdminProject[];
 };
+
+export type AdminStudentProfile = {
+  especialidad: string | null;
+  disponibilidad: string | null;
+  titulo_fwd: string | null;
+  reputacion: number | null;
+  url_github: string | null;
+  url_linkedin: string | null;
+  url_portfolio: string | null;
+};
+
+export type AdminStudentUser = {
+  id: string;
+  nombre: string;
+  apellido1: string | null;
+  correo: string;
+  estado_cuenta: AccountState;
+  fecha_registro: string;
+  role: { nombre: ApiRoleName } | null;
+  estudiante: AdminStudentProfile[] | AdminStudentProfile | null;
+};
+
+export type AdminStudentsResponse = {
+  users: AdminStudentUser[];
+};
