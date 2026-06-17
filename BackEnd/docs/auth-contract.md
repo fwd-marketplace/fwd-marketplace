@@ -51,6 +51,12 @@ el `access_token` como `Authorization: Bearer <access_token>`.
 
 ## Endpoints
 
+> **Rate limiting (auth).** Las rutas sensibles están limitadas por IP. Al exceder el cupo
+> responden **`429 { "error": "..." }`** con header **`Retry-After`** (segundos a esperar).
+> El FE debe manejar el `429` (mostrar el mensaje y deshabilitar el botón hasta `Retry-After`).
+> Cupos actuales: `login` 10/15min · `register` 10/60min · `reset-password` 5/15min ·
+> `reset-password/confirm` 10/15min.
+
 ### POST /api/users/register
 Body: `{ "email": string, "password": string }`
 → `201 { user, session }` — `session.access_token` es el JWT a guardar.
@@ -295,6 +301,10 @@ Suspende una cuenta activa. → `200 { user: { id, estado_cuenta: "suspendida" }
 
 Trabajo de FrontEnd que habilitan los endpoints de arriba (lo construye el grupo de FrontEnd;
 el BackEnd ya expone la API). Marcá cada ítem como hecho cuando la pantalla lo consuma.
+
+- **Manejar el `429` (rate limit) en auth.** `login`/`register`/`reset-password` pueden
+  responder `429` con header `Retry-After` (segundos). Mostrar el mensaje del `error` y
+  deshabilitar el botón hasta que pase ese tiempo, en vez de tratarlo como un error genérico.
 
 - **Edición de perfil.** Pantalla para que el junior edite su perfil (`estudiante`) y la
   empresa/emprendedor el suyo (`empresario`). Precargar el formulario con `GET /api/users/me/perfil`
