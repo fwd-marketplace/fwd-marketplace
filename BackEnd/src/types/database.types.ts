@@ -1008,7 +1008,22 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
-      [_ in never]: never
+      crear_pending_login: {
+        Args: {
+          p_id_usuario: string
+          p_codigo_hash: string
+          p_refresh_token: string
+          p_ttl_segundos: number
+        }
+        Returns: string
+      }
+      consumir_pending_login: {
+        Args: {
+          p_ticket: string
+          p_codigo_hash: string
+        }
+        Returns: string | null
+      }
     }
     Enums: {
       [_ in never]: never

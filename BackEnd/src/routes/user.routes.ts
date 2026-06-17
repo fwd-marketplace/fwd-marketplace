@@ -2,6 +2,7 @@ import { Router } from "express";
 import {
   register,
   login,
+  verifyLoginOtp,
   refresh,
   logout,
   me,
@@ -16,6 +17,8 @@ const router = Router();
 
 router.post("/register", asyncHandler(register));
 router.post("/login", asyncHandler(login));
+// Paso 2 del login: valida el código de 2FA enviado por email y entrega la sesión.
+router.post("/login/verify-otp", asyncHandler(verifyLoginOtp));
 router.post("/reset-password", asyncHandler(resetPassword));
 router.post("/reset-password/confirm", asyncHandler(confirmResetPassword));
 // Login social: devuelve la URL de autorizacion del provider (Google/GitHub).

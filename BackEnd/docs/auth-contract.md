@@ -57,7 +57,18 @@ Body: `{ "email": string, "password": string }`
 
 ### POST /api/users/login
 Body: `{ "email": string, "password": string }`
-→ `200 { user, session }`
+**2FA OBLIGATORIO:** si la contraseña es correcta, NO devuelve la sesión todavía; manda un
+código de 6 dígitos al correo y responde:
+→ `200 { "mfa_required": true, "ticket": "uuid" }`
+El FrontEnd guarda el `ticket`, pide el código al usuario y lo confirma en el endpoint de abajo.
+(El login social Google/GitHub queda EXENTO del 2FA — ver "Login social".)
+
+### POST /api/users/login/verify-otp
+Paso 2 del login: valida el código de 6 dígitos enviado por email. **No** lleva Bearer.
+Body: `{ "ticket": string, "code": string }`  (`code` = 6 dígitos)
+→ `200 { user, session }` — recién aquí se entrega la sesión (el FE setea las cookies httpOnly).
+→ `401` si el código es inválido, expiró (10 min) o se agotaron los intentos (5).
+→ `400` si falta el ticket o el código no es de 6 dígitos.
 
 ### POST /api/users/reset-password
 Dispara el correo de recuperación de contraseña (Supabase Auth). **No** lleva Bearer.
