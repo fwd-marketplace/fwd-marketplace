@@ -101,6 +101,21 @@ export async function confirmResetPassword(req: Request, res: Response) {
   res.status(200).json({ ok: true });
 }
 
+/** GET /api/users/oauth/:provider (devuelve la URL de autorización del provider) */
+export async function oauthStart(req: Request, res: Response) {
+  const provider = req.params.provider;
+  if (typeof provider !== "string" || !userService.isOAuthProvider(provider)) {
+    throw new ApiError(400, "Proveedor de OAuth no soportado");
+  }
+  // El FE manda el locale para construir el callback localizado. Se valida a un
+  // código de 2 letras para no inyectar nada raro en la redirect URL.
+  const localeRaw = req.query.locale;
+  const locale = typeof localeRaw === "string" && /^[a-z]{2}$/.test(localeRaw) ? localeRaw : "es";
+
+  const url = await userService.getOAuthUrl(provider, locale);
+  res.status(200).json({ url });
+}
+
 /** POST /api/users/refresh */
 export async function refresh(req: Request, res: Response) {
   const refreshToken = readRefreshToken(req.body);
