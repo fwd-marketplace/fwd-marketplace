@@ -1,5 +1,6 @@
 "use client";
 
+import type React from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useLocale, useTranslations } from "next-intl";
@@ -13,7 +14,7 @@ const NAV_HREFS = [
   { key: "matches", href: "/matches", badge: { count: 18, variant: "warning" } },
 ] as const;
 
-export function EmpresaSubnav() {
+export function EmpresaSubnav({ actionSlot }: { actionSlot?: React.ReactNode }) {
   const pathname = usePathname();
   const locale = useLocale();
   const t = useTranslations("empresa_subnav");
@@ -57,6 +58,7 @@ export function EmpresaSubnav() {
             </Link>
           );
         })}
+        {actionSlot && <div className="ml-auto shrink-0 pl-2">{actionSlot}</div>}
       </div>
     </nav>
   );

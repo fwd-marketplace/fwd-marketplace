@@ -42,6 +42,14 @@ export const PerfilEmpresarioSchema = z
     url_sitio_web: optionalUrl,
     etapa: z.enum(["idea", "mvp", "validating", "scaling"]).optional(),
     presupuesto: z.enum(["under_500", "range_500_1000", "range_1000_2500", "flexible"]).optional(),
+    mision: z.string().max(1000).optional(),
+    vision: z.string().max(1000).optional(),
+    cultura: z.string().max(1000).optional(),
+    valores: z.array(z.string().min(1)).optional(),
+    contactos: z
+      .array(z.object({ name: z.string().min(1), role: z.string().min(1), email: z.string().email() }))
+      .optional(),
+    cantidad_empleados: z.enum(['1-10', '11-50', '51-200', '201-500', '501-1000', '1000+']).optional(),
   })
   .refine((value) => Object.keys(value).length > 0, NON_EMPTY);
 

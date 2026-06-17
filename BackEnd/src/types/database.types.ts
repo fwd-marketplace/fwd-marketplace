@@ -121,48 +121,66 @@ export type Database = {
       empresario: {
         Row: {
           apoyo_tecnico_necesario: string | null
+          cantidad_empleados: string | null
           cedula_juridica: string | null
+          contactos: string | null
+          cultura: string | null
           descripcion: string | null
           direccion: string | null
           etapa: string | null
           id: string
           id_usuario: string
+          mision: string | null
           nombre_comercial: string | null
           presupuesto: string | null
           sector: string | null
           tipo: string
           tipos_proyecto: string | null
           url_sitio_web: string | null
+          valores: string | null
+          vision: string | null
         }
         Insert: {
           apoyo_tecnico_necesario?: string | null
+          cantidad_empleados?: string | null
           cedula_juridica?: string | null
+          contactos?: string | null
+          cultura?: string | null
           descripcion?: string | null
           direccion?: string | null
           etapa?: string | null
           id?: string
           id_usuario: string
+          mision?: string | null
           nombre_comercial?: string | null
           presupuesto?: string | null
           sector?: string | null
           tipo: string
           tipos_proyecto?: string | null
           url_sitio_web?: string | null
+          valores?: string | null
+          vision?: string | null
         }
         Update: {
           apoyo_tecnico_necesario?: string | null
+          cantidad_empleados?: string | null
           cedula_juridica?: string | null
+          contactos?: string | null
+          cultura?: string | null
           descripcion?: string | null
           direccion?: string | null
           etapa?: string | null
           id?: string
           id_usuario?: string
+          mision?: string | null
           nombre_comercial?: string | null
           presupuesto?: string | null
           sector?: string | null
           tipo?: string
           tipos_proyecto?: string | null
           url_sitio_web?: string | null
+          valores?: string | null
+          vision?: string | null
         }
         Relationships: [
           {
@@ -1008,7 +1026,22 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
-      [_ in never]: never
+      crear_pending_login: {
+        Args: {
+          p_id_usuario: string
+          p_codigo_hash: string
+          p_refresh_token: string
+          p_ttl_segundos: number
+        }
+        Returns: string
+      }
+      consumir_pending_login: {
+        Args: {
+          p_ticket: string
+          p_codigo_hash: string
+        }
+        Returns: string | null
+      }
     }
     Enums: {
       [_ in never]: never

@@ -6,6 +6,7 @@ import {
 } from "../config/supabase";
 import { env } from "../config/env";
 import { ApiError } from "../utils/ApiError";
+import { startEmailMfa, verifyEmailMfa } from "./mfa.service";
 
 type RegisterInput = { email: string; password: string; name?: string };
 type LoginInput = { email: string; password: string };
@@ -30,9 +31,11 @@ export async function registerUser(input: RegisterInput) {
 }
 
 /**
- * Login mediante Supabase Auth. Devuelve el usuario y la sesión,
- * cuyo `access_token` es el JWT que el FrontEnd usará en las siguientes
- * peticiones (cabecera Authorization: Bearer <access_token>).
+ * Login con email+contraseña. El 2FA por email es OBLIGATORIO: si la contraseña
+ * es correcta, NO se devuelve la sesión todavía; se genera un código, se envía
+ * por correo y se devuelve `{ mfa_required: true, ticket }`. El FrontEnd pide el
+ * código y lo confirma con `verifyLoginOtp` (POST /users/login/verify-otp).
+ * (El login social Google/GitHub queda EXENTO del 2FA: ese flujo no pasa por aquí.)
  */
 export async function loginUser(input: LoginInput) {
   const { data, error } = await supabase.auth.signInWithPassword({
@@ -43,8 +46,25 @@ export async function loginUser(input: LoginInput) {
   if (error) {
     throw new ApiError(error.status ?? 401, error.message);
   }
+  if (!data.user || !data.session) {
+    throw new ApiError(401, "Credenciales inválidas");
+  }
 
-  return { user: data.user, session: data.session };
+  const ticket = await startEmailMfa({
+    userId: data.user.id,
+    email: data.user.email ?? input.email,
+    refreshToken: data.session.refresh_token,
+  });
+
+  return { mfa_required: true as const, ticket };
+}
+
+/**
+ * Verifica el código de 2FA enviado por email y, si es correcto, entrega la
+ * sesión. La llama el FrontEnd tras el login con contraseña.
+ */
+export async function verifyLoginOtp(ticket: string, code: string) {
+  return verifyEmailMfa(ticket, code);
 }
 
 /**
@@ -193,7 +213,7 @@ const ESTUDIANTE_DETAIL_SELECT =
 
 /** Columnas de `empresario` que muestra la página de perfil de empresa/emprendedor. */
 const EMPRESARIO_DETAIL_SELECT =
-  "id, tipo, nombre_comercial, descripcion, sector, tipos_proyecto, apoyo_tecnico_necesario, cedula_juridica, direccion, url_sitio_web, etapa, presupuesto";
+  "id, tipo, nombre_comercial, descripcion, sector, tipos_proyecto, apoyo_tecnico_necesario, cedula_juridica, direccion, url_sitio_web, etapa, presupuesto, mision, vision, cultura, valores, contactos";
 
 /** Nombres de las skills de un estudiante (catálogo `skills` vía `student_skills`). */
 async function getEstudianteSkills(

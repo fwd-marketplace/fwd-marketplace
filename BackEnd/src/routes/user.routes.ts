@@ -2,6 +2,7 @@ import { Router } from "express";
 import {
   register,
   login,
+  verifyLoginOtp,
   refresh,
   logout,
   me,
@@ -42,6 +43,8 @@ const resetConfirmLimiter = rateLimit({
 
 router.post("/register", registerLimiter, asyncHandler(register));
 router.post("/login", loginLimiter, asyncHandler(login));
+// Paso 2 del login: valida el código de 2FA enviado por email y entrega la sesión.
+router.post("/login/verify-otp", loginLimiter, asyncHandler(verifyLoginOtp));
 router.post("/reset-password", resetLimiter, asyncHandler(resetPassword));
 router.post("/reset-password/confirm", resetConfirmLimiter, asyncHandler(confirmResetPassword));
 // Login social: devuelve la URL de autorizacion del provider (Google/GitHub).

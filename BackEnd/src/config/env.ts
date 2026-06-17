@@ -26,4 +26,11 @@ export const env = {
     apiKey: process.env.CLOUDINARY_API_KEY ?? "",
     apiSecret: process.env.CLOUDINARY_API_SECRET ?? "",
   },
+
+  // Envío de correos (códigos de 2FA) vía un Web App de Google Apps Script.
+  // Opcionales para el arranque: si faltan, el envío responde error claro.
+  appsScript: {
+    url: process.env.APPS_SCRIPT_URL ?? "",
+    secret: process.env.APPS_SCRIPT_SECRET ?? "",
+  },
 } as const;

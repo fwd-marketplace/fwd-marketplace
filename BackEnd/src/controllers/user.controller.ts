@@ -16,6 +16,20 @@ function readCredentials(body: unknown): { email: string; password: string; name
   return { email, password, name: typeof name === "string" ? name : undefined };
 }
 
+/** Lee el ticket + el código de 6 dígitos del paso de 2FA del login. */
+function readVerifyLoginInput(body: unknown): { ticket: string; code: string } {
+  const { ticket, code } = (body ?? {}) as Record<string, unknown>;
+
+  if (typeof ticket !== "string" || !ticket.trim()) {
+    throw new ApiError(400, "Falta el ticket de verificación");
+  }
+  if (typeof code !== "string" || !/^\d{6}$/.test(code)) {
+    throw new ApiError(400, "El código debe ser de 6 dígitos");
+  }
+
+  return { ticket, code };
+}
+
 function readResetInput(body: unknown): { email: string; locale?: string } {
   // Recuperación de contraseña: solo necesita el email. NO se pide la contraseña
   // (quien la olvidó no la sabe); Supabase Auth manda el correo con el enlace para
@@ -86,7 +100,15 @@ export async function register(req: Request, res: Response) {
 /** POST /api/users/login */
 export async function login(req: Request, res: Response) {
   const { email, password } = readCredentials(req.body);
+  // Con 2FA obligatorio, devuelve { mfa_required: true, ticket } (no la sesión).
   const result = await userService.loginUser({ email, password });
+  res.status(200).json(result);
+}
+
+/** POST /api/users/login/verify-otp (paso 2 del login: valida el código de email) */
+export async function verifyLoginOtp(req: Request, res: Response) {
+  const { ticket, code } = readVerifyLoginInput(req.body);
+  const result = await userService.verifyLoginOtp(ticket, code);
   res.status(200).json(result);
 }
 

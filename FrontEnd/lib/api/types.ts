@@ -157,6 +157,12 @@ export type ApiEmpresarioDetail = {
   tipos_proyecto: string | null;
   direccion: string | null;
   url_logo: string | null;
+  mision: string | null;
+  vision: string | null;
+  cultura: string | null;
+  valores: string | null;
+  contactos: string | null;
+  cantidad_empleados: string | null;
 };
 
 export type EmpresarioUpdateInput = {
@@ -169,6 +175,12 @@ export type EmpresarioUpdateInput = {
   soporte_tecnico?: string[];
   etapa?: 'idea' | 'mvp' | 'validating' | 'scaling';
   presupuesto?: 'under_500' | 'range_500_1000' | 'range_1000_2500' | 'flexible';
+  mision?: string;
+  vision?: string;
+  cultura?: string;
+  valores?: string[];
+  contactos?: Array<{ name: string; role: string; email: string }>;
+  cantidad_empleados?: string;
 };
 
 export type ApiMeProfile = {
