@@ -70,13 +70,38 @@ revelar qué cuentas están registradas.
 
 ### GET /api/users/me  (Bearer)
 → `200 { user, profile }`
-`profile` es `null` si aún no hizo onboarding. Si existe:
+`profile` es `null` si aún no hizo onboarding. Si existe, trae los campos base de `users` +
+el rol y, **según el rol, anida los datos de su perfil** (`estudiante` o `empresario`):
+
+Campos base (siempre que `profile` no sea `null`):
 ```json
 { "id": "...", "nombre": "...", "apellido1": "...", "apellido2": "...", "cedula": "...",
   "correo": "...", "estado_cuenta": "pendiente", "fecha_registro": "...",
   "role": { "nombre": "student" } }
 ```
 (`apellido1`, `apellido2`, `cedula` pueden ser `null` para empresa/emprendedor.)
+
+Si `role.nombre === "student"` añade `estudiante` (o `estudiante: null` si aún no creó la fila):
+```json
+{ "...campos base...",
+  "estudiante": {
+    "descripcion": "...", "especialidad": "...", "modalidad_preferida": "...",
+    "disponibilidad": "...", "titulo_fwd": null, "reputacion": 0,
+    "url_avatar": null, "url_github": null, "url_linkedin": null, "url_portfolio": null,
+    "skills": ["React", "Node"] } }
+```
+
+Si `role.nombre === "company"` añade `empresario` (o `empresario: null` si aún no creó la fila):
+```json
+{ "...campos base...",
+  "empresario": {
+    "id": "...", "tipo": "empresa", "nombre_comercial": "...", "descripcion": "...",
+    "sector": "...", "tipos_proyecto": "...", "apoyo_tecnico_necesario": "...",
+    "cedula_juridica": "...", "direccion": "...", "url_sitio_web": "...",
+    "etapa": "...", "presupuesto": "...", "url_logo": null } }
+```
+
+Para otros roles (p. ej. `admin`) `profile` trae solo los campos base, sin anidar.
 
 ### POST /api/users/refresh
 Renueva la sesión cuando el `access_token` expiró (~1h). **No** lleva Bearer.
