@@ -1,5 +1,6 @@
 import type { Request, Response, NextFunction } from "express";
 import { ApiError } from "../utils/ApiError";
+import { logger } from "../utils/logger";
 
 /** 404 para cualquier ruta no registrada. */
 export function notFound(req: Request, res: Response): void {
@@ -27,7 +28,9 @@ export function errorHandler(
     return;
   }
 
-  console.error("[error inesperado]", err);
+  logger.error("Error inesperado no controlado", {
+    error: err instanceof Error ? { message: err.message, stack: err.stack } : err,
+  });
   const message = err instanceof Error ? err.message : "Error interno del servidor";
   res.status(500).json({ error: message });
 }

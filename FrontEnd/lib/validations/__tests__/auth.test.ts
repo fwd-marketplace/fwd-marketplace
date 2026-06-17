@@ -4,37 +4,38 @@ import {
   EmpresaProfileSchema,
   EmprendedorProfileSchema,
   ResetPasswordSchema,
+  NewPasswordSchema,
 } from "../auth";
 
-describe("ResetPasswordSchema", () => {
-  const VALID_RESET = {
-    email: "maria@ejemplo.com",
-    password: "supersegura",
-    confirmPassword: "supersegura",
-  };
-
-  it("acepta datos válidos", () => {
-    expect(ResetPasswordSchema.safeParse(VALID_RESET).success).toBe(true);
+describe("ResetPasswordSchema (paso 1: solo email)", () => {
+  it("acepta un correo válido", () => {
+    expect(ResetPasswordSchema.safeParse({ email: "maria@ejemplo.com" }).success).toBe(true);
   });
 
   it("rechaza un correo inválido", () => {
-    expect(
-      ResetPasswordSchema.safeParse({ ...VALID_RESET, email: "no-es-correo" }).success,
-    ).toBe(false);
+    expect(ResetPasswordSchema.safeParse({ email: "no-es-correo" }).success).toBe(false);
+  });
+
+  it("rechaza un correo vacío", () => {
+    expect(ResetPasswordSchema.safeParse({ email: "" }).success).toBe(false);
+  });
+});
+
+describe("NewPasswordSchema (paso 2: nueva contraseña)", () => {
+  const VALID = { password: "supersegura", confirmPassword: "supersegura" };
+
+  it("acepta una contraseña válida y confirmada", () => {
+    expect(NewPasswordSchema.safeParse(VALID).success).toBe(true);
   });
 
   it("rechaza una contraseña de menos de 8 caracteres", () => {
     expect(
-      ResetPasswordSchema.safeParse({ ...VALID_RESET, password: "1234", confirmPassword: "1234" })
-        .success,
+      NewPasswordSchema.safeParse({ password: "1234", confirmPassword: "1234" }).success,
     ).toBe(false);
   });
 
   it("rechaza cuando las contraseñas no coinciden", () => {
-    const result = ResetPasswordSchema.safeParse({
-      ...VALID_RESET,
-      confirmPassword: "otraDistinta",
-    });
+    const result = NewPasswordSchema.safeParse({ ...VALID, confirmPassword: "otraDistinta" });
     expect(result.success).toBe(false);
     if (!result.success) {
       expect(result.error.issues[0]?.path).toContain("confirmPassword");

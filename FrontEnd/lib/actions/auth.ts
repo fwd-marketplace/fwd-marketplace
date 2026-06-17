@@ -7,6 +7,7 @@ import {
   EmpresaProfileSchema,
   EmprendedorProfileSchema,
   ResetPasswordSchema,
+  NewPasswordSchema,
 } from "@/lib/validations/auth";
 import { ok, err } from "@/lib/result";
 import type { Result } from "@/lib/result";
@@ -84,6 +85,7 @@ export async function loginUser(input: {
   }
 }
 
+/** Paso 1: pide el correo de recuperación (con el enlace para definir la clave). */
 export async function resetPassword(raw: unknown): Promise<Result<void>> {
   const parsed = ResetPasswordSchema.safeParse(raw);
   if (!parsed.success) {
@@ -92,7 +94,48 @@ export async function resetPassword(raw: unknown): Promise<Result<void>> {
   try {
     await apiFetch("/users/reset-password", {
       method: "POST",
-      body: JSON.stringify({ email: parsed.data.email, password: parsed.data.password }),
+      body: JSON.stringify({ email: parsed.data.email }),
+    });
+    return ok(undefined);
+  } catch (e) {
+    return err(e instanceof ApiError ? e.message : "Error de conexión");
+  }
+}
+
+/**
+ * Paso 2: confirma la contraseña nueva con la sesión de recovery que trae el
+ * enlace del correo. Los tokens los lee la página `/nueva-contrasena` del
+ * fragment de la URL (no se pueden leer en el servidor) y los pasa aquí.
+ */
+export async function confirmResetPassword(input: {
+  accessToken?: string;
+  refreshToken?: string;
+  tokenHash?: string;
+  password: string;
+  confirmPassword: string;
+}): Promise<Result<void>> {
+  const parsed = NewPasswordSchema.safeParse({
+    password: input.password,
+    confirmPassword: input.confirmPassword,
+  });
+  if (!parsed.success) {
+    return err(parsed.error.issues[0]?.message ?? "Datos inválidos");
+  }
+
+  const body: Record<string, string> = { password: parsed.data.password };
+  if (input.tokenHash) {
+    body.token_hash = input.tokenHash;
+  } else if (input.accessToken && input.refreshToken) {
+    body.access_token = input.accessToken;
+    body.refresh_token = input.refreshToken;
+  } else {
+    return err("El enlace de recuperación es inválido o expiró");
+  }
+
+  try {
+    await apiFetch("/users/reset-password/confirm", {
+      method: "POST",
+      body: JSON.stringify(body),
     });
     return ok(undefined);
   } catch (e) {
