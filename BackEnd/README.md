@@ -116,6 +116,7 @@ viven en los contratos de `docs/`:
 | PATCH | `/api/admin/users/:id/suspender` | JWT admin | Suspende una cuenta |
 | GET | `/api/admin/projects` | JWT admin | Todos los proyectos (incluye borradores) |
 | PATCH | `/api/admin/projects/:id/cancelar` | JWT admin | Cancela (modera) un proyecto |
+| GET | `/api/admin/students` | JWT admin | Todos los estudiantes (vista Talento) con perfil + skills |
 | GET | `/api/admin/students/pending` | JWT admin | Egresados FWD por verificar |
 | PATCH | `/api/admin/students/:id/verificar` | JWT admin | Verifica egresado (`estado_verificacion` → `verificado`) |
 | PATCH | `/api/admin/students/:id/rechazar` | JWT admin | Rechaza verificación (`estado_verificacion` → `rechazado`) |
