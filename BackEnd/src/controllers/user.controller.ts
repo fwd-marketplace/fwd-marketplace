@@ -17,6 +17,9 @@ function readCredentials(body: unknown): { email: string; password: string; name
 }
 
 function readResetInput(body: unknown): { email: string } {
+  // Recuperación de contraseña: solo necesita el email. NO se pide la contraseña
+  // (quien la olvidó no la sabe); Supabase Auth manda el correo con el enlace para
+  // fijar una nueva.
   const { email } = (body ?? {}) as Record<string, unknown>;
 
   if (typeof email !== "string" || !email.trim()) {
