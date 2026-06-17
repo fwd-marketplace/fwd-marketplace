@@ -23,13 +23,21 @@ vi.mock("../../config/supabase", () => ({
       },
       select: chain,
       eq: chain,
+      order: () => Promise.resolve(state.response),
       maybeSingle: () => Promise.resolve(state.response),
     });
     return builder;
   },
 }));
 
-import { approveUser, rejectUser, suspendUser } from "../admin.service";
+import {
+  approveUser,
+  rejectUser,
+  suspendUser,
+  listPendingStudents,
+  verifyStudent,
+  rejectStudent,
+} from "../admin.service";
 
 const TOKEN = "token";
 const USER = "550e8400-e29b-41d4-a716-446655440000";
@@ -67,5 +75,36 @@ describe("admin.service — cambios de estado de cuenta", () => {
   it("propaga un error de Supabase como 400", async () => {
     state.response = { data: null, error: { message: "boom" } };
     await expect(suspendUser(TOKEN, USER)).rejects.toMatchObject({ statusCode: 400 });
+  });
+});
+
+describe("admin.service — verificación de egresados FWD", () => {
+  const ESTUDIANTE = "660e8400-e29b-41d4-a716-446655440000";
+
+  it("listPendingStudents devuelve la lista de pendientes", async () => {
+    state.response = {
+      data: [{ id: ESTUDIANTE, titulo_fwd: "Cohorte 2026", estado_verificacion: "pendiente" }],
+      error: null,
+    };
+    const result = await listPendingStudents(TOKEN);
+    expect(result).toHaveLength(1);
+  });
+
+  it("verifyStudent pone estado_verificacion = 'verificado'", async () => {
+    state.response = { data: { id: ESTUDIANTE, estado_verificacion: "verificado" }, error: null };
+    const result = await verifyStudent(TOKEN, ESTUDIANTE);
+    expect(state.lastUpdate).toMatchObject({ estado_verificacion: "verificado" });
+    expect(result).toMatchObject({ estado_verificacion: "verificado" });
+  });
+
+  it("rejectStudent pone estado_verificacion = 'rechazado'", async () => {
+    state.response = { data: { id: ESTUDIANTE, estado_verificacion: "rechazado" }, error: null };
+    await rejectStudent(TOKEN, ESTUDIANTE);
+    expect(state.lastUpdate).toMatchObject({ estado_verificacion: "rechazado" });
+  });
+
+  it("lanza 404 si el estudiante no existe", async () => {
+    state.response = { data: null, error: null };
+    await expect(verifyStudent(TOKEN, ESTUDIANTE)).rejects.toMatchObject({ statusCode: 404 });
   });
 });

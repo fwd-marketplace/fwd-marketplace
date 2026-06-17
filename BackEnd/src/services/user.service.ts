@@ -209,7 +209,7 @@ export async function getUserFromToken(accessToken: string) {
 
 /** Columnas de `estudiante` que muestra la página de perfil del junior. */
 const ESTUDIANTE_DETAIL_SELECT =
-  "id, descripcion, especialidad, modalidad_preferida, disponibilidad, titulo_fwd, reputacion, url_avatar, url_github, url_linkedin, url_portfolio";
+  "id, descripcion, especialidad, modalidad_preferida, disponibilidad, titulo_fwd, estado_verificacion, reputacion, url_avatar, url_github, url_linkedin, url_portfolio";
 
 /** Columnas de `empresario` que muestra la página de perfil de empresa/emprendedor. */
 const EMPRESARIO_DETAIL_SELECT =
@@ -276,6 +276,7 @@ export async function getMyProfile(accessToken: string, userId: string) {
         modalidad_preferida: estudiante.modalidad_preferida,
         disponibilidad: estudiante.disponibilidad,
         titulo_fwd: estudiante.titulo_fwd,
+        estado_verificacion: estudiante.estado_verificacion,
         reputacion: estudiante.reputacion,
         url_avatar: estudiante.url_avatar,
         url_github: estudiante.url_github,

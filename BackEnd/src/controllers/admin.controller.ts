@@ -8,6 +8,9 @@ import {
   suspendUser,
   listAllProjects,
   cancelProject,
+  listPendingStudents,
+  verifyStudent,
+  rejectStudent,
 } from "../services/admin.service";
 
 function getToken(req: Request): string {
@@ -59,4 +62,24 @@ export async function cancel(req: Request, res: Response) {
   const id = readUuid(req.params.id, "del proyecto");
   const project = await cancelProject(getToken(req), id);
   res.status(200).json({ project });
+}
+
+/** GET /api/admin/students/pending (egresados FWD por verificar) */
+export async function listPendingEgresados(req: Request, res: Response) {
+  const students = await listPendingStudents(getToken(req));
+  res.status(200).json({ students });
+}
+
+/** PATCH /api/admin/students/:id/verificar (:id = estudiante.id) */
+export async function verifyEgresado(req: Request, res: Response) {
+  const id = readUuid(req.params.id, "del estudiante");
+  const student = await verifyStudent(getToken(req), id);
+  res.status(200).json({ student });
+}
+
+/** PATCH /api/admin/students/:id/rechazar (:id = estudiante.id) */
+export async function rejectEgresado(req: Request, res: Response) {
+  const id = readUuid(req.params.id, "del estudiante");
+  const student = await rejectStudent(getToken(req), id);
+  res.status(200).json({ student });
 }

@@ -5,43 +5,24 @@ import type {
   EmprendedorOnboarding,
 } from "../../validations/onboarding";
 
-/** Respuestas por tabla + registro de los `delete()` para verificar el rollback. */
-const { responses, tracker } = vi.hoisted(() => ({
-  responses: {} as Record<string, { data: unknown; error: unknown }>,
-  tracker: { deletes: [] as string[] },
+/**
+ * El onboarding ahora corre vía RPC transaccional (ver migración 0019). El mock
+ * captura la llamada y devuelve la respuesta configurada para cada función.
+ */
+const { state } = vi.hoisted(() => ({
+  state: {
+    result: { error: null as unknown },
+    calls: [] as Array<{ fn: string; args: Record<string, unknown> }>,
+  },
 }));
 
-// Builder encadenable: los terminales (maybeSingle/single) y el await directo
-// (`then`) resuelven la respuesta configurada para la última tabla usada en
-// `from()`. El onboarding es secuencial (await entre cada `from`), así que un
-// builder singleton basta. Mismo patrón que perfil.service.test / oferta.service.test.
 vi.mock("../../config/supabase", () => ({
-  supabaseForToken: () => {
-    let table = "";
-    const builder: Record<string, unknown> = {};
-    const chain = () => builder;
-    Object.assign(builder, {
-      from: (t: string) => {
-        table = t;
-        return builder;
-      },
-      select: chain,
-      insert: chain,
-      update: chain,
-      delete: () => {
-        tracker.deletes.push(table);
-        return builder;
-      },
-      eq: chain,
-      in: chain,
-      order: chain,
-      maybeSingle: () => Promise.resolve(responses[table] ?? { data: null, error: null }),
-      single: () => Promise.resolve(responses[table] ?? { data: null, error: null }),
-      then: (resolve: (value: unknown) => unknown) =>
-        resolve(responses[table] ?? { data: null, error: null }),
-    });
-    return builder;
-  },
+  supabaseForToken: () => ({
+    rpc: (fn: string, args: Record<string, unknown>) => {
+      state.calls.push({ fn, args });
+      return Promise.resolve(state.result);
+    },
+  }),
 }));
 
 import { onboardJunior, onboardEmpresa, onboardEmprendedor } from "../onboarding.service";
@@ -84,92 +65,79 @@ const emprendedorInput: EmprendedorOnboarding = {
 };
 
 beforeEach(() => {
-  for (const key of Object.keys(responses)) delete responses[key];
-  tracker.deletes = [];
+  state.result = { error: null };
+  state.calls = [];
 });
 
 describe("onboardJunior", () => {
-  /** users sin onboarding previo (data null) + inserts OK; rol y estudiante OK. */
-  function happyPath() {
-    responses["users"] = { data: null, error: null };
-    responses["roles"] = { data: { id: "role-student" }, error: null };
-    responses["estudiante"] = { data: { id: "est-1" }, error: null };
-    responses["skills"] = { data: [{ id: "s1", nombre: "React" }], error: null };
-    responses["student_skills"] = { data: null, error: null };
-  }
-
-  it("crea users + estudiante + skills y devuelve student/pendiente", async () => {
-    happyPath();
+  it("llama al RPC onboard_junior y devuelve student/pendiente", async () => {
     const result = await onboardJunior(TOKEN, USER, CORREO, juniorInput);
+
     expect(result).toEqual({ role: "student", estado_cuenta: "pendiente" });
+    expect(state.calls[0]?.fn).toBe("onboard_junior");
+    // El locale/arrays se serializan; el user id se propaga.
+    expect(state.calls[0]?.args).toMatchObject({
+      p_user_id: USER,
+      p_correo: CORREO,
+      p_modalidad: JSON.stringify(["remote"]),
+      p_tech_stack: ["React"],
+    });
   });
 
   it("rechaza (409) si el usuario ya completó onboarding", async () => {
-    happyPath();
-    responses["users"] = { data: { id: USER }, error: null };
+    state.result = { error: { code: "P0001", message: "ALREADY_ONBOARDED" } };
     await expect(onboardJunior(TOKEN, USER, CORREO, juniorInput)).rejects.toMatchObject({
       statusCode: 409,
     });
   });
 
+  it("rechaza (403) si intenta onboardear otra cuenta (FORBIDDEN)", async () => {
+    state.result = { error: { code: "42501", message: "FORBIDDEN" } };
+    await expect(onboardJunior(TOKEN, USER, CORREO, juniorInput)).rejects.toMatchObject({
+      statusCode: 403,
+    });
+  });
+
   it("rechaza (500) si falta el rol en la BD (seeds no aplicados)", async () => {
-    happyPath();
-    responses["roles"] = { data: null, error: null };
+    state.result = { error: { code: "P0002", message: "MISSING_ROLE" } };
     await expect(onboardJunior(TOKEN, USER, CORREO, juniorInput)).rejects.toMatchObject({
       statusCode: 500,
     });
   });
 
-  it("propaga (400) si falla la creación del estudiante", async () => {
-    happyPath();
-    responses["estudiante"] = { data: null, error: { message: "boom" } };
+  it("propaga (400) ante un error genérico del RPC", async () => {
+    state.result = { error: { code: "23502", message: "null value" } };
     await expect(onboardJunior(TOKEN, USER, CORREO, juniorInput)).rejects.toMatchObject({
       statusCode: 400,
     });
-  });
-
-  it("limpia la fila users (rollback) si falla un paso posterior", async () => {
-    happyPath();
-    responses["estudiante"] = { data: null, error: { message: "boom" } };
-    await expect(onboardJunior(TOKEN, USER, CORREO, juniorInput)).rejects.toMatchObject({
-      statusCode: 400,
-    });
-    expect(tracker.deletes).toContain("users");
   });
 });
 
 describe("onboardEmpresa", () => {
-  it("crea users + empresario y devuelve company/pendiente", async () => {
-    responses["users"] = { data: null, error: null };
-    responses["roles"] = { data: { id: "role-company" }, error: null };
-    responses["empresario"] = { data: null, error: null };
+  it("llama al RPC onboard_empresa y devuelve company/pendiente", async () => {
     const result = await onboardEmpresa(TOKEN, USER, CORREO, empresaInput);
-    expect(result).toEqual({ role: "company", estado_cuenta: "pendiente" });
-  });
 
-  it("rechaza (409) si el usuario ya completó onboarding", async () => {
-    responses["users"] = { data: { id: USER }, error: null };
-    await expect(onboardEmpresa(TOKEN, USER, CORREO, empresaInput)).rejects.toMatchObject({
-      statusCode: 409,
+    expect(result).toEqual({ role: "company", estado_cuenta: "pendiente" });
+    expect(state.calls[0]?.fn).toBe("onboard_empresa");
+    expect(state.calls[0]?.args).toMatchObject({
+      p_nombre_comercial: "Acme CR",
+      p_cedula_juridica: "3-101-000000",
     });
   });
 
-  it("propaga (400) si falla la creación del empresario", async () => {
-    responses["users"] = { data: null, error: null };
-    responses["roles"] = { data: { id: "role-company" }, error: null };
-    responses["empresario"] = { data: null, error: { message: "boom" } };
+  it("rechaza (409) si el usuario ya completó onboarding", async () => {
+    state.result = { error: { code: "P0001", message: "ALREADY_ONBOARDED" } };
     await expect(onboardEmpresa(TOKEN, USER, CORREO, empresaInput)).rejects.toMatchObject({
-      statusCode: 400,
+      statusCode: 409,
     });
   });
 });
 
 describe("onboardEmprendedor", () => {
-  it("crea users + empresario(emprendedor) y devuelve company/pendiente", async () => {
-    responses["users"] = { data: null, error: null };
-    responses["roles"] = { data: { id: "role-company" }, error: null };
-    responses["empresario"] = { data: null, error: null };
+  it("llama al RPC onboard_emprendedor y devuelve company/pendiente", async () => {
     const result = await onboardEmprendedor(TOKEN, USER, CORREO, emprendedorInput);
+
     expect(result).toEqual({ role: "company", estado_cuenta: "pendiente" });
+    expect(state.calls[0]?.fn).toBe("onboard_emprendedor");
   });
 });

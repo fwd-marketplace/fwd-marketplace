@@ -95,3 +95,55 @@ export async function cancelProject(accessToken: string, projectId: string) {
   if (!data) throw new ApiError(404, "Proyecto no encontrado");
   return data;
 }
+
+/**
+ * Lista los estudiantes (egresados FWD) con la verificación 'pendiente', para que el
+ * admin los revise. Solo admin (RLS: `estudiante_admin_ver` via `is_admin()`, 0019).
+ * Trae el `titulo_fwd` auto-declarado y los datos del usuario para identificarlos.
+ */
+export async function listPendingStudents(accessToken: string) {
+  const client = supabaseForToken(accessToken);
+  const { data, error } = await client
+    .from("estudiante")
+    .select("id, titulo_fwd, estado_verificacion, usuario:users(id, nombre, apellido1, correo)")
+    .eq("estado_verificacion", "pendiente")
+    .order("id", { ascending: true });
+
+  if (error) throw new ApiError(500, error.message);
+  return data;
+}
+
+/** Estados de verificación que el admin puede fijar (no 'pendiente': eso es el default). */
+type VerificationState = "verificado" | "rechazado";
+
+/**
+ * Fija la verificación de un estudiante. Solo admin (RLS: `estudiante_admin_verifica`
+ * via `is_admin()`, 0019). 404 si no existe. Base de verify/reject.
+ */
+async function setStudentVerification(
+  accessToken: string,
+  estudianteId: string,
+  estado: VerificationState,
+) {
+  const client = supabaseForToken(accessToken);
+  const { data, error } = await client
+    .from("estudiante")
+    .update({ estado_verificacion: estado })
+    .eq("id", estudianteId)
+    .select("id, estado_verificacion, titulo_fwd")
+    .maybeSingle();
+
+  if (error) throw new ApiError(400, error.message);
+  if (!data) throw new ApiError(404, "Estudiante no encontrado");
+  return data;
+}
+
+/** Verifica al egresado: estado_verificacion -> 'verificado' (lo hace visible a empresas). */
+export function verifyStudent(accessToken: string, estudianteId: string) {
+  return setStudentVerification(accessToken, estudianteId, "verificado");
+}
+
+/** Rechaza la verificación del egresado: estado_verificacion -> 'rechazado'. */
+export function rejectStudent(accessToken: string, estudianteId: string) {
+  return setStudentVerification(accessToken, estudianteId, "rechazado");
+}

@@ -1042,6 +1042,50 @@ export type Database = {
         }
         Returns: string | null
       }
+      onboard_junior: {
+        Args: {
+          p_user_id: string
+          p_correo: string
+          p_nombre: string
+          p_apellido1: string
+          p_apellido2: string | null
+          p_cedula: string
+          p_especialidad: string
+          p_modalidad: string
+          p_disponibilidad: string
+          p_url_github: string | null
+          p_url_linkedin: string | null
+          p_url_portfolio: string | null
+          p_descripcion: string | null
+          p_tech_stack: string[]
+        }
+        Returns: undefined
+      }
+      onboard_empresa: {
+        Args: {
+          p_user_id: string
+          p_correo: string
+          p_nombre_comercial: string
+          p_sector: string
+          p_descripcion: string
+          p_cedula_juridica: string
+          p_direccion: string
+          p_tipos_proyecto: string
+        }
+        Returns: undefined
+      }
+      onboard_emprendedor: {
+        Args: {
+          p_user_id: string
+          p_correo: string
+          p_nombre_proyecto: string
+          p_etapa: string
+          p_apoyo_tecnico: string
+          p_presupuesto: string
+          p_descripcion: string | null
+        }
+        Returns: undefined
+      }
     }
     Enums: {
       [_ in never]: never

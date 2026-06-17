@@ -134,6 +134,15 @@ Los links del `estudiante` pueden venir `null`/`""` si el junior no los complet�
 | `PATCH /api/admin/users/:id/suspender` | Bearer admin | `{ user: {...} }` (estado → suspendida) |
 | `GET /api/admin/projects` | Bearer admin | `{ projects: [...] }` (todos, incluye borradores) |
 | `PATCH /api/admin/projects/:id/cancelar` | Bearer admin | `{ project: {...} }` (estado → cancelado) |
+| `GET /api/admin/students/pending` | Bearer admin | `{ students: [...] }` (egresados FWD con `estado_verificacion='pendiente'`; trae `titulo_fwd` + datos del usuario) |
+| `PATCH /api/admin/students/:id/verificar` | Bearer admin | `{ student: {...} }` (`estado_verificacion` → `verificado`; lo hace visible a empresas). `:id` = `estudiante.id` |
+| `PATCH /api/admin/students/:id/rechazar` | Bearer admin | `{ student: {...} }` (`estado_verificacion` → `rechazado`). `:id` = `estudiante.id` |
+
+> **Verificación de egresados FWD.** El `titulo_fwd` del junior es **auto-declarado** (lo edita
+> en su perfil). El admin lo revisa y fija `estudiante.estado_verificacion`. Solo los `verificado`
+> son visibles para empresas/admin (RLS). Si el junior **cambia su `titulo_fwd`**, su estado vuelve
+> a `pendiente` automáticamente (hay que re-verificarlo). El `estado_verificacion` viene en
+> `GET /api/users/me` y `GET /api/users/me/perfil` para que el FE muestre el estado/badge.
 
 ## Pendientes para el FrontEnd
 
