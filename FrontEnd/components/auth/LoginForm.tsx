@@ -6,7 +6,7 @@ import Link from "next/link";
 import { useTranslations } from "next-intl";
 import { Eye, EyeOff } from "lucide-react";
 import { FwdGeoBackdrop } from "@/components/ui/fwd-geo-backdrop";
-import { loginUser } from "@/lib/actions/auth";
+import { loginUser, startOAuth } from "@/lib/actions/auth";
 
 function GoogleIcon() {
   return (
@@ -54,6 +54,20 @@ export function LoginForm() {
 
   function togglePasswordVisibility() {
     setIsPasswordVisible((prev) => !prev);
+  }
+
+  function handleOAuth(provider: "google" | "github") {
+    setError(null);
+    setPendingMessage(null);
+    startTransition(async () => {
+      const result = await startOAuth(provider, locale);
+      if (!result.ok) {
+        setError(result.error);
+        return;
+      }
+      // Redirige el navegador al provider; el flujo vuelve por /auth/callback.
+      window.location.href = result.data.url;
+    });
   }
 
   function handleSubmit(e: React.FormEvent) {
@@ -109,7 +123,9 @@ export function LoginForm() {
           <div className="space-y-3">
             <button
               type="button"
-              className="flex w-full items-center justify-center gap-3 rounded-full border border-border-strong bg-surface px-6 py-3 font-body text-sm font-medium text-ink-strong transition-colors duration-[--duration-fast] hover:bg-surface-sunken"
+              onClick={() => handleOAuth("google")}
+              disabled={isPending}
+              className="flex w-full items-center justify-center gap-3 rounded-full border border-border-strong bg-surface px-6 py-3 font-body text-sm font-medium text-ink-strong transition-colors duration-[--duration-fast] hover:bg-surface-sunken disabled:opacity-60"
             >
               <GoogleIcon />
               {t("continue_google")}
@@ -117,7 +133,9 @@ export function LoginForm() {
 
             <button
               type="button"
-              className="flex w-full items-center justify-center gap-3 rounded-full bg-ink-strong px-6 py-3 font-body text-sm font-medium text-white transition-opacity duration-[--duration-fast] hover:opacity-90"
+              onClick={() => handleOAuth("github")}
+              disabled={isPending}
+              className="flex w-full items-center justify-center gap-3 rounded-full bg-ink-strong px-6 py-3 font-body text-sm font-medium text-white transition-opacity duration-[--duration-fast] hover:opacity-90 disabled:opacity-60"
             >
               <GitHubIcon />
               {t("continue_github")}

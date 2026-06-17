@@ -109,6 +109,13 @@
     "no_account": "Don't have an account?",
     "register_link": "Sign up here"
   },
+  "oauth_callback": {
+    "loading": "Completing sign in...",
+    "error_title": "We couldn't sign you in",
+    "error_no_session": "No session received from the provider. Please try signing in again.",
+    "error_suspended": "Your account is suspended or rejected.",
+    "back_to_login": "Back to sign in"
+  },
   "reset_password": {
     "brand": "FWD Talent",
     "back_to_login": "Back to login",
