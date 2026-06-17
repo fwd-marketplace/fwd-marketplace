@@ -87,7 +87,9 @@ viven en los contratos de `docs/`:
 | GET | `/api/health` | — | Healthcheck |
 | POST | `/api/users/register` | — | Registro (`signUp`) → `{ user, session }` |
 | POST | `/api/users/login` | — | Login (`signInWithPassword`) → `{ user, session }` |
-| POST | `/api/users/reset-password` | — | Envía el correo de recuperación de contraseña |
+| POST | `/api/users/reset-password` | — | Envía el correo de recuperación (acepta `locale`) |
+| POST | `/api/users/reset-password/confirm` | — | Fija la nueva contraseña con el token del correo |
+| GET | `/api/users/oauth/:provider` | — | Login social: URL de autorización (Google/GitHub) |
 | POST | `/api/users/refresh` | — | Renueva la sesión con el `refresh_token` |
 | POST | `/api/users/logout` | — | Revoca el `refresh_token` |
 | GET | `/api/users/me` | JWT | Usuario autenticado + perfil (`{ user, profile }`) |
@@ -120,6 +122,10 @@ en las rutas protegidas: `Authorization: Bearer <access_token>`.
 
 > Si en tu proyecto Supabase la confirmación por email está activada, `register`
 > devolverá `session: null` hasta que el usuario confirme su correo.
+
+> **Rate limiting.** Las rutas de auth (`login`, `register`, `reset-password` y su `confirm`)
+> están limitadas por IP. Al exceder el cupo responden `429` con header `Retry-After`.
+> Detalle y cupos en `docs/auth-contract.md`.
 
 ## Cómo consumirlo desde el FrontEnd (fetch)
 
@@ -168,3 +174,14 @@ const meRes = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/users/me`, {
   headers: { Authorization: `Bearer ${accessToken}` },
 });
 ```
+
+## Notas de mantenimiento
+
+- **Tras cambiar el esquema en Supabase**, regenera `src/types/database.types.ts` para que
+  `tsc` valide las consultas y RPCs nuevas.
+- **Conflicto recurrente al mergear `perfil.routes.ts` / `perfil.controller.ts`.** Ya rompió
+  el build dos veces porque la resolución del merge dejó imports duplicados o perdió rutas.
+  Al resolverlo: **unir** los imports en **una sola línea** (no dejar ambos lados) y conservar
+  **las cuatro rutas** de perfil: `GET /` (`getMe`), `PATCH /` (`updateMe`),
+  `POST /avatar` (`updateAvatar`) y `POST /logo` (`uploadLogo`). Verifica con `npm run typecheck`
+  (los tests no detectan imports duplicados; `tsc` sí).
