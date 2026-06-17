@@ -74,8 +74,10 @@ export function LoginForm() {
       } else if (estado_cuenta === "activa") {
         if (role === "admin") {
           router.push(`/${locale}/admin`);
-        } else if (role === "empresa" || role === "emprendedor") {
+        } else if (role === "company" || role === "empresa" || role === "emprendedor") {
           router.push(`/${locale}/empresa/dashboard`);
+        } else if (role === "student" || role === "junior") {
+          router.push(`/${locale}/bienvenida`);
         } else {
           router.push(`/${locale}/marketplace`);
         }
@@ -150,9 +152,9 @@ export function LoginForm() {
                 <label htmlFor="login-password" className="font-body text-xs font-semibold text-ink-muted">
                   {t("password_label")}
                 </label>
-                <a href="#" className="font-body text-xs text-ink-subtle underline underline-offset-2 hover:text-ink-muted">
+                <Link href={`/${locale}/recuperar-contrasena`} className="font-body text-xs text-ink-subtle underline underline-offset-2 hover:text-ink-muted">
                   {t("forgot_password")}
-                </a>
+                </Link>
               </div>
               <div className="relative">
                 <input

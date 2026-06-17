@@ -4,6 +4,8 @@ import { ApiError } from "../utils/ApiError";
 import {
   listPendingUsers,
   approveUser,
+  rejectUser,
+  suspendUser,
   listAllProjects,
   cancelProject,
 } from "../services/admin.service";
@@ -32,6 +34,20 @@ export async function approve(req: Request, res: Response) {
     throw new ApiError(400, "Falta el id del usuario");
   }
   const user = await approveUser(getToken(req), id);
+  res.status(200).json({ user });
+}
+
+/** PATCH /api/admin/users/:id/rechazar */
+export async function reject(req: Request, res: Response) {
+  const id = readUuid(req.params.id, "del usuario");
+  const user = await rejectUser(getToken(req), id);
+  res.status(200).json({ user });
+}
+
+/** PATCH /api/admin/users/:id/suspender */
+export async function suspend(req: Request, res: Response) {
+  const id = readUuid(req.params.id, "del usuario");
+  const user = await suspendUser(getToken(req), id);
   res.status(200).json({ user });
 }
 

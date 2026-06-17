@@ -3,12 +3,52 @@ import {
   JuniorProfileSchema,
   EmpresaProfileSchema,
   EmprendedorProfileSchema,
+  ResetPasswordSchema,
 } from "../auth";
+
+describe("ResetPasswordSchema", () => {
+  const VALID_RESET = {
+    email: "maria@ejemplo.com",
+    password: "supersegura",
+    confirmPassword: "supersegura",
+  };
+
+  it("acepta datos válidos", () => {
+    expect(ResetPasswordSchema.safeParse(VALID_RESET).success).toBe(true);
+  });
+
+  it("rechaza un correo inválido", () => {
+    expect(
+      ResetPasswordSchema.safeParse({ ...VALID_RESET, email: "no-es-correo" }).success,
+    ).toBe(false);
+  });
+
+  it("rechaza una contraseña de menos de 8 caracteres", () => {
+    expect(
+      ResetPasswordSchema.safeParse({ ...VALID_RESET, password: "1234", confirmPassword: "1234" })
+        .success,
+    ).toBe(false);
+  });
+
+  it("rechaza cuando las contraseñas no coinciden", () => {
+    const result = ResetPasswordSchema.safeParse({
+      ...VALID_RESET,
+      confirmPassword: "otraDistinta",
+    });
+    expect(result.success).toBe(false);
+    if (!result.success) {
+      expect(result.error.issues[0]?.path).toContain("confirmPassword");
+    }
+  });
+});
 
 /* ── JuniorProfileSchema ─────────────────────────────────── */
 describe("JuniorProfileSchema", () => {
   const VALID_JUNIOR = {
-    fullName: "María García",
+    nombre: "María",
+    apellido1: "García",
+    apellido2: "López",
+    cedula: "1-1234-5678",
     specialization: "frontend" as const,
     modalities: ["remote"] as const,
     availability: "immediate" as const,
@@ -34,9 +74,9 @@ describe("JuniorProfileSchema", () => {
     expect(result.success).toBe(true);
   });
 
-  it("rejects when fullName is too short", () => {
+  it("rejects when nombre is too short", () => {
     expect(
-      JuniorProfileSchema.safeParse({ ...VALID_JUNIOR, fullName: "A" }).success
+      JuniorProfileSchema.safeParse({ ...VALID_JUNIOR, nombre: "A" }).success
     ).toBe(false);
   });
 
@@ -79,6 +119,7 @@ describe("EmpresaProfileSchema", () => {
     description: "Empresa de software enfocada en soluciones logísticas.",
     websiteUrl: "https://techcr.com",
     cedulaJuridica: "3-101-123456",
+    direccion: "San José, Costa Rica",
     projectTypes: ["web"] as const,
     logoUrl: undefined,
   };

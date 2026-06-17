@@ -1,17 +1,24 @@
 export interface StudentProfile {
-  name: string;
-  role: string;
+  firstName: string;
+  lastName1: string;
+  lastName2: string;
+  specialty: string;
   program: string;
-  location: string;
+  availability: string;
   email: string;
   bio: string;
   badges: string[];
   skills: string[];
+  avatarUrl: string;
   links: {
     github?: string;
     linkedin?: string;
     portfolio?: string;
   };
+}
+
+export function fullName(profile: Pick<StudentProfile, "firstName" | "lastName1" | "lastName2">): string {
+  return [profile.firstName, profile.lastName1, profile.lastName2].filter(Boolean).join(" ");
 }
 
 export interface Activity {
@@ -33,40 +40,4 @@ export interface ApplicationStats {
   activeCount: number;
   scheduledInterviews: number;
   compatibilityIndex: number;
-}
-
-export type NotifType = "oportunidad" | "rechazo" | "visibilidad" | "proyecto";
-
-export interface MockNotification {
-  id: string;
-  type: NotifType;
-  category: string;
-  time: string;
-  message: string;
-  tags: string[];
-  unread: boolean;
-}
-
-export interface MockSuggestedProject {
-  id: string;
-  title: string;
-  company: string;
-  duration: string;
-  match: string;
-  description: string;
-  skills: string[];
-}
-
-export interface WorkProject {
-  id: string;
-  title: string;
-  description: string;
-  browserBar: string;
-  variant: "dashboard" | "landing" | "inventory";
-}
-
-export interface OpportunityItem {
-  id: string;
-  title: string;
-  location: string;
 }

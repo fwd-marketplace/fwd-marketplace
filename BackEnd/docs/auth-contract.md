@@ -1,6 +1,6 @@
 # Contrato de API — Autenticación, Onboarding y Aprobación
 
-> **Última actualización:** 2026-06-12 · Fase 1 (auth + onboarding + aprobación) + sesión (refresh / logout).
+> **Última actualización:** 2026-06-15 · Fase 1 (auth + onboarding + edición de perfil + aprobación/rechazo/suspensión) + sesión (refresh / logout).
 > Este archivo es la **fuente de verdad** del contrato. Si te pasan una versión nueva,
 > **reemplazá el archivo completo** — no fusiones a mano (evita arrastrar frases viejas).
 
@@ -63,9 +63,11 @@ Body: `{ "email": string, "password": string }`
 → `200 { user, profile }`
 `profile` es `null` si aún no hizo onboarding. Si existe:
 ```json
-{ "id": "...", "nombre": "...", "apellido1": "...", "cedula": "...",
-  "correo": "...", "estado_cuenta": "pendiente", "role": { "nombre": "student" } }
+{ "id": "...", "nombre": "...", "apellido1": "...", "apellido2": "...", "cedula": "...",
+  "correo": "...", "estado_cuenta": "pendiente", "fecha_registro": "...",
+  "role": { "nombre": "student" } }
 ```
+(`apellido1`, `apellido2`, `cedula` pueden ser `null` para empresa/emprendedor.)
 
 ### POST /api/users/refresh
 Renueva la sesión cuando el `access_token` expiró (~1h). **No** lleva Bearer.
@@ -79,6 +81,22 @@ Revoca el `refresh_token` en Supabase Auth. **No** lleva Bearer.
 Body: `{ "refresh_token": string }`
 → `200 { "ok": true }` (idempotente: responde `200` aunque el token ya fuera inválido).
 El FE debe además **borrar las cookies** httpOnly. Ver **"Manejo de sesión"** arriba.
+
+### Valores permitidos en onboarding (enums estrictos) — mandar EXACTO
+
+Estos campos son `enum`: si mandás un valor fuera de la lista, el BackEnd responde `400`.
+```
+junior.especializacion : "frontend" | "backend" | "fullstack" | "ia"
+junior.disponibilidad  : "immediate" | "two_weeks" | "one_month" | "unavailable"
+empresa.tipo           : "empresa"        (fijo)
+emprendedor.tipo       : "emprendedor"    (fijo)
+emprendedor.etapa      : "idea" | "mvp" | "validating" | "scaling"
+emprendedor.presupuesto: "under_500" | "range_500_1000" | "range_1000_2500" | "flexible"
+```
+Los arrays `modalidad`, `tech_stack`, `sector`, `tipos_proyecto`, `soporte_tecnico` son
+**libres** (cualquier string, mínimo 1 elemento); no dan `400` por valor, pero usá valores
+consistentes. Límites: `nombre/apellido1` 1-100, `cedula` 1-20, `bio` máx 500,
+`descripcion` empresa máx 300 / emprendedor máx 400.
 
 ### POST /api/users/onboarding/junior  (Bearer)
 Crea `users` (estado `pendiente`) + `estudiante` + `student_skills`.
@@ -123,11 +141,46 @@ Crea `users` (`pendiente`) + `empresario` (`tipo='emprendedor'`).
 ```
 → `201 { "role": "company", "estado_cuenta": "pendiente" }`
 
+### PATCH /api/users/me/perfil  (Bearer)
+El usuario edita su **propio** perfil: el junior su fila `estudiante`, la empresa o
+emprendedor su fila `empresario`. El BackEnd elige la tabla según el rol del usuario
+(no hace falta mandarlo). Es una **actualización parcial**: mandá solo los campos a
+cambiar, pero **al menos uno** (body vacío → `400`). Los enums son los mismos del
+onboarding (valor fuera de lista → `400`).
+
+Campos aceptados (todos opcionales, nombres del FE):
+```
+junior (estudiante):   bio, especializacion, modalidad[], disponibilidad,
+                       link_github, link_linkedin, link_portfolio
+empresa/emprendedor:   nombre_comercial, descripcion, sector[], tipos_proyecto[],
+(empresario)           soporte_tecnico[], ruc, direccion, url_sitio_web,
+                       etapa, presupuesto
+```
+Body de ejemplo (junior):
+```json
+{ "bio": "Actualicé mi bio", "link_github": "https://github.com/ana", "modalidad": ["remote"] }
+```
+→ `200 { "perfil": { ...la fila actualizada (columnas de BD)... } }`
+Los arrays se devuelven como **JSON string** (igual que en las lecturas: hay que
+`JSON.parse()`). Errores: `400` body inválido/vacío; `403` sin onboarding o rol sin
+perfil editable (ej. admin); `404` si no existe la fila de perfil.
+
+Notas de alcance: este endpoint **no** edita identidad (`nombre`, `apellido`, `cedula`,
+`correo`), ni `estado_cuenta`/`estado_verificacion`, ni el `tech_stack` (skills). El
+campo `nombre_comercial` actualiza el nombre visible de la empresa en el marketplace
+(no toca `users.nombre`).
+
 ### GET /api/admin/users/pending  (Bearer admin)
 → `200 { users: [...] }` — cuentas en `pendiente`.
 
 ### PATCH /api/admin/users/:id/aprobar  (Bearer admin)
 → `200 { user: { id, estado_cuenta: "activa" } }`
+
+### PATCH /api/admin/users/:id/rechazar  (Bearer admin)
+Rechaza una cuenta pendiente. → `200 { user: { id, estado_cuenta: "rechazada" } }`
+
+### PATCH /api/admin/users/:id/suspender  (Bearer admin)
+Suspende una cuenta activa. → `200 { user: { id, estado_cuenta: "suspendida" } }`
 
 ---
 

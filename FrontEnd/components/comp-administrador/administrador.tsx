@@ -2,18 +2,18 @@
 
 import React from 'react';
 import { useTranslations } from 'next-intl';
-import { 
-  Users, 
-  Building2, 
-  FolderKanban, 
-  Clock, 
-  Search, 
-  Filter, 
-  Check, 
-  X, 
-  Shield, 
-  UserMinus, 
-  UserCheck 
+import {
+  Users,
+  Building2,
+  FolderKanban,
+  Clock,
+  Search,
+  Filter,
+  Check,
+  X,
+  Shield,
+  UserMinus,
+  UserCheck
 } from 'lucide-react';
 import { Card } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
@@ -124,8 +124,8 @@ export function Administrador() {
 
   // Filtrado de usuarios
   const filteredUsers = users.filter(user => {
-    const matchesSearch = user.name.toLowerCase().includes(userSearch.toLowerCase()) || 
-                          user.email.toLowerCase().includes(userSearch.toLowerCase());
+    const matchesSearch = user.name.toLowerCase().includes(userSearch.toLowerCase()) ||
+      user.email.toLowerCase().includes(userSearch.toLowerCase());
     const matchesRole = userRoleFilter === 'all' || user.role === userRoleFilter;
     return matchesSearch && matchesRole;
   });
@@ -205,7 +205,7 @@ export function Administrador() {
 
       {/* Tab Contents */}
       <div className="space-y-6">
-        
+
         {/* VIEW: SOLICITUDES DE ESTUDIANTES */}
         {activeTab === 'applications' && (
           <div className="space-y-4">
@@ -253,15 +253,15 @@ export function Administrador() {
                           <td className="p-4 text-right">
                             {app.status === 'pending' ? (
                               <div className="flex justify-end gap-2">
-                                <Button 
-                                  size="sm" 
+                                <Button
+                                  size="sm"
                                   onClick={() => handleApproveApp(app.id)}
                                   className="bg-accent hover:bg-accent/90 text-white gap-1 rounded-full text-xs font-bold px-3 py-1 h-7"
                                 >
                                   <Check className="size-3" /> {t('applications.approve')}
                                 </Button>
-                                <Button 
-                                  size="sm" 
+                                <Button
+                                  size="sm"
                                   onClick={() => handleRejectApp(app.id)}
                                   className="bg-magenta hover:bg-magenta/90 text-white gap-1 rounded-full text-xs font-bold px-3 py-1 h-7"
                                 >

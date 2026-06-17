@@ -7,7 +7,7 @@ export class ApiError extends Error {
   }
 }
 
-const BASE_URL = process.env.NEXT_PUBLIC_API_URL ?? "http://localhost:3001/api";
+export const BASE_URL = process.env.NEXT_PUBLIC_API_URL ?? "http://localhost:3001/api";
 
 export const SESSION_COOKIE = "fwd_token";
 export const REFRESH_COOKIE = "fwd_refresh";

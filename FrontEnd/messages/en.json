@@ -109,6 +109,34 @@
     "no_account": "Don't have an account?",
     "register_link": "Sign up here"
   },
+  "reset_password": {
+    "brand": "FWD Talent",
+    "back_to_login": "Back to login",
+    "title": "Reset your password",
+    "description": "Enter your new details to securely recover access to your account.",
+    "email_label": "Email address",
+    "email_placeholder": "name@example.com",
+    "password_label": "New password",
+    "password_placeholder": "Your new password",
+    "confirm_label": "Confirm new password",
+    "confirm_placeholder": "Repeat your new password",
+    "show_password": "Show password",
+    "hide_password": "Hide password",
+    "hint": "Password must be at least 8 characters.",
+    "submit": "Reset password",
+    "submitting": "Sending...",
+    "secure_connection": "Secure encrypted connection",
+    "success_title": "Check your email",
+    "success_message": "If an account exists for {email}, we sent you a secure link to confirm your new password.",
+    "error_email": "Enter a valid email address.",
+    "error_password_length": "Password must be at least 8 characters.",
+    "error_mismatch": "Passwords do not match.",
+    "error_generic": "We couldn't process your request. Please try again.",
+    "footer_privacy": "Privacy Policy",
+    "footer_terms": "Terms of Service",
+    "footer_security": "Security Center",
+    "footer_copyright": "© 2026 FWD Talent. Secure encrypted connection."
+  },
   "register": {
     "brand": "FWD",
     "brand_suffix": "Talent",
@@ -371,8 +399,14 @@
     }
   },
   "empresa_dashboard": {
-    "title": "Company dashboard",
-    "company_desc": "We connect emerging junior talent in Costa Rica with real tech projects. Forward is a foundation dedicated to boosting professional development in technology.",
+    "title": "GLOBAL TECH SOLUTIONS",
+    "company_desc": "Global leader in technological solutions for industry 4.0, focused on optimizing production processes through specialized talent.",
+    "label_empresa": "Company",
+    "tag_socio": "Industrial Partner",
+    "tag_location": "Costa Rica",
+    "tag_size": "1-10 employees",
+    "edit_profile_btn": "Edit profile",
+    "view_projects_btn": "View projects",
     "stats": {
       "active_projects": "Active projects",
       "applications": "Applications",
@@ -471,11 +505,28 @@
     "notifications": {
       "paused": "Project has been paused.",
       "reactivated": "Project has been reactivated."
+    },
+    "filters": {
+      "title": "Filters",
+      "search_placeholder": "Search by title...",
+      "status_label": "Status",
+      "status_all": "All statuses",
+      "status_active": "Active",
+      "status_paused": "Paused",
+      "modality_label": "Modality",
+      "modality_all": "All",
+      "level_label": "Level",
+      "level_all": "All",
+      "clear": "Clear filters",
+      "empty_title": "No projects found",
+      "empty_desc": "Try changing the filtering criteria or search term.",
+      "view_details": "View Details"
     }
   },
   "app_header": {
     "notifications": "Notifications",
-    "user_menu": "User menu"
+    "user_menu": "User menu",
+    "logout": "Log out"
   },
   "empresa_subnav": {
     "back": "Back",
@@ -495,18 +546,51 @@
     },
     "hero": {
       "edit_profile": "Edit profile",
-      "role_label": "Role",
+      "role_label": "Specialty",
       "program_label": "Program / Cohort",
+      "name_label": "First name",
+      "lastname1_label": "Last name",
+      "lastname2_label": "Second last name",
+      "modality_label": "Preferred work mode",
+      "name_required": "First name and last name are required.",
+      "unnamed": "Unnamed",
       "save": "Save",
       "cancel": "Cancel"
+    },
+    "avatar": {
+      "alt": "Profile photo",
+      "change": "Change profile photo",
+      "invalid_type": "The file must be an image.",
+      "too_large": "The image exceeds the 5 MB limit."
+    },
+    "specialty_options": {
+      "placeholder": "Choose a specialty",
+      "frontend": "Frontend",
+      "backend": "Backend",
+      "fullstack": "Fullstack",
+      "ia": "Artificial Intelligence"
+    },
+    "availability_options": {
+      "placeholder": "Choose your availability",
+      "immediate": "Immediate",
+      "two_weeks": "In two weeks",
+      "one_month": "In a month",
+      "unavailable": "Unavailable"
+    },
+    "modality_options": {
+      "remote": "Remote",
+      "hybrid": "Hybrid",
+      "onsite": "On-site"
     },
     "personal": {
       "title": "Personal Information",
       "edit": "Edit",
-      "location_field": "Location",
+      "location_field": "Availability",
       "email_field": "Email Address",
+      "email_readonly": "Your email is managed from your account and can't be changed here.",
       "bio_field": "Professional bio",
-      "location_display": "Location",
+      "bio_empty": "You haven't added a bio yet.",
+      "location_display": "Availability",
       "email_display": "Contact",
       "bio_heading": "About Me",
       "save_changes": "Save changes",
@@ -519,13 +603,21 @@
       "add_btn": "Add",
       "cancel_btn": "Cancel",
       "remove_skill": "Remove {skill}",
-      "empty": "No technologies added yet."
+      "empty": "No technologies added yet.",
+      "catalog_hint": "Only technologies recognized in our catalog are saved."
     },
     "links": {
       "title": "Talent Links",
       "github": "GitHub",
       "linkedin": "LinkedIn",
-      "portfolio": "Portfolio"
+      "portfolio": "Portfolio",
+      "edit": "Edit",
+      "save": "Save",
+      "cancel": "Cancel",
+      "empty": "You haven't added links yet.",
+      "github_placeholder": "https://github.com/your-username",
+      "linkedin_placeholder": "https://linkedin.com/in/your-username",
+      "portfolio_placeholder": "https://your-portfolio.com"
     },
     "activity": {
       "title": "Recent Activity",
@@ -597,7 +689,21 @@
       "terms": "Terms of Service",
       "privacy": "Privacy Policy",
       "support": "Support"
+    },
+    "two_point_zero": {
+      "title": "Coming soon",
+      "work": "2.0: Project portfolio",
+      "applications": "2.0: More opportunities for you",
+      "notifications": "2.0: Matching and activity notifications",
+      "suggested": "2.0: Algorithmic matching and recommendations"
     }
+  },
+  "junior_subnav": {
+    "back": "Back to marketplace",
+    "inicio": "Home",
+    "marketplace": "Marketplace",
+    "viaje": "My journey",
+    "perfil": "My profile"
   },
   "viaje": {
     "title": "Your sky",
@@ -835,7 +941,8 @@
   },
   "app_header": {
     "notifications": "Notifications",
-    "user_menu": "User menu"
+    "user_menu": "User menu",
+    "logout": "Log out"
   },
   "empresa_subnav": {
     "back": "Back",
@@ -852,7 +959,7 @@
     "match_level_label": "Match level",
     "availability_label": "Availability",
     "availability_immediate": "Immediate",
-    "availability_agreed": "TBD",
+    "availability_agreed": "To be agreed",
     "modality_label": "Modality",
     "modality_onsite": "On-site",
     "modality_remote": "Remote",
@@ -867,6 +974,38 @@
     "toast_invited": "{name} has been invited to apply to the project.",
     "toast_cleared": "Search filters have been cleared.",
     "toast_profile_edit": "Profile editing feature in development (Phase 3)."
+  },
+  "postulaciones_empresa": {
+    "title": "APPLICATIONS",
+    "subtitle": "Candidate review.",
+    "actions_header": "AVAILABLE ACTIONS",
+    "invite_btn": "Invite",
+    "info_btn": "Request Info",
+    "accept_btn": "Accept",
+    "reject_btn": "Reject",
+    "view_full_profile": "View full profile",
+    "match_analysis": "MATCH ANALYSIS",
+    "personal_info": "Personal Information",
+    "tech_stack": "Tech Stack",
+    "bio_professional": "Professional Bio",
+    "proposal_project": "Project Proposal",
+    "view_pdf": "View PDF",
+    "open_figma": "Open Figma",
+    "past_works": "Past Work",
+    "history_postulation": "Application History",
+    "status_in_review": "IN REVIEW",
+    "status_new": "NEW",
+    "status_accepted": "ACCEPTED",
+    "status_rejected": "REJECTED",
+    "toast_invited": "Interview invitation sent to {name}.",
+    "toast_info_requested": "Additional information request sent to {name}.",
+    "toast_accepted": "Application from {name} accepted successfully.",
+    "toast_rejected": "Application from {name} rejected.",
+    "toast_pdf": "PDF document preview for {name} under development.",
+    "toast_figma": "Figma link for {name} under development.",
+    "toast_full_profile": "Loading full profile for {name}...",
+    "engine_insight": "This candidate highly matches your technical and cultural requirements.",
+    "engine_signature": "FWD Matching Engine"
   },
   "mi_empresa": {
     "sections": {

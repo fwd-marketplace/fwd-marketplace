@@ -1,431 +1,419 @@
 "use client";
 
-import React, { useState } from "react";
-import { useTranslations } from "next-intl";
-import { CheckCircle2, Code2, FileText, Image as ImageIcon, Users, X } from "lucide-react";
+import { useMemo, useState, useTransition } from "react";
+import { useLocale, useTranslations } from "next-intl";
+import { ArrowRight, CheckCircle2, Filter, FolderOpen, Search, Users, X } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { StatusPill } from "@/components/ui/status-pill";
-import { FwdGeoBackdrop } from "@/components/ui/fwd-geo-backdrop";
 import { InsightSection } from "@/components/ui/insight-section";
-import { cn } from "@/lib/utils";
+import { StatusPill } from "@/components/ui/status-pill";
+import {
+  changeProjectStateAction,
+  decideOfferAction,
+  getProjectOffersAction,
+} from "@/lib/actions/marketplace";
+import { formatDateLabel } from "@/lib/api/safe-json";
+import type { ApiProject, CompanyProjectState, ProjectOffer, ProjectState } from "@/lib/api/types";
 
-interface ProjectDetail {
-  id: string;
-  title: string;
-  status: "active" | "paused";
-  publishedDate: string;
-  modality: string;
-  level: string;
-  budgetRange: string;
-  objective: string;
-  requirements: string[];
-  deliverables: Array<{
-    id: string;
-    icon: "code" | "docs";
-    title: string;
-    description: string;
-  }>;
-  techStack: Array<{
-    name: string;
-    colorClass: string;
-  }>;
-  metrics: {
-    talentMatch: number;
-    activeApplicants: number;
-  };
+type TabType = "project" | "applications" | "mockups";
+
+const COMPANY_STATES: CompanyProjectState[] = [
+  "en_recepcion",
+  "en_evaluacion",
+  "adjudicado",
+  "en_desarrollo",
+  "cerrado",
+];
+
+function statusVariant(state: ProjectState) {
+  if (state === "en_recepcion" || state === "en_desarrollo") return "new-talent";
+  if (state === "cerrado" || state === "cancelado") return "magenta";
+  if (state === "borrador") return "secondary";
+  return "warning";
 }
 
-const INITIAL_PROJECT: ProjectDetail = {
-  id: "proj-1",
-  title: "Desarrollo de Interfaz de Análisis Predictivo.",
-  status: "active",
-  publishedDate: "14 de Oct, 2023",
-  modality: "Remoto",
-  level: "Senior",
-  budgetRange: "$2.500 - $3.200 USD",
-  objective:
-    "Diseñar y desarrollar una interfaz de usuario avanzada para nuestra herramienta de análisis predictivo interna. El objetivo es permitir que los científicos de datos visualicen modelos de regresión complejos de manera intuitiva, facilitando la toma de decisiones basada en datos para el departamento de logística industrial. La interfaz debe ser receptiva, con alta fidelidad gráfica y optimizada para la interpretación rápida de KPIs críticos.",
-  requirements: [
-    "Implementación de Dashboards interactivos con D3.js o Recharts.",
-    "Sistema de filtrado dinámico por fecha, región y categoría de producto.",
-    "Integración con API REST para consumo de microservicios de predicción.",
-    "Módulo de exportación de reportes en PDF y formato CSV optimizado.",
-  ],
-  deliverables: [
-    {
-      id: "del-1",
-      icon: "code",
-      title: "Código Fuente",
-      description: "Repositorio Git documentado",
-    },
-    {
-      id: "del-2",
-      icon: "docs",
-      title: "Documentación",
-      description: "Guía de arquitectura y uso",
-    },
-  ],
-  techStack: [
-    { name: "React 18", colorClass: "bg-primary/10 text-primary" },
-    { name: "TypeScript", colorClass: "bg-secondary/10 text-secondary" },
-    { name: "TailwindCSS", colorClass: "bg-accent/10 text-accent" },
-    { name: "Node.js", colorClass: "bg-magenta/10 text-magenta" },
-    { name: "PostgreSQL", colorClass: "bg-warning/10 text-warning" },
-  ],
-  metrics: {
-    talentMatch: 94,
-    activeApplicants: 18,
-  },
-};
+function offerVariant(state: ProjectOffer["estado"]["nombre"]) {
+  if (state === "adjudicada") return "success";
+  if (state === "no_seleccionada") return "magenta";
+  if (state === "en_revision") return "warning";
+  return "secondary";
+}
 
-type TabType = "project" | "mockups" | "applications";
-
-export function MisProyectos() {
+export function MisProyectos({ initialProjects }: { initialProjects: ApiProject[] }) {
   const t = useTranslations("mis_proyectos");
-  const [project, setProject] = useState<ProjectDetail>(INITIAL_PROJECT);
+  const locale = useLocale();
+  const [projects, setProjects] = useState(initialProjects);
+  const [selectedProjectId, setSelectedProjectId] = useState<string | null>(
+    initialProjects[0]?.id ?? null,
+  );
   const [activeTab, setActiveTab] = useState<TabType>("project");
-  
+  const [searchQuery, setSearchQuery] = useState("");
+  const [statusFilter, setStatusFilter] = useState<ProjectState | "all">("all");
+  const [offersByProject, setOffersByProject] = useState<Record<string, ProjectOffer[]>>({});
   const [toastMessage, setToastMessage] = useState<string | null>(null);
-  const [isEditModalOpen, setIsEditModalOpen] = useState(false);
-  const [editTitle, setEditTitle] = useState(project.title);
-  const [editModality, setEditModality] = useState(project.modality);
-  const [editBudget, setEditBudget] = useState(project.budgetRange);
+  const [isPending, startTransition] = useTransition();
 
-  const triggerToast = (message: string) => {
+  const selectedProject = projects.find((project) => project.id === selectedProjectId) ?? null;
+  const selectedOffers = selectedProjectId ? offersByProject[selectedProjectId] ?? [] : [];
+
+  const filteredProjects = useMemo(() => {
+    return projects.filter((project) => {
+      const matchesSearch = project.titulo.toLowerCase().includes(searchQuery.toLowerCase());
+      const matchesStatus = statusFilter === "all" || project.estado.nombre === statusFilter;
+      return matchesSearch && matchesStatus;
+    });
+  }, [projects, searchQuery, statusFilter]);
+
+  function triggerToast(message: string) {
     setToastMessage(message);
-    setTimeout(() => {
-      setToastMessage(null);
-    }, 4000);
-  };
+    window.setTimeout(() => setToastMessage(null), 4000);
+  }
 
-  const handleToggleStatus = () => {
-    const newStatus = project.status === "active" ? "paused" : "active";
-    setProject((prev) => ({ ...prev, status: newStatus }));
-    triggerToast(
-      newStatus === "paused"
-        ? t("notifications.paused")
-        : t("notifications.reactivated")
-    );
-  };
+  function loadOffers(projectId: string) {
+    startTransition(async () => {
+      const result = await getProjectOffersAction(projectId);
+      if (result.ok) {
+        setOffersByProject((current) => ({ ...current, [projectId]: result.data.ofertas }));
+      } else {
+        triggerToast(result.error);
+      }
+    });
+  }
 
-  const handleOpenEdit = () => {
-    setEditTitle(project.title);
-    setEditModality(project.modality);
-    setEditBudget(project.budgetRange);
-    setIsEditModalOpen(true);
-  };
+  function openProject(projectId: string) {
+    setSelectedProjectId(projectId);
+    setActiveTab("project");
+    if (!offersByProject[projectId]) {
+      loadOffers(projectId);
+    }
+  }
 
-  const handleSaveEdit = (e: React.FormEvent) => {
-    e.preventDefault();
-    setProject((prev) => ({
-      ...prev,
-      title: editTitle,
-      modality: editModality,
-      budgetRange: editBudget,
-    }));
-    setIsEditModalOpen(false);
-    triggerToast(t("edit_modal.success"));
-  };
+  function updateProjectState(projectId: string, estado: CompanyProjectState) {
+    startTransition(async () => {
+      const result = await changeProjectStateAction(projectId, estado);
+      if (!result.ok) {
+        triggerToast(result.error);
+        return;
+      }
+      setProjects((current) =>
+        current.map((project) =>
+          project.id === projectId ? { ...project, estado: { ...project.estado, nombre: estado } } : project,
+        ),
+      );
+      triggerToast(t("notifications.state_updated"));
+    });
+  }
+
+  function decideOffer(offerId: string, accion: "aceptar" | "rechazar") {
+    startTransition(async () => {
+      const result = await decideOfferAction(offerId, accion);
+      if (!result.ok) {
+        triggerToast(result.error);
+        return;
+      }
+      if (selectedProjectId) {
+        loadOffers(selectedProjectId);
+      }
+      triggerToast(accion === "aceptar" ? t("notifications.accepted") : t("notifications.rejected"));
+    });
+  }
+
+  function clearFilters() {
+    setSearchQuery("");
+    setStatusFilter("all");
+  }
 
   return (
     <div className="space-y-8 pb-16">
-      {/* Toast Notification */}
       {toastMessage && (
-        <div className="fixed bottom-5 right-5 z-50 flex items-center gap-2.5 rounded-xl border border-border-strong bg-surface px-4 py-3 shadow-[var(--shadow-elevated)] transition-all duration-[var(--duration-base)] ease-[var(--ease-out)] animate-in slide-in-from-bottom-5">
+        <div className="fixed bottom-5 right-5 z-[70] flex items-center gap-2.5 rounded-xl border border-border-strong bg-surface px-4 py-3 shadow-[var(--shadow-elevated)] transition-all duration-[var(--duration-base)] ease-[var(--ease-out)]">
           <CheckCircle2 className="size-5 text-accent" />
           <p className="font-body text-sm font-semibold text-ink-strong">{toastMessage}</p>
           <button
             type="button"
             onClick={() => setToastMessage(null)}
-            className="ml-2 text-ink-subtle hover:text-ink-strong"
+            className="ml-2 rounded-full p-1 text-ink-subtle hover:bg-surface-sunken hover:text-ink-strong"
+            aria-label={t("toast_close")}
           >
             <X className="size-4" />
           </button>
         </div>
       )}
 
-      {/* --- HERO BANNER --- */}
-      <section className="relative overflow-hidden rounded-3xl bg-gradient-to-br from-secondary via-secondary/95 to-primary p-6 text-white shadow-[var(--shadow-soft)] md:p-10">
-        <FwdGeoBackdrop />
+      <section className="rounded-2xl border border-border bg-surface p-5 shadow-[var(--shadow-soft)]">
+        <div className="flex flex-col gap-4">
+          <div className="flex items-center gap-2 border-b border-border pb-3">
+            <Filter className="size-5 text-primary" />
+            <h2 className="font-heading text-lg font-bold uppercase tracking-wide text-ink-strong">
+              {t("filters.title")}
+            </h2>
+          </div>
 
-        <div className="relative z-10 flex flex-col md:flex-row md:items-start md:justify-between gap-6">
-          <div className="space-y-4">
-            <div className="flex items-center gap-3">
-              <StatusPill 
-                label={project.status === "active" ? t("status_active") : t("status_paused")} 
-                variant={project.status === "active" ? "new-talent" : "secondary"} 
+          <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
+            <div className="relative">
+              <label htmlFor="project-search" className="sr-only">
+                {t("filters.search_label")}
+              </label>
+              <Search className="absolute left-3.5 top-1/2 size-4 -translate-y-1/2 text-ink-muted" />
+              <input
+                id="project-search"
+                type="text"
+                value={searchQuery}
+                onChange={(event) => setSearchQuery(event.target.value)}
+                placeholder={t("filters.search_placeholder")}
+                className="w-full rounded-xl border border-border bg-surface-sunken py-2 pl-10 pr-4 font-body text-sm text-ink-strong outline-none transition-shadow focus:ring-2 focus:ring-primary/20"
               />
-              <span className="font-body text-sm font-medium text-white/80">
-                • {t("published_on", { date: project.publishedDate })}
-              </span>
             </div>
 
-            <h1 className="font-heading text-3xl font-bold tracking-tight md:text-4xl text-white max-w-3xl">
-              {project.title.endsWith(".") ? project.title.slice(0, -1) : project.title}
-              <span className="text-primary" aria-hidden="true">.</span>
-            </h1>
-
-            <div className="flex flex-wrap items-center gap-2 font-body text-sm font-medium text-white/80">
-              <span>{t("modality_label")}: {project.modality}</span>
-              <span>•</span>
-              <span>{t("level_label")}: {project.level}</span>
-              <span>•</span>
-              <span>{t("budget_label")}: {project.budgetRange}</span>
+            <div>
+              <label htmlFor="project-status-filter" className="sr-only">
+                {t("filters.status_label")}
+              </label>
+              <select
+                id="project-status-filter"
+                value={statusFilter}
+                onChange={(event) => setStatusFilter(event.target.value as ProjectState | "all")}
+                className="w-full rounded-xl border border-border bg-surface-sunken px-3.5 py-2 font-body text-sm text-ink-strong outline-none focus:ring-2 focus:ring-primary/20"
+              >
+                <option value="all">{t("filters.status_all")}</option>
+                {(["borrador", ...COMPANY_STATES, "cancelado"] as ProjectState[]).map((state) => (
+                  <option key={state} value={state}>
+                    {t(`states.${state}`)}
+                  </option>
+                ))}
+              </select>
             </div>
           </div>
 
-          <div className="flex shrink-0 gap-3">
-            <Button
-              variant="outline"
-              className="border-white/20 bg-white/5 text-white hover:bg-white/10"
-              onClick={handleOpenEdit}
-            >
-              {t("edit_btn")}
-            </Button>
-            <Button
-              variant="secondary"
-              className="bg-primary/85 text-white hover:bg-primary/75 border-transparent shadow-none"
-              onClick={handleToggleStatus}
-            >
-              {project.status === "active" ? t("pause_btn") : t("reactivate_btn")}
-            </Button>
-          </div>
+          {(searchQuery || statusFilter !== "all") && (
+            <div className="flex justify-end pt-2">
+              <Button variant="outline" onClick={clearFilters} className="h-8 text-xs">
+                {t("filters.clear")}
+              </Button>
+            </div>
+          )}
         </div>
       </section>
 
-      {/* --- TABS --- */}
-      <div className="border-b border-border">
-        <div className="flex gap-8">
-          {(["project", "mockups", "applications"] as TabType[]).map((tab) => (
+      {filteredProjects.length > 0 ? (
+        <div className="grid grid-cols-1 gap-6 sm:grid-cols-2">
+          {filteredProjects.map((project) => (
             <button
-              key={tab}
-              onClick={() => setActiveTab(tab)}
-              className={cn(
-                "relative pb-3 font-body text-sm font-bold transition-colors",
-                activeTab === tab ? "text-primary" : "text-ink-muted hover:text-ink-strong"
-              )}
+              key={project.id}
+              type="button"
+              onClick={() => openProject(project.id)}
+              className="group flex flex-col justify-between rounded-2xl border border-border bg-surface p-6 text-left shadow-[var(--shadow-soft)] transition-all duration-[var(--duration-base)] ease-[var(--ease-out)] hover:border-primary/40 hover:shadow-[var(--shadow-elevated)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/40"
             >
-              {t(`tabs.${tab}`)}
-              {activeTab === tab && (
-                <div className="absolute bottom-0 left-0 right-0 h-0.5 bg-primary rounded-t-full" />
-              )}
+              <div className="space-y-4">
+                <div className="flex items-center justify-between gap-3">
+                  <StatusPill
+                    label={t(`states.${project.estado.nombre}`)}
+                    variant={statusVariant(project.estado.nombre)}
+                  />
+                  <span className="font-body text-xs font-medium text-ink-muted">
+                    {formatDateLabel(project.fecha_publicacion, locale)}
+                  </span>
+                </div>
+
+                <div className="space-y-2">
+                  <h3 className="font-heading text-lg font-bold tracking-tight text-ink-strong transition-colors duration-[var(--duration-fast)] group-hover:text-primary">
+                    {project.titulo}
+                    <span className="text-primary" aria-hidden="true">.</span>
+                  </h3>
+                  <p className="line-clamp-3 font-body text-sm leading-relaxed text-ink-muted">
+                    {project.descripcion}
+                  </p>
+                </div>
+
+                <div className="flex flex-wrap gap-1.5 pt-2">
+                  {project.skills.slice(0, 4).map(({ skill }) =>
+                    skill ? (
+                      <span
+                        key={skill.id}
+                        className="rounded-lg bg-primary/10 px-2 py-0.5 font-body text-[10px] font-semibold text-primary"
+                      >
+                        {skill.nombre}
+                      </span>
+                    ) : null,
+                  )}
+                </div>
+              </div>
+
+              <div className="mt-6 flex items-center justify-between border-t border-border pt-4">
+                <div className="flex items-center gap-2 text-xs font-semibold text-ink-muted">
+                  <Users className="size-4 text-secondary" />
+                  <span>{offersByProject[project.id]?.length ?? 0} {t("tabs.applications")}</span>
+                </div>
+                <span className="flex items-center gap-1 text-xs font-bold text-primary transition-transform duration-[var(--duration-fast)] group-hover:translate-x-1">
+                  {t("filters.view_details")}
+                  <ArrowRight className="size-3.5" />
+                </span>
+              </div>
             </button>
           ))}
         </div>
-      </div>
+      ) : (
+        <div className="flex flex-col items-center justify-center rounded-2xl border border-dashed border-border bg-surface p-12 text-center">
+          <FolderOpen className="mb-4 size-12 text-ink-muted" />
+          <h3 className="mb-1 font-heading text-lg font-bold text-ink-strong">
+            {t("filters.empty_title")}
+          </h3>
+          <p className="max-w-md font-body text-sm text-ink-muted">
+            {t("filters.empty_desc")}
+          </p>
+        </div>
+      )}
 
-      {/* --- TAB CONTENT: PROJECT --- */}
-      {activeTab === "project" && (
-        <div className="grid grid-cols-1 gap-8 lg:grid-cols-12">
-          {/* Left Column */}
-          <div className="space-y-8 lg:col-span-8">
-            <div className="space-y-3">
-              <h2 className="font-heading text-xl font-bold tracking-tight text-ink-strong">
-                {t("objective_title")}
-              </h2>
-              <p className="font-body text-sm text-ink leading-relaxed">
-                {project.objective}
-              </p>
-            </div>
+      {selectedProject && (
+        <InsightSection title={selectedProject.titulo}>
+          <div className="space-y-6">
+            <div className="flex flex-col justify-between gap-4 md:flex-row md:items-center">
+              <div className="space-y-2">
+                <StatusPill
+                  label={t(`states.${selectedProject.estado.nombre}`)}
+                  variant={statusVariant(selectedProject.estado.nombre)}
+                />
+                <p className="font-body text-sm leading-relaxed text-ink-muted">
+                  {selectedProject.descripcion}
+                </p>
+              </div>
 
-            <div className="space-y-4">
-              <h2 className="font-heading text-xl font-bold tracking-tight text-ink-strong">
-                {t("scope_title")}
-              </h2>
-              <ul className="space-y-3">
-                {project.requirements.map((req, i) => (
-                  <li key={i} className="flex items-start gap-3">
-                    <CheckCircle2 className="size-5 shrink-0 text-primary mt-0.5" />
-                    <span className="font-body text-sm text-ink">{req}</span>
-                  </li>
-                ))}
-              </ul>
-            </div>
-
-            <div className="space-y-4">
-              <h2 className="font-heading text-xl font-bold tracking-tight text-ink-strong">
-                {t("deliverables_title")}
-              </h2>
-              <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
-                {project.deliverables.map((del) => (
-                  <div
-                    key={del.id}
-                    className="flex items-start gap-3 rounded-2xl border border-border bg-surface p-4 shadow-[var(--shadow-soft)]"
-                  >
-                    <div className="flex size-10 shrink-0 items-center justify-center rounded-xl bg-surface-sunken">
-                      {del.icon === "code" ? (
-                        <Code2 className="size-5 text-primary" />
-                      ) : (
-                        <FileText className="size-5 text-primary" />
-                      )}
-                    </div>
-                    <div>
-                      <h3 className="font-heading text-sm font-bold text-ink-strong">
-                        {del.title}
-                      </h3>
-                      <p className="font-body text-xs text-ink-muted">
-                        {del.description}
-                      </p>
-                    </div>
-                  </div>
-                ))}
+              <div className="w-full md:w-64">
+                <label htmlFor="project-state" className="mb-1 block font-body text-xs font-bold uppercase text-ink-muted">
+                  {t("state_label")}
+                </label>
+                <select
+                  id="project-state"
+                  value={
+                    COMPANY_STATES.includes(selectedProject.estado.nombre as CompanyProjectState)
+                      ? selectedProject.estado.nombre
+                      : "en_recepcion"
+                  }
+                  disabled={isPending || selectedProject.estado.nombre === "borrador" || selectedProject.estado.nombre === "cancelado"}
+                  onChange={(event) =>
+                    updateProjectState(selectedProject.id, event.target.value as CompanyProjectState)
+                  }
+                  className="w-full rounded-xl border border-border bg-surface-sunken px-3.5 py-2 font-body text-sm text-ink-strong outline-none focus:ring-2 focus:ring-primary/20 disabled:opacity-60"
+                >
+                  {COMPANY_STATES.map((state) => (
+                    <option key={state} value={state}>
+                      {t(`states.${state}`)}
+                    </option>
+                  ))}
+                </select>
               </div>
             </div>
-          </div>
 
-          {/* Right Column */}
-          <div className="space-y-6 lg:col-span-4">
-            {/* Tech Stack */}
-            <div className="space-y-3">
-              <h3 className="font-body text-[11px] font-bold uppercase tracking-wider text-ink-muted">
-                {t("stack_title")}
-              </h3>
-              <div className="flex flex-wrap gap-2">
-                {project.techStack.map((tech) => (
-                  <span
-                    key={tech.name}
-                    className={cn(
-                      "rounded-lg px-2.5 py-1 font-body text-xs font-semibold",
-                      tech.colorClass
+            <div className="border-b border-border">
+              <div className="flex gap-6">
+                {(["project", "applications", "mockups"] as TabType[]).map((tab) => (
+                  <button
+                    key={tab}
+                    type="button"
+                    onClick={() => {
+                      setActiveTab(tab);
+                      if (tab === "applications") loadOffers(selectedProject.id);
+                    }}
+                    className={`relative pb-3 font-body text-sm font-bold transition-colors ${
+                      activeTab === tab ? "text-primary" : "text-ink-muted hover:text-ink-strong"
+                    }`}
+                  >
+                    {t(`tabs.${tab}`)}
+                    {activeTab === tab && (
+                      <span className="absolute bottom-0 left-0 right-0 h-0.5 rounded-t-full bg-primary" />
                     )}
-                  >
-                    {tech.name}
-                  </span>
+                  </button>
                 ))}
               </div>
             </div>
 
-            {/* Metrics */}
-            <InsightSection title={t("metrics_title")}>
-              <div className="space-y-5">
-                <div className="space-y-2">
-                  <div className="flex justify-between font-body text-xs font-semibold">
-                    <span className="text-ink-strong">{t("metrics_talent_match")}</span>
-                    <span className="text-primary">{project.metrics.talentMatch}%</span>
-                  </div>
-                  <div className="h-1.5 w-full rounded-full bg-surface-sunken">
-                    <div
-                      className="h-1.5 rounded-full bg-primary/85 transition-all duration-[var(--duration-slow)]"
-                      style={{ width: `${project.metrics.talentMatch}%` }}
-                    />
-                  </div>
+            {activeTab === "project" && (
+              <div className="grid gap-4 md:grid-cols-3">
+                <div className="rounded-xl border border-border bg-surface-sunken p-4">
+                  <p className="font-body text-xs font-bold uppercase text-ink-muted">{t("area_label")}</p>
+                  <p className="mt-1 font-body text-sm font-semibold text-ink-strong">
+                    {selectedProject.area?.nombre ?? t("two_point_zero")}
+                  </p>
                 </div>
-
-                <div className="space-y-2">
-                  <div className="flex justify-between font-body text-xs font-semibold">
-                    <span className="text-ink-strong">{t("metrics_active_applicants")}</span>
-                    <span className="text-secondary">{project.metrics.activeApplicants}</span>
-                  </div>
-                  <div className="h-1.5 w-full rounded-full bg-surface-sunken">
-                    <div
-                      className="h-1.5 rounded-full bg-secondary transition-all duration-[var(--duration-slow)]"
-                      style={{ width: `50%` }}
-                    />
-                  </div>
+                <div className="rounded-xl border border-border bg-surface-sunken p-4">
+                  <p className="font-body text-xs font-bold uppercase text-ink-muted">{t("deadline_label")}</p>
+                  <p className="mt-1 font-body text-sm font-semibold text-ink-strong">
+                    {selectedProject.plazo_dias} {t("days")}
+                  </p>
+                </div>
+                <div className="rounded-xl border border-border bg-surface-sunken p-4">
+                  <p className="font-body text-xs font-bold uppercase text-ink-muted">{t("ai_label")}</p>
+                  <p className="mt-1 font-body text-sm font-semibold text-ink-strong">
+                    {selectedProject.usa_ia ? t("yes") : t("no")}
+                  </p>
                 </div>
               </div>
-            </InsightSection>
+            )}
+
+            {activeTab === "applications" && (
+              <div className="space-y-3">
+                {selectedOffers.length > 0 ? (
+                  selectedOffers.map((offer) => {
+                    const juniorName = [offer.junior.nombre, offer.junior.apellido1].filter(Boolean).join(" ");
+                    return (
+                      <div key={offer.id} className="rounded-xl border border-border bg-surface-sunken p-4">
+                        <div className="flex flex-col justify-between gap-3 md:flex-row md:items-start">
+                          <div className="space-y-2">
+                            <div className="flex items-center gap-2">
+                              <p className="font-heading text-base font-bold text-ink-strong">{juniorName}</p>
+                              <StatusPill
+                                label={t(`offer_states.${offer.estado.nombre}`)}
+                                variant={offerVariant(offer.estado.nombre)}
+                              />
+                            </div>
+                            <p className="font-body text-sm leading-relaxed text-ink-muted">{offer.propuesta}</p>
+                            {offer.prototipo_url && (
+                              <a
+                                href={offer.prototipo_url}
+                                className="font-body text-xs font-bold text-primary hover:underline"
+                                target="_blank"
+                                rel="noreferrer"
+                              >
+                                {t("prototype_link")}
+                              </a>
+                            )}
+                          </div>
+                          <div className="flex gap-2">
+                            <Button
+                              size="sm"
+                              variant="accent"
+                              disabled={isPending || offer.estado.nombre === "adjudicada"}
+                              onClick={() => decideOffer(offer.id, "aceptar")}
+                            >
+                              {t("applications.accept")}
+                            </Button>
+                            <Button
+                              size="sm"
+                              variant="magenta"
+                              disabled={isPending || offer.estado.nombre === "no_seleccionada"}
+                              onClick={() => decideOffer(offer.id, "rechazar")}
+                            >
+                              {t("applications.reject")}
+                            </Button>
+                          </div>
+                        </div>
+                      </div>
+                    );
+                  })
+                ) : (
+                  <p className="rounded-xl border border-dashed border-border bg-surface-sunken p-8 text-center font-body text-sm text-ink-muted">
+                    {isPending ? t("loading") : t("applications_empty")}
+                  </p>
+                )}
+              </div>
+            )}
+
+            {activeTab === "mockups" && (
+              <p className="rounded-xl border border-dashed border-border bg-surface-sunken p-8 text-center font-body text-sm text-ink-muted">
+                {t("two_point_zero_placeholder")}
+              </p>
+            )}
           </div>
-        </div>
-      )}
-
-      {/* --- TAB CONTENT: MOCKUPS (Empty State) --- */}
-      {activeTab === "mockups" && (
-        <div className="flex h-64 flex-col items-center justify-center rounded-3xl border border-dashed border-border-strong bg-surface-sunken/50 p-6 text-center">
-          <ImageIcon className="size-10 text-ink-subtle mb-3" />
-          <p className="font-body text-sm font-semibold text-ink-muted">
-            {t("mockups_empty")}
-          </p>
-        </div>
-      )}
-
-      {/* --- TAB CONTENT: APPLICATIONS (Empty State) --- */}
-      {activeTab === "applications" && (
-        <div className="flex h-64 flex-col items-center justify-center rounded-3xl border border-dashed border-border-strong bg-surface-sunken/50 p-6 text-center">
-          <Users className="size-10 text-ink-subtle mb-3" />
-          <p className="font-body text-sm font-semibold text-ink-muted">
-            {t("applications_empty")}
-          </p>
-        </div>
-      )}
-
-      {/* --- EDIT MODAL --- */}
-      {isEditModalOpen && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 p-4 backdrop-blur-xs transition-opacity animate-in fade-in duration-[var(--duration-fast)]">
-          <div className="w-full max-w-md rounded-2xl border border-border bg-surface p-6 shadow-[var(--shadow-elevated)] animate-in scale-in duration-[var(--duration-base)] ease-[var(--ease-out)]">
-            <div className="flex items-center justify-between border-b border-border pb-3">
-              <h3 className="font-heading text-lg font-bold text-ink-strong">
-                {t("edit_modal.title")}
-              </h3>
-              <button
-                type="button"
-                onClick={() => setIsEditModalOpen(false)}
-                className="rounded-full p-1 text-ink-muted transition-colors hover:bg-surface-sunken hover:text-ink-strong"
-              >
-                <X className="size-5" />
-              </button>
-            </div>
-
-            <form onSubmit={handleSaveEdit} className="space-y-4 pt-4">
-              <div className="space-y-1">
-                <label className="block font-body text-xs font-bold uppercase tracking-wider text-ink-muted">
-                  {t("edit_modal.name_label")}
-                </label>
-                <input
-                  type="text"
-                  required
-                  value={editTitle}
-                  onChange={(e) => setEditTitle(e.target.value)}
-                  className="w-full rounded-xl border border-border bg-surface-sunken px-3.5 py-2 font-body text-sm text-ink-strong outline-none transition-shadow focus:ring-2 focus:ring-primary/20"
-                />
-              </div>
-
-              <div className="space-y-1">
-                <label className="block font-body text-xs font-bold uppercase tracking-wider text-ink-muted">
-                  {t("edit_modal.modality_label")}
-                </label>
-                <input
-                  type="text"
-                  required
-                  value={editModality}
-                  onChange={(e) => setEditModality(e.target.value)}
-                  className="w-full rounded-xl border border-border bg-surface-sunken px-3.5 py-2 font-body text-sm text-ink-strong outline-none transition-shadow focus:ring-2 focus:ring-primary/20"
-                />
-              </div>
-              
-              <div className="space-y-1">
-                <label className="block font-body text-xs font-bold uppercase tracking-wider text-ink-muted">
-                  {t("edit_modal.budget_label")}
-                </label>
-                <input
-                  type="text"
-                  required
-                  value={editBudget}
-                  onChange={(e) => setEditBudget(e.target.value)}
-                  className="w-full rounded-xl border border-border bg-surface-sunken px-3.5 py-2 font-body text-sm text-ink-strong outline-none transition-shadow focus:ring-2 focus:ring-primary/20"
-                />
-              </div>
-
-              <div className="flex justify-end gap-3 pt-3 border-t border-border mt-6">
-                <Button
-                  type="button"
-                  variant="outline"
-                  onClick={() => setIsEditModalOpen(false)}
-                  className="h-9 px-4 text-sm font-semibold border-border hover:bg-surface-sunken"
-                >
-                  {t("edit_modal.cancel")}
-                </Button>
-                <Button
-                  type="submit"
-                  variant="default"
-                  className="h-9 px-4 text-sm font-semibold bg-primary text-white hover:bg-primary/85"
-                >
-                  {t("edit_modal.save")}
-                </Button>
-              </div>
-            </form>
-          </div>
-        </div>
+        </InsightSection>
       )}
     </div>
   );

@@ -6,6 +6,7 @@ import {
   JuniorProfileSchema,
   EmpresaProfileSchema,
   EmprendedorProfileSchema,
+  ResetPasswordSchema,
 } from "@/lib/validations/auth";
 import { ok, err } from "@/lib/result";
 import type { Result } from "@/lib/result";
@@ -78,6 +79,22 @@ export async function loginUser(input: {
       role: meData.profile.role.nombre,
       estado_cuenta: meData.profile.estado_cuenta,
     });
+  } catch (e) {
+    return err(e instanceof ApiError ? e.message : "Error de conexión");
+  }
+}
+
+export async function resetPassword(raw: unknown): Promise<Result<void>> {
+  const parsed = ResetPasswordSchema.safeParse(raw);
+  if (!parsed.success) {
+    return err(parsed.error.issues[0]?.message ?? "Datos inválidos");
+  }
+  try {
+    await apiFetch("/users/reset-password", {
+      method: "POST",
+      body: JSON.stringify({ email: parsed.data.email, password: parsed.data.password }),
+    });
+    return ok(undefined);
   } catch (e) {
     return err(e instanceof ApiError ? e.message : "Error de conexión");
   }

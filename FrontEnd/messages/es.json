@@ -109,6 +109,34 @@
     "no_account": "¿No tienes cuenta?",
     "register_link": "Regístrate aquí"
   },
+  "reset_password": {
+    "brand": "FWD Talent",
+    "back_to_login": "Volver al inicio de sesión",
+    "title": "Restablecé tu contraseña",
+    "description": "Ingresá tus nuevos datos para recuperar el acceso a tu cuenta de forma segura.",
+    "email_label": "Correo electrónico",
+    "email_placeholder": "nombre@ejemplo.com",
+    "password_label": "Nueva contraseña",
+    "password_placeholder": "Tu nueva contraseña",
+    "confirm_label": "Confirmar nueva contraseña",
+    "confirm_placeholder": "Repetí tu nueva contraseña",
+    "show_password": "Mostrar contraseña",
+    "hide_password": "Ocultar contraseña",
+    "hint": "La contraseña debe tener al menos 8 caracteres.",
+    "submit": "Restablecer contraseña",
+    "submitting": "Enviando...",
+    "secure_connection": "Conexión cifrada y segura",
+    "success_title": "Revisá tu correo",
+    "success_message": "Si existe una cuenta con {email}, te enviamos un enlace seguro para confirmar tu nueva contraseña.",
+    "error_email": "Ingresá un correo electrónico válido.",
+    "error_password_length": "La contraseña debe tener al menos 8 caracteres.",
+    "error_mismatch": "Las contraseñas no coinciden.",
+    "error_generic": "No pudimos procesar tu solicitud. Intentá de nuevo.",
+    "footer_privacy": "Política de Privacidad",
+    "footer_terms": "Términos de Servicio",
+    "footer_security": "Centro de Seguridad",
+    "footer_copyright": "© 2026 FWD Talent. Conexión cifrada y segura."
+  },
   "register": {
     "brand": "FWD",
     "brand_suffix": "Talent",
@@ -477,11 +505,28 @@
     "notifications": {
       "paused": "El proyecto ha sido pausado.",
       "reactivated": "El proyecto ha sido reactivado."
+    },
+    "filters": {
+      "title": "Filtros",
+      "search_placeholder": "Buscar por título...",
+      "status_label": "Estado",
+      "status_all": "Todos los estados",
+      "status_active": "Activos",
+      "status_paused": "Pausados",
+      "modality_label": "Modalidad",
+      "modality_all": "Todas",
+      "level_label": "Nivel",
+      "level_all": "Todos",
+      "clear": "Limpiar filtros",
+      "empty_title": "No se encontraron proyectos",
+      "empty_desc": "Prueba cambiando los criterios de filtrado o la búsqueda.",
+      "view_details": "Ver Detalles"
     }
   },
   "app_header": {
     "notifications": "Notificaciones",
-    "user_menu": "Menú de usuario"
+    "user_menu": "Menú de usuario",
+    "logout": "Cerrar sesión"
   },
   "empresa_subnav": {
     "back": "Volver",
@@ -501,18 +546,51 @@
     },
     "hero": {
       "edit_profile": "Editar perfil",
-      "role_label": "Rol",
+      "role_label": "Especialidad",
       "program_label": "Programa / Cohorte",
+      "name_label": "Nombre",
+      "lastname1_label": "Primer apellido",
+      "lastname2_label": "Segundo apellido",
+      "modality_label": "Modalidad preferida",
+      "name_required": "El nombre y el primer apellido son obligatorios.",
+      "unnamed": "Sin nombre",
       "save": "Guardar",
       "cancel": "Cancelar"
+    },
+    "avatar": {
+      "alt": "Foto de perfil",
+      "change": "Cambiar foto de perfil",
+      "invalid_type": "El archivo debe ser una imagen.",
+      "too_large": "La imagen supera el máximo de 5 MB."
+    },
+    "specialty_options": {
+      "placeholder": "Elegí una especialidad",
+      "frontend": "Frontend",
+      "backend": "Backend",
+      "fullstack": "Fullstack",
+      "ia": "Inteligencia Artificial"
+    },
+    "availability_options": {
+      "placeholder": "Elegí tu disponibilidad",
+      "immediate": "Inmediata",
+      "two_weeks": "En dos semanas",
+      "one_month": "En un mes",
+      "unavailable": "No disponible"
+    },
+    "modality_options": {
+      "remote": "Remoto",
+      "hybrid": "Híbrido",
+      "onsite": "Presencial"
     },
     "personal": {
       "title": "Información Personal",
       "edit": "Editar",
-      "location_field": "Ubicación",
+      "location_field": "Disponibilidad",
       "email_field": "Correo Electrónico",
+      "email_readonly": "El correo se gestiona desde tu cuenta y no se puede cambiar aquí.",
       "bio_field": "Biografía profesional",
-      "location_display": "Ubicación",
+      "bio_empty": "Todavía no agregaste una biografía.",
+      "location_display": "Disponibilidad",
       "email_display": "Contacto",
       "bio_heading": "Sobre Mí",
       "save_changes": "Guardar cambios",
@@ -525,13 +603,21 @@
       "add_btn": "Añadir",
       "cancel_btn": "Cancelar",
       "remove_skill": "Quitar {skill}",
-      "empty": "No hay tecnologías agregadas aún."
+      "empty": "No hay tecnologías agregadas aún.",
+      "catalog_hint": "Solo se guardan las tecnologías reconocidas en nuestro catálogo."
     },
     "links": {
       "title": "Enlaces del Talento",
       "github": "GitHub",
       "linkedin": "LinkedIn",
-      "portfolio": "Portafolio"
+      "portfolio": "Portafolio",
+      "edit": "Editar",
+      "save": "Guardar",
+      "cancel": "Cancelar",
+      "empty": "Todavía no agregaste enlaces.",
+      "github_placeholder": "https://github.com/tu-usuario",
+      "linkedin_placeholder": "https://linkedin.com/in/tu-usuario",
+      "portfolio_placeholder": "https://tu-portafolio.com"
     },
     "activity": {
       "title": "Actividad Reciente",
@@ -603,7 +689,21 @@
       "terms": "Términos de Servicio",
       "privacy": "Política de Privacidad",
       "support": "Soporte"
+    },
+    "two_point_zero": {
+      "title": "Próximamente",
+      "work": "2.0: Portafolio de proyectos",
+      "applications": "2.0: Más oportunidades para vos",
+      "notifications": "2.0: Notificaciones de matching y actividad",
+      "suggested": "2.0: Match algorítmico y recomendaciones"
     }
+  },
+  "junior_subnav": {
+    "back": "Volver al marketplace",
+    "inicio": "Inicio",
+    "marketplace": "Marketplace",
+    "viaje": "Mi viaje",
+    "perfil": "Mi perfil"
   },
   "viaje": {
     "title": "Tu cielo",
@@ -753,6 +853,38 @@
     "toast_invited": "Se ha invitado a {name} a postularse al proyecto.",
     "toast_cleared": "Se han limpiado los filtros de búsqueda.",
     "toast_profile_edit": "Funcionalidad de edición de perfil en desarrollo (Fase 3)."
+  },
+  "postulaciones_empresa": {
+    "title": "POSTULACIONES",
+    "subtitle": "Revisión de candidatos.",
+    "actions_header": "ACCIONES DISPONIBLES",
+    "invite_btn": "Invitar",
+    "info_btn": "Solicitar Info",
+    "accept_btn": "Aceptar",
+    "reject_btn": "Rechazar",
+    "view_full_profile": "Ver perfil completo",
+    "match_analysis": "ANÁLISIS DE MATCH",
+    "personal_info": "Información Personal",
+    "tech_stack": "Stack Tecnológico",
+    "bio_professional": "Bio Profesional",
+    "proposal_project": "Propuesta de Proyecto",
+    "view_pdf": "Ver PDF",
+    "open_figma": "Abrir Figma",
+    "past_works": "Trabajos Anteriores",
+    "history_postulation": "Historial de Postulación",
+    "status_in_review": "EN REVISIÓN",
+    "status_new": "NUEVA",
+    "status_accepted": "ACEPTADA",
+    "status_rejected": "RECHAZADA",
+    "toast_invited": "Invitación para entrevista enviada a {name}.",
+    "toast_info_requested": "Solicitud de información adicional enviada a {name}.",
+    "toast_accepted": "Postulación de {name} aceptada con éxito.",
+    "toast_rejected": "Postulación de {name} rechazada.",
+    "toast_pdf": "Visualización del documento PDF de {name} en desarrollo.",
+    "toast_figma": "Enlace a Figma de {name} en desarrollo.",
+    "toast_full_profile": "Cargando perfil completo de {name}...",
+    "engine_insight": "Este candidato coincide altamente con sus requisitos técnicos y culturales.",
+    "engine_signature": "FWD Matching Engine"
   },
   "mi_empresa": {
     "sections": {
