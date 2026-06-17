@@ -636,7 +636,7 @@ export function MisProyectos({
                 </div>
 
                 <div className="flex flex-wrap gap-1.5 pt-1">
-                  {project.skills.slice(0, 4).map(({ skill }) =>
+                  {(project.skills ?? []).slice(0, 4).map(({ skill }) =>
                     skill ? (
                       <span
                         key={skill.id}

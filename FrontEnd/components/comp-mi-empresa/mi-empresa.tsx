@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useTransition, type FormEvent } from 'react';
+import { useState, useTransition, useRef, type FormEvent } from 'react';
 import { useTranslations } from 'next-intl';
 import {
   Edit2,
@@ -12,11 +12,12 @@ import {
   Clock,
   ShieldCheck,
   Plus,
-  Trash2,
   X,
   CheckCircle2,
   AlertCircle,
   Loader2,
+  Camera,
+  Trash2,
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
@@ -25,7 +26,7 @@ import { Avatar, AvatarFallback } from '@/components/ui/avatar';
 import { FwdGeoBackdrop } from '@/components/ui/fwd-geo-backdrop';
 import { cn } from '@/lib/utils';
 import type { ApiMeProfile } from '@/lib/api/types';
-import { updateEmpresarioProfile } from '@/lib/actions/perfil';
+import { updateEmpresarioProfile, uploadEmpresarioLogo } from '@/lib/actions/perfil';
 
 type ProjectType =
   | 'web'
@@ -128,6 +129,7 @@ type CompanyData = {
   website: string;
   provincia: string;
   canton: string;
+  logoUrl: string | null;
   modalities: string[];
   scheduleType: 'flexible' | 'fixed';
   contacts: Contact[];
@@ -154,6 +156,7 @@ const MOCK_DATA: CompanyData = {
   website: 'www.globaltechsolutions.cr',
   provincia: 'San José',
   canton: 'Escazú',
+  logoUrl: null,
   modalities: ['remote', 'hybrid'],
   scheduleType: 'flexible',
   contacts: [
@@ -231,6 +234,7 @@ function buildInitialData(profile: ApiMeProfile | null): CompanyData {
     comercialName: emp?.nombre_comercial ?? MOCK_DATA.comercialName,
     website: emp?.url_sitio_web ?? MOCK_DATA.website,
     sector: parseSector(emp?.sector),
+    logoUrl: emp?.url_logo ?? null,
     provincia,
     canton,
     projectTypes,
@@ -265,6 +269,11 @@ export function CompanyProfile({
   const [saveStatus, setSaveStatus] = useState<'idle' | 'success' | 'error'>('idle');
   const [saveError, setSaveError] = useState<string | null>(null);
   const [isSaving, startSaveTransition] = useTransition();
+  const [isUploadingLogo, setIsUploadingLogo] = useState(false);
+  const [logoError, setLogoError] = useState<string | null>(null);
+  const logoInputRef = useRef<HTMLInputElement>(null);
+
+  const MAX_LOGO_BYTES = 5 * 1024 * 1024;
 
   function handleRemoveValue(indexToRemove: number) {
     setCompany((prev) => ({
@@ -316,6 +325,31 @@ export function CompanyProfile({
         setSaveError(result.error);
       }
     });
+  }
+
+  async function handleLogoChange(e: React.ChangeEvent<HTMLInputElement>) {
+    const file = e.target.files?.[0];
+    if (logoInputRef.current) logoInputRef.current.value = '';
+    if (!file) return;
+    setLogoError(null);
+    if (!file.type.startsWith('image/')) {
+      setLogoError(t('logo.invalid_type'));
+      return;
+    }
+    if (file.size > MAX_LOGO_BYTES) {
+      setLogoError(t('logo.too_large'));
+      return;
+    }
+    const formData = new FormData();
+    formData.append('file', file);
+    setIsUploadingLogo(true);
+    const result = await uploadEmpresarioLogo(formData);
+    setIsUploadingLogo(false);
+    if (!result.ok) {
+      setLogoError(result.error);
+      return;
+    }
+    setCompany((prev) => ({ ...prev, logoUrl: result.data.url_logo }));
   }
 
   function handleToggleNeededSupport(ts: TechSupport) {
@@ -415,9 +449,44 @@ export function CompanyProfile({
       {/* Hero */}
       <div className="relative overflow-hidden bg-secondary px-6 pb-16 pt-10">
         <FwdGeoBackdrop />
-        <div className="relative z-10 mx-auto flex max-w-6xl flex-col items-center gap-8 md:flex-row md:items-end">
-          <div className="flex size-24 shrink-0 items-center justify-center rounded-2xl border-4 border-white/20 bg-secondary-foreground/10 shadow-[var(--shadow-elevated)]">
-            <Building2 className="size-12 text-highlight" />
+        <div className="relative z-10 mx-auto flex max-w-6xl flex-col items-center gap-8 md:flex-row md:items-center">
+          {/* Logo con upload */}
+          <div className="shrink-0 space-y-1">
+            <div className="relative">
+              <div className="flex size-32 shrink-0 items-center justify-center overflow-hidden rounded-full border-4 border-white/20 bg-secondary-foreground/10 shadow-[var(--shadow-elevated)]">
+                {company.logoUrl ? (
+                  // eslint-disable-next-line @next/next/no-img-element
+                  <img src={company.logoUrl} alt={t('logo.alt')} className="size-full object-cover" />
+                ) : (
+                  <Building2 className="size-14 text-highlight" />
+                )}
+              </div>
+              <button
+                type="button"
+                onClick={() => logoInputRef.current?.click()}
+                disabled={isUploadingLogo}
+                aria-label={t('logo.change')}
+                className="absolute -bottom-2 -right-2 flex size-9 cursor-pointer items-center justify-center rounded-full bg-highlight text-secondary shadow-soft transition-opacity duration-[var(--duration-fast)] hover:opacity-90 disabled:cursor-not-allowed disabled:opacity-60"
+              >
+                {isUploadingLogo ? (
+                  <Loader2 className="size-4 animate-spin" />
+                ) : (
+                  <Camera className="size-4" />
+                )}
+              </button>
+              <input
+                ref={logoInputRef}
+                type="file"
+                accept="image/*"
+                onChange={handleLogoChange}
+                className="hidden"
+              />
+            </div>
+            {logoError && (
+              <p className="flex max-w-24 items-center gap-1 text-[10px] font-medium text-highlight">
+                <AlertCircle className="size-3 shrink-0" /> {logoError}
+              </p>
+            )}
           </div>
 
           <div className="flex-1 space-y-4 text-center md:text-left">
@@ -499,41 +568,6 @@ export function CompanyProfile({
             </div>
           </div>
 
-          <div className="flex flex-col gap-3">
-            {isEditing ? (
-              <>
-                <Button
-                  onClick={handleSave}
-                  disabled={isSaving}
-                  className="gap-2 rounded-full bg-highlight font-bold text-secondary hover:bg-highlight/90 disabled:opacity-60"
-                >
-                  {isSaving ? (
-                    <Loader2 className="size-4 animate-spin" />
-                  ) : (
-                    <CheckCircle2 className="size-4" />
-                  )}
-                  {isSaving ? t('hero.saving') : t('hero.save')}
-                </Button>
-                <Button
-                  onClick={() => { setIsEditing(false); setSaveStatus('idle'); setSaveError(null); }}
-                  variant="outline"
-                  disabled={isSaving}
-                  className="rounded-full border-white/20 bg-white/10 text-white backdrop-blur-sm hover:bg-white/20 disabled:opacity-40"
-                >
-                  {t('hero.cancel')}
-                </Button>
-              </>
-            ) : (
-              <Button
-                onClick={() => { setIsEditing(true); setSaveStatus('idle'); }}
-                variant="outline"
-                className="gap-2 rounded-full border-white/20 bg-white/10 text-white backdrop-blur-sm hover:bg-white/20"
-              >
-                <Edit2 className="size-4" />
-                {t('hero.edit_profile')}
-              </Button>
-            )}
-          </div>
         </div>
       </div>
 
@@ -564,10 +598,46 @@ export function CompanyProfile({
               <>
                 {/* Información General — Emprendedor */}
                 <section className="space-y-6">
-                  <h2 className="flex items-center gap-3 font-heading text-2xl font-extrabold uppercase tracking-tight text-ink-strong">
-                    <Building2 className="size-6 text-primary" />
-                    {t('sections.general')}<span className="text-primary">.</span>
-                  </h2>
+                  <div className="flex items-center justify-between gap-4">
+                    <h2 className="flex items-center gap-3 font-heading text-2xl font-extrabold uppercase tracking-tight text-ink-strong">
+                      <Building2 className="size-6 text-primary" />
+                      {t('sections.general')}<span className="text-primary">.</span>
+                    </h2>
+                    <div className="flex shrink-0 gap-2">
+                      {isEditing ? (
+                        <>
+                          <Button
+                            onClick={handleSave}
+                            disabled={isSaving}
+                            size="sm"
+                            className="gap-1.5 rounded-full bg-primary font-bold text-white hover:bg-primary/90 disabled:opacity-60"
+                          >
+                            {isSaving ? <Loader2 className="size-3.5 animate-spin" /> : <CheckCircle2 className="size-3.5" />}
+                            {isSaving ? t('hero.saving') : t('hero.save')}
+                          </Button>
+                          <Button
+                            onClick={() => { setIsEditing(false); setSaveStatus('idle'); setSaveError(null); }}
+                            variant="outline"
+                            size="sm"
+                            disabled={isSaving}
+                            className="rounded-full disabled:opacity-40"
+                          >
+                            {t('hero.cancel')}
+                          </Button>
+                        </>
+                      ) : (
+                        <Button
+                          onClick={() => { setIsEditing(true); setSaveStatus('idle'); }}
+                          variant="outline"
+                          size="sm"
+                          className="gap-1.5 rounded-full border-primary/30 text-primary hover:bg-primary/5"
+                        >
+                          <Edit2 className="size-3.5" />
+                          {t('hero.edit_profile')}
+                        </Button>
+                      )}
+                    </div>
+                  </div>
                   <Card className="space-y-8 border-border bg-surface p-8">
                     <div className="grid grid-cols-1 gap-8 md:grid-cols-2">
                       <div>
@@ -659,10 +729,46 @@ export function CompanyProfile({
             <>
             {/* Información General */}
             <section className="space-y-6">
-              <h2 className="flex items-center gap-3 font-heading text-2xl font-extrabold uppercase tracking-tight text-ink-strong">
-                <Building2 className="size-6 text-primary" />
-                {t('sections.general')}<span className="text-primary">.</span>
-              </h2>
+              <div className="flex items-center justify-between gap-4">
+                <h2 className="flex items-center gap-3 font-heading text-2xl font-extrabold uppercase tracking-tight text-ink-strong">
+                  <Building2 className="size-6 text-primary" />
+                  {t('sections.general')}<span className="text-primary">.</span>
+                </h2>
+                <div className="flex shrink-0 gap-2">
+                  {isEditing ? (
+                    <>
+                      <Button
+                        onClick={handleSave}
+                        disabled={isSaving}
+                        size="sm"
+                        className="gap-1.5 rounded-full bg-primary font-bold text-white hover:bg-primary/90 disabled:opacity-60"
+                      >
+                        {isSaving ? <Loader2 className="size-3.5 animate-spin" /> : <CheckCircle2 className="size-3.5" />}
+                        {isSaving ? t('hero.saving') : t('hero.save')}
+                      </Button>
+                      <Button
+                        onClick={() => { setIsEditing(false); setSaveStatus('idle'); setSaveError(null); }}
+                        variant="outline"
+                        size="sm"
+                        disabled={isSaving}
+                        className="rounded-full disabled:opacity-40"
+                      >
+                        {t('hero.cancel')}
+                      </Button>
+                    </>
+                  ) : (
+                    <Button
+                      onClick={() => { setIsEditing(true); setSaveStatus('idle'); }}
+                      variant="outline"
+                      size="sm"
+                      className="gap-1.5 rounded-full border-primary/30 text-primary hover:bg-primary/5"
+                    >
+                      <Edit2 className="size-3.5" />
+                      {t('hero.edit_profile')}
+                    </Button>
+                  )}
+                </div>
+              </div>
               <Card className="space-y-8 border-border bg-surface p-8">
                 <div className="grid grid-cols-1 gap-8 md:grid-cols-2">
 

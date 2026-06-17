@@ -2,7 +2,7 @@ import { Router } from "express";
 import multer from "multer";
 import { authenticate } from "../middlewares/auth.middleware";
 import { asyncHandler } from "../utils/asyncHandler";
-import { updateMe, updateAvatar } from "../controllers/perfil.controller";
+import { updateMe, updateAvatar, uploadLogo } from "../controllers/perfil.controller";
 
 const router = Router();
 
@@ -14,5 +14,6 @@ const upload = multer({
 router.patch("/", authenticate, asyncHandler(updateMe));
 
 router.post("/avatar", authenticate, upload.single("file"), asyncHandler(updateAvatar));
+router.post("/logo", authenticate, upload.single("file"), asyncHandler(uploadLogo));
 
 export default router;

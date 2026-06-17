@@ -1,6 +1,6 @@
 import type { Request, Response } from "express";
 import { ApiError } from "../utils/ApiError";
-import { updateMyPerfil, updateMyAvatar } from "../services/perfil.service";
+import { getMyPerfil, updateMyPerfil, updateMyAvatar, uploadMyLogo } from "../services/perfil.service";
 
 /** Token + id del usuario autenticado (los inyecta `authenticate`). */
 function requireAuth(req: Request): { token: string; userId: string } {
@@ -34,4 +34,17 @@ export async function updateAvatar(req: Request, res: Response) {
   }
   const perfil = await updateMyAvatar(token, userId, req.file.buffer);
   res.status(200).json({ perfil });
+}
+
+/** POST /api/users/me/perfil/logo (empresa sube su logo) */
+export async function uploadLogo(req: Request, res: Response) {
+  const { token, userId } = requireAuth(req);
+  if (!req.file) {
+    throw new ApiError(400, "No se recibió ninguna imagen");
+  }
+  if (!req.file.mimetype.startsWith("image/")) {
+    throw new ApiError(400, "El archivo debe ser una imagen");
+  }
+  const result = await uploadMyLogo(token, userId, req.file.buffer, req.file.size);
+  res.status(200).json(result);
 }

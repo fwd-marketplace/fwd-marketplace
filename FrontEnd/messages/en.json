@@ -1058,6 +1058,13 @@
       "save_error": "An error occurred while saving. Please try again.",
       "view_projects": "View projects"
     },
+    "logo": {
+      "alt": "Company logo",
+      "change": "Change logo",
+      "invalid_type": "File must be an image.",
+      "too_large": "Image exceeds the 5 MB limit.",
+      "upload_error": "Could not upload logo. Please try again."
+    },
     "contacts": {
       "add_btn": "Recruiter",
       "add_title": "Add Recruiter",

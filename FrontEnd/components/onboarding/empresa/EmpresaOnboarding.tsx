@@ -8,6 +8,7 @@ import { FwdGeoBackdrop } from "@/components/ui/fwd-geo-backdrop";
 import { ProgressDots } from "@/components/onboarding/ProgressDots";
 import { saveStep, getOnboarding, clearOnboarding } from "@/lib/onboarding-storage";
 import { saveEmpresaProfile } from "@/lib/actions/auth";
+import { uploadEmpresarioLogo } from "@/lib/actions/perfil";
 
 const TOTAL_STEPS = 6;
 const OPTIONAL_STEPS = new Set([6]);
@@ -386,7 +387,7 @@ function Step5({ onChange }: { onChange: (val: ProjectType[]) => void }) {
   );
 }
 
-function Step6() {
+function Step6({ onLogoFile }: { onLogoFile: (file: File) => void }) {
   const t = useTranslations("register.empresa.step6");
   const [logoPreviewUrl, setLogoPreviewUrl] = useState<string | null>(null);
   const [isDraggingOver, setIsDraggingOver] = useState(false);
@@ -396,6 +397,7 @@ function Step6() {
     if (!file.type.startsWith("image/")) return;
     if (file.size > MAX_LOGO_FILE_SIZE_BYTES) return;
     setLogoPreviewUrl(URL.createObjectURL(file));
+    onLogoFile(file);
   }
 
   function handleFileInputChange(e: React.ChangeEvent<HTMLInputElement>) {
@@ -475,6 +477,7 @@ export function EmpresaOnboarding() {
   const [submitError, setSubmitError] = useState<string | null>(null);
   const [showStepErrors, setShowStepErrors] = useState(false);
   const [isSubmitting, startTransition] = useTransition();
+  const logoFileRef = useRef<File | null>(null);
 
   useEffect(() => {
     setPendingValue(null);
@@ -523,12 +526,18 @@ export function EmpresaOnboarding() {
 
     startTransition(async () => {
       const result = await saveEmpresaProfile(raw);
-      if (result.ok) {
-        clearOnboarding("empresa");
-        router.push(`/${locale}/register/onboarding/empresa/done`);
-      } else {
+      if (!result.ok) {
         setSubmitError(result.error);
+        return;
       }
+      // Subir el logo si el usuario seleccionó uno
+      if (logoFileRef.current) {
+        const formData = new FormData();
+        formData.append("file", logoFileRef.current);
+        await uploadEmpresarioLogo(formData);
+      }
+      clearOnboarding("empresa");
+      router.push(`/${locale}/register/onboarding/empresa/done`);
     });
   }
 
@@ -583,7 +592,7 @@ export function EmpresaOnboarding() {
           {currentStep === 5 && (
             <Step5 onChange={(val) => setPendingValue(val.length > 0 ? val : null)} />
           )}
-          {currentStep === 6 && <Step6 />}
+          {currentStep === 6 && <Step6 onLogoFile={(f) => { logoFileRef.current = f; }} />}
         </div>
       </div>
 

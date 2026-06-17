@@ -99,6 +99,10 @@ export async function getUserFromToken(accessToken: string) {
 const ESTUDIANTE_DETAIL_SELECT =
   "id, descripcion, especialidad, modalidad_preferida, disponibilidad, titulo_fwd, reputacion, url_avatar, url_github, url_linkedin, url_portfolio";
 
+/** Columnas de `empresario` que muestra la página de perfil de empresa/emprendedor. */
+const EMPRESARIO_DETAIL_SELECT =
+  "id, tipo, nombre_comercial, descripcion, sector, tipos_proyecto, apoyo_tecnico_necesario, cedula_juridica, direccion, url_sitio_web, etapa, presupuesto";
+
 /** Nombres de las skills de un estudiante (catálogo `skills` vía `student_skills`). */
 async function getEstudianteSkills(
   client: ReturnType<typeof supabaseForToken>,
@@ -168,6 +172,25 @@ export async function getMyProfile(accessToken: string, userId: string) {
         skills,
       },
     };
+  }
+
+  if (user.role?.nombre === "company") {
+    const { data: empresario, error: empresarioError } = await client
+      .from("empresario")
+      .select(EMPRESARIO_DETAIL_SELECT)
+      .eq("id_usuario", userId)
+      .maybeSingle();
+    if (empresarioError) throw new ApiError(500, empresarioError.message);
+    if (!empresario) return { ...user, empresario: null };
+
+    const { data: logoFile } = await client
+      .from("files")
+      .select("storage_path")
+      .eq("id_empresario", empresario.id)
+      .eq("tipo", "logo")
+      .maybeSingle();
+
+    return { ...user, empresario: { ...empresario, url_logo: logoFile?.storage_path ?? null } };
   }
 
   return user;

@@ -48,6 +48,40 @@ export async function updateStudentProfile(
   }
 }
 
+export async function uploadEmpresarioLogo(
+  formData: FormData,
+): Promise<Result<{ url_logo: string }>> {
+  const file = formData.get("file");
+  if (!(file instanceof File) || file.size === 0) {
+    return err("No se recibió ninguna imagen");
+  }
+
+  const jar = await cookies();
+  const token = jar.get(SESSION_COOKIE)?.value;
+  if (!token) {
+    return err("No autenticado");
+  }
+
+  const forwarded = new FormData();
+  forwarded.append("file", file);
+
+  try {
+    const res = await fetch(`${BASE_URL}/users/me/perfil/logo`, {
+      method: "POST",
+      headers: { Authorization: `Bearer ${token}` },
+      body: forwarded,
+    });
+    if (!res.ok) {
+      const body = (await res.json().catch(() => ({}))) as { error?: string };
+      return err(body.error ?? "No se pudo subir el logo");
+    }
+    const data = (await res.json()) as { url_logo: string };
+    return ok(data);
+  } catch {
+    return err("Error de conexión");
+  }
+}
+
 export async function uploadStudentAvatar(
   formData: FormData,
 ): Promise<Result<{ url_avatar: string }>> {
