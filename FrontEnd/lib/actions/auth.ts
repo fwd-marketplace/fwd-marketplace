@@ -47,18 +47,43 @@ export async function registerUser(input: {
   }
 }
 
+/**
+ * Paso 1 del login: valida email+contraseña. Con 2FA obligatorio, NO devuelve la
+ * sesión: el BackEnd manda un código por correo y devuelve un `ticket`. El FE pide
+ * el código y lo confirma con `verifyLoginOtp`.
+ */
 export async function loginUser(input: {
   email: string;
   password: string;
+}): Promise<Result<{ ticket: string }>> {
+  try {
+    const data = await apiFetch<{ mfa_required: boolean; ticket: string }>("/users/login", {
+      method: "POST",
+      body: JSON.stringify(input),
+    });
+    if (!data.ticket) return err("No se recibió el ticket de verificación");
+    return ok({ ticket: data.ticket });
+  } catch (e) {
+    return err(e instanceof ApiError ? e.message : "Error de conexión");
+  }
+}
+
+/**
+ * Paso 2 del login: confirma el código de 2FA. Si es correcto, setea las cookies
+ * httpOnly con la sesión y devuelve rol/estado para enrutar (igual que el login).
+ */
+export async function verifyLoginOtp(input: {
+  ticket: string;
+  code: string;
 }): Promise<Result<LoginResult>> {
   try {
-    const loginData = await apiFetch<{
+    const data = await apiFetch<{
       user: unknown;
       session: { access_token: string; refresh_token: string };
-    }>("/users/login", { method: "POST", body: JSON.stringify(input) });
+    }>("/users/login/verify-otp", { method: "POST", body: JSON.stringify(input) });
 
-    const token = loginData.session?.access_token;
-    const refreshToken = loginData.session?.refresh_token;
+    const token = data.session?.access_token;
+    const refreshToken = data.session?.refresh_token;
     if (!token) return err("No se recibió sesión del servidor");
 
     const jar = await cookies();
@@ -67,10 +92,9 @@ export async function loginUser(input: {
       jar.set(REFRESH_COOKIE, refreshToken, COOKIE_OPTS);
     }
 
-    const meData = await apiFetch<{ user: unknown; profile: ProfileData | null }>(
-      "/users/me",
-      { headers: { Authorization: `Bearer ${token}` } },
-    );
+    const meData = await apiFetch<{ user: unknown; profile: ProfileData | null }>("/users/me", {
+      headers: { Authorization: `Bearer ${token}` },
+    });
 
     if (!meData.profile) {
       return ok({ role: "none", estado_cuenta: "no_profile" });
