@@ -18,6 +18,10 @@ const { state } = vi.hoisted(() => ({
     updateUserResult: { error: null } as { error: unknown },
     resetPasswordResult: { error: null } as { error: unknown },
     resetRedirectTo: "" as string,
+    oauthResult: { data: { url: null as string | null }, error: null } as {
+      data: { url: string | null };
+      error: unknown;
+    },
     signOutCalls: 0,
     updateUserCalls: 0,
   },
@@ -50,6 +54,11 @@ vi.mock("../../config/supabase", () => ({
       },
     },
   }),
+  createOAuthClient: () => ({
+    auth: {
+      signInWithOAuth: (_args: unknown) => Promise.resolve(state.oauthResult),
+    },
+  }),
 }));
 
 import {
@@ -57,6 +66,8 @@ import {
   logoutUser,
   confirmPasswordReset,
   requestPasswordReset,
+  isOAuthProvider,
+  getOAuthUrl,
 } from "../user.service";
 
 beforeEach(() => {
@@ -66,6 +77,7 @@ beforeEach(() => {
   state.updateUserResult = { error: null };
   state.resetPasswordResult = { error: null };
   state.resetRedirectTo = "";
+  state.oauthResult = { data: { url: null }, error: null };
   state.signOutCalls = 0;
   state.updateUserCalls = 0;
 });
@@ -205,5 +217,35 @@ describe("requestPasswordReset", () => {
     state.resetPasswordResult = { error: { status: 400, message: "rate limit" } };
 
     await expect(requestPasswordReset("user@example.com")).resolves.toBeUndefined();
+  });
+});
+
+describe("isOAuthProvider", () => {
+  it("acepta google y github", () => {
+    expect(isOAuthProvider("google")).toBe(true);
+    expect(isOAuthProvider("github")).toBe(true);
+  });
+
+  it("rechaza proveedores no soportados", () => {
+    expect(isOAuthProvider("facebook")).toBe(false);
+    expect(isOAuthProvider("")).toBe(false);
+  });
+});
+
+describe("getOAuthUrl", () => {
+  it("devuelve la URL de autorización del provider", async () => {
+    state.oauthResult = {
+      data: { url: "https://accounts.google.com/o/oauth2/auth?client_id=x" },
+      error: null,
+    };
+
+    const url = await getOAuthUrl("google", "es");
+    expect(url).toContain("https://");
+  });
+
+  it("lanza 502 si Supabase no devuelve URL", async () => {
+    state.oauthResult = { data: { url: null }, error: { message: "fail" } };
+
+    await expect(getOAuthUrl("google", "es")).rejects.toMatchObject({ statusCode: 502 });
   });
 });

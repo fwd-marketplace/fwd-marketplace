@@ -1,4 +1,9 @@
-import { supabase, supabaseForToken, createEphemeralClient } from "../config/supabase";
+import {
+  supabase,
+  supabaseForToken,
+  createEphemeralClient,
+  createOAuthClient,
+} from "../config/supabase";
 import { env } from "../config/env";
 import { ApiError } from "../utils/ApiError";
 
@@ -138,6 +143,37 @@ export async function confirmPasswordReset(input: {
 
   const { error } = await client.auth.updateUser({ password: input.password });
   if (error) throw new ApiError(400, error.message);
+}
+
+/** Proveedores de OAuth soportados. */
+const OAUTH_PROVIDERS = ["google", "github"] as const;
+export type OAuthProvider = (typeof OAUTH_PROVIDERS)[number];
+
+/** Type guard: confirma que un string es un provider de OAuth soportado. */
+export function isOAuthProvider(value: string): value is OAuthProvider {
+  return (OAUTH_PROVIDERS as readonly string[]).includes(value);
+}
+
+/**
+ * Devuelve la URL de autorización del provider (Google/GitHub) para iniciar el
+ * login social. El navegador del usuario debe ir a esa URL; tras autenticar, el
+ * provider -> Supabase -> redirige a `${frontendUrl}/${locale}/auth/callback`
+ * con la sesión en el fragment (#access_token=...). El FrontEnd no habla con
+ * Supabase: solo abre esta URL y luego procesa el callback contra el BackEnd.
+ */
+export async function getOAuthUrl(provider: OAuthProvider, locale: string): Promise<string> {
+  const redirectTo = `${env.frontendUrl}/${locale}/auth/callback`;
+  const client = createOAuthClient();
+
+  const { data, error } = await client.auth.signInWithOAuth({
+    provider,
+    options: { redirectTo, skipBrowserRedirect: true },
+  });
+
+  if (error || !data?.url) {
+    throw new ApiError(error?.status ?? 502, error?.message ?? "No se pudo iniciar el login social");
+  }
+  return data.url;
 }
 
 /** Valida un access_token de Supabase y devuelve el usuario asociado. */

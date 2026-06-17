@@ -113,6 +113,30 @@ default `es`.
 La página `/{locale}/nueva-contrasena` (p. ej. `/es/...` o `/en/...`) lee `token_hash` de la
 URL y llama al confirm. Requiere SMTP configurado en Supabase (Resend) para que el correo llegue.
 
+### Login social (OAuth Google / GitHub)
+
+Flujo mediado por el BackEnd (el FrontEnd no habla con Supabase):
+```
+1. GET /api/users/oauth/:provider?locale=es   -> { url }   (provider: google | github)
+2. el FE redirige el navegador a esa url
+3. provider -> Supabase -> redirige a /es/auth/callback#access_token=...&refresh_token=...
+4. la pagina /es/auth/callback lee los tokens del fragment, los valida con GET /me,
+   setea las cookies httpOnly y enruta:
+     - perfil = null  -> onboarding (el usuario de Google entra sin perfil)
+     - perfil existe   -> dashboard segun rol/estado
+```
+
+**GET /api/users/oauth/:provider** — `provider` debe ser `google` o `github`. Query
+opcional `locale` (default `es`) para el callback localizado. **No** lleva Bearer.
+→ `200 { "url": "https://..." }` (URL de autorización a la que redirigir el navegador).
+→ `400` si el provider no es soportado.
+
+Notas:
+- En `auth/callback` los tokens llegan en el **fragment** (`#`), igual que en recuperación:
+  el FE los lee del hash y los manda a un server action que valida y setea cookies.
+- Un usuario que entra por Google/GitHub queda **sin perfil** → `/me` devuelve `profile:null`
+  → mandarlo a onboarding (se puede pre-llenar nombre/correo desde la identidad del provider).
+
 ### Valores permitidos en onboarding (enums estrictos) — mandar EXACTO
 
 Estos campos son `enum`: si mandás un valor fuera de la lista, el BackEnd responde `400`.
