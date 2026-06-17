@@ -75,13 +75,53 @@ export async function logoutUser(refreshToken: string) {
   await client.auth.signOut();
 }
 
+/**
+ * Paso 1 de recuperación: envía el correo con el enlace de recovery. El enlace
+ * lleva a la página donde el usuario define la clave nueva. No revela si el
+ * correo existe (respuesta uniforme); solo falla si el proveedor de correo cae.
+ */
 export async function requestPasswordReset(email: string): Promise<void> {
-  const redirectTo = `${env.frontendUrl}/es/login`;
+  const redirectTo = `${env.frontendUrl}/es/nueva-contrasena`;
   const { error } = await supabase.auth.resetPasswordForEmail(email, { redirectTo });
 
   if (error && error.status && error.status >= 500) {
     throw new ApiError(502, "No se pudo enviar el correo de recuperación");
   }
+}
+
+/**
+ * Paso 2 de recuperación: confirma el cambio de contraseña con la sesión de
+ * recovery que trae el enlace del correo. Soporta las dos formas en que
+ * Supabase puede entregar esa sesión:
+ *  - `accessToken` + `refreshToken`: el correo default redirige con la sesión
+ *    en el fragment de la URL (#access_token=...). Es el caso actual.
+ *  - `tokenHash`: si se personaliza la plantilla (requiere SMTP propio), el
+ *    enlace trae un token_hash que se verifica con verifyOtp.
+ * Cliente efímero para no contaminar el cliente compartido.
+ */
+export async function confirmPasswordReset(input: {
+  tokenHash?: string;
+  accessToken?: string;
+  refreshToken?: string;
+  password: string;
+}): Promise<void> {
+  const client = createEphemeralClient();
+
+  if (input.tokenHash) {
+    const { error } = await client.auth.verifyOtp({ token_hash: input.tokenHash, type: "recovery" });
+    if (error) throw new ApiError(400, "El enlace de recuperación es inválido o expiró");
+  } else if (input.accessToken && input.refreshToken) {
+    const { error } = await client.auth.setSession({
+      access_token: input.accessToken,
+      refresh_token: input.refreshToken,
+    });
+    if (error) throw new ApiError(400, "El enlace de recuperación es inválido o expiró");
+  } else {
+    throw new ApiError(400, "Falta el token de recuperación");
+  }
+
+  const { error } = await client.auth.updateUser({ password: input.password });
+  if (error) throw new ApiError(400, error.message);
 }
 
 /** Valida un access_token de Supabase y devuelve el usuario asociado. */

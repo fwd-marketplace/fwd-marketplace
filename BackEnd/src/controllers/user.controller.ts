@@ -29,6 +29,39 @@ function readResetInput(body: unknown): { email: string } {
   return { email: email.trim() };
 }
 
+/**
+ * Lee los datos del paso 2 de recuperación: la contraseña nueva + la sesión de
+ * recovery, que puede venir como `access_token`+`refresh_token` (correo default,
+ * sesión en el fragment) o como `token_hash` (plantilla personalizada).
+ */
+function readConfirmResetInput(body: unknown): {
+  tokenHash?: string;
+  accessToken?: string;
+  refreshToken?: string;
+  password: string;
+} {
+  const { token_hash, access_token, refresh_token, password } = (body ?? {}) as Record<
+    string,
+    unknown
+  >;
+
+  if (typeof password !== "string" || password.length < 8) {
+    throw new ApiError(400, "La contraseña debe tener al menos 8 caracteres");
+  }
+  if (typeof token_hash === "string" && token_hash.trim()) {
+    return { tokenHash: token_hash, password };
+  }
+  if (
+    typeof access_token === "string" &&
+    access_token.trim() &&
+    typeof refresh_token === "string" &&
+    refresh_token.trim()
+  ) {
+    return { accessToken: access_token, refreshToken: refresh_token, password };
+  }
+  throw new ApiError(400, "Falta el token de recuperación");
+}
+
 /** Lee y valida el `refresh_token` del body. */
 function readRefreshToken(body: unknown): string {
   const { refresh_token } = (body ?? {}) as Record<string, unknown>;
@@ -54,9 +87,17 @@ export async function login(req: Request, res: Response) {
   res.status(200).json(result);
 }
 
+/** POST /api/users/reset-password (paso 1: pide el correo de recuperación) */
 export async function resetPassword(req: Request, res: Response) {
   const { email } = readResetInput(req.body);
   await userService.requestPasswordReset(email);
+  res.status(200).json({ ok: true });
+}
+
+/** POST /api/users/reset-password/confirm (paso 2: define la clave nueva) */
+export async function confirmResetPassword(req: Request, res: Response) {
+  const input = readConfirmResetInput(req.body);
+  await userService.confirmPasswordReset(input);
   res.status(200).json({ ok: true });
 }
 

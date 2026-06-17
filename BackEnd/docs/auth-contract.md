@@ -89,6 +89,27 @@ Body: `{ "refresh_token": string }`
 → `200 { "ok": true }` (idempotente: responde `200` aunque el token ya fuera inválido).
 El FE debe además **borrar las cookies** httpOnly. Ver **"Manejo de sesión"** arriba.
 
+### Recuperación de contraseña (2 pasos, sin Bearer)
+
+Flujo correcto: pedir el correo → el usuario hace clic en el enlace → define la clave nueva.
+```
+1. POST /users/reset-password          { email }              -> Supabase envia el correo
+2. el correo lleva a: /es/nueva-contrasena?token_hash=...&type=recovery
+3. POST /users/reset-password/confirm  { token_hash, password } -> cambia la clave
+```
+
+**POST /api/users/reset-password** — Body `{ "email": string }`
+→ `200 { "ok": true }` siempre (no revela si el correo existe). El FE muestra "si el correo
+existe, te enviamos un enlace".
+
+**POST /api/users/reset-password/confirm** — Body `{ "token_hash": string, "password": string }`
+- `token_hash`: viene en la query del enlace del correo (`?token_hash=...`).
+- `password`: nueva contraseña (mínimo 8).
+→ `200 { "ok": true }`. → `400` si el token es inválido/expiró o la clave es débil.
+
+La página `/es/nueva-contrasena` lee `token_hash` de la URL y llama al confirm. Requiere
+SMTP configurado en Supabase (Resend) para que el correo llegue.
+
 ### Valores permitidos en onboarding (enums estrictos) — mandar EXACTO
 
 Estos campos son `enum`: si mandás un valor fuera de la lista, el BackEnd responde `400`.

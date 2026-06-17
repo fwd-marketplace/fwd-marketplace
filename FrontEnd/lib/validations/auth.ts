@@ -51,9 +51,14 @@ export const EmprendedorProfileSchema = z.object({
 
 export const MIN_PASSWORD_LENGTH = 8;
 
-export const ResetPasswordSchema = z
+/** Paso 1 de recuperación: solo el correo (se envía el enlace). */
+export const ResetPasswordSchema = z.object({
+  email: z.string().min(1).email(),
+});
+
+/** Paso 2 de recuperación: la contraseña nueva (el token viene del enlace). */
+export const NewPasswordSchema = z
   .object({
-    email: z.string().min(1).email(),
     password: z.string().min(MIN_PASSWORD_LENGTH),
     confirmPassword: z.string().min(1),
   })
@@ -66,3 +71,4 @@ export type JuniorProfile      = z.infer<typeof JuniorProfileSchema>;
 export type EmpresaProfile     = z.infer<typeof EmpresaProfileSchema>;
 export type EmprendedorProfile = z.infer<typeof EmprendedorProfileSchema>;
 export type ResetPasswordInput = z.infer<typeof ResetPasswordSchema>;
+export type NewPasswordInput   = z.infer<typeof NewPasswordSchema>;
