@@ -4,6 +4,7 @@ import { requireAdmin } from "../middlewares/requireAdmin.middleware";
 import { asyncHandler } from "../utils/asyncHandler";
 import {
   listPending,
+  listStudents,
   approve,
   reject,
   suspend,
@@ -15,6 +16,7 @@ const router = Router();
 
 // Todas exigen sesión + rol admin.
 router.get("/users/pending", authenticate, requireAdmin, asyncHandler(listPending));
+router.get("/users/estudiantes", authenticate, requireAdmin, asyncHandler(listStudents));
 router.patch("/users/:id/aprobar", authenticate, requireAdmin, asyncHandler(approve));
 router.patch("/users/:id/rechazar", authenticate, requireAdmin, asyncHandler(reject));
 router.patch("/users/:id/suspender", authenticate, requireAdmin, asyncHandler(suspend));

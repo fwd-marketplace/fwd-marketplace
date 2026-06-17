@@ -54,6 +54,29 @@ export function suspendUser(accessToken: string, targetUserId: string) {
 }
 
 /**
+ * Lista todos los usuarios con rol 'student'.
+ * Solo admin (RLS: `users_admin_ver_todos` via `is_admin()`).
+ */
+export async function listStudentUsers(accessToken: string) {
+  const client = supabaseForToken(accessToken);
+  const { data, error } = await client
+    .from("users")
+    .select(
+      `id, nombre, apellido1, correo, estado_cuenta, fecha_registro,
+       role:roles(nombre),
+       estudiante(especialidad, disponibilidad, titulo_fwd, reputacion, url_github, url_linkedin, url_portfolio)`,
+    )
+    .eq("roles.nombre", "student")
+    .not("roles", "is", null)
+    .order("fecha_registro", { ascending: false });
+
+  if (error) throw new ApiError(500, error.message);
+  return (data ?? []).filter(
+    (u) => u.role !== null && (u.role as { nombre: string } | null)?.nombre === "student",
+  );
+}
+
+/**
  * Lista todos los proyectos para moderación (incluye borradores).
  * Solo admin (RLS: `proyecto_admin_ver`).
  */

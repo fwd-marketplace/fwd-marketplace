@@ -740,7 +740,14 @@
       "description": "Manage and showcase your most impactful developments. Visualize your finished products and add new pieces to your professional portfolio.",
       "badge_product": "Product",
       "add_title": "Add project",
-      "add_formats": "Supported formats: Link, Figma, GitHub"
+      "add_formats": "Supported formats: Link, Figma, GitHub",
+      "preview_btn": "Preview",
+      "open_btn": "Open",
+      "preview_modal_title": "Preview",
+      "open_in_new_tab": "Open in new tab",
+      "close": "Close",
+      "iframe_error": "This site does not allow embedding. You can open it directly.",
+      "no_projects": "There are no projects in your portfolio yet."
     },
     "applications": {
       "title": "My applications",

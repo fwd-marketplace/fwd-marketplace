@@ -3,6 +3,7 @@ import { z } from "zod";
 import { ApiError } from "../utils/ApiError";
 import {
   listPendingUsers,
+  listStudentUsers,
   approveUser,
   rejectUser,
   suspendUser,
@@ -24,6 +25,12 @@ function readUuid(value: unknown, label: string): string {
 /** GET /api/admin/users/pending */
 export async function listPending(req: Request, res: Response) {
   const users = await listPendingUsers(getToken(req));
+  res.status(200).json({ users });
+}
+
+/** GET /api/admin/users/estudiantes */
+export async function listStudents(req: Request, res: Response) {
+  const users = await listStudentUsers(getToken(req));
   res.status(200).json({ users });
 }
 

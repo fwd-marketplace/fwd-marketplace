@@ -264,6 +264,25 @@
         "selected_count": "{count} seleccionadas"
       },
       "step6": {
+      "perfil_junior": {
+        "work": {
+          "add_modal_title": "Agregar nuevo proyecto",
+          "fields": {
+            "name": "Nombre del proyecto",
+            "url": "URL / Enlace",
+            "description": "Descripción breve",
+            "techs": "Tecnologías (separadas por comas)",
+            "techs_placeholder": "Ej. React, Node.js"
+          },
+          "create": "Crear proyecto",
+          "cancel": "Cancelar",
+          "preview_btn": "Vista previa",
+          "errors": {
+            "name_required": "El nombre del proyecto es obligatorio.",
+            "url_required": "La URL del proyecto es obligatoria."
+          }
+        }
+      },
         "eyebrow": "Opcional",
         "title": "¿Tienes portafolio o proyectos?",
         "description": "Agrega enlaces para mostrar tu trabajo. Puedes completar esto después.",
@@ -740,7 +759,51 @@
       "description": "Gestioná y exhibí tus desarrollos más impactantes. Visualizá tus productos terminados y añadí nuevas piezas a tu portafolio profesional.",
       "badge_product": "Product",
       "add_title": "Agregar proyecto",
-      "add_formats": "Formatos soportados: Link, Figma, GitHub"
+      "add_formats": "Formatos soportados: Link, Figma, GitHub",
+      "add_project": "Agregar proyecto",
+      "my_projects": "Mis proyectos",
+      "my_projects_help": "Gestioná y exhibí tus desarrollos más impactantes.",
+      "preview_btn": "Vista previa",
+      "open_btn": "Abrir",
+      "preview_modal_title": "Vista previa",
+      "open_in_new_tab": "Abrir en nueva pestaña",
+      "close": "Cerrar",
+      "iframe_error": "Este sitio no permite ser embebido. Podés abrirlo directamente.",
+      "no_projects": "Todavía no hay proyectos en tu portfolio.",
+      "add_modal_title": "Agregar nuevo proyecto",
+      "fields": {
+        "name": "Nombre del proyecto",
+        "url": "URL / Enlace",
+        "description": "Descripción breve",
+        "techs": "Tecnologías (separadas por comas)",
+        "techs_placeholder": "Ej. React, Tailwind, Next.js"
+      },
+      "create": "Crear proyecto",
+      "cancel": "Cancelar",
+      "errors": {
+        "name_required": "El nombre del proyecto es obligatorio.",
+        "url_required": "La URL del proyecto es obligatoria."
+      }
+      ,
+      "confirm_delete": {
+        "title": "Eliminar proyecto",
+        "message": "¿Estás seguro que querés eliminar este proyecto?",
+        "cancel": "Cancelar",
+        "confirm": "Eliminar"
+      }
+      ,
+      "work": {
+        "add_modal_title": "Agregar nuevo proyecto",
+        "fields": {
+          "name": "Nombre del proyecto",
+          "url": "URL / Enlace",
+          "description": "Descripción breve",
+          "techs": "Tecnologías (separadas por comas)",
+          "techs_placeholder": "Ej. React, Tailwind, Next.js"
+        },
+        "create": "Crear proyecto",
+        "cancel": "Cancelar"
+      }
     },
     "applications": {
       "title": "Mis postulaciones",
