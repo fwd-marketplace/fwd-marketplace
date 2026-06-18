@@ -112,7 +112,7 @@
     color-mix(in oklab, var(--secondary) 72%, var(--ink-strong)) 0%,
     var(--secondary) 45%,
     color-mix(in oklab, var(--secondary) 45%, var(--canvas)) 72%,
-    var(--canvas) 100%
+    color-mix(in oklab, var(--secondary) 18%, var(--canvas)) 100%
   );
 }
 
