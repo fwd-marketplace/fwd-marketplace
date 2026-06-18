@@ -575,13 +575,10 @@ export default function MarketPlace({ initialProjects, catalogs, role = 'student
             {/* Ambient stars scattered in the cards area */}
             <div className="pointer-events-none absolute inset-x-0 bottom-0 z-0" style={{ top: '420px' }} aria-hidden="true">
                 {([
-                    { t: '8%',  l: '1%',   s: 10, g: true,  sp: true,  o: 0.65, d: '3.2s', dl: '0.3s' },
-                    { t: '15%', l: '98%',  s: 10, g: true,  sp: true,  o: 0.7,  d: '3.6s', dl: '0.6s' },
-                    { t: '35%', l: '0.5%', s: 4,  g: false, sp: false, o: 0.45, d: '3.0s', dl: '1.4s' },
-                    { t: '45%', l: '99%',  s: 5,  g: true,  sp: false, o: 0.6,  d: '2.9s', dl: '0.5s' },
-                    { t: '62%', l: '1%',   s: 10, g: false, sp: true,  o: 0.6,  d: '3.1s', dl: '1.6s' },
-                    { t: '75%', l: '98%',  s: 10, g: true,  sp: true,  o: 0.75, d: '2.7s', dl: '0.4s' },
-                    { t: '88%', l: '2%',   s: 5,  g: false, sp: false, o: 0.5,  d: '3.5s', dl: '1.2s' },
+                    { t: '10%', l: '1%',  s: 10, g: true,  sp: true,  o: 0.6,  d: '3.2s', dl: '0.3s' },
+                    { t: '20%', l: '99%', s: 10, g: true,  sp: true,  o: 0.65, d: '3.6s', dl: '0.8s' },
+                    { t: '55%', l: '1%',  s: 10, g: false, sp: true,  o: 0.55, d: '3.1s', dl: '1.4s' },
+                    { t: '70%', l: '99%', s: 10, g: true,  sp: true,  o: 0.7,  d: '2.9s', dl: '0.5s' },
                 ] as const).map((s, i) => {
                     const fill = s.g ? 'var(--highlight)' : 'var(--surface)';
                     if (s.sp) {
