@@ -128,9 +128,11 @@ export type Database = {
           descripcion: string | null
           direccion: string | null
           etapa: string | null
+          horario: string | null
           id: string
           id_usuario: string
           mision: string | null
+          modalidades: string | null
           nombre_comercial: string | null
           presupuesto: string | null
           sector: string | null
@@ -149,9 +151,11 @@ export type Database = {
           descripcion?: string | null
           direccion?: string | null
           etapa?: string | null
+          horario?: string | null
           id?: string
           id_usuario: string
           mision?: string | null
+          modalidades?: string | null
           nombre_comercial?: string | null
           presupuesto?: string | null
           sector?: string | null
@@ -170,9 +174,11 @@ export type Database = {
           descripcion?: string | null
           direccion?: string | null
           etapa?: string | null
+          horario?: string | null
           id?: string
           id_usuario?: string
           mision?: string | null
+          modalidades?: string | null
           nombre_comercial?: string | null
           presupuesto?: string | null
           sector?: string | null

@@ -22,7 +22,7 @@ const LOGO_FOLDER = "fwd/logos";
 const ESTUDIANTE_SELECT =
   "id, descripcion, especialidad, modalidad_preferida, disponibilidad, titulo_fwd, estado_verificacion, url_avatar, url_github, url_linkedin, url_portfolio";
 const EMPRESARIO_SELECT =
-  "id, tipo, nombre_comercial, descripcion, sector, tipos_proyecto, apoyo_tecnico_necesario, cedula_juridica, direccion, url_sitio_web, etapa, presupuesto, cantidad_empleados";
+  "id, tipo, nombre_comercial, descripcion, sector, tipos_proyecto, apoyo_tecnico_necesario, cedula_juridica, direccion, url_sitio_web, etapa, presupuesto, cantidad_empleados, modalidades, horario";
 
 function toUserUpdate(input: PerfilEstudianteInput): UsersUpdate {
   const updates: UsersUpdate = {};
@@ -141,6 +141,8 @@ function toEmpresarioUpdate(input: PerfilEmpresarioInput): EmpresarioUpdate {
   if (input.valores !== undefined) updates.valores = JSON.stringify(input.valores);
   if (input.contactos !== undefined) updates.contactos = JSON.stringify(input.contactos);
   if (input.cantidad_empleados !== undefined) updates.cantidad_empleados = input.cantidad_empleados;
+  if (input.modalidades !== undefined) updates.modalidades = JSON.stringify(input.modalidades);
+  if (input.horario !== undefined) updates.horario = input.horario;
   return updates;
 }
 
@@ -261,6 +263,25 @@ export async function uploadMyLogo(
   if (insertError) throw new ApiError(400, insertError.message);
 
   return { url_logo: url };
+}
+
+export async function deleteMyLogo(accessToken: string, userId: string): Promise<void> {
+  const client = supabaseForToken(accessToken);
+
+  const { data: empresario, error: empError } = await client
+    .from("empresario")
+    .select("id")
+    .eq("id_usuario", userId)
+    .maybeSingle();
+  if (empError) throw new ApiError(500, empError.message);
+  if (!empresario) throw new ApiError(404, "No tenés un perfil de empresa");
+
+  const { error } = await client
+    .from("files")
+    .delete()
+    .eq("id_empresario", empresario.id)
+    .eq("tipo", "logo");
+  if (error) throw new ApiError(400, error.message);
 }
 
 export async function updateMyAvatar(

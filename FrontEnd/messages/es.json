@@ -455,6 +455,29 @@
       }
     }
   },
+  "project_detail": {
+    "back": "Volver al marketplace",
+    "uses_ia": "Usa IA",
+    "duration": "{days} días",
+    "posted_on": "Publicado el",
+    "skills_required": "Tecnologías requeridas",
+    "offer_title": "Postulá a este proyecto",
+    "offer_subtitle": "Contanos por qué sos la persona indicada para este proyecto.",
+    "offer_propuesta_label": "Tu propuesta",
+    "offer_propuesta_placeholder": "Describí tu experiencia, tu enfoque para este proyecto y por qué sos la persona indicada...",
+    "offer_propuesta_min": "Mínimo 50 caracteres",
+    "offer_propuesta_required": "La propuesta es requerida",
+    "offer_prototipo_label": "URL de prototipo (opcional)",
+    "offer_prototipo_placeholder": "https://figma.com/...",
+    "offer_prototipo_invalid": "Ingresá una URL válida",
+    "offer_submit": "Enviar postulación",
+    "offer_submitting": "Enviando...",
+    "offer_success": "Postulación enviada. Te avisaremos cuando la empresa revise tu propuesta.",
+    "offer_error_generic": "No se pudo enviar la postulación. Intentá de nuevo.",
+    "owner_banner_title": "Este es tu proyecto",
+    "owner_banner_desc": "Las postulaciones recibidas te esperan en el panel de empresa.",
+    "owner_banner_cta": "Ver postulaciones"
+  },
   "empresa_dashboard": {
     "title": "GLOBAL TECH SOLUTIONS",
     "company_desc": "Líder global en soluciones tecnológicas para la industria 4.0, enfocados en optimizar procesos productivos mediante talento especializado.",
@@ -1176,6 +1199,7 @@
     "logo": {
       "alt": "Logo de la empresa",
       "change": "Cambiar logo",
+      "delete": "Eliminar logo",
       "invalid_type": "El archivo debe ser una imagen.",
       "too_large": "La imagen supera el máximo de 5 MB.",
       "upload_error": "No se pudo subir el logo. Intentá de nuevo."
@@ -1220,7 +1244,8 @@
       "contact_example_name": "Ana Ramírez",
       "contact_example_role": "Reclutadora de Talento",
       "contact_example_email": "ana@empresa.com",
-      "contact_hint": "Agregá los contactos encargados del reclutamiento"
+      "contact_hint": "Agregá los contactos encargados del reclutamiento",
+      "loading_areas": "Cargando áreas..."
     },
     "modalities": {
       "remote": "Remoto",

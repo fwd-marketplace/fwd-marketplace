@@ -50,6 +50,8 @@ export const PerfilEmpresarioSchema = z
       .array(z.object({ name: z.string().min(1), role: z.string().min(1), email: z.string().email() }))
       .optional(),
     cantidad_empleados: z.enum(['1-10', '11-50', '51-200', '201-500', '501-1000', '1000+']).optional(),
+    modalidades: z.array(z.string().min(1)).optional(),
+    horario: z.enum(['flexible', 'fixed']).optional(),
   })
   .refine((value) => Object.keys(value).length > 0, NON_EMPTY);
 
