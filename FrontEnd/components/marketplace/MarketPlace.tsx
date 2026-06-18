@@ -597,7 +597,7 @@ export default function MarketPlace({ initialProjects, catalogs, role = 'student
 
             {/* Search + filters */}
             <div className="relative z-20 max-w-6xl mx-auto px-6 -mt-10 md:-mt-14">
-                <div className="flex flex-col gap-4 rounded-full border border-white/20 bg-secondary/40 px-3 py-3 shadow-elevated backdrop-blur-md md:flex-row md:items-center md:gap-2 md:py-2 md:pl-6 md:pr-2">
+                <div className="flex flex-col gap-4 rounded-full bg-white/10 px-3 py-3 shadow-elevated backdrop-blur-md md:flex-row md:items-center md:gap-2 md:py-2 md:pl-6 md:pr-2">
                     <div className="flex flex-1 items-center gap-3">
                         <Search className="w-4 h-4 shrink-0 text-white/70" aria-hidden="true" />
                         <label htmlFor="marketplace-search" className="sr-only">{t('search_label')}</label>
@@ -866,7 +866,7 @@ export default function MarketPlace({ initialProjects, catalogs, role = 'student
                             aria-label={t('pagination_prev')}
                             disabled={safePage === 1}
                             onClick={() => setCurrentPage((p) => Math.max(1, p - 1))}
-                            className="w-9 h-9 flex items-center justify-center rounded-lg border border-border text-ink-muted bg-surface hover:bg-surface-sunken transition-colors duration-[var(--duration-fast)] ease-[var(--ease-out)] disabled:opacity-40 disabled:pointer-events-none"
+                            className="w-9 h-9 flex items-center justify-center rounded-lg border border-white/40 text-white bg-transparent hover:bg-white/10 transition-colors duration-[var(--duration-fast)] ease-[var(--ease-out)] disabled:opacity-30 disabled:pointer-events-none"
                         >
                             <ChevronLeft className="w-4 h-4" />
                         </button>
@@ -879,8 +879,8 @@ export default function MarketPlace({ initialProjects, catalogs, role = 'student
                                 onClick={() => setCurrentPage(page)}
                                 className={`w-9 h-9 flex items-center justify-center rounded-lg text-sm font-semibold transition-colors duration-[var(--duration-fast)] ease-[var(--ease-out)] ${
                                     page === safePage
-                                        ? 'bg-primary text-primary-foreground'
-                                        : 'border border-border text-ink-muted bg-surface hover:bg-surface-sunken'
+                                        ? 'bg-white/25 text-white border border-white/40'
+                                        : 'border border-white/40 text-white/70 bg-transparent hover:bg-white/10'
                                 }`}
                             >
                                 {page}
@@ -891,7 +891,7 @@ export default function MarketPlace({ initialProjects, catalogs, role = 'student
                             aria-label={t('pagination_next')}
                             disabled={safePage === totalPages}
                             onClick={() => setCurrentPage((p) => Math.min(totalPages, p + 1))}
-                            className="w-9 h-9 flex items-center justify-center rounded-lg border border-border text-ink-muted bg-surface hover:bg-surface-sunken transition-colors duration-[var(--duration-fast)] ease-[var(--ease-out)] disabled:opacity-40 disabled:pointer-events-none"
+                            className="w-9 h-9 flex items-center justify-center rounded-lg border border-white/40 text-white bg-transparent hover:bg-white/10 transition-colors duration-[var(--duration-fast)] ease-[var(--ease-out)] disabled:opacity-30 disabled:pointer-events-none"
                         >
                             <ChevronRight className="w-4 h-4" />
                         </button>
