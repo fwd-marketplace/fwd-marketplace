@@ -513,7 +513,7 @@ export default function MarketPlace({ initialProjects, catalogs, role = 'student
             </section>
 
             {/* Search + filters */}
-            <div className="relative z-20 max-w-5xl mx-auto px-6 -mt-16 md:-mt-20">
+            <div className="relative z-20 max-w-6xl mx-auto px-6 -mt-16 md:-mt-20">
                 <div className="flex flex-col gap-4 rounded-full border border-white/20 bg-secondary/40 px-3 py-3 shadow-elevated backdrop-blur-md md:flex-row md:items-center md:gap-2 md:py-2 md:pl-6 md:pr-2">
                     <div className="flex flex-1 items-center gap-3">
                         <Search className="w-4 h-4 shrink-0 text-white/70" aria-hidden="true" />
