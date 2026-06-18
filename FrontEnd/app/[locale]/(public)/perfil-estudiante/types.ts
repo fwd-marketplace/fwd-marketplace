@@ -20,6 +20,7 @@ export interface StudentProfile {
 
 export type MockCalificacion = {
   id: string;
+  ofertaId?: string;
   companyName: string;
   projectName: string;
   score: number;

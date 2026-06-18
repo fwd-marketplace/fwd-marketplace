@@ -25,6 +25,7 @@ import {
 import { Button } from "@/components/ui/button";
 import { StatusPill } from "@/components/ui/status-pill";
 import {
+  calificarOfertaAction,
   changeProjectStateAction,
   createProjectAction,
   decideOfferAction,
@@ -510,19 +511,40 @@ export function MisProyectos({
   function handleRequestChangesConfirm() {
     if (!requestChangesTarget || !requestChangesComment.trim()) return;
     startRequestChangesTransition(async () => {
-      // RF-44: UI-only simulation; real endpoint connected in Etapa 13
-      await new Promise<void>((res) => setTimeout(res, 600));
+      const result = await reviewEntregableAction(
+        requestChangesTarget.id,
+        "solicitar_cambios",
+        requestChangesComment.trim(),
+      );
+      if (!result.ok) {
+        triggerToast(result.error);
+        return;
+      }
       triggerToast(t("entregables.toast_changes_requested"));
+      if (selectedProjectId) loadEntregables(selectedProjectId);
       setRequestChangesTarget(null);
       setRequestChangesComment("");
     });
   }
 
   function handleRatingConfirm() {
-    if (ratingStars === 0) return;
+    if (ratingStars === 0 || !selectedProject) return;
     startRatingTransition(async () => {
-      // RF-49/RF-50: UI-only simulation; real endpoint connected in Etapa 13
-      await new Promise<void>((res) => setTimeout(res, 600));
+      const adjudicada = (offersByProject[selectedProject.id] ?? []).find(
+        (o) => o.estado.nombre === "adjudicada",
+      );
+      if (!adjudicada) {
+        triggerToast(t("rating.error_no_offer"));
+        return;
+      }
+      const result = await calificarOfertaAction(adjudicada.id, {
+        calificacion: ratingStars,
+        ...(ratingComment.trim() ? { comentario: ratingComment.trim() } : {}),
+      });
+      if (!result.ok) {
+        triggerToast(result.error);
+        return;
+      }
       triggerToast(t("rating.toast_saved"));
       setIsRatingOpen(false);
       setRatingStars(0);

@@ -716,7 +716,8 @@
       "cancel": "Cancelar",
       "confirm": "Enviar calificación",
       "saving": "Guardando...",
-      "toast_saved": "Calificación enviada. La reputación del junior se actualizará."
+      "toast_saved": "Calificación enviada. La reputación del junior se actualizará.",
+      "error_no_offer": "No se encontró la oferta adjudicada."
     },
     "filters": {
       "title": "Filtros",
@@ -1583,7 +1584,8 @@
     "availability_immediate": "Disponible ya",
     "availability_two_weeks": "En 2 semanas",
     "availability_one_month": "En 1 mes",
-    "mock_disclaimer": "Datos en modo demo. El ranking real se actualiza con proyectos completados."
+    "mock_disclaimer": "Datos en modo demo. El ranking real se actualiza con proyectos completados.",
+    "loading": "Cargando ranking..."
   },
   "preferencias_notificaciones": {
     "title": "Preferencias de notificaciones",
@@ -1625,7 +1627,9 @@
     "compose_placeholder": "Escribí tu mensaje... (Enter para enviar)",
     "send_btn": "Enviar mensaje",
     "mock_badge": "Modo demo",
-    "mock_disclaimer": "Mensajería en modo demo. Se conecta con el backend en Fase 2.0."
+    "mock_disclaimer": "Mensajería en modo demo. Se conecta con el backend en Fase 2.0.",
+    "no_messages": "Aún no hay mensajes en esta conversación.",
+    "unnamed_project": "Proyecto sin título"
   },
   "notification_panel": {
     "aria_open": "Notificaciones",
@@ -1638,5 +1642,4 @@
     "view_all": "Ver toda la actividad",
     "preferences": "Preferencias"
   }
-}
 }

@@ -1,6 +1,13 @@
 import { supabaseForToken } from "../config/supabase";
 import { ApiError } from "../utils/ApiError";
-import type { CreateProjectInput, ChangeProjectStateInput } from "../validations/project";
+import type { Database } from "../types/database.types";
+import type {
+  CreateProjectInput,
+  ChangeProjectStateInput,
+  UpdateProjectInput,
+} from "../validations/project";
+
+type ProyectoUpdate = Database["public"]["Tables"]["proyecto"]["Update"];
 
 /** Filtros opcionales del listado de proyectos. */
 export type ProjectFilters = {
@@ -255,5 +262,79 @@ export async function changeProjectState(
     .select("id, estado:estado_proyecto(nombre)")
     .single();
   if (error) throw new ApiError(400, error.message);
+  return data;
+}
+
+/**
+ * La empresa edita los datos de su proyecto. Solo se permite si el proyecto
+ * está en estado "borrador" o "en_recepcion"; los proyectos adjudicados o en
+ * desarrollo no se pueden modificar.
+ */
+export async function updateProject(
+  accessToken: string,
+  userId: string,
+  projectId: string,
+  input: UpdateProjectInput,
+) {
+  const client = supabaseForToken(accessToken);
+
+  // 1. El proyecto debe existir y pertenecer al usuario.
+  const { data: proyecto, error: projError } = await client
+    .from("proyecto")
+    .select("id, empresa:empresario(id_usuario), estado:estado_proyecto(nombre)")
+    .eq("id", projectId)
+    .maybeSingle();
+  if (projError) throw new ApiError(500, projError.message);
+  if (!proyecto) throw new ApiError(404, "Proyecto no encontrado");
+  if (proyecto.empresa?.id_usuario !== userId) {
+    throw new ApiError(403, "Este proyecto no es tuyo");
+  }
+
+  const estadoActual = proyecto.estado?.nombre;
+  if (estadoActual !== "borrador" && estadoActual !== "en_recepcion") {
+    throw new ApiError(409, "Solo podés editar proyectos en borrador o en recepción");
+  }
+
+  // 2. Construir el payload de actualización con los campos enviados.
+  const updatePayload: ProyectoUpdate = {};
+  if (input.titulo !== undefined) updatePayload.titulo = input.titulo;
+  if (input.descripcion !== undefined) updatePayload.descripcion = input.descripcion;
+  if (input.id_area_negocio !== undefined) updatePayload.id_area_negocio = input.id_area_negocio;
+  if (input.plazo_dias !== undefined) updatePayload.plazo_dias = input.plazo_dias;
+  if (input.usa_ia !== undefined) updatePayload.usa_ia = input.usa_ia;
+
+  if (Object.keys(updatePayload).length > 0) {
+    const { error: updateError } = await client
+      .from("proyecto")
+      .update(updatePayload)
+      .eq("id", projectId);
+    if (updateError) throw new ApiError(400, updateError.message);
+  }
+
+  // 3. Si vienen skills, reemplazarlas por completo.
+  if (input.skills !== undefined) {
+    const { error: deleteError } = await client
+      .from("project_skills")
+      .delete()
+      .eq("id_proyecto", projectId);
+    if (deleteError) throw new ApiError(400, deleteError.message);
+
+    if (input.skills.length > 0) {
+      const rows = [...new Set(input.skills)].map((id_skill) => ({
+        id_proyecto: projectId,
+        id_skill,
+      }));
+      const { error: insertError } = await client.from("project_skills").insert(rows);
+      if (insertError) throw new ApiError(400, insertError.message);
+    }
+  }
+
+  // 4. Devolver el proyecto actualizado con la misma forma que el resto de endpoints.
+  const { data, error } = await client
+    .from("proyecto")
+    .select(PROJECT_SELECT)
+    .eq("id", projectId)
+    .single();
+  if (error) throw new ApiError(500, error.message);
   return data;
 }

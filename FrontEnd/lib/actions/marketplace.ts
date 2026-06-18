@@ -2,12 +2,14 @@
 
 import { revalidatePath } from "next/cache";
 import {
+  calificarOferta,
   changeProjectState,
   createProject,
   decideOffer,
   getProjectById,
   getProjectEntregables,
   getProjectOffers,
+  replicarCalificacion,
   reviewEntregable,
   submitEntregable,
   submitOffer,
@@ -15,8 +17,10 @@ import {
   withdrawOffer,
 } from "@/lib/api/marketplace";
 import type {
+  CalificarInput,
   CompanyProjectState,
   CreateProjectInput,
+  ReplicaInput,
   SubmitEntregableInput,
   SubmitOfferInput,
   UpdateProjectInput,
@@ -78,8 +82,12 @@ export async function getProjectEntregablesAction(projectId: string) {
   return getProjectEntregables(projectId);
 }
 
-export async function reviewEntregableAction(entregableId: string, accion: "revisar" | "aprobar") {
-  const result = await reviewEntregable(entregableId, accion);
+export async function reviewEntregableAction(
+  entregableId: string,
+  accion: "revisar" | "aprobar" | "solicitar_cambios",
+  comentario?: string,
+) {
+  const result = await reviewEntregable(entregableId, accion, comentario);
   if (result.ok) {
     revalidatePath("/");
   }
@@ -88,6 +96,22 @@ export async function reviewEntregableAction(entregableId: string, accion: "revi
 
 export async function withdrawOfferAction(offerId: string) {
   const result = await withdrawOffer(offerId);
+  if (result.ok) {
+    revalidatePath("/");
+  }
+  return result;
+}
+
+export async function calificarOfertaAction(ofertaId: string, input: CalificarInput) {
+  const result = await calificarOferta(ofertaId, input);
+  if (result.ok) {
+    revalidatePath("/");
+  }
+  return result;
+}
+
+export async function replicarCalificacionAction(ofertaId: string, input: ReplicaInput) {
+  const result = await replicarCalificacion(ofertaId, input);
   if (result.ok) {
     revalidatePath("/");
   }

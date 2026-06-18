@@ -1,112 +1,11 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { useTranslations } from "next-intl";
-import { Trophy } from "lucide-react";
+import { Loader2, Trophy } from "lucide-react";
 import { cn } from "@/lib/utils";
-
-// ── Mock data ─────────────────────────────────────────────────────────────────
-
-type RankedJunior = {
-  id: string;
-  nombre: string;
-  apellido: string;
-  specialty: "frontend" | "backend" | "fullstack" | "ia";
-  reputation: number;
-  totalProjects: number;
-  skills: string[];
-  availability: "immediate" | "two_weeks" | "one_month";
-};
-
-const MOCK_RANKING: RankedJunior[] = [
-  {
-    id: "r-1",
-    nombre: "Valentina",
-    apellido: "Morales",
-    specialty: "fullstack",
-    reputation: 4.9,
-    totalProjects: 8,
-    skills: ["React", "Node.js", "TypeScript"],
-    availability: "immediate",
-  },
-  {
-    id: "r-2",
-    nombre: "Diego",
-    apellido: "Solís",
-    specialty: "frontend",
-    reputation: 4.8,
-    totalProjects: 6,
-    skills: ["React", "Tailwind CSS", "Figma"],
-    availability: "two_weeks",
-  },
-  {
-    id: "r-3",
-    nombre: "Camila",
-    apellido: "Vega",
-    specialty: "ia",
-    reputation: 4.7,
-    totalProjects: 5,
-    skills: ["Python", "TensorFlow", "REST APIs"],
-    availability: "immediate",
-  },
-  {
-    id: "r-4",
-    nombre: "Andrés",
-    apellido: "Quesada",
-    specialty: "backend",
-    reputation: 4.6,
-    totalProjects: 7,
-    skills: ["Node.js", "PostgreSQL", "Docker"],
-    availability: "one_month",
-  },
-  {
-    id: "r-5",
-    nombre: "Lucía",
-    apellido: "Herrera",
-    specialty: "frontend",
-    reputation: 4.5,
-    totalProjects: 4,
-    skills: ["Vue.js", "TypeScript", "Figma"],
-    availability: "immediate",
-  },
-  {
-    id: "r-6",
-    nombre: "Sebastián",
-    apellido: "Araya",
-    specialty: "fullstack",
-    reputation: 4.4,
-    totalProjects: 5,
-    skills: ["Next.js", "Python", "AWS"],
-    availability: "two_weeks",
-  },
-  {
-    id: "r-7",
-    nombre: "Gabriela",
-    apellido: "Rojas",
-    specialty: "ia",
-    reputation: 4.2,
-    totalProjects: 3,
-    skills: ["Python", "Power BI", "PostgreSQL"],
-    availability: "immediate",
-  },
-  {
-    id: "r-8",
-    nombre: "Mateo",
-    apellido: "Jiménez",
-    specialty: "backend",
-    reputation: 4.0,
-    totalProjects: 4,
-    skills: ["Node.js", "Docker", "REST APIs"],
-    availability: "one_month",
-  },
-];
-
-const SPECIALTY_COLORS: Record<RankedJunior["specialty"], string> = {
-  frontend:  "bg-primary/10 text-primary",
-  backend:   "bg-secondary/10 text-secondary",
-  fullstack: "bg-accent/10 text-accent",
-  ia:        "bg-warning/10 text-warning",
-};
+import { getRankingAction } from "@/lib/actions/ranking";
+import type { ApiRankedJunior } from "@/lib/api/types";
 
 const STAR_CHAR = "★";
 
@@ -115,6 +14,16 @@ const POSITION_STYLE: Record<number, string> = {
   1: "bg-ink-muted/20 text-ink-strong",
   2: "bg-warning/20 text-warning",
 };
+
+function getSpecialtyColor(especialidad: string | null): string {
+  const map: Record<string, string> = {
+    frontend: "bg-primary/10 text-primary",
+    backend: "bg-secondary/10 text-secondary",
+    fullstack: "bg-accent/10 text-accent",
+    ia: "bg-warning/10 text-warning",
+  };
+  return map[especialidad ?? ""] ?? "bg-ink-muted/10 text-ink-muted";
+}
 
 function StarRow({ score }: { score: number }) {
   return (
@@ -128,29 +37,37 @@ function StarRow({ score }: { score: number }) {
   );
 }
 
-function getInitials(nombre: string, apellido: string): string {
+function getInitials(junior: ApiRankedJunior): string {
+  const nombre = junior.usuario?.nombre ?? "";
+  const apellido = junior.usuario?.apellido1 ?? "";
   return `${nombre[0] ?? ""}${apellido[0] ?? ""}`.toUpperCase();
 }
 
-// ── Main Component ────────────────────────────────────────────────────────────
-
-type SpecialtyFilter = "all" | RankedJunior["specialty"];
+type SpecialtyFilter = "all" | string;
 
 export function Ranking() {
   const t = useTranslations("ranking");
   const [filter, setFilter] = useState<SpecialtyFilter>("all");
+  const [juniors, setJuniors] = useState<ApiRankedJunior[]>([]);
+  const [isLoading, setIsLoading] = useState(true);
+
+  useEffect(() => {
+    setIsLoading(true);
+    void getRankingAction().then((result) => {
+      if (result.ok) setJuniors(result.data);
+      setIsLoading(false);
+    });
+  }, []);
 
   const filtered =
-    filter === "all"
-      ? MOCK_RANKING
-      : MOCK_RANKING.filter((j) => j.specialty === filter);
+    filter === "all" ? juniors : juniors.filter((j) => j.especialidad === filter);
 
   const FILTERS: { key: SpecialtyFilter; label: string }[] = [
-    { key: "all",      label: t("filter_all") },
-    { key: "frontend", label: t("filter_frontend") },
-    { key: "backend",  label: t("filter_backend") },
-    { key: "fullstack",label: t("filter_fullstack") },
-    { key: "ia",       label: t("filter_ia") },
+    { key: "all",       label: t("filter_all") },
+    { key: "frontend",  label: t("filter_frontend") },
+    { key: "backend",   label: t("filter_backend") },
+    { key: "fullstack", label: t("filter_fullstack") },
+    { key: "ia",        label: t("filter_ia") },
   ];
 
   return (
@@ -189,75 +106,80 @@ export function Ranking() {
       </div>
 
       {/* Ranking list */}
-      <ol className="flex flex-col gap-3">
-        {filtered.map((junior, i) => {
-          const posStyle = POSITION_STYLE[i] ?? "bg-surface-sunken text-ink-muted";
-          return (
-            <li
-              key={junior.id}
-              className="flex items-center gap-4 rounded-2xl border border-border bg-surface px-5 py-4 shadow-[var(--shadow-soft)] transition-all duration-[var(--duration-base)] ease-[var(--ease-out)] hover:border-primary/20 hover:shadow-[var(--shadow-elevated)]"
-            >
-              {/* Position badge */}
-              <div
-                className={cn(
-                  "flex size-8 shrink-0 items-center justify-center rounded-full font-heading text-sm font-extrabold",
-                  posStyle,
-                )}
-                aria-label={`Posición ${i + 1}`}
+      {isLoading ? (
+        <div className="flex justify-center py-16">
+          <Loader2 className="size-6 animate-spin text-ink-muted" aria-label={t("loading")} />
+        </div>
+      ) : (
+        <ol className="flex flex-col gap-3">
+          {filtered.map((junior, i) => {
+            const posStyle = POSITION_STYLE[i] ?? "bg-surface-sunken text-ink-muted";
+            const nombre = junior.usuario?.nombre ?? "";
+            const apellido = junior.usuario?.apellido1 ?? "";
+            return (
+              <li
+                key={junior.id}
+                className="flex items-center gap-4 rounded-2xl border border-border bg-surface px-5 py-4 shadow-[var(--shadow-soft)] transition-all duration-[var(--duration-base)] ease-[var(--ease-out)] hover:border-primary/20 hover:shadow-[var(--shadow-elevated)]"
               >
-                {i < 3 ? <Trophy className="size-4" aria-hidden="true" /> : i + 1}
-              </div>
-
-              {/* Avatar */}
-              <div className="flex size-11 shrink-0 items-center justify-center rounded-full bg-secondary font-heading text-sm font-bold text-white">
-                {getInitials(junior.nombre, junior.apellido)}
-              </div>
-
-              {/* Info */}
-              <div className="flex-1 min-w-0">
-                <div className="flex flex-wrap items-center gap-2 mb-0.5">
-                  <p className="font-heading text-base font-bold text-ink-strong">
-                    {junior.nombre} {junior.apellido}
-                  </p>
-                  <span className={cn("rounded-full px-2.5 py-0.5 font-body text-[11px] font-bold", SPECIALTY_COLORS[junior.specialty])}>
-                    {t(`specialty_${junior.specialty}`)}
-                  </span>
+                {/* Position badge */}
+                <div
+                  className={cn(
+                    "flex size-8 shrink-0 items-center justify-center rounded-full font-heading text-sm font-extrabold",
+                    posStyle,
+                  )}
+                  aria-label={`Posición ${i + 1}`}
+                >
+                  {i < 3 ? <Trophy className="size-4" aria-hidden="true" /> : i + 1}
                 </div>
 
-                <div className="flex flex-wrap items-center gap-x-4 gap-y-1 mb-1.5">
-                  <div className="flex items-center gap-1.5">
-                    <StarRow score={junior.reputation} />
-                    <span className="font-body text-sm font-bold text-ink-strong">
-                      {junior.reputation.toFixed(1)}
-                    </span>
+                {/* Avatar */}
+                <div className="flex size-11 shrink-0 items-center justify-center rounded-full bg-secondary font-heading text-sm font-bold text-white">
+                  {getInitials(junior)}
+                </div>
+
+                {/* Info */}
+                <div className="flex-1 min-w-0">
+                  <div className="flex flex-wrap items-center gap-2 mb-0.5">
+                    <p className="font-heading text-base font-bold text-ink-strong">
+                      {nombre} {apellido}
+                    </p>
+                    {junior.especialidad && (
+                      <span className={cn("rounded-full px-2.5 py-0.5 font-body text-[11px] font-bold", getSpecialtyColor(junior.especialidad))}>
+                        {t(`specialty_${junior.especialidad}` as Parameters<typeof t>[0])}
+                      </span>
+                    )}
                   </div>
-                  <span className="font-body text-xs text-ink-muted">
-                    {t("projects_count", { count: junior.totalProjects })}
-                  </span>
-                  <span className={cn(
-                    "rounded-full px-2.5 py-0.5 font-body text-[11px] font-semibold",
-                    junior.availability === "immediate" ? "bg-accent/10 text-accent" : "bg-ink-muted/10 text-ink-muted",
-                  )}>
-                    {t(`availability_${junior.availability}`)}
-                  </span>
-                </div>
 
-                <div className="flex flex-wrap gap-1.5">
-                  {junior.skills.map((skill) => (
-                    <span key={skill} className="rounded-full bg-primary/10 px-2.5 py-0.5 font-body text-[11px] font-semibold text-primary">
-                      {skill}
-                    </span>
-                  ))}
-                </div>
-              </div>
-            </li>
-          );
-        })}
-      </ol>
+                  <div className="flex flex-wrap items-center gap-x-4 gap-y-1 mb-1.5">
+                    <div className="flex items-center gap-1.5">
+                      <StarRow score={junior.reputacion} />
+                      <span className="font-body text-sm font-bold text-ink-strong">
+                        {junior.reputacion.toFixed(1)}
+                      </span>
+                    </div>
+                    {junior.disponibilidad && (
+                      <span className={cn(
+                        "rounded-full px-2.5 py-0.5 font-body text-[11px] font-semibold",
+                        junior.disponibilidad === "immediate" ? "bg-accent/10 text-accent" : "bg-ink-muted/10 text-ink-muted",
+                      )}>
+                        {t(`availability_${junior.disponibilidad}` as Parameters<typeof t>[0])}
+                      </span>
+                    )}
+                  </div>
 
-      <p className="mt-6 text-center font-body text-[11px] text-ink-subtle">
-        {t("mock_disclaimer")}
-      </p>
+                  <div className="flex flex-wrap gap-1.5">
+                    {junior.skills.map((skill) => (
+                      <span key={skill} className="rounded-full bg-primary/10 px-2.5 py-0.5 font-body text-[11px] font-semibold text-primary">
+                        {skill}
+                      </span>
+                    ))}
+                  </div>
+                </div>
+              </li>
+            );
+          })}
+        </ol>
+      )}
     </div>
   );
 }

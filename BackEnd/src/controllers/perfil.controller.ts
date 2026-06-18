@@ -1,6 +1,14 @@
 import type { Request, Response } from "express";
+import { z } from "zod";
 import { ApiError } from "../utils/ApiError";
-import { getMyPerfil, updateMyPerfil, updateMyAvatar, uploadMyLogo, deleteMyLogo } from "../services/perfil.service";
+import {
+  getMyPerfil,
+  updateMyPerfil,
+  updateMyAvatar,
+  uploadMyLogo,
+  deleteMyLogo,
+  savePreferenciasNotificacion,
+} from "../services/perfil.service";
 
 /** Token + id del usuario autenticado (los inyecta `authenticate`). */
 function requireAuth(req: Request): { token: string; userId: string } {
@@ -53,5 +61,18 @@ export async function uploadLogo(req: Request, res: Response) {
     throw new ApiError(400, "El archivo debe ser una imagen");
   }
   const result = await uploadMyLogo(token, userId, req.file.buffer, req.file.size);
+  res.status(200).json(result);
+}
+
+const preferenciasSchema = z.record(z.string(), z.boolean());
+
+/** PATCH /api/users/me/perfil/preferencias-notificacion (guarda preferencias del usuario) */
+export async function updatePreferenciasNotificacion(req: Request, res: Response) {
+  const { token, userId } = requireAuth(req);
+  const parsed = preferenciasSchema.safeParse(req.body);
+  if (!parsed.success) {
+    throw new ApiError(400, parsed.error.issues[0]?.message ?? "Datos inválidos");
+  }
+  const result = await savePreferenciasNotificacion(token, userId, parsed.data);
   res.status(200).json(result);
 }
