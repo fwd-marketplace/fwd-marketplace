@@ -34,6 +34,14 @@ export const env = {
     secret: process.env.APPS_SCRIPT_SECRET ?? "",
   },
 
+  // Apariencia de los correos transaccionales (nombre del remitente y logo).
+  // El logo debe ser una imagen hosteada por HTTPS (PNG/JPG); los correos no
+  // renderizan SVG. Si no hay logo, la plantilla cae a un wordmark de texto.
+  email: {
+    fromName: process.env.EMAIL_FROM_NAME ?? "FWD Marketplace",
+    logoUrl: process.env.EMAIL_LOGO_URL ?? "",
+  },
+
   // Asistente de IA para crear proyectos. Proveedor principal Groq (endpoint
   // compatible con OpenAI). La key NO es obligatoria para arrancar: si falta, el
   // asistente degrada con un error claro y el usuario completa el formulario a mano.
