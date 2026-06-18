@@ -29,10 +29,11 @@ import {
 } from "lucide-react";
 import {
   fullName,
-  type StudentProfile,
   type Activity,
   type Application,
   type ApplicationStats,
+  type MockCalificacion,
+  type StudentProfile,
 } from "@/app/[locale]/(public)/perfil-estudiante/types";
 import type {
   StudentAvailability,
@@ -76,6 +77,147 @@ const LinkedinIcon = (props: React.SVGProps<SVGSVGElement>) => (
 );
 
 // ── Helper pure functions ──────────────────────────────────────────────────────
+
+const STAR_CHAR = "★";
+
+function StarRow({ score, size = "sm" }: { score: number; size?: "sm" | "md" }) {
+  const cls = size === "md" ? "text-xl" : "text-base";
+  return (
+    <span className={`inline-flex gap-0.5 ${cls}`} aria-label={`${score} de 5 estrellas`}>
+      {Array.from({ length: 5 }).map((_, i) => (
+        <span key={i} className={i < Math.round(score) ? "text-highlight" : "text-border"} aria-hidden="true">
+          {STAR_CHAR}
+        </span>
+      ))}
+    </span>
+  );
+}
+
+const MOCK_CALIFICACIONES: MockCalificacion[] = [
+  {
+    id: "cal-1",
+    companyName: "Global Tech Solutions S.A.",
+    projectName: "Dashboard de análisis de ventas en tiempo real",
+    score: 5,
+    comment: "Excelente trabajo. El junior entregó a tiempo, el código es limpio y documentado. Superó nuestras expectativas en cuanto a la calidad de los componentes React y la integración con la API.",
+    date: "2026-06-10T00:00:00Z",
+    reply: null,
+  },
+  {
+    id: "cal-2",
+    companyName: "LogiTech CR",
+    projectName: "App móvil de gestión de inventario",
+    score: 4,
+    comment: "Buen trabajo general. El junior fue proactivo y comunicó bien los avances. Hubo un par de detalles de UX que requirieron ajuste, pero la entrega final fue sólida.",
+    date: "2026-05-20T00:00:00Z",
+    reply: "Muchas gracias por la retroalimentación. Tomé nota de los puntos de UX para mejorarlos en proyectos futuros.",
+  },
+];
+
+function CalificacionesSection({
+  t,
+  initialCalificaciones,
+}: {
+  t: ReturnType<typeof import("next-intl").useTranslations<"perfil_junior">>;
+  initialCalificaciones: MockCalificacion[];
+}) {
+  const [calificaciones, setCalificaciones] = useState<MockCalificacion[]>(initialCalificaciones);
+  const [replyingId, setReplyingId] = useState<string | null>(null);
+  const [replyDraft, setReplyDraft] = useState("");
+  const [isSaving, startSaving] = useTransition();
+
+  function handleSendReply(id: string) {
+    if (!replyDraft.trim()) return;
+    startSaving(async () => {
+      await new Promise<void>((res) => setTimeout(res, 500));
+      setCalificaciones((prev) =>
+        prev.map((c) => (c.id === id ? { ...c, reply: replyDraft.trim() } : c)),
+      );
+      setReplyingId(null);
+      setReplyDraft("");
+    });
+  }
+
+  if (calificaciones.length === 0) {
+    return (
+      <div className="rounded-2xl border border-dashed border-border bg-surface p-8 text-center">
+        <p className="font-body text-sm text-ink-muted">{t("calificaciones.empty")}</p>
+      </div>
+    );
+  }
+
+  return (
+    <div className="space-y-4">
+      <h2 className="font-heading text-xl font-bold text-ink-strong">
+        {t("calificaciones.title")}<span className="text-primary">.</span>
+      </h2>
+      {calificaciones.map((cal) => (
+        <div key={cal.id} className="rounded-2xl border border-border bg-surface p-5 shadow-[var(--shadow-soft)] space-y-3">
+          <div className="flex flex-wrap items-start justify-between gap-2">
+            <div>
+              <p className="font-body text-xs font-bold uppercase tracking-wider text-ink-muted mb-1">{cal.companyName}</p>
+              <p className="font-heading text-base font-bold text-ink-strong leading-tight">{cal.projectName}</p>
+            </div>
+            <div className="flex flex-col items-end gap-1">
+              <StarRow score={cal.score} />
+              <span className="font-body text-[10px] text-ink-subtle">
+                {new Date(cal.date).toLocaleDateString([], { day: "numeric", month: "long", year: "numeric" })}
+              </span>
+            </div>
+          </div>
+
+          <p className="font-body text-sm leading-relaxed text-ink">{cal.comment}</p>
+
+          {/* Réplica existente o botón para responder */}
+          {cal.reply ? (
+            <div className="rounded-xl bg-surface-sunken border border-border px-4 py-3">
+              <p className="font-body text-[10px] font-bold uppercase tracking-wider text-ink-muted mb-1">{t("calificaciones.your_reply")}</p>
+              <p className="font-body text-sm text-ink">{cal.reply}</p>
+            </div>
+          ) : replyingId === cal.id ? (
+            <div className="space-y-2">
+              <label htmlFor={`reply-${cal.id}`} className="sr-only">{t("calificaciones.reply_placeholder")}</label>
+              <textarea
+                id={`reply-${cal.id}`}
+                rows={3}
+                value={replyDraft}
+                onChange={(e) => setReplyDraft(e.target.value)}
+                placeholder={t("calificaciones.reply_placeholder")}
+                className="w-full resize-none rounded-xl border border-border bg-surface-sunken px-3 py-2.5 font-body text-sm text-ink-strong outline-none focus:ring-2 focus:ring-primary/20"
+              />
+              <div className="flex gap-2">
+                <button
+                  type="button"
+                  disabled={isSaving || !replyDraft.trim()}
+                  onClick={() => handleSendReply(cal.id)}
+                  className="inline-flex items-center gap-1.5 rounded-full bg-primary px-4 py-2 font-body text-xs font-semibold text-white transition-colors hover:bg-secondary disabled:opacity-50"
+                >
+                  {isSaving ? <Loader2 className="size-3.5 animate-spin" /> : <Check className="size-3.5" />}
+                  {isSaving ? t("calificaciones.reply_sending") : t("calificaciones.reply_send")}
+                </button>
+                <button
+                  type="button"
+                  onClick={() => { setReplyingId(null); setReplyDraft(""); }}
+                  className="rounded-full border border-border px-3 py-2 font-body text-xs font-semibold text-ink-muted hover:bg-surface-sunken"
+                >
+                  {t("calificaciones.reply_cancel")}
+                </button>
+              </div>
+            </div>
+          ) : (
+            <button
+              type="button"
+              onClick={() => { setReplyingId(cal.id); setReplyDraft(""); }}
+              className="font-body text-xs font-semibold text-primary hover:underline"
+            >
+              {t("calificaciones.reply_btn")}
+            </button>
+          )}
+        </div>
+      ))}
+    </div>
+  );
+}
 
 function getCategoryIcon(category: Application["category"]) {
   switch (category) {
@@ -677,6 +819,19 @@ export default function PerfilUsuario({
                         </span>
                       ))}
                     </div>
+
+                    {/* RF-51 — Reputación acumulada */}
+                    {typeof profile.reputacion === "number" && profile.reputacion > 0 && (
+                      <div className="flex items-center gap-2 pt-1">
+                        <StarRow score={profile.reputacion} size="md" />
+                        <span className="font-heading text-lg font-extrabold text-highlight tracking-tight">
+                          {profile.reputacion.toFixed(1)}
+                        </span>
+                        <span className="font-body text-xs text-white/70">
+                          {t("hero.reputation_label")}
+                        </span>
+                      </div>
+                    )}
                   </>
                 )}
               </div>
@@ -1189,15 +1344,8 @@ export default function PerfilUsuario({
               <p className="text-sm text-ink-muted leading-relaxed">{t("work.description")}</p>
             </div>
 
-            <div className="pt-8 border-t border-border/60">
-              <div className="rounded-2xl border border-dashed border-border bg-surface p-8 text-center">
-                <Sparkles className="mx-auto mb-3 w-7 h-7 text-primary" />
-                <h2 className="text-xl md:text-2xl font-heading font-extrabold tracking-tight text-ink-strong">
-                  {t("two_point_zero.title")}<span className="text-primary">.</span>
-                </h2>
-                <p className="mt-2 text-sm text-ink-muted">{t("two_point_zero.work")}</p>
-              </div>
-            </div>
+            {/* RF-53 — Calificaciones recibidas con réplica */}
+            <CalificacionesSection t={t} initialCalificaciones={MOCK_CALIFICACIONES} />
           </section>
         )}
 

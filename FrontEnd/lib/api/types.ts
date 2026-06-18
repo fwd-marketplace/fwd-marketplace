@@ -68,6 +68,15 @@ export type CreateProjectInput = {
   publicar: boolean;
 };
 
+export type UpdateProjectInput = {
+  titulo?: string;
+  descripcion?: string;
+  id_area_negocio?: string;
+  plazo_dias?: number;
+  usa_ia?: boolean;
+  skills?: string[];
+};
+
 export type ProjectOffer = {
   id: string;
   propuesta: string;
@@ -89,9 +98,11 @@ export type MyOffer = {
   id: string;
   propuesta: string;
   prototipo_url: string | null;
+  documentacion_tecnica?: string | null;
+  documentacion_url?: string | null;
   fecha_envio: string;
   estado: { nombre: OfferState };
-  proyecto: { id: string; titulo: string } | null;
+  proyecto: { id: string; titulo: string; fecha_cierre?: string | null } | null;
 };
 
 export type MyOffersResponse = {
@@ -232,6 +243,31 @@ export type AdminProjectsResponse = {
   projects: AdminProject[];
 };
 
+export type AdminStudentProfile = {
+  especialidad: string | null;
+  disponibilidad: string | null;
+  titulo_fwd: string | null;
+  reputacion: number | null;
+  url_github: string | null;
+  url_linkedin: string | null;
+  url_portfolio: string | null;
+};
+
+export type AdminStudentUser = {
+  id: string;
+  nombre: string;
+  apellido1: string | null;
+  correo: string;
+  estado_cuenta: AccountState;
+  fecha_registro: string;
+  role: { nombre: ApiRoleName } | null;
+  estudiante: AdminStudentProfile[] | AdminStudentProfile | null;
+};
+
+export type AdminStudentsResponse = {
+  users: AdminStudentUser[];
+};
+
 export type ProjectDetailResponse = {
   project: ApiProject;
 };
@@ -239,4 +275,50 @@ export type ProjectDetailResponse = {
 export type SubmitOfferInput = {
   propuesta: string;
   prototipo_url?: string;
+  documentacion_tecnica?: string;
+  documentacion_url?: string;
+};
+
+export type EntregableState = "pendiente" | "enviado" | "en_revision" | "aprobado";
+export type EntregableTipo = "parcial" | "final";
+
+export type Entregable = {
+  id: string;
+  id_proyecto: string;
+  tipo: EntregableTipo;
+  version: number;
+  fecha: string;
+  estado: { nombre: EntregableState };
+  url: string | null;
+  junior?: { id: string; nombre: string; apellido1: string | null } | null;
+  proyecto?: { id: string; titulo: string } | null;
+};
+
+export type SubmitEntregableInput = {
+  id_proyecto: string;
+  url: string;
+  tipo: EntregableTipo;
+};
+
+export type EntregablesResponse = {
+  entregables: Entregable[];
+};
+
+// ── Mensajería (mock, Etapa 13 conecta con backend) ─────────────────────────
+
+export type MessageAuthor = "junior" | "empresa";
+
+export type MockMessage = {
+  id: string;
+  author: MessageAuthor;
+  text: string;
+  timestamp: string;
+};
+
+export type MockThread = {
+  projectId: string;
+  projectTitle: string;
+  companyName: string;
+  messages: MockMessage[];
+  unreadCount: number;
 };

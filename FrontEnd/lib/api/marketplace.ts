@@ -5,12 +5,16 @@ import type {
   CatalogsResponse,
   CompanyProjectState,
   CreateProjectInput,
+  Entregable,
+  EntregablesResponse,
   MyOffersResponse,
   ProjectDetailResponse,
   ProjectOffer,
   ProjectOffersResponse,
   ProjectsResponse,
+  SubmitEntregableInput,
   SubmitOfferInput,
+  UpdateProjectInput,
 } from "@/lib/api/types";
 
 async function asResult<T>(operation: () => Promise<T>): Promise<Result<T>> {
@@ -65,10 +69,63 @@ export function changeProjectState(projectId: string, estado: CompanyProjectStat
   });
 }
 
+export function getProjects(): Promise<Result<ProjectsResponse>> {
+  return asResult(() => apiAuth<ProjectsResponse>("/projects"));
+}
+
 export function getProjectById(id: string): Promise<Result<ApiProject>> {
   return asResult(async () => {
     const res = await apiAuth<ProjectDetailResponse>(`/projects/${id}`);
     return res.project;
+  });
+}
+
+export function getMyEntregables(): Promise<Result<EntregablesResponse>> {
+  return asResult(() => apiAuth<EntregablesResponse>("/entregables/mios"));
+}
+
+export function getProjectEntregables(projectId: string): Promise<Result<EntregablesResponse>> {
+  return asResult(() => apiAuth<EntregablesResponse>(`/projects/${projectId}/entregables`));
+}
+
+export function submitEntregable(input: SubmitEntregableInput): Promise<Result<Entregable>> {
+  return asResult(async () => {
+    const res = await apiAuth<{ entregable: Entregable }>("/entregables", {
+      method: "POST",
+      body: JSON.stringify(input),
+    });
+    return res.entregable;
+  });
+}
+
+export function reviewEntregable(
+  entregableId: string,
+  accion: "revisar" | "aprobar",
+): Promise<Result<void>> {
+  return asResult(async () => {
+    await apiAuth(`/entregables/${entregableId}`, {
+      method: "PATCH",
+      body: JSON.stringify({ accion }),
+    });
+  });
+}
+
+export function updateProject(
+  projectId: string,
+  input: UpdateProjectInput,
+): Promise<Result<ApiProject>> {
+  return asResult(async () => {
+    const res = await apiAuth<{ project: ApiProject }>(`/projects/${projectId}`, {
+      method: "PATCH",
+      body: JSON.stringify(input),
+    });
+    return res.project;
+  });
+}
+
+export function withdrawOffer(offerId: string): Promise<Result<void>> {
+  return asResult(async () => {
+    await apiAuth(`/ofertas/${offerId}/retirar`, { method: "DELETE" });
   });
 }
 
