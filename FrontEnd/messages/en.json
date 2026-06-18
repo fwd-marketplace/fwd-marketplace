@@ -742,20 +742,46 @@
   "marketplace_page": {
     "eyebrow": "MARKETPLACE",
     "title": "Available projects",
+    "hero_title": "Marketplace",
+    "hero_subtitle": "Explore real projects aligned with your skills and find opportunities to build professional experience.",
     "search_label": "Search by name or technology",
-    "search_placeholder": "e.g. React, Figma, Backend...",
+    "search_placeholder": "Search projects, skills or companies...",
     "specialty_label": "Specialty",
     "specialty_all": "All areas",
     "active_filters": "ACTIVE FILTERS:",
     "clear_all": "Clear all",
+    "filter_area": "Area",
+    "filter_duration": "Duration",
+    "filter_skills": "Skills",
+    "filter_ai_projects": "AI Projects",
+    "filter_sort": "Sort",
+    "business_area_label": "BUSINESS AREA",
+    "ai_usage_label": "AI USAGE",
     "budget": "BUDGET",
     "duration": "DURATION",
     "experience": "EXPERIENCE",
     "hourly_rate": "HOURLY RATE",
     "view_project": "View project",
+    "save_project": "Save project",
+    "saved_project": "Remove from saved",
+    "filter_all": "All",
+    "sort_match_desc": "Highest match",
+    "sort_match_asc": "Lowest match",
+    "sort_duration_asc": "Shortest duration",
+    "duration_short": "Up to 30 days",
+    "duration_medium": "31 to 60 days",
+    "duration_long": "Over 60 days",
+    "results_count": "{count, plural, =0 {No projects} one {# project} other {# projects}}",
+    "no_results_title": "No results",
+    "no_results_body": "Try adjusting your search or filters to see more projects.",
+    "clear_filters": "Clear filters",
+    "close": "Close",
+    "pagination_prev": "Previous",
+    "pagination_next": "Next",
+    "pagination_page": "Page {page}",
     "filter_remote": "Remote",
     "filter_senior": "Senior",
-    "match_suffix": "match",
+    "match_suffix": "MATCH",
     "badges": {
       "urgent": "URGENT",
       "full_time": "FULL-TIME",
@@ -829,127 +855,6 @@
       "hybrid": "Hybrid",
       "onsite": "On-site"
     }
-  },
-  "empresa_dashboard": {
-    "title": "GLOBAL TECH SOLUTIONS",
-    "company_desc": "Global leader in technology solutions for Industry 4.0, focused on optimizing production processes through specialized FWD talent.",
-    "label_empresa": "Company",
-    "tag_socio": "Industrial Partner",
-    "tag_location": "Costa Rica",
-    "tag_size": "1-10 employees",
-    "edit_profile_btn": "Edit profile",
-    "view_projects_btn": "View projects",
-    "stats": {
-      "active_projects": "Active projects",
-      "applications": "Applications",
-      "reviewed": "Reviewed",
-      "pending_match": "Pending match"
-    },
-    "projects": {
-      "title": "Your projects",
-      "new_btn": "New",
-      "paused": "Paused",
-      "published_days": "Published {days} days ago",
-      "label_applied": "Applied"
-    },
-    "compatibility": {
-      "title": "Candidate compatibility",
-      "subtitle": "Select a project to filter",
-      "match_total": "Total match",
-      "tech_stack": "Tech stack",
-      "availability": "Availability",
-      "modality": "Modality",
-      "empty_state": "No recommended candidates for this project yet."
-    },
-    "applications": {
-      "title": "Who applied",
-      "empty_state": "No applications registered.",
-      "table": {
-        "junior": "Talent",
-        "project": "Project",
-        "match": "Match",
-        "status": "Status",
-        "actions": "Actions"
-      },
-      "status": {
-        "reviewed": "Reviewed",
-        "pending": "Pending",
-        "interview": "Interview",
-        "accepted": "Accepted",
-        "rejected": "Rejected"
-      },
-      "actions": {
-        "view": "View profile",
-        "accept": "Accept",
-        "reject": "Reject",
-        "completed": "Completed"
-      }
-    },
-    "new_project_modal": {
-      "title": "New project",
-      "name_label": "Project name",
-      "placeholder": "e.g. E-commerce Mobile Sync",
-      "status_label": "Initial status",
-      "active": "Active",
-      "paused": "Paused",
-      "cancel": "Cancel",
-      "submit": "Create project",
-      "success_message": "Project created successfully."
-    },
-    "notifications": {
-      "accepted": "{name} has been accepted to the project.",
-      "rejected": "{name} has been notified that they were not selected."
-    }
-  },
-  "mis_proyectos": {
-    "published_on": "Published on {date}",
-    "modality_label": "Modality",
-    "level_label": "Level",
-    "budget_label": "Budget",
-    "edit_btn": "Edit Project",
-    "pause_btn": "Pause Project",
-    "reactivate_btn": "Reactivate Project",
-    "status_active": "ACTIVE",
-    "status_paused": "PAUSED",
-    "tabs": {
-      "project": "Project",
-      "mockups": "Mockups",
-      "applications": "Applications"
-    },
-    "objective_title": "Project Objective",
-    "scope_title": "Scope and Requirements",
-    "deliverables_title": "Expected Deliverables",
-    "stack_title": "TECH STACK",
-    "metrics_title": "PROGRESS METRICS",
-    "metrics_talent_match": "Talent Match",
-    "metrics_active_applicants": "Active Applicants",
-    "mockups_empty": "No mockups loaded for this project.",
-    "applications_empty": "No applications registered yet.",
-    "edit_modal": {
-      "title": "Edit project",
-      "name_label": "Project name",
-      "modality_label": "Modality",
-      "budget_label": "Budget",
-      "cancel": "Cancel",
-      "save": "Save changes",
-      "success": "Project updated successfully."
-    },
-    "notifications": {
-      "paused": "The project has been paused.",
-      "reactivated": "The project has been reactivated."
-    }
-  },
-  "app_header": {
-    "notifications": "Notifications",
-    "user_menu": "User menu",
-    "logout": "Log out"
-  },
-  "empresa_subnav": {
-    "back": "Back",
-    "mis_proyectos": "My projects",
-    "matches": "Matches",
-    "postulaciones": "Applications",
-    "mi_empresa": "My company"
   },
   "matches_empresa": {
     "viewing_matches": "Viewing matches for:",
