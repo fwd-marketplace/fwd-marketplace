@@ -1,16 +1,15 @@
 import { useTranslations } from 'next-intl';
 import Link from 'next/link';
-import Image from 'next/image';
 import { ArrowRight } from 'lucide-react';
-import dashboardLogo from '@/Img/Comunidad_icon-01_gneaaf (1).webp';
-import { FwdGeoBackdrop } from '@/components/ui/fwd-geo-backdrop';
+import { ConstellationBackdrop } from '@/components/home/ConstellationBackdrop';
+import { LogoConstellation } from '@/components/home/LogoConstellation';
 
 export default function HeroSection({ locale }: { locale: string }) {
   const t = useTranslations('landing.hero');
 
   return (
     <section className="relative overflow-hidden bg-secondary py-20 text-secondary-foreground lg:py-32">
-      <FwdGeoBackdrop />
+      <ConstellationBackdrop />
 
       <div className="relative z-10 mx-auto flex w-full max-w-7xl flex-col items-center gap-12 px-6 md:px-10 lg:flex-row lg:gap-24">
         {/* Left Column */}
@@ -44,15 +43,11 @@ export default function HeroSection({ locale }: { locale: string }) {
           </div>
         </div>
 
-        {/* Right Column: Hero Image */}
+        {/* Right Column: animated constellation logo */}
         <div className="w-full max-w-lg flex-1 flex items-center justify-center lg:justify-end">
-          <Image 
-            src={dashboardLogo} 
-            alt="Comunidad Logo" 
-            quality={100}
-            className="w-full max-w-[450px] md:max-w-[500px] h-auto object-contain drop-shadow-2xl hover:scale-[1.03] transition-transform duration-[var(--duration-slow)]" 
-            priority
-          />
+          <div className="w-full max-w-[450px] md:max-w-[500px]">
+            <LogoConstellation logoAlt={t('logo_alt')} />
+          </div>
         </div>
       </div>
     </section>
