@@ -57,11 +57,11 @@ const SKY_STARS: readonly SkyStar[] = [
     // extra density
     { top: '3%', left: '60%', size: 4, color: 'white', kind: 'dot', opacity: 0.45 },
     { top: '8%', left: '38%', size: 5, color: 'white', kind: 'dot', opacity: 0.5 },
-    { top: '13%', left: '58%', size: 12, color: 'white', kind: 'sparkle', opacity: 0.8 },
+    { top: '50%', left: '58%', size: 12, color: 'white', kind: 'sparkle', opacity: 0.8 },
     { top: '4%', left: '82%', size: 4, color: 'white', kind: 'dot', opacity: 0.4 },
     { top: '19%', left: '15%', size: 5, color: 'gold', kind: 'dot', opacity: 0.65 },
     { top: '27%', left: '72%', size: 4, color: 'white', kind: 'dot', opacity: 0.5 },
-    { top: '29%', left: '44%', size: 12, color: 'gold', kind: 'sparkle', opacity: 0.75 },
+    { top: '56%', left: '44%', size: 12, color: 'gold', kind: 'sparkle', opacity: 0.75 },
     { top: '36%', left: '20%', size: 4, color: 'white', kind: 'dot', opacity: 0.4 },
     { top: '38%', left: '52%', size: 5, color: 'white', kind: 'dot', opacity: 0.55 },
     { top: '45%', left: '78%', size: 12, color: 'white', kind: 'sparkle', opacity: 0.8 },
@@ -75,6 +75,22 @@ const SKY_STARS: readonly SkyStar[] = [
     { top: '88%', left: '22%', size: 12, color: 'white', kind: 'sparkle', opacity: 0.75 },
     { top: '95%', left: '48%', size: 4, color: 'white', kind: 'dot', opacity: 0.4 },
     { top: '91%', left: '94%', size: 5, color: 'gold', kind: 'dot', opacity: 0.6 },
+    // bordes seguros — sin chocar con texto central
+    { top: '2%',  left: '4%',  size: 12, color: 'white', kind: 'sparkle', opacity: 0.7 },
+    { top: '9%',  left: '88%', size: 5,  color: 'white', kind: 'dot',     opacity: 0.5 },
+    { top: '18%', left: '95%', size: 12, color: 'gold',  kind: 'sparkle', opacity: 0.8 },
+    { top: '23%', left: '3%',  size: 4,  color: 'gold',  kind: 'dot',     opacity: 0.6 },
+    { top: '30%', left: '14%', size: 12, color: 'gold',  kind: 'sparkle', opacity: 0.75 },
+    { top: '33%', left: '87%', size: 4,  color: 'white', kind: 'dot',     opacity: 0.45 },
+    { top: '41%', left: '97%', size: 5,  color: 'white', kind: 'dot',     opacity: 0.5 },
+    { top: '44%', left: '5%',  size: 4,  color: 'white', kind: 'dot',     opacity: 0.4 },
+    { top: '60%', left: '3%',  size: 12, color: 'white', kind: 'sparkle', opacity: 0.8 },
+    { top: '63%', left: '91%', size: 4,  color: 'white', kind: 'dot',     opacity: 0.45 },
+    { top: '72%', left: '35%', size: 5,  color: 'gold',  kind: 'dot',     opacity: 0.55 },
+    { top: '76%', left: '68%', size: 12, color: 'white', kind: 'sparkle', opacity: 0.8 },
+    { top: '83%', left: '49%', size: 4,  color: 'white', kind: 'dot',     opacity: 0.4 },
+    { top: '96%', left: '14%', size: 5,  color: 'white', kind: 'dot',     opacity: 0.5 },
+    { top: '97%', left: '60%', size: 12, color: 'gold',  kind: 'sparkle', opacity: 0.75 },
 ];
 
 function resolveStarFill(color: StarColor): string {
