@@ -134,11 +134,28 @@ Los links del `estudiante` pueden venir `null`/`""` si el junior no los complet�
 | `PATCH /api/admin/users/:id/suspender` | Bearer admin | `{ user: {...} }` (estado → suspendida) |
 | `GET /api/admin/projects` | Bearer admin | `{ projects: [...] }` (todos, incluye borradores) |
 | `PATCH /api/admin/projects/:id/cancelar` | Bearer admin | `{ project: {...} }` (estado → cancelado) |
+| `GET /api/admin/students` | Bearer admin | `{ students: [...] }` (TODOS los estudiantes para la vista "Talento": `id, especialidad, modalidad_preferida, disponibilidad, titulo_fwd, estado_verificacion, reputacion, url_avatar, skills: [...], usuario: { nombre, apellido1, correo }`) |
+| `GET /api/admin/students/pending` | Bearer admin | `{ students: [...] }` (egresados FWD con `estado_verificacion='pendiente'`; trae `titulo_fwd` + datos del usuario) |
+| `PATCH /api/admin/students/:id/verificar` | Bearer admin | `{ student: {...} }` (`estado_verificacion` → `verificado`; lo hace visible a empresas). `:id` = `estudiante.id` |
+| `PATCH /api/admin/students/:id/rechazar` | Bearer admin | `{ student: {...} }` (`estado_verificacion` → `rechazado`). `:id` = `estudiante.id` |
+
+> **Verificación de egresados FWD.** El `titulo_fwd` del junior es **auto-declarado** (lo edita
+> en su perfil). El admin lo revisa y fija `estudiante.estado_verificacion`. Solo los `verificado`
+> son visibles para empresas/admin (RLS). Si el junior **cambia su `titulo_fwd`**, su estado vuelve
+> a `pendiente` automáticamente (hay que re-verificarlo). El `estado_verificacion` viene en
+> `GET /api/users/me` y `GET /api/users/me/perfil` para que el FE muestre el estado/badge.
 
 ## Pendientes para el FrontEnd
 
 Trabajo de FrontEnd que habilitan los endpoints de arriba (lo construye el grupo de FrontEnd;
 el BackEnd ya expone la API). Marcá cada ítem como hecho cuando la pantalla lo consuma.
+
+- **Vista "Talento" del admin (`EgresadosView`).** Hoy renderiza datos mock; cablearla a
+  `GET /api/admin/students` (como hace `administrador.tsx` con sus server actions) para mostrar
+  estudiantes reales. Campos disponibles: nombre/correo (en `usuario`), `especialidad`, `skills`,
+  `titulo_fwd`, `estado_verificacion`, `reputacion`, `disponibilidad`, `modalidad_preferida`,
+  `url_avatar`. **No existen** en el modelo: estado laboral (contratado/disponible), empresa
+  actual ni las stats de empleabilidad — eso requiere decisión de producto + migración aparte.
 
 - **Detalle de postulación con contacto del junior.** En la vista de una postulación recibida
   (empresa), consumir `GET /api/ofertas/:id` para mostrar el contacto del junior (`correo` +

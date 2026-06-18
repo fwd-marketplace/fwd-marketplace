@@ -1,5 +1,6 @@
 import { setRequestLocale } from "next-intl/server";
 import { ReportesView } from "@/components/comp-administrador/ReportesView";
+import { getPendingUsers, getAdminProjects } from "@/lib/api/admin";
 
 interface Props {
   params: Promise<{ locale: string }>;
@@ -8,5 +9,11 @@ interface Props {
 export default async function AdminReportesPage({ params }: Props) {
   const { locale } = await params;
   setRequestLocale(locale);
-  return <ReportesView />;
+  const [usersResult, projectsResult] = await Promise.all([getPendingUsers(), getAdminProjects()]);
+  return (
+    <ReportesView
+      pendingUsers={usersResult.ok ? usersResult.data.users : []}
+      projects={projectsResult.ok ? projectsResult.data.projects : []}
+    />
+  );
 }

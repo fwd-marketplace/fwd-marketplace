@@ -95,3 +95,106 @@ export async function cancelProject(accessToken: string, projectId: string) {
   if (!data) throw new ApiError(404, "Proyecto no encontrado");
   return data;
 }
+
+/**
+ * Lista los estudiantes (egresados FWD) con la verificación 'pendiente', para que el
+ * admin los revise. Solo admin (RLS: `estudiante_admin_ver` via `is_admin()`, 0019).
+ * Trae el `titulo_fwd` auto-declarado y los datos del usuario para identificarlos.
+ */
+export async function listPendingStudents(accessToken: string) {
+  const client = supabaseForToken(accessToken);
+  const { data, error } = await client
+    .from("estudiante")
+    .select("id, titulo_fwd, estado_verificacion, usuario:users(id, nombre, apellido1, correo)")
+    .eq("estado_verificacion", "pendiente")
+    .order("id", { ascending: true });
+
+  if (error) throw new ApiError(500, error.message);
+  return data;
+}
+
+/**
+ * Lista TODOS los estudiantes (egresados FWD) con su info de perfil, para la vista
+ * "Talento" del admin. Solo admin. Ver a todos requiere la política `estudiante_admin_ver`
+ * (migración 0019); sin ella, el RLS solo deja ver los 'verificado'. Las skills se traen
+ * aparte (mismo enfoque sin embeds anidados que el resto del código) en 2 consultas.
+ */
+export async function listAllStudents(accessToken: string) {
+  const client = supabaseForToken(accessToken);
+
+  const { data: estudiantes, error } = await client
+    .from("estudiante")
+    .select(
+      "id, especialidad, modalidad_preferida, disponibilidad, titulo_fwd, estado_verificacion, reputacion, url_avatar, usuario:users(id, nombre, apellido1, correo)",
+    )
+    .order("id", { ascending: true });
+  if (error) throw new ApiError(500, error.message);
+
+  const rows = estudiantes ?? [];
+  if (rows.length === 0) return [];
+
+  // Skills de todos los estudiantes en 2 idas y vueltas (sin N+1 ni embeds anidados).
+  const ids = rows.map((e) => e.id);
+  const { data: links, error: linksError } = await client
+    .from("student_skills")
+    .select("id_estudiante, id_skill")
+    .in("id_estudiante", ids);
+  if (linksError) throw new ApiError(500, linksError.message);
+
+  const skillIds = [...new Set((links ?? []).map((l) => l.id_skill))];
+  const nameById = new Map<string, string>();
+  if (skillIds.length > 0) {
+    const { data: skills, error: skillsError } = await client
+      .from("skills")
+      .select("id, nombre")
+      .in("id", skillIds);
+    if (skillsError) throw new ApiError(500, skillsError.message);
+    for (const s of skills ?? []) nameById.set(s.id, s.nombre);
+  }
+
+  const skillsByStudent = new Map<string, string[]>();
+  for (const link of links ?? []) {
+    const nombre = nameById.get(link.id_skill);
+    if (!nombre) continue;
+    const list = skillsByStudent.get(link.id_estudiante) ?? [];
+    list.push(nombre);
+    skillsByStudent.set(link.id_estudiante, list);
+  }
+
+  return rows.map((e) => ({ ...e, skills: skillsByStudent.get(e.id) ?? [] }));
+}
+
+/** Estados de verificación que el admin puede fijar (no 'pendiente': eso es el default). */
+type VerificationState = "verificado" | "rechazado";
+
+/**
+ * Fija la verificación de un estudiante. Solo admin (RLS: `estudiante_admin_verifica`
+ * via `is_admin()`, 0019). 404 si no existe. Base de verify/reject.
+ */
+async function setStudentVerification(
+  accessToken: string,
+  estudianteId: string,
+  estado: VerificationState,
+) {
+  const client = supabaseForToken(accessToken);
+  const { data, error } = await client
+    .from("estudiante")
+    .update({ estado_verificacion: estado })
+    .eq("id", estudianteId)
+    .select("id, estado_verificacion, titulo_fwd")
+    .maybeSingle();
+
+  if (error) throw new ApiError(400, error.message);
+  if (!data) throw new ApiError(404, "Estudiante no encontrado");
+  return data;
+}
+
+/** Verifica al egresado: estado_verificacion -> 'verificado' (lo hace visible a empresas). */
+export function verifyStudent(accessToken: string, estudianteId: string) {
+  return setStudentVerification(accessToken, estudianteId, "verificado");
+}
+
+/** Rechaza la verificación del egresado: estado_verificacion -> 'rechazado'. */
+export function rejectStudent(accessToken: string, estudianteId: string) {
+  return setStudentVerification(accessToken, estudianteId, "rechazado");
+}
