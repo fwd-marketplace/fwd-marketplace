@@ -657,10 +657,19 @@ export default function MarketPlace({ initialProjects, catalogs, role = 'student
             {/* Ambient stars scattered in the cards area */}
             <div className="pointer-events-none absolute inset-x-0 bottom-0 z-0" style={{ top: '420px' }} aria-hidden="true">
                 {([
-                    { t: '10%', l: '1%',  s: 10, g: true,  sp: true,  o: 0.6,  d: '3.2s', dl: '0.3s' },
-                    { t: '20%', l: '99%', s: 10, g: true,  sp: true,  o: 0.65, d: '3.6s', dl: '0.8s' },
-                    { t: '55%', l: '1%',  s: 10, g: false, sp: true,  o: 0.55, d: '3.1s', dl: '1.4s' },
-                    { t: '70%', l: '99%', s: 10, g: true,  sp: true,  o: 0.7,  d: '2.9s', dl: '0.5s' },
+                    { t: '5%',  l: '1%',   s: 10, g: true,  sp: true,  o: 0.6,  d: '3.2s', dl: '0.3s' },
+                    { t: '12%', l: '98%',  s: 4,  g: false, sp: false, o: 0.4,  d: '2.8s', dl: '1.0s' },
+                    { t: '20%', l: '99%',  s: 10, g: true,  sp: true,  o: 0.65, d: '3.6s', dl: '0.8s' },
+                    { t: '28%', l: '0.5%', s: 4,  g: false, sp: false, o: 0.45, d: '3.0s', dl: '1.5s' },
+                    { t: '38%', l: '98%',  s: 10, g: false, sp: true,  o: 0.55, d: '3.3s', dl: '0.6s' },
+                    { t: '47%', l: '1%',   s: 5,  g: true,  sp: false, o: 0.55, d: '2.7s', dl: '0.4s' },
+                    { t: '55%', l: '99%',  s: 10, g: true,  sp: true,  o: 0.65, d: '3.1s', dl: '1.2s' },
+                    { t: '63%', l: '1%',   s: 10, g: false, sp: true,  o: 0.55, d: '3.4s', dl: '0.9s' },
+                    { t: '70%', l: '98%',  s: 4,  g: false, sp: false, o: 0.4,  d: '2.9s', dl: '1.6s' },
+                    { t: '78%', l: '0.5%', s: 10, g: true,  sp: true,  o: 0.7,  d: '3.0s', dl: '0.2s' },
+                    { t: '85%', l: '99%',  s: 5,  g: false, sp: false, o: 0.45, d: '3.5s', dl: '1.1s' },
+                    { t: '92%', l: '1%',   s: 4,  g: true,  sp: false, o: 0.5,  d: '2.8s', dl: '0.7s' },
+                    { t: '96%', l: '98%',  s: 10, g: true,  sp: true,  o: 0.65, d: '3.2s', dl: '0.5s' },
                 ] as const).map((s, i) => {
                     const fill = s.g ? 'var(--highlight)' : 'var(--surface)';
                     if (s.sp) {
