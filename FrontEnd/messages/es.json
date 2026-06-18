@@ -102,12 +102,25 @@
     "submitting": "Ingresando...",
     "pending_approval": "Tu cuenta está pendiente de aprobación. Te avisaremos cuando sea activada.",
     "account_suspended": "Tu cuenta ha sido suspendida o rechazada. Contacta a soporte.",
+    "mfa_sent": "Te enviamos un código de 6 dígitos a tu correo.",
+    "mfa_description": "Revisá tu correo e ingresá el código de 6 dígitos para completar el inicio de sesión.",
+    "mfa_code_label": "Código de verificación",
+    "mfa_code_placeholder": "000000",
+    "mfa_submit": "Verificar e ingresar",
+    "mfa_back": "Volver",
     "terms_prefix": "Al ingresar aceptas los",
     "terms_link": "Términos de Servicio",
     "terms_connector": "y la",
     "privacy_link": "Política de Privacidad",
     "no_account": "¿No tienes cuenta?",
     "register_link": "Regístrate aquí"
+  },
+  "oauth_callback": {
+    "loading": "Completando inicio de sesión...",
+    "error_title": "No pudimos iniciar sesión",
+    "error_no_session": "No se recibió la sesión del proveedor. Intentá iniciar sesión de nuevo.",
+    "error_suspended": "Tu cuenta está suspendida o rechazada.",
+    "back_to_login": "Volver al inicio de sesión"
   },
   "reset_password": {
     "brand": "FWD Talent",
@@ -1102,7 +1115,9 @@
       "provincia": "Provincia",
       "canton": "Cantón",
       "comercial_name": "Nombre comercial",
+      "description": "Descripción",
       "website": "Sitio web",
+      "website_error": "La URL debe comenzar con https:// o http://",
       "location": "Ubicación",
       "sector": "Sector",
       "mission": "Misión",
@@ -1129,7 +1144,8 @@
       "cancel": "Cancelar",
       "save_success": "Cambios guardados correctamente.",
       "save_error": "Ocurrió un error al guardar. Intentá de nuevo.",
-      "view_projects": "Ver proyectos"
+      "view_projects": "Ver proyectos",
+      "editing_hint": "Modo edición activo"
     },
     "logo": {
       "alt": "Logo de la empresa",
@@ -1155,6 +1171,30 @@
     },
     "culture": {
       "add_value_placeholder": "Nuevo valor..."
+    },
+    "validation": {
+      "url_invalid": "La URL debe comenzar con https:// o http://",
+      "max_255": "Máximo 255 caracteres",
+      "max_400": "Máximo 400 caracteres",
+      "max_1000": "Máximo 1000 caracteres",
+      "email_invalid": "Ingresá un correo electrónico válido",
+      "field_required": "Este campo es requerido"
+    },
+    "placeholders": {
+      "company_name": "Ej. Acme Technologies S.A.",
+      "description": "Describí el enfoque, propósito y cultura de tu empresa...",
+      "sector": "Ej. Tecnología, Fintech...",
+      "mission": "Describí la razón de ser de tu empresa y el impacto que buscás generar...",
+      "vision": "¿Cómo imaginás tu empresa en los próximos 5 años?",
+      "culture": "Describí el ambiente, los valores y las formas de trabajo que definen tu equipo...",
+      "values_example_1": "Innovación",
+      "values_example_2": "Colaboración",
+      "values_example_3": "Excelencia",
+      "values_hint": "Agregá valores que representen a tu empresa",
+      "contact_example_name": "Ana Ramírez",
+      "contact_example_role": "Reclutadora de Talento",
+      "contact_example_email": "ana@empresa.com",
+      "contact_hint": "Agregá los contactos encargados del reclutamiento"
     },
     "modalities": {
       "remote": "Remoto",

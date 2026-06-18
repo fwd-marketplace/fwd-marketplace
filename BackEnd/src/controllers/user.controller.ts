@@ -16,17 +16,34 @@ function readCredentials(body: unknown): { email: string; password: string; name
   return { email, password, name: typeof name === "string" ? name : undefined };
 }
 
-function readResetInput(body: unknown): { email: string } {
+/** Lee el ticket + el código de 6 dígitos del paso de 2FA del login. */
+function readVerifyLoginInput(body: unknown): { ticket: string; code: string } {
+  const { ticket, code } = (body ?? {}) as Record<string, unknown>;
+
+  if (typeof ticket !== "string" || !ticket.trim()) {
+    throw new ApiError(400, "Falta el ticket de verificación");
+  }
+  if (typeof code !== "string" || !/^\d{6}$/.test(code)) {
+    throw new ApiError(400, "El código debe ser de 6 dígitos");
+  }
+
+  return { ticket, code };
+}
+
+function readResetInput(body: unknown): { email: string; locale?: string } {
   // Recuperación de contraseña: solo necesita el email. NO se pide la contraseña
   // (quien la olvidó no la sabe); Supabase Auth manda el correo con el enlace para
-  // fijar una nueva.
-  const { email } = (body ?? {}) as Record<string, unknown>;
+  // fijar una nueva. `locale` (opcional) decide el idioma del enlace del correo.
+  const { email, locale } = (body ?? {}) as Record<string, unknown>;
 
   if (typeof email !== "string" || !email.trim()) {
     throw new ApiError(400, "El email es obligatorio");
   }
 
-  return { email: email.trim() };
+  return {
+    email: email.trim(),
+    locale: typeof locale === "string" ? locale : undefined,
+  };
 }
 
 /**
@@ -83,14 +100,22 @@ export async function register(req: Request, res: Response) {
 /** POST /api/users/login */
 export async function login(req: Request, res: Response) {
   const { email, password } = readCredentials(req.body);
+  // Con 2FA obligatorio, devuelve { mfa_required: true, ticket } (no la sesión).
   const result = await userService.loginUser({ email, password });
+  res.status(200).json(result);
+}
+
+/** POST /api/users/login/verify-otp (paso 2 del login: valida el código de email) */
+export async function verifyLoginOtp(req: Request, res: Response) {
+  const { ticket, code } = readVerifyLoginInput(req.body);
+  const result = await userService.verifyLoginOtp(ticket, code);
   res.status(200).json(result);
 }
 
 /** POST /api/users/reset-password (paso 1: pide el correo de recuperación) */
 export async function resetPassword(req: Request, res: Response) {
-  const { email } = readResetInput(req.body);
-  await userService.requestPasswordReset(email);
+  const { email, locale } = readResetInput(req.body);
+  await userService.requestPasswordReset(email, locale);
   res.status(200).json({ ok: true });
 }
 
@@ -99,6 +124,21 @@ export async function confirmResetPassword(req: Request, res: Response) {
   const input = readConfirmResetInput(req.body);
   await userService.confirmPasswordReset(input);
   res.status(200).json({ ok: true });
+}
+
+/** GET /api/users/oauth/:provider (devuelve la URL de autorización del provider) */
+export async function oauthStart(req: Request, res: Response) {
+  const provider = req.params.provider;
+  if (typeof provider !== "string" || !userService.isOAuthProvider(provider)) {
+    throw new ApiError(400, "Proveedor de OAuth no soportado");
+  }
+  // El FE manda el locale para construir el callback localizado. Se valida a un
+  // código de 2 letras para no inyectar nada raro en la redirect URL.
+  const localeRaw = req.query.locale;
+  const locale = typeof localeRaw === "string" && /^[a-z]{2}$/.test(localeRaw) ? localeRaw : "es";
+
+  const url = await userService.getOAuthUrl(provider, locale);
+  res.status(200).json({ url });
 }
 
 /** POST /api/users/refresh */

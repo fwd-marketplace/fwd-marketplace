@@ -1698,7 +1698,7 @@ function AddProjectModal({ onClose, onCreate }: { onClose: () => void; onCreate:
     let hash = 0;
     for (let i = 0; i < v.length; i++) hash = (hash << 5) - hash + v.charCodeAt(i);
     const idx = Math.abs(hash) % OTHER_COLORS.length;
-    const colorVar = OTHER_COLORS[idx];
+    const colorVar = OTHER_COLORS[idx] ?? "--primary";
     // avoid duplicates
     setSelectedTechs((prev) => (prev.some(p => p.name.toLowerCase() === v.toLowerCase()) ? prev : [...prev, { name: v, colorVar }]));
     setOtherValue("");

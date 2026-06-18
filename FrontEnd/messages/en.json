@@ -102,12 +102,25 @@
     "submitting": "Signing in...",
     "pending_approval": "Your account is pending approval. We'll notify you when it's activated.",
     "account_suspended": "Your account has been suspended or rejected. Please contact support.",
+    "mfa_sent": "We sent a 6-digit code to your email.",
+    "mfa_description": "Check your email and enter the 6-digit code to finish signing in.",
+    "mfa_code_label": "Verification code",
+    "mfa_code_placeholder": "000000",
+    "mfa_submit": "Verify and sign in",
+    "mfa_back": "Back",
     "terms_prefix": "By signing in you agree to the",
     "terms_link": "Terms of Service",
     "terms_connector": "and the",
     "privacy_link": "Privacy Policy",
     "no_account": "Don't have an account?",
     "register_link": "Sign up here"
+  },
+  "oauth_callback": {
+    "loading": "Completing sign in...",
+    "error_title": "We couldn't sign you in",
+    "error_no_session": "No session received from the provider. Please try signing in again.",
+    "error_suspended": "Your account is suspended or rejected.",
+    "back_to_login": "Back to sign in"
   },
   "reset_password": {
     "brand": "FWD Talent",
@@ -1045,8 +1058,10 @@
       "country": "Country",
       "provincia": "Province",
       "canton": "Canton",
+      "description": "Description",
       "comercial_name": "Commercial name",
       "website": "Website",
+      "website_error": "The URL must start with https:// or http://",
       "location": "Location",
       "sector": "Sector",
       "mission": "Mission",
@@ -1073,7 +1088,8 @@
       "cancel": "Cancel",
       "save_success": "Changes saved successfully.",
       "save_error": "An error occurred while saving. Please try again.",
-      "view_projects": "View projects"
+      "view_projects": "View projects",
+      "editing_hint": "Edit mode active"
     },
     "logo": {
       "alt": "Company logo",
@@ -1099,6 +1115,30 @@
     },
     "culture": {
       "add_value_placeholder": "New value..."
+    },
+    "validation": {
+      "url_invalid": "The URL must start with https:// or http://",
+      "max_255": "Maximum 255 characters",
+      "max_400": "Maximum 400 characters",
+      "max_1000": "Maximum 1000 characters",
+      "email_invalid": "Enter a valid email address",
+      "field_required": "This field is required"
+    },
+    "placeholders": {
+      "company_name": "E.g. Acme Technologies Inc.",
+      "description": "Describe your company's focus, purpose and culture...",
+      "sector": "E.g. Technology, Fintech...",
+      "mission": "Describe the purpose of your company and the impact you aim to create...",
+      "vision": "Where do you see your company in the next 5 years?",
+      "culture": "Describe the environment, values and ways of working that define your team...",
+      "values_example_1": "Innovation",
+      "values_example_2": "Collaboration",
+      "values_example_3": "Excellence",
+      "values_hint": "Add values that represent your company",
+      "contact_example_name": "Ana Ramirez",
+      "contact_example_role": "Talent Recruiter",
+      "contact_example_email": "ana@company.com",
+      "contact_hint": "Add the contacts in charge of recruitment"
     },
     "modalities": {
       "remote": "Remote",

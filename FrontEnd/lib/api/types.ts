@@ -157,6 +157,12 @@ export type ApiEmpresarioDetail = {
   tipos_proyecto: string | null;
   direccion: string | null;
   url_logo: string | null;
+  mision: string | null;
+  vision: string | null;
+  cultura: string | null;
+  valores: string | null;
+  contactos: string | null;
+  cantidad_empleados: string | null;
 };
 
 export type EmpresarioUpdateInput = {
@@ -169,6 +175,12 @@ export type EmpresarioUpdateInput = {
   soporte_tecnico?: string[];
   etapa?: 'idea' | 'mvp' | 'validating' | 'scaling';
   presupuesto?: 'under_500' | 'range_500_1000' | 'range_1000_2500' | 'flexible';
+  mision?: string;
+  vision?: string;
+  cultura?: string;
+  valores?: string[];
+  contactos?: Array<{ name: string; role: string; email: string }>;
+  cantidad_empleados?: string;
 };
 
 export type ApiMeProfile = {
@@ -216,27 +228,21 @@ export type AdminProjectsResponse = {
   projects: AdminProject[];
 };
 
-export type AdminStudentProfile = {
+export type StudentVerification = "pendiente" | "verificado" | "rechazado";
+
+export type AdminStudent = {
+  id: string;
   especialidad: string | null;
+  modalidad_preferida: string | null;
   disponibilidad: string | null;
   titulo_fwd: string | null;
+  estado_verificacion: StudentVerification;
   reputacion: number | null;
-  url_github: string | null;
-  url_linkedin: string | null;
-  url_portfolio: string | null;
-};
-
-export type AdminStudentUser = {
-  id: string;
-  nombre: string;
-  apellido1: string | null;
-  correo: string;
-  estado_cuenta: AccountState;
-  fecha_registro: string;
-  role: { nombre: ApiRoleName } | null;
-  estudiante: AdminStudentProfile[] | AdminStudentProfile | null;
+  url_avatar: string | null;
+  usuario: { id: string; nombre: string; apellido1: string | null; correo: string } | null;
+  skills: string[];
 };
 
 export type AdminStudentsResponse = {
-  users: AdminStudentUser[];
+  students: AdminStudent[];
 };

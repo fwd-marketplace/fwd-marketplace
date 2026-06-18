@@ -82,16 +82,16 @@ function Step2({ onChange }: { onChange: (val: Sector[]) => void }) {
   const [selectedSectors, setSelectedSectors] = useState<Sector[]>([]);
 
   const SECTOR_LABELS: Record<Sector, string> = {
-    tech:          t("tech"),
-    fintech:       t("fintech"),
-    health:        t("health"),
-    logistics:     t("logistics"),
-    education:     t("education"),
-    energy:        t("energy"),
-    retail:        t("retail"),
+    tech: t("tech"),
+    fintech: t("fintech"),
+    health: t("health"),
+    logistics: t("logistics"),
+    education: t("education"),
+    energy: t("energy"),
+    retail: t("retail"),
     manufacturing: t("manufacturing"),
-    consulting:    t("consulting"),
-    other:         t("other"),
+    consulting: t("consulting"),
+    other: t("other"),
   };
 
   function toggleSector(sector: Sector) {
@@ -329,15 +329,15 @@ function Step5({ onChange }: { onChange: (val: ProjectType[]) => void }) {
   const [selectedProjectTypes, setSelectedProjectTypes] = useState<ProjectType[]>([]);
 
   const PROJECT_TYPE_LABELS: Record<ProjectType, string> = {
-    web:          t("web"),
-    mobile:       t("mobile"),
-    ai:           t("ai"),
-    automation:   t("automation"),
-    dashboards:   t("dashboards"),
+    web: t("web"),
+    mobile: t("mobile"),
+    ai: t("ai"),
+    automation: t("automation"),
+    dashboards: t("dashboards"),
     integrations: t("integrations"),
-    ux:           t("ux"),
-    data:         t("data"),
-    other:        t("other"),
+    ux: t("ux"),
+    data: t("data"),
+    other: t("other"),
   };
 
   function toggleProjectType(projectType: ProjectType) {
@@ -515,13 +515,13 @@ export function EmpresaOnboarding() {
     const stored = getOnboarding("empresa");
     const step4 = stored.step4 as { direccion: string; cedulaJuridica: string } | undefined;
     const raw = {
-      companyName:    stored.step1 as string,
-      sectors:        stored.step2,
-      description:    stored.step3 as string,
+      companyName: stored.step1 as string,
+      sectors: stored.step2,
+      description: stored.step3 as string,
       cedulaJuridica: step4?.cedulaJuridica ?? "",
-      direccion:      step4?.direccion ?? "",
-      projectTypes:   stored.step5,
-      logoUrl:        "",
+      direccion: step4?.direccion ?? "",
+      projectTypes: stored.step5,
+      logoUrl: "",
     };
 
     startTransition(async () => {

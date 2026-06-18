@@ -6,7 +6,7 @@ import Link from "next/link";
 import { useTranslations } from "next-intl";
 import { Eye, EyeOff } from "lucide-react";
 import { FwdGeoBackdrop } from "@/components/ui/fwd-geo-backdrop";
-import { loginUser } from "@/lib/actions/auth";
+import { loginUser, startOAuth, verifyLoginOtp } from "@/lib/actions/auth";
 
 function GoogleIcon() {
   return (
@@ -52,10 +52,51 @@ export function LoginForm() {
   const [pendingMessage, setPendingMessage] = useState<string | null>(null);
   const [isPending, startTransition] = useTransition();
 
+  // Paso de 2FA: tras validar la contraseña, se pide el código enviado por email.
+  const [step, setStep] = useState<"credentials" | "code">("credentials");
+  const [ticket, setTicket] = useState("");
+  const [code, setCode] = useState("");
+
   function togglePasswordVisibility() {
     setIsPasswordVisible((prev) => !prev);
   }
 
+  /** Enruta según rol/estado tras un login completo (post-2FA). */
+  function routeByResult(role: string, estadoCuenta: string) {
+    if (estadoCuenta === "no_profile") {
+      router.push(`/${locale}/register/role`);
+    } else if (estadoCuenta === "pendiente") {
+      router.push(`/${locale}/done`);
+    } else if (estadoCuenta === "activa") {
+      if (role === "admin") {
+        router.push(`/${locale}/admin/dashboard`);
+      } else if (role === "company" || role === "empresa" || role === "emprendedor") {
+        router.push(`/${locale}/perfil-empresa`);
+      } else if (role === "student" || role === "junior") {
+        router.push(`/${locale}/bienvenida`);
+      } else {
+        router.push(`/${locale}/marketplace`);
+      }
+    } else {
+      setError(t("account_suspended"));
+    }
+  }
+
+  function handleOAuth(provider: "google" | "github") {
+    setError(null);
+    setPendingMessage(null);
+    startTransition(async () => {
+      const result = await startOAuth(provider, locale);
+      if (!result.ok) {
+        setError(result.error);
+        return;
+      }
+      // Redirige el navegador al provider; el flujo vuelve por /auth/callback.
+      window.location.href = result.data.url;
+    });
+  }
+
+  // Paso 1: valida la contraseña; el BackEnd manda el código y pasamos al paso del código.
   function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
     setError(null);
@@ -66,25 +107,32 @@ export function LoginForm() {
         setError(result.error);
         return;
       }
-      const { role, estado_cuenta } = result.data;
-      if (estado_cuenta === "no_profile") {
-        router.push(`/${locale}/register/role`);
-      } else if (estado_cuenta === "pendiente") {
-        router.push(`/${locale}/done`);
-      } else if (estado_cuenta === "activa") {
-        if (role === "admin") {
-          router.push(`/${locale}/admin/dashboard`);
-        } else if (role === "company" || role === "empresa" || role === "emprendedor") {
-          router.push(`/${locale}/perfil-empresa`);
-        } else if (role === "student" || role === "junior") {
-          router.push(`/${locale}/bienvenida`);
-        } else {
-          router.push(`/${locale}/marketplace`);
-        }
-      } else {
-        setError(t("account_suspended"));
-      }
+      setTicket(result.data.ticket);
+      setCode("");
+      setStep("code");
+      setPendingMessage(t("mfa_sent"));
     });
+  }
+
+  // Paso 2: confirma el código de 2FA y, si es correcto, enruta.
+  function handleVerify(e: React.FormEvent) {
+    e.preventDefault();
+    setError(null);
+    startTransition(async () => {
+      const result = await verifyLoginOtp({ ticket, code });
+      if (!result.ok) {
+        setError(result.error);
+        return;
+      }
+      routeByResult(result.data.role, result.data.estado_cuenta);
+    });
+  }
+
+  function handleBackToCredentials() {
+    setStep("credentials");
+    setError(null);
+    setPendingMessage(null);
+    setCode("");
   }
 
   return (
@@ -106,10 +154,14 @@ export function LoginForm() {
             {t("description")}
           </p>
 
+          {step === "credentials" ? (
+          <>
           <div className="space-y-3">
             <button
               type="button"
-              className="flex w-full items-center justify-center gap-3 rounded-full border border-border-strong bg-surface px-6 py-3 font-body text-sm font-medium text-ink-strong transition-colors duration-[--duration-fast] hover:bg-surface-sunken"
+              onClick={() => handleOAuth("google")}
+              disabled={isPending}
+              className="flex w-full items-center justify-center gap-3 rounded-full border border-border-strong bg-surface px-6 py-3 font-body text-sm font-medium text-ink-strong transition-colors duration-[--duration-fast] hover:bg-surface-sunken disabled:opacity-60"
             >
               <GoogleIcon />
               {t("continue_google")}
@@ -117,7 +169,9 @@ export function LoginForm() {
 
             <button
               type="button"
-              className="flex w-full items-center justify-center gap-3 rounded-full bg-ink-strong px-6 py-3 font-body text-sm font-medium text-white transition-opacity duration-[--duration-fast] hover:opacity-90"
+              onClick={() => handleOAuth("github")}
+              disabled={isPending}
+              className="flex w-full items-center justify-center gap-3 rounded-full bg-ink-strong px-6 py-3 font-body text-sm font-medium text-white transition-opacity duration-[--duration-fast] hover:opacity-90 disabled:opacity-60"
             >
               <GitHubIcon />
               {t("continue_github")}
@@ -210,6 +264,57 @@ export function LoginForm() {
             </a>
             .
           </p>
+          </>
+          ) : (
+          <form className="space-y-4" onSubmit={handleVerify}>
+            <p className="text-center font-body text-sm text-ink-muted">
+              {t("mfa_description")}
+            </p>
+
+            <div className="flex flex-col gap-1.5">
+              <label htmlFor="login-code" className="font-body text-xs font-semibold text-ink-muted">
+                {t("mfa_code_label")}
+              </label>
+              <input
+                id="login-code"
+                type="text"
+                inputMode="numeric"
+                autoComplete="one-time-code"
+                maxLength={6}
+                required
+                value={code}
+                onChange={(e) => setCode(e.target.value.replace(/\D/g, ""))}
+                placeholder={t("mfa_code_placeholder")}
+                className="w-full rounded-2xl bg-surface-sunken px-5 py-3.5 text-center font-body text-lg tracking-[0.4em] text-ink-strong placeholder:text-ink-subtle placeholder:tracking-normal outline-none focus:ring-2 focus:ring-primary/40"
+              />
+            </div>
+
+            {error && (
+              <p role="alert" className="font-body text-xs text-red-500">{error}</p>
+            )}
+            {pendingMessage && (
+              <p role="status" className="rounded-xl bg-accent/10 px-4 py-3 font-body text-xs text-ink-muted">
+                {pendingMessage}
+              </p>
+            )}
+
+            <button
+              type="submit"
+              disabled={isPending || code.length !== 6}
+              className="mt-1 flex w-full items-center justify-center rounded-full bg-primary px-6 py-3 font-body text-sm font-semibold text-white transition-opacity duration-[--duration-fast] hover:opacity-90 disabled:opacity-60"
+            >
+              {isPending ? t("submitting") : t("mfa_submit")}
+            </button>
+
+            <button
+              type="button"
+              onClick={handleBackToCredentials}
+              className="w-full text-center font-body text-xs text-ink-subtle underline underline-offset-2 hover:text-ink-muted"
+            >
+              {t("mfa_back")}
+            </button>
+          </form>
+          )}
         </div>
 
         <p className="mt-6 text-center font-body text-sm text-secondary-foreground/70">
