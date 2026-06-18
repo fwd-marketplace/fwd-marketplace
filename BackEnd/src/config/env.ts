@@ -33,4 +33,26 @@ export const env = {
     url: process.env.APPS_SCRIPT_URL ?? "",
     secret: process.env.APPS_SCRIPT_SECRET ?? "",
   },
+
+  // Asistente de IA para crear proyectos. Proveedor principal Groq (endpoint
+  // compatible con OpenAI). La key NO es obligatoria para arrancar: si falta, el
+  // asistente degrada con un error claro y el usuario completa el formulario a mano.
+  ai: {
+    // Proveedor lógico principal (solo informativo para logs/respuestas).
+    provider: process.env.AI_PROVIDER ?? "groq",
+    apiKey: process.env.GROQ_API_KEY ?? "",
+    baseUrl: process.env.AI_BASE_URL ?? "https://api.groq.com/openai/v1",
+    model: process.env.AI_MODEL ?? "llama-3.3-70b-versatile",
+    // Timeout por llamada al proveedor y reintentos ante 429/5xx antes de degradar.
+    requestTimeoutMs: Number(process.env.AI_TIMEOUT_MS) || 30_000,
+    maxRetries: Number(process.env.AI_MAX_RETRIES) || 2,
+    // Fallback opcional a Google Gemini (endpoint compatible con OpenAI),
+    // desactivado por defecto. Se intenta solo si el principal falla.
+    fallback: {
+      enabled: process.env.AI_FALLBACK_ENABLED === "true",
+      apiKey: process.env.GEMINI_API_KEY ?? "",
+      baseUrl: process.env.GEMINI_BASE_URL ?? "https://generativelanguage.googleapis.com/v1beta/openai",
+      model: process.env.GEMINI_MODEL ?? "gemini-2.5-flash",
+    },
+  },
 } as const;

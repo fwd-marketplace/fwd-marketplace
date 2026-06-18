@@ -522,12 +522,22 @@
     "new_project_modal": {
       "ai": {
         "section_title": "AI Assistant",
-        "badge_soon": "Coming soon",
+        "badge": "Beta",
         "idea_label": "Describe your project idea",
         "idea_placeholder": "E.g.: I need a web app so my clients can book appointments online, see their visit history, and receive email reminders. We don't have an in-house tech team.",
         "fill_btn": "Fill with AI",
         "divider": "or fill in manually",
-        "conversation_empty": "The assistant will ask you questions to better understand your project and fill in the technical fields for you."
+        "conversation_empty": "The assistant will ask you questions to better understand your project and fill in the technical fields for you.",
+        "reply_placeholder": "Type your answer...",
+        "send": "Send",
+        "typing": "The assistant is typing...",
+        "generate_btn": "Generate proposal",
+        "generating": "Generating proposal...",
+        "restart": "Start over",
+        "continue_manually": "Continue manually",
+        "applied": "Proposal applied below. Review and adjust the fields before creating the project.",
+        "pending_title": "Still to clarify:",
+        "error_generic": "Couldn't reach the assistant. Try again or continue manually."
       },
       "title": "New project",
       "name_label": "Project name",
