@@ -1,6 +1,6 @@
 import type { Request, Response } from "express";
 import { ApiError } from "../utils/ApiError";
-import { getMyPerfil, updateMyPerfil, updateMyAvatar, uploadMyLogo } from "../services/perfil.service";
+import { getMyPerfil, updateMyPerfil, updateMyAvatar, uploadMyLogo, deleteMyLogo } from "../services/perfil.service";
 
 /** Token + id del usuario autenticado (los inyecta `authenticate`). */
 function requireAuth(req: Request): { token: string; userId: string } {
@@ -34,6 +34,13 @@ export async function updateAvatar(req: Request, res: Response) {
   }
   const perfil = await updateMyAvatar(token, userId, req.file.buffer);
   res.status(200).json({ perfil });
+}
+
+/** DELETE /api/users/me/perfil/logo (empresa elimina su logo) */
+export async function removeLogo(req: Request, res: Response) {
+  const { token, userId } = requireAuth(req);
+  await deleteMyLogo(token, userId);
+  res.status(204).send();
 }
 
 /** POST /api/users/me/perfil/logo (empresa sube su logo) */

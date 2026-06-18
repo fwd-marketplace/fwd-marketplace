@@ -103,7 +103,7 @@ Si `role.nombre === "student"` añade `estudiante` (o `estudiante: null` si aún
 { "...campos base...",
   "estudiante": {
     "descripcion": "...", "especialidad": "...", "modalidad_preferida": "...",
-    "disponibilidad": "...", "titulo_fwd": null, "reputacion": 0,
+    "disponibilidad": "...", "titulo_fwd": null, "estado_verificacion": "pendiente", "reputacion": 0,
     "url_avatar": null, "url_github": null, "url_linkedin": null, "url_portfolio": null,
     "skills": ["React", "Node"] } }
 ```

@@ -24,13 +24,13 @@ export default async function DonePage({ params }: Props) {
       if (roleName === "admin") {
         destination = `/${locale}/admin`;
       } else if (roleName === "company") {
-        destination = `/${locale}/empresa/dashboard`;
+        destination = `/${locale}/dashboard`;
       } else if (roleName === "student") {
         destination = `/${locale}/bienvenida`;
       }
     }
-  } catch (e) {
-    // fallback to /${locale}
+  } catch {
+    // fallback a /${locale}
   }
 
   return (

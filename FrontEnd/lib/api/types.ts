@@ -68,6 +68,34 @@ export type CreateProjectInput = {
   publicar: boolean;
 };
 
+// ── Asistente de IA para crear proyectos ──────────────────────────────────────
+
+export type AiChatMessage = {
+  role: "user" | "assistant";
+  content: string;
+};
+
+export type ProposalSkill = {
+  id: string;
+  nombre: string;
+};
+
+/** Propuesta estructurada que devuelve el asistente, ya mapeada al formulario. */
+export type ProjectProposal = {
+  nombre: string;
+  objetivo: string;
+  area_negocio: string | null;
+  id_area_negocio: string | null;
+  plazo_dias: number;
+  habilidades: ProposalSkill[];
+  usa_ia: boolean;
+  preguntas_pendientes: string[];
+};
+
+export type GenerateProposalResponse = {
+  propuesta: ProjectProposal;
+};
+
 export type ProjectOffer = {
   id: string;
   propuesta: string;
@@ -163,6 +191,8 @@ export type ApiEmpresarioDetail = {
   valores: string | null;
   contactos: string | null;
   cantidad_empleados: string | null;
+  modalidades: string | null;
+  horario: string | null;
 };
 
 export type EmpresarioUpdateInput = {
@@ -181,6 +211,8 @@ export type EmpresarioUpdateInput = {
   valores?: string[];
   contactos?: Array<{ name: string; role: string; email: string }>;
   cantidad_empleados?: string;
+  modalidades?: string[];
+  horario?: string;
 };
 
 export type ApiMeProfile = {
@@ -226,4 +258,32 @@ export type AdminProject = {
 
 export type AdminProjectsResponse = {
   projects: AdminProject[];
+};
+
+export type ProjectDetailResponse = {
+  project: ApiProject;
+};
+
+export type SubmitOfferInput = {
+  propuesta: string;
+  prototipo_url?: string;
+};
+
+export type StudentVerification = "pendiente" | "verificado" | "rechazado";
+
+export type AdminStudent = {
+  id: string;
+  especialidad: string | null;
+  modalidad_preferida: string | null;
+  disponibilidad: string | null;
+  titulo_fwd: string | null;
+  estado_verificacion: StudentVerification;
+  reputacion: number | null;
+  url_avatar: string | null;
+  usuario: { id: string; nombre: string; apellido1: string | null; correo: string } | null;
+  skills: string[];
+};
+
+export type AdminStudentsResponse = {
+  students: AdminStudent[];
 };

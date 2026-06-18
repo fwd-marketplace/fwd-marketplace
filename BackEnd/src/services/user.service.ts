@@ -209,11 +209,11 @@ export async function getUserFromToken(accessToken: string) {
 
 /** Columnas de `estudiante` que muestra la página de perfil del junior. */
 const ESTUDIANTE_DETAIL_SELECT =
-  "id, descripcion, especialidad, modalidad_preferida, disponibilidad, titulo_fwd, reputacion, url_avatar, url_github, url_linkedin, url_portfolio";
+  "id, descripcion, especialidad, modalidad_preferida, disponibilidad, titulo_fwd, estado_verificacion, reputacion, url_avatar, url_github, url_linkedin, url_portfolio";
 
 /** Columnas de `empresario` que muestra la página de perfil de empresa/emprendedor. */
 const EMPRESARIO_DETAIL_SELECT =
-  "id, tipo, nombre_comercial, descripcion, sector, tipos_proyecto, apoyo_tecnico_necesario, cedula_juridica, direccion, url_sitio_web, etapa, presupuesto, mision, vision, cultura, valores, contactos";
+  "id, tipo, nombre_comercial, descripcion, sector, tipos_proyecto, apoyo_tecnico_necesario, cedula_juridica, direccion, url_sitio_web, etapa, presupuesto, cantidad_empleados, mision, vision, cultura, valores, contactos, modalidades, horario";
 
 /** Nombres de las skills de un estudiante (catálogo `skills` vía `student_skills`). */
 async function getEstudianteSkills(
@@ -276,6 +276,7 @@ export async function getMyProfile(accessToken: string, userId: string) {
         modalidad_preferida: estudiante.modalidad_preferida,
         disponibilidad: estudiante.disponibilidad,
         titulo_fwd: estudiante.titulo_fwd,
+        estado_verificacion: estudiante.estado_verificacion,
         reputacion: estudiante.reputacion,
         url_avatar: estudiante.url_avatar,
         url_github: estudiante.url_github,

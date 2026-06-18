@@ -6,10 +6,16 @@ type Hit = { count: number; resetAt: number };
 export interface RateLimitOptions {
   /** Tamaño de la ventana en milisegundos. */
   windowMs: number;
-  /** Máximo de peticiones permitidas por IP dentro de la ventana. */
+  /** Máximo de peticiones permitidas por clave dentro de la ventana. */
   max: number;
   /** Mensaje del error 429 (opcional). */
   message?: string;
+  /**
+   * Cómo derivar la clave de cupo. Por defecto, la IP del cliente (rutas de auth
+   * sin sesión). Para rutas autenticadas se puede keyear por usuario/empresa
+   * (p. ej. `(req) => req.user?.id ?? req.ip`).
+   */
+  keyResolver?: (req: Request) => string;
 }
 
 /**
@@ -29,13 +35,16 @@ export function rateLimit({
   windowMs,
   max,
   message = "Demasiados intentos. Esperá un momento e intentá de nuevo.",
+  keyResolver,
 }: RateLimitOptions) {
   const hits = new Map<string, Hit>();
   let lastSweep = 0;
 
   return function rateLimitMiddleware(req: Request, res: Response, next: NextFunction): void {
     const now = Date.now();
-    const key = req.ip ?? req.socket.remoteAddress ?? "unknown";
+    const key = keyResolver
+      ? keyResolver(req)
+      : (req.ip ?? req.socket.remoteAddress ?? "unknown");
 
     // Limpieza oportunista de entradas vencidas para que el Map no crezca sin fin.
     if (now - lastSweep > windowMs) {

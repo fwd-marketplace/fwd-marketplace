@@ -82,6 +82,15 @@ export async function uploadEmpresarioLogo(
   }
 }
 
+export async function deleteEmpresarioLogo(): Promise<Result<void>> {
+  try {
+    await apiAuth("/users/me/perfil/logo", { method: "DELETE" });
+    return ok(undefined);
+  } catch (e) {
+    return err(e instanceof ApiError ? e.message : "Error de conexión");
+  }
+}
+
 export async function uploadStudentAvatar(
   formData: FormData,
 ): Promise<Result<{ url_avatar: string }>> {
