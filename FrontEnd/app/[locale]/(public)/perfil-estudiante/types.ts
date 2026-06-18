@@ -15,7 +15,19 @@ export interface StudentProfile {
     linkedin?: string;
     portfolio?: string;
   };
+  reputacion?: number | null;
 }
+
+export type MockCalificacion = {
+  id: string;
+  ofertaId?: string;
+  companyName: string;
+  projectName: string;
+  score: number;
+  comment: string;
+  date: string;
+  reply?: string | null;
+};
 
 export function fullName(profile: Pick<StudentProfile, "firstName" | "lastName1" | "lastName2">): string {
   return [profile.firstName, profile.lastName1, profile.lastName2].filter(Boolean).join(" ");

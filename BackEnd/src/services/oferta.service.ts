@@ -1,6 +1,6 @@
 import { supabaseForToken } from "../config/supabase";
 import { ApiError } from "../utils/ApiError";
-import type { CreateOfertaInput, DecideOfertaInput } from "../validations/oferta";
+import type { CreateOfertaInput, DecideOfertaInput, CalificarOfertaInput, ReplicarCalificacionInput } from "../validations/oferta";
 
 type Client = ReturnType<typeof supabaseForToken>;
 
@@ -63,6 +63,8 @@ export async function createOferta(
       id_estado: estadoId,
       propuesta: input.propuesta,
       prototipo_url: input.prototipo_url || null,
+      documentacion_tecnica: input.documentacion_tecnica ?? null,
+      documentacion_url: input.documentacion_url ?? null,
     })
     .select("id, fecha_envio")
     .single();
@@ -191,6 +193,130 @@ export async function decideOferta(
     .update({ id_estado: estadoId, updated_at: new Date().toISOString() })
     .eq("id", ofertaId)
     .select("id, estado:estado_oferta(nombre)")
+    .single();
+  if (error) throw new ApiError(400, error.message);
+  return data;
+}
+
+/**
+ * El junior retira su propia postulación. Solo se puede retirar si está en
+ * "enviada" o "en_revision"; no se puede retirar una oferta adjudicada.
+ */
+export async function withdrawOferta(
+  accessToken: string,
+  userId: string,
+  ofertaId: string,
+): Promise<void> {
+  const client = supabaseForToken(accessToken);
+
+  const { data: oferta, error: ofertaError } = await client
+    .from("oferta")
+    .select("id, id_usuario, estado:estado_oferta(nombre)")
+    .eq("id", ofertaId)
+    .maybeSingle();
+  if (ofertaError) throw new ApiError(500, ofertaError.message);
+  if (!oferta) throw new ApiError(404, "Postulación no encontrada");
+  if (oferta.id_usuario !== userId) {
+    throw new ApiError(403, "No podés retirar esta postulación");
+  }
+
+  const estadoActual = oferta.estado?.nombre;
+  if (estadoActual !== "enviada" && estadoActual !== "en_revision") {
+    throw new ApiError(409, "Solo podés retirar postulaciones en estado 'enviada' o 'en_revision'");
+  }
+
+  const { error } = await client
+    .from("oferta")
+    .delete()
+    .eq("id", ofertaId)
+    .eq("id_usuario", userId);
+  if (error) throw new ApiError(400, error.message);
+}
+
+/**
+ * La empresa califica la oferta adjudicada del junior tras cerrar el proyecto.
+ * Solo se puede calificar si el proyecto está en estado "cerrado".
+ */
+export async function calificarOferta(
+  accessToken: string,
+  userId: string,
+  ofertaId: string,
+  input: CalificarOfertaInput,
+) {
+  const client = supabaseForToken(accessToken);
+
+  const { data: oferta, error: ofertaError } = await client
+    .from("oferta")
+    .select("id, id_proyecto")
+    .eq("id", ofertaId)
+    .maybeSingle();
+  if (ofertaError) throw new ApiError(500, ofertaError.message);
+  if (!oferta) throw new ApiError(404, "Postulación no encontrada");
+
+  const { data: proyecto, error: projError } = await client
+    .from("proyecto")
+    .select("empresa:empresario(id_usuario), estado:estado_proyecto(nombre)")
+    .eq("id", oferta.id_proyecto)
+    .maybeSingle();
+  if (projError) throw new ApiError(500, projError.message);
+  if (proyecto?.empresa?.id_usuario !== userId) {
+    throw new ApiError(403, "No podés calificar esta postulación");
+  }
+  if (proyecto?.estado?.nombre !== "cerrado") {
+    throw new ApiError(409, "Solo podés calificar postulaciones de proyectos cerrados");
+  }
+
+  const { data, error } = await client
+    .from("oferta")
+    .update({
+      calificacion: input.calificacion,
+      comentario_calificacion: input.comentario ?? null,
+      updated_at: new Date().toISOString(),
+    })
+    .eq("id", ofertaId)
+    .select("id, calificacion, comentario_calificacion, replica_calificacion, estado:estado_oferta(nombre)")
+    .single();
+  if (error) throw new ApiError(400, error.message);
+  return data;
+}
+
+/**
+ * El junior responde a la calificación que recibió. Solo se puede replicar una
+ * vez y únicamente si ya existe una calificación.
+ */
+export async function replicarCalificacion(
+  accessToken: string,
+  userId: string,
+  ofertaId: string,
+  input: ReplicarCalificacionInput,
+) {
+  const client = supabaseForToken(accessToken);
+
+  const { data: oferta, error: ofertaError } = await client
+    .from("oferta")
+    .select("id, id_usuario, calificacion, replica_calificacion")
+    .eq("id", ofertaId)
+    .maybeSingle();
+  if (ofertaError) throw new ApiError(500, ofertaError.message);
+  if (!oferta) throw new ApiError(404, "Postulación no encontrada");
+  if (oferta.id_usuario !== userId) {
+    throw new ApiError(403, "No podés replicar esta calificación");
+  }
+  if (oferta.calificacion === null || oferta.calificacion === undefined) {
+    throw new ApiError(409, "Esta postulación aún no tiene una calificación");
+  }
+  if (oferta.replica_calificacion !== null && oferta.replica_calificacion !== undefined) {
+    throw new ApiError(409, "Ya replicaste esta calificación");
+  }
+
+  const { data, error } = await client
+    .from("oferta")
+    .update({
+      replica_calificacion: input.replica,
+      updated_at: new Date().toISOString(),
+    })
+    .eq("id", ofertaId)
+    .select("id, calificacion, comentario_calificacion, replica_calificacion, estado:estado_oferta(nombre)")
     .single();
   if (error) throw new ApiError(400, error.message);
   return data;

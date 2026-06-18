@@ -1,7 +1,8 @@
 'use client';
 
 import { useMemo, useState, type ReactNode } from 'react';
-import { useTranslations } from 'next-intl';
+import Link from 'next/link';
+import { useLocale, useTranslations } from 'next-intl';
 import {
     LayoutGrid,
     Cloud,
@@ -12,21 +13,156 @@ import {
     Truck,
     Megaphone,
     ShoppingCart,
+    Briefcase,
     Sparkles,
     Search,
     Bookmark,
     ChevronDown,
     ChevronLeft,
     ChevronRight,
+    CheckCircle2,
+    Clock,
+    ExternalLink,
+    Zap,
     X,
 } from 'lucide-react';
 import { MarketplaceHeroBackdrop } from '@/components/marketplace/MarketplaceHeroBackdrop';
+import { ProjectDetailSheet } from '@/components/marketplace/ProjectDetailSheet';
 import { Button } from '@/components/ui/button';
+import type { ApiProject, ApiRoleName, CatalogsResponse } from '@/lib/api/types';
 
-/** How many project cards are shown per page. */
 const PAGE_SIZE = 6;
 
-/** Day ranges (inclusive) backing each duration filter bucket. */
+const MOCK_AREA_ID = {
+    fintech: 'mock-area-1',
+    salud: 'mock-area-2',
+    ecommerce: 'mock-area-3',
+    logistica: 'mock-area-4',
+    edutech: 'mock-area-5',
+    marketing: 'mock-area-6',
+} as const;
+
+const MOCK_CATALOGS: CatalogsResponse = {
+    areas: [
+        { id: MOCK_AREA_ID.fintech, nombre: 'Fintech' },
+        { id: MOCK_AREA_ID.salud, nombre: 'Salud' },
+        { id: MOCK_AREA_ID.ecommerce, nombre: 'E-Commerce' },
+        { id: MOCK_AREA_ID.logistica, nombre: 'Logística' },
+        { id: MOCK_AREA_ID.edutech, nombre: 'Edutech' },
+        { id: MOCK_AREA_ID.marketing, nombre: 'Marketing' },
+    ],
+    skills: [
+        { id: 'sk-1', nombre: 'React', tipo: 'frontend', categoria: null },
+        { id: 'sk-2', nombre: 'Node.js', tipo: 'backend', categoria: null },
+        { id: 'sk-3', nombre: 'Python', tipo: 'backend', categoria: null },
+        { id: 'sk-4', nombre: 'TypeScript', tipo: 'frontend', categoria: null },
+        { id: 'sk-5', nombre: 'PostgreSQL', tipo: 'backend', categoria: null },
+        { id: 'sk-6', nombre: 'React Native', tipo: 'mobile', categoria: null },
+    ],
+    projectStates: [],
+};
+
+const MOCK_PROJECTS: ApiProject[] = [
+    {
+        id: 'mock-1',
+        titulo: 'Sistema de Gestión de Créditos',
+        descripcion: 'Rediseño integral de la plataforma B2B para optimizar flujos de aprobación y visualización de KPIs financieros en tiempo real.',
+        usa_ia: true,
+        plazo_dias: 15,
+        fecha_publicacion: '2026-06-10T00:00:00Z',
+        fecha_cierre: null,
+        estado: { nombre: 'en_recepcion' },
+        area: { id: MOCK_AREA_ID.fintech, nombre: 'Fintech' },
+        empresa: { nombre_comercial: 'BancaCR Digital', tipo: 'empresa' },
+        skills: [
+            { skill: { id: 'sk-1', nombre: 'React', tipo: 'frontend', categoria: null } },
+            { skill: { id: 'sk-3', nombre: 'Python', tipo: 'backend', categoria: null } },
+            { skill: { id: 'sk-5', nombre: 'PostgreSQL', tipo: 'backend', categoria: null } },
+        ],
+    },
+    {
+        id: 'mock-2',
+        titulo: 'Plataforma de Telemedicina',
+        descripcion: 'Módulo de citas virtuales con videollamada integrada, historial clínico y recordatorios automáticos para pacientes y médicos.',
+        usa_ia: false,
+        plazo_dias: 12,
+        fecha_publicacion: '2026-06-08T00:00:00Z',
+        fecha_cierre: null,
+        estado: { nombre: 'en_recepcion' },
+        area: { id: MOCK_AREA_ID.salud, nombre: 'Salud' },
+        empresa: { nombre_comercial: 'MediConnect CR', tipo: 'empresa' },
+        skills: [
+            { skill: { id: 'sk-2', nombre: 'Node.js', tipo: 'backend', categoria: null } },
+            { skill: { id: 'sk-4', nombre: 'TypeScript', tipo: 'frontend', categoria: null } },
+        ],
+    },
+    {
+        id: 'mock-3',
+        titulo: 'App de Seguimiento de Pedidos',
+        descripcion: 'Aplicación móvil para que clientes rastreen sus pedidos en tiempo real con notificaciones push y mapa de ruta del repartidor.',
+        usa_ia: false,
+        plazo_dias: 10,
+        fecha_publicacion: '2026-06-05T00:00:00Z',
+        fecha_cierre: null,
+        estado: { nombre: 'en_recepcion' },
+        area: { id: MOCK_AREA_ID.ecommerce, nombre: 'E-Commerce' },
+        empresa: { nombre_comercial: 'ShopRápido', tipo: 'emprendedor' },
+        skills: [
+            { skill: { id: 'sk-6', nombre: 'React Native', tipo: 'mobile', categoria: null } },
+            { skill: { id: 'sk-2', nombre: 'Node.js', tipo: 'backend', categoria: null } },
+        ],
+    },
+    {
+        id: 'mock-4',
+        titulo: 'Dashboard de Métricas de Distribución',
+        descripcion: 'Panel interactivo para supervisores de flota con métricas de entregas, rutas óptimas y alertas de desviación en tiempo real.',
+        usa_ia: true,
+        plazo_dias: 14,
+        fecha_publicacion: '2026-06-03T00:00:00Z',
+        fecha_cierre: null,
+        estado: { nombre: 'en_recepcion' },
+        area: { id: MOCK_AREA_ID.logistica, nombre: 'Logística' },
+        empresa: { nombre_comercial: 'FleetOps Latam', tipo: 'empresa' },
+        skills: [
+            { skill: { id: 'sk-1', nombre: 'React', tipo: 'frontend', categoria: null } },
+            { skill: { id: 'sk-4', nombre: 'TypeScript', tipo: 'frontend', categoria: null } },
+            { skill: { id: 'sk-3', nombre: 'Python', tipo: 'backend', categoria: null } },
+        ],
+    },
+    {
+        id: 'mock-5',
+        titulo: 'Plataforma de Cursos en Vivo',
+        descripcion: 'Aulas virtuales con video en tiempo real, pizarra colaborativa y seguimiento de progreso por estudiante y módulo.',
+        usa_ia: false,
+        plazo_dias: 15,
+        fecha_publicacion: '2026-06-01T00:00:00Z',
+        fecha_cierre: null,
+        estado: { nombre: 'en_recepcion' },
+        area: { id: MOCK_AREA_ID.edutech, nombre: 'Edutech' },
+        empresa: { nombre_comercial: 'AprenderCR', tipo: 'emprendedor' },
+        skills: [
+            { skill: { id: 'sk-1', nombre: 'React', tipo: 'frontend', categoria: null } },
+            { skill: { id: 'sk-2', nombre: 'Node.js', tipo: 'backend', categoria: null } },
+        ],
+    },
+    {
+        id: 'mock-6',
+        titulo: 'Automatización de Reportes de Campaña',
+        descripcion: 'Herramienta que conecta con Google Ads y Meta Ads para generar reportes automáticos con visualizaciones y exportación a PDF.',
+        usa_ia: true,
+        plazo_dias: 8,
+        fecha_publicacion: '2026-05-28T00:00:00Z',
+        fecha_cierre: null,
+        estado: { nombre: 'en_recepcion' },
+        area: { id: MOCK_AREA_ID.marketing, nombre: 'Marketing' },
+        empresa: { nombre_comercial: 'GrowthLab CR', tipo: 'empresa' },
+        skills: [
+            { skill: { id: 'sk-3', nombre: 'Python', tipo: 'backend', categoria: null } },
+            { skill: { id: 'sk-4', nombre: 'TypeScript', tipo: 'frontend', categoria: null } },
+        ],
+    },
+];
+
 const DURATION_RANGES = {
     short: { min: 0, max: 30 },
     medium: { min: 31, max: 60 },
@@ -34,208 +170,44 @@ const DURATION_RANGES = {
 } as const;
 
 type DurationBucket = keyof typeof DURATION_RANGES;
-type SortOrder = 'sort_match_desc' | 'sort_match_asc' | 'sort_duration_asc';
+type SortOrder = 'sort_recent_desc' | 'sort_duration_asc';
 
-interface MarketplaceProject {
-    id: number;
-    category: string;
-    categoryClass: string;
-    title: string;
-    description: string;
-    icon: ReactNode;
-    businessArea: string;
-    duration: string;
-    durationDays: number;
-    tags: string[];
-    aiUsage: string | null;
-    usesAi: boolean;
-    match: number;
-}
+const BRAND_COLORS = [
+    'text-primary',
+    'text-magenta',
+    'text-accent',
+    'text-warning',
+    'text-secondary',
+] as const;
+
+const AREA_ICONS = [LayoutGrid, LineChart, Cloud, Smartphone, GraduationCap, HeartPulse, Truck, Megaphone, ShoppingCart, Briefcase] as const;
 
 interface FilterOption {
     value: string;
     label: string;
 }
 
-/**
- * Mock data simulating projects served by the BackEnd. No backend call is wired here;
- * once the API exists this list comes from `lib/api/`.
- */
-const MOCK_PROJECTS: readonly MarketplaceProject[] = [
-    {
-        id: 1,
-        category: 'FINTECH',
-        categoryClass: 'text-primary',
-        title: 'Sistema de Gestión de Créditos',
-        description: 'Rediseño integral de la plataforma B2B para optimizar flujos de aprobación y visualización de KPIs financieros en tiempo real.',
-        icon: <LayoutGrid className="w-6 h-6 text-primary" />,
-        businessArea: 'Finanzas Digitales',
-        duration: '45 días est.',
-        durationDays: 45,
-        tags: ['PYTHON', 'REACT', 'AWS'],
-        aiUsage: 'Modelos de scoring predictivo integrados para la automatización de decisiones de riesgo.',
-        usesAi: true,
-        match: 92,
-    },
-    {
-        id: 2,
-        category: 'SALUD',
-        categoryClass: 'text-magenta',
-        title: 'Telemedicina Pro 2.0',
-        description: 'Plataforma de atención remota con diagnóstico asistido y gestión segura de expedientes médicos electrónicos.',
-        icon: <Cloud className="w-6 h-6 text-magenta" />,
-        businessArea: 'HealthTech',
-        duration: '60 días est.',
-        durationDays: 60,
-        tags: ['NODE', 'POSTGRES', 'NLP'],
-        aiUsage: 'NLP para la transcripción automática de consultas y extracción de diagnósticos sugeridos.',
-        usesAi: true,
-        match: 85,
-    },
-    {
-        id: 3,
-        category: 'E-COMMERCE',
-        categoryClass: 'text-accent',
-        title: 'Smart Logistics App',
-        description: 'Aplicación nativa para la optimización de rutas de última milla y seguimiento satelital de flotas comerciales.',
-        icon: <Smartphone className="w-6 h-6 text-accent" />,
-        businessArea: 'Logística',
-        duration: '30 días est.',
-        durationDays: 30,
-        tags: ['REACT NATIVE', 'GO', 'KAFKA'],
-        aiUsage: 'Algoritmos de aprendizaje reforzado para el cálculo dinámico de rutas en tiempo real.',
-        usesAi: true,
-        match: 78,
-    },
-    {
-        id: 4,
-        category: 'FINTECH',
-        categoryClass: 'text-primary',
-        title: 'Panel de Inversiones Retail',
-        description: 'Tablero interactivo para inversores minoristas con gráficos en vivo, alertas configurables y exportación de portafolios.',
-        icon: <LineChart className="w-6 h-6 text-warning" />,
-        businessArea: 'Inversiones',
-        duration: '90 días est.',
-        durationDays: 90,
-        tags: ['REACT', 'TYPESCRIPT', 'D3'],
-        aiUsage: null,
-        usesAi: false,
-        match: 73,
-    },
-    {
-        id: 5,
-        category: 'EDUTECH',
-        categoryClass: 'text-secondary',
-        title: 'Plataforma de Cursos en Vivo',
-        description: 'Aulas virtuales con video en tiempo real, pizarra colaborativa y seguimiento de progreso por estudiante.',
-        icon: <GraduationCap className="w-6 h-6 text-secondary" />,
-        businessArea: 'Educación',
-        duration: '25 días est.',
-        durationDays: 25,
-        tags: ['VUE', 'WEBRTC', 'NODE'],
-        aiUsage: null,
-        usesAi: false,
-        match: 88,
-    },
-    {
-        id: 6,
-        category: 'SALUD',
-        categoryClass: 'text-magenta',
-        title: 'App de Seguimiento Nutricional',
-        description: 'Aplicación móvil que registra hábitos alimenticios y sugiere planes personalizados según objetivos de salud.',
-        icon: <HeartPulse className="w-6 h-6 text-magenta" />,
-        businessArea: 'Bienestar',
-        duration: '50 días est.',
-        durationDays: 50,
-        tags: ['FLUTTER', 'FIREBASE'],
-        aiUsage: 'Recomendaciones de planes alimenticios generadas a partir del historial del usuario.',
-        usesAi: true,
-        match: 69,
-    },
-    {
-        id: 7,
-        category: 'LOGÍSTICA',
-        categoryClass: 'text-warning',
-        title: 'Optimizador de Rutas B2B',
-        description: 'Motor de planificación que reduce costos de distribución combinando ventanas horarias y capacidad de flota.',
-        icon: <Truck className="w-6 h-6 text-warning" />,
-        businessArea: 'Distribución',
-        duration: '70 días est.',
-        durationDays: 70,
-        tags: ['PYTHON', 'FASTAPI', 'POSTGRES'],
-        aiUsage: 'Optimización combinatoria asistida por modelos de predicción de demanda.',
-        usesAi: true,
-        match: 81,
-    },
-    {
-        id: 8,
-        category: 'MARKETING',
-        categoryClass: 'text-accent',
-        title: 'Dashboard de Campañas',
-        description: 'Panel unificado para medir el rendimiento de campañas multicanal con reportes automáticos y exportables.',
-        icon: <Megaphone className="w-6 h-6 text-accent" />,
-        businessArea: 'Growth',
-        duration: '20 días est.',
-        durationDays: 20,
-        tags: ['NEXT', 'TAILWIND', 'NODE'],
-        aiUsage: null,
-        usesAi: false,
-        match: 64,
-    },
-    {
-        id: 9,
-        category: 'E-COMMERCE',
-        categoryClass: 'text-accent',
-        title: 'Rediseño Checkout Mobile',
-        description: 'Optimización del flujo de pago en mobile para reducir el abandono y soportar múltiples métodos de pago.',
-        icon: <ShoppingCart className="w-6 h-6 text-primary" />,
-        businessArea: 'Retail',
-        duration: '40 días est.',
-        durationDays: 40,
-        tags: ['REACT NATIVE', 'STRIPE'],
-        aiUsage: null,
-        usesAi: false,
-        match: 76,
-    },
-];
-
-/** Distinct business categories, derived once from the static dataset. */
-const AREA_OPTIONS: readonly FilterOption[] = Array.from(
-    new Set(MOCK_PROJECTS.map((project) => project.category)),
-).map((category) => ({ value: category, label: category }));
-
-/** Distinct skill tags, derived once from the static dataset. */
-const SKILL_OPTIONS: readonly FilterOption[] = Array.from(
-    new Set(MOCK_PROJECTS.flatMap((project) => project.tags)),
-)
-    .sort((first, second) => first.localeCompare(second))
-    .map((tag) => ({ value: tag, label: tag }));
-
-function isWithinDurationBucket(durationDays: number, bucket: DurationBucket): boolean {
-    const range = DURATION_RANGES[bucket];
-    return durationDays >= range.min && durationDays <= range.max;
+interface Props {
+    initialProjects: ApiProject[];
+    catalogs: CatalogsResponse;
+    role?: ApiRoleName | null;
+    appliedProjectIds?: string[];
 }
 
-function matchesSearchQuery(project: MarketplaceProject, query: string): boolean {
-    const normalized = query.trim().toLowerCase();
-    if (normalized === '') return true;
-    const haystack = [project.title, project.description, project.businessArea, project.category, ...project.tags]
-        .join(' ')
-        .toLowerCase();
-    return haystack.includes(normalized);
+function isExpired(fechaCierre: string | null): boolean {
+    if (!fechaCierre) return false;
+    return new Date(fechaCierre) < new Date();
 }
 
-function sortProjects(projects: readonly MarketplaceProject[], order: SortOrder): MarketplaceProject[] {
-    const sorted = [...projects];
-    switch (order) {
-        case 'sort_match_asc':
-            return sorted.sort((first, second) => first.match - second.match);
-        case 'sort_duration_asc':
-            return sorted.sort((first, second) => first.durationDays - second.durationDays);
-        case 'sort_match_desc':
-        default:
-            return sorted.sort((first, second) => second.match - first.match);
-    }
+function getAreaColor(areaId: string, areas: CatalogsResponse['areas']): string {
+    const index = areas.findIndex((a) => a.id === areaId);
+    return BRAND_COLORS[index >= 0 ? index % BRAND_COLORS.length : 0] ?? 'text-primary';
+}
+
+function getAreaIcon(areaId: string, areas: CatalogsResponse['areas'], colorClass: string): ReactNode {
+    const index = areas.findIndex((a) => a.id === areaId);
+    const Icon = AREA_ICONS[index >= 0 ? index % AREA_ICONS.length : 0] ?? Briefcase;
+    return <Icon className={`w-6 h-6 ${colorClass}`} />;
 }
 
 function getMatchColor(match: number): string {
@@ -244,7 +216,6 @@ function getMatchColor(match: number): string {
     return 'bg-magenta/10 text-magenta';
 }
 
-/** Pill-shaped dropdown used for the Area / Duration / Skills / Sort filters in the hero bar. */
 function FilterDropdown({
     triggerLabel,
     value,
@@ -259,7 +230,7 @@ function FilterDropdown({
     allLabel?: string;
 }) {
     const [isOpen, setIsOpen] = useState(false);
-    const selected = options.find((option) => option.value === value) ?? null;
+    const selected = options.find((o) => o.value === value) ?? null;
 
     return (
         <div className="relative">
@@ -267,7 +238,7 @@ function FilterDropdown({
                 type="button"
                 aria-haspopup="listbox"
                 aria-expanded={isOpen}
-                onClick={() => setIsOpen((open) => !open)}
+                onClick={() => setIsOpen((o) => !o)}
                 className={`flex items-center gap-1 rounded-full px-3 py-1.5 text-xs font-semibold transition-colors duration-[var(--duration-fast)] ease-[var(--ease-out)] ${
                     selected ? 'bg-white/25 text-white' : 'text-white/80 hover:bg-white/15 hover:text-white'
                 }`}
@@ -287,15 +258,12 @@ function FilterDropdown({
                     />
                     <div
                         role="listbox"
-                        className="absolute left-0 z-40 mt-2 min-w-44 overflow-hidden rounded-2xl border border-border bg-surface p-1 shadow-elevated"
+                        className="absolute left-0 z-40 mt-2 min-w-44 max-h-64 overflow-y-auto overflow-hidden rounded-2xl border border-border bg-surface p-1 shadow-elevated"
                     >
                         {allLabel && (
                             <button
                                 type="button"
-                                onClick={() => {
-                                    onChange(null);
-                                    setIsOpen(false);
-                                }}
+                                onClick={() => { onChange(null); setIsOpen(false); }}
                                 className={`block w-full rounded-xl px-3 py-2 text-left text-sm transition-colors duration-[var(--duration-fast)] ease-[var(--ease-out)] hover:bg-surface-sunken ${
                                     value === null ? 'font-semibold text-primary' : 'text-ink'
                                 }`}
@@ -307,10 +275,7 @@ function FilterDropdown({
                             <button
                                 key={option.value}
                                 type="button"
-                                onClick={() => {
-                                    onChange(option.value);
-                                    setIsOpen(false);
-                                }}
+                                onClick={() => { onChange(option.value); setIsOpen(false); }}
                                 className={`block w-full rounded-xl px-3 py-2 text-left text-sm transition-colors duration-[var(--duration-fast)] ease-[var(--ease-out)] hover:bg-surface-sunken ${
                                     option.value === value ? 'font-semibold text-primary' : 'text-ink'
                                 }`}
@@ -325,8 +290,8 @@ function FilterDropdown({
     );
 }
 
-/** Modal showing the full detail of a project when "Ver proyecto" is pressed. */
-function ProjectDetailModal({ project, onClose }: { project: MarketplaceProject; onClose: () => void }) {
+/** Modal showing the full detail of a project when "Ver proyecto" is pressed (pull branch). */
+function ProjectDetailModal({ project, onClose }: { project: ApiProject; onClose: () => void }) {
     const t = useTranslations('marketplace_page');
 
     return (
@@ -346,10 +311,10 @@ function ProjectDetailModal({ project, onClose }: { project: MarketplaceProject;
                 <div className="flex items-start justify-between gap-4">
                     <div className="flex items-center gap-3">
                         <div className="w-11 h-11 rounded-xl bg-canvas flex items-center justify-center border border-border shrink-0">
-                            {project.icon}
+                            {project.area ? getAreaIcon(project.area.id, MOCK_CATALOGS.areas, getAreaColor(project.area.id, MOCK_CATALOGS.areas)) : <Briefcase className="w-6 h-6 text-primary" />}
                         </div>
-                        <span className={`text-[11px] font-bold uppercase tracking-wider ${project.categoryClass}`}>
-                            {project.category}
+                        <span className={`text-[11px] font-bold uppercase tracking-wider ${project.area ? getAreaColor(project.area.id, MOCK_CATALOGS.areas) : 'text-primary'}`}>
+                            {project.area?.nombre ?? '—'}
                         </span>
                     </div>
                     <button
@@ -363,45 +328,47 @@ function ProjectDetailModal({ project, onClose }: { project: MarketplaceProject;
                 </div>
 
                 <h2 id="project-modal-title" className="font-heading text-2xl font-bold text-ink-strong mt-4 leading-tight">
-                    {project.title}
+                    {project.titulo}
                 </h2>
-                <div className={`mt-3 inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg text-xs font-bold tracking-wide ${getMatchColor(project.match)}`}>
-                    <Sparkles className="w-3.5 h-3.5" />
-                    {project.match}% {t('match_suffix')}
-                </div>
 
-                <p className="text-ink-muted text-sm leading-relaxed mt-4">{project.description}</p>
+                {project.empresa && (
+                    <p className="text-xs text-ink-muted mt-1">{project.empresa.nombre_comercial}</p>
+                )}
+
+                <p className="text-ink-muted text-sm leading-relaxed mt-4">{project.descripcion}</p>
 
                 <div className="grid grid-cols-2 gap-4 mt-5">
                     <div>
                         <p className="text-[10px] font-bold text-ink-subtle uppercase tracking-wider mb-1">
                             {t('business_area_label')}
                         </p>
-                        <p className="text-sm font-semibold text-ink-strong">{project.businessArea}</p>
+                        <p className="text-sm font-semibold text-ink-strong">{project.area?.nombre ?? '—'}</p>
                     </div>
                     <div>
                         <p className="text-[10px] font-bold text-ink-subtle uppercase tracking-wider mb-1">{t('duration')}</p>
-                        <p className="text-sm font-semibold text-ink-strong">{project.duration}</p>
+                        <p className="text-sm font-semibold text-ink-strong">{project.plazo_dias} días</p>
                     </div>
                 </div>
 
-                <div className="flex flex-wrap gap-2 mt-5">
-                    {project.tags.map((tag) => (
-                        <span
-                            key={tag}
-                            className="bg-ink-strong text-surface text-[11px] font-bold px-3 py-1 rounded-full uppercase tracking-wider"
-                        >
-                            {tag}
-                        </span>
-                    ))}
-                </div>
+                {project.skills.length > 0 && (
+                    <div className="flex flex-wrap gap-2 mt-5">
+                        {project.skills.flatMap((s) => s.skill ? [s.skill] : []).map((skill) => (
+                            <span
+                                key={skill.id}
+                                className="bg-ink-strong text-surface text-[11px] font-bold px-3 py-1 rounded-full uppercase tracking-wider"
+                            >
+                                {skill.nombre}
+                            </span>
+                        ))}
+                    </div>
+                )}
 
-                {project.usesAi && project.aiUsage && (
+                {project.usa_ia && (
                     <div className="rounded-xl border border-secondary/15 bg-secondary/5 p-4 mt-5">
                         <p className="text-[10px] font-bold text-secondary uppercase tracking-wider mb-1.5">
                             {t('ai_usage_label')}
                         </p>
-                        <p className="text-xs text-ink-muted leading-relaxed">{project.aiUsage}</p>
+                        <p className="text-xs text-ink-muted leading-relaxed">{t('ai_usage_label')}</p>
                     </div>
                 )}
 
@@ -415,48 +382,84 @@ function ProjectDetailModal({ project, onClose }: { project: MarketplaceProject;
     );
 }
 
-export default function MarketPlace() {
+export default function MarketPlace({ initialProjects, catalogs, role = 'student', appliedProjectIds = [] }: Props) {
     const t = useTranslations('marketplace_page');
+    const locale = useLocale();
+
+    const projects = initialProjects.length > 0 ? initialProjects : MOCK_PROJECTS;
+    const activeCatalogs = catalogs.areas.length > 0 ? catalogs : MOCK_CATALOGS;
 
     const [searchQuery, setSearchQuery] = useState('');
     const [activeArea, setActiveArea] = useState<string | null>(null);
     const [activeDuration, setActiveDuration] = useState<string | null>(null);
     const [activeSkill, setActiveSkill] = useState<string | null>(null);
     const [showAiOnly, setShowAiOnly] = useState(false);
-    const [sortOrder, setSortOrder] = useState<SortOrder>('sort_match_desc');
+    const [sortOrder, setSortOrder] = useState<SortOrder>('sort_recent_desc');
     const [currentPage, setCurrentPage] = useState(1);
-    const [savedProjectIds, setSavedProjectIds] = useState<ReadonlySet<number>>(new Set());
-    const [selectedProject, setSelectedProject] = useState<MarketplaceProject | null>(null);
+    const [savedProjectIds, setSavedProjectIds] = useState<ReadonlySet<string>>(new Set());
+    const [sheetProject, setSheetProject] = useState<ApiProject | null>(null);
+    const [selectedProject, setSelectedProject] = useState<ApiProject | null>(null);
 
-    const durationOptions: readonly FilterOption[] = [
+    const areaOptions: FilterOption[] = activeCatalogs.areas.map((a) => ({ value: a.id, label: a.nombre }));
+    const skillOptions: FilterOption[] = activeCatalogs.skills
+        .slice()
+        .sort((a, b) => a.nombre.localeCompare(b.nombre))
+        .map((s) => ({ value: s.id, label: s.nombre }));
+
+    const durationOptions: FilterOption[] = [
         { value: 'short', label: t('duration_short') },
         { value: 'medium', label: t('duration_medium') },
         { value: 'long', label: t('duration_long') },
     ];
 
-    const sortOptions: readonly FilterOption[] = [
-        { value: 'sort_match_desc', label: t('sort_match_desc') },
-        { value: 'sort_match_asc', label: t('sort_match_asc') },
+    const sortOptions: FilterOption[] = [
+        { value: 'sort_recent_desc', label: t('sort_match_desc') },
         { value: 'sort_duration_asc', label: t('sort_duration_asc') },
     ];
 
     const filteredProjects = useMemo(() => {
-        const matching = MOCK_PROJECTS.filter((project) => {
-            if (!matchesSearchQuery(project, searchQuery)) return false;
-            if (activeArea && project.category !== activeArea) return false;
-            if (activeDuration && !isWithinDurationBucket(project.durationDays, activeDuration as DurationBucket)) return false;
-            if (activeSkill && !project.tags.includes(activeSkill)) return false;
-            if (showAiOnly && !project.usesAi) return false;
+        const matching = projects.filter((project) => {
+            if (searchQuery) {
+                const q = searchQuery.trim().toLowerCase();
+                const haystack = [
+                    project.titulo,
+                    project.descripcion,
+                    project.area?.nombre ?? '',
+                    project.empresa?.nombre_comercial ?? '',
+                    ...project.skills.flatMap((s) => (s.skill ? [s.skill.nombre] : [])),
+                ]
+                    .join(' ')
+                    .toLowerCase();
+                if (!haystack.includes(q)) return false;
+            }
+            if (activeArea && project.area?.id !== activeArea) return false;
+            if (activeDuration) {
+                const range = DURATION_RANGES[activeDuration as DurationBucket];
+                if (!range || project.plazo_dias < range.min || project.plazo_dias > range.max) return false;
+            }
+            if (activeSkill && !project.skills.some((s) => s.skill?.id === activeSkill)) return false;
+            if (showAiOnly && !project.usa_ia) return false;
             return true;
         });
-        return sortProjects(matching, sortOrder);
-    }, [searchQuery, activeArea, activeDuration, activeSkill, showAiOnly, sortOrder]);
+
+        if (sortOrder === 'sort_duration_asc') {
+            return [...matching].sort((a, b) => a.plazo_dias - b.plazo_dias);
+        }
+        return [...matching].sort((a, b) =>
+            (b.fecha_publicacion ?? '').localeCompare(a.fecha_publicacion ?? ''),
+        );
+    }, [projects, searchQuery, activeArea, activeDuration, activeSkill, showAiOnly, sortOrder]);
 
     const totalResults = filteredProjects.length;
     const totalPages = Math.max(1, Math.ceil(totalResults / PAGE_SIZE));
     const safePage = Math.min(currentPage, totalPages);
     const pageProjects = filteredProjects.slice((safePage - 1) * PAGE_SIZE, safePage * PAGE_SIZE);
-    const hasActiveFilters = searchQuery !== '' || activeArea !== null || activeDuration !== null || activeSkill !== null || showAiOnly;
+    const hasActiveFilters =
+        searchQuery !== '' ||
+        activeArea !== null ||
+        activeDuration !== null ||
+        activeSkill !== null ||
+        showAiOnly;
 
     function resetToFirstPage() {
         setCurrentPage(1);
@@ -471,7 +474,7 @@ export default function MarketPlace() {
         resetToFirstPage();
     }
 
-    function toggleSavedProject(projectId: number) {
+    function toggleSaved(projectId: string) {
         setSavedProjectIds((current) => {
             const next = new Set(current);
             if (next.has(projectId)) {
@@ -484,15 +487,21 @@ export default function MarketPlace() {
     }
 
     return (
+        <>
+        <ProjectDetailSheet
+            project={sheetProject}
+            isOpen={!!sheetProject}
+            onClose={() => setSheetProject(null)}
+            role={role ?? null}
+            showApplyForm={role === 'student'}
+            alreadyApplied={sheetProject ? appliedProjectIds.includes(sheetProject.id) : false}
+            isProjectExpired={sheetProject ? isExpired(sheetProject.fecha_cierre) : false}
+        />
         <div className="bg-marketplace-sky relative overflow-hidden min-h-screen text-ink font-body pb-20">
-
-            {/* Sky backdrop spans the whole page (gradient + geometry + stars) */}
             <MarketplaceHeroBackdrop />
 
-            {/* ── Hero Section (Brand Expresivo) ── */}
+            {/* Hero */}
             <section className="relative z-10 px-6 pt-16 pb-40 md:pt-24 md:pb-52">
-
-                {/* Title + subtitle */}
                 <div className="relative z-10 mx-auto max-w-3xl text-center">
                     <h1 className="font-heading text-6xl md:text-7xl font-bold tracking-tight text-white">
                         {t('hero_title')}<span className="text-primary" aria-hidden="true">.</span>
@@ -503,7 +512,7 @@ export default function MarketPlace() {
                 </div>
             </section>
 
-            {/* ── Search + filters bar (overlaps hero) ── */}
+            {/* Search + filters */}
             <div className="relative z-20 max-w-5xl mx-auto px-6 -mt-16 md:-mt-20">
                 <div className="flex flex-col gap-4 rounded-full border border-white/20 bg-secondary/40 px-3 py-3 shadow-elevated backdrop-blur-md md:flex-row md:items-center md:gap-2 md:py-2 md:pl-6 md:pr-2">
                     <div className="flex flex-1 items-center gap-3">
@@ -513,10 +522,7 @@ export default function MarketPlace() {
                             id="marketplace-search"
                             type="text"
                             value={searchQuery}
-                            onChange={(event) => {
-                                setSearchQuery(event.target.value);
-                                resetToFirstPage();
-                            }}
+                            onChange={(e) => { setSearchQuery(e.target.value); resetToFirstPage(); }}
                             placeholder={t('search_placeholder')}
                             className="w-full bg-transparent text-sm text-white placeholder:text-white/55 focus:outline-none"
                         />
@@ -525,40 +531,28 @@ export default function MarketPlace() {
                         <FilterDropdown
                             triggerLabel={t('filter_area')}
                             value={activeArea}
-                            options={AREA_OPTIONS}
+                            options={areaOptions}
                             allLabel={t('filter_all')}
-                            onChange={(value) => {
-                                setActiveArea(value);
-                                resetToFirstPage();
-                            }}
+                            onChange={(v) => { setActiveArea(v); resetToFirstPage(); }}
                         />
                         <FilterDropdown
                             triggerLabel={t('filter_duration')}
                             value={activeDuration}
                             options={durationOptions}
                             allLabel={t('filter_all')}
-                            onChange={(value) => {
-                                setActiveDuration(value);
-                                resetToFirstPage();
-                            }}
+                            onChange={(v) => { setActiveDuration(v); resetToFirstPage(); }}
                         />
                         <FilterDropdown
                             triggerLabel={t('filter_skills')}
                             value={activeSkill}
-                            options={SKILL_OPTIONS}
+                            options={skillOptions}
                             allLabel={t('filter_all')}
-                            onChange={(value) => {
-                                setActiveSkill(value);
-                                resetToFirstPage();
-                            }}
+                            onChange={(v) => { setActiveSkill(v); resetToFirstPage(); }}
                         />
                         <button
                             type="button"
                             aria-pressed={showAiOnly}
-                            onClick={() => {
-                                setShowAiOnly((current) => !current);
-                                resetToFirstPage();
-                            }}
+                            onClick={() => { setShowAiOnly((c) => !c); resetToFirstPage(); }}
                             className={`rounded-full px-3 py-1.5 text-xs font-semibold transition-colors duration-[var(--duration-fast)] ease-[var(--ease-out)] ${
                                 showAiOnly ? 'bg-white/25 text-white' : 'text-white/80 hover:bg-white/15 hover:text-white'
                             }`}
@@ -569,17 +563,14 @@ export default function MarketPlace() {
                             triggerLabel={t('filter_sort')}
                             value={sortOrder}
                             options={sortOptions}
-                            onChange={(value) => {
-                                if (value) setSortOrder(value as SortOrder);
-                            }}
+                            onChange={(v) => { if (v) setSortOrder(v as SortOrder); }}
                         />
                     </div>
                 </div>
             </div>
 
-            {/* ── Content ── */}
+            {/* Results */}
             <div className="max-w-6xl mx-auto px-6 mt-14 relative z-10">
-
                 <div className="flex items-center justify-between gap-4 mb-5">
                     <p className="text-base font-bold text-ink-strong">
                         {t('results_count', { count: totalResults })}
@@ -607,83 +598,139 @@ export default function MarketPlace() {
                     <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
                         {pageProjects.map((project) => {
                             const isSaved = savedProjectIds.has(project.id);
-                            return (
-                                <div key={project.id} className="bg-surface rounded-2xl p-6 border border-border flex flex-col hover:shadow-soft hover:border-border-strong transition-all duration-[var(--duration-base)] ease-[var(--ease-out)]">
+                            const hasApplied = appliedProjectIds.includes(project.id);
+                            const expired = isExpired(project.fecha_cierre);
+                            const colorClass = project.area
+                                ? getAreaColor(project.area.id, activeCatalogs.areas)
+                                : 'text-primary';
+                            const icon = project.area
+                                ? getAreaIcon(project.area.id, activeCatalogs.areas, colorClass)
+                                : <Briefcase className="w-6 h-6 text-primary" />;
+                            const skills = project.skills.flatMap((s) => (s.skill ? [s.skill] : []));
 
-                                    {/* Card Header */}
+                            return (
+                                <div
+                                    key={project.id}
+                                    className="bg-surface rounded-2xl p-6 border border-border flex flex-col hover:shadow-soft hover:border-border-strong transition-all duration-[var(--duration-base)] ease-[var(--ease-out)]"
+                                >
+                                    {/* Header */}
                                     <div className="flex justify-between items-start mb-4">
                                         <div className="flex items-center gap-3">
                                             <div className="w-11 h-11 rounded-xl bg-canvas flex items-center justify-center border border-border shrink-0">
-                                                {project.icon}
+                                                {icon}
                                             </div>
-                                            <span className={`text-[11px] font-bold uppercase tracking-wider ${project.categoryClass}`}>
-                                                {project.category}
+                                            <span className={`text-[11px] font-bold uppercase tracking-wider ${colorClass}`}>
+                                                {project.area?.nombre ?? '—'}
                                             </span>
                                         </div>
-                                        <div className={`shrink-0 flex items-center gap-1.5 px-2.5 py-1 rounded-lg text-xs font-bold tracking-wide ${getMatchColor(project.match)}`}>
-                                            <Sparkles className="w-3.5 h-3.5" />
-                                            {project.match}% {t('match_suffix')}
+                                        <div className="flex items-center gap-1.5 shrink-0">
+                                            {expired && (
+                                                <span className="flex items-center gap-1 px-2.5 py-1 rounded-lg text-xs font-bold bg-magenta/10 text-magenta">
+                                                    <Clock className="w-3.5 h-3.5" />
+                                                    {t('badge_expired')}
+                                                </span>
+                                            )}
+                                            {hasApplied && !expired && (
+                                                <span className="flex items-center gap-1 px-2.5 py-1 rounded-lg text-xs font-bold bg-accent/10 text-accent">
+                                                    <CheckCircle2 className="w-3.5 h-3.5" />
+                                                    {t('badge_applied')}
+                                                </span>
+                                            )}
+                                            {project.usa_ia && !hasApplied && !expired && (
+                                                <span className="flex items-center gap-1 px-2.5 py-1 rounded-lg text-xs font-bold bg-accent/10 text-accent">
+                                                    <Zap className="w-3.5 h-3.5" />
+                                                    IA
+                                                </span>
+                                            )}
                                         </div>
                                     </div>
 
-                                    {/* Card Body */}
-                                    <h3 className="font-heading text-xl font-bold text-ink-strong mb-2 leading-tight">{project.title}</h3>
-                                    <p className="text-ink-muted text-sm leading-relaxed mb-5">
-                                        {project.description}
+                                    {/* Body */}
+                                    <h3 className="font-heading text-xl font-bold text-ink-strong mb-1 leading-tight">
+                                        {project.titulo}
+                                    </h3>
+                                    {project.empresa && (
+                                        <p className="text-xs text-ink-muted mb-2">
+                                            {project.empresa.nombre_comercial}
+                                        </p>
+                                    )}
+                                    <p className="text-ink-muted text-sm leading-relaxed mb-5 line-clamp-3">
+                                        {project.descripcion}
                                     </p>
 
-                                    {/* Meta row */}
+                                    {/* Meta */}
                                     <div className="grid grid-cols-2 gap-4 mb-5">
                                         <div>
                                             <p className="text-[10px] font-bold text-ink-subtle uppercase tracking-wider mb-1">
                                                 {t('business_area_label')}
                                             </p>
-                                            <p className="text-sm font-semibold text-ink-strong">{project.businessArea}</p>
+                                            <p className="text-sm font-semibold text-ink-strong">
+                                                {project.area?.nombre ?? '—'}
+                                            </p>
                                         </div>
                                         <div>
                                             <p className="text-[10px] font-bold text-ink-subtle uppercase tracking-wider mb-1">
                                                 {t('duration')}
                                             </p>
-                                            <p className="text-sm font-semibold text-ink-strong">{project.duration}</p>
+                                            <p className="text-sm font-semibold text-ink-strong">
+                                                {project.plazo_dias} días
+                                            </p>
                                         </div>
                                     </div>
 
-                                    {/* Tags */}
-                                    <div className="flex flex-wrap gap-2 mb-5">
-                                        {project.tags.map(tag => (
-                                            <span key={tag} className="bg-ink-strong text-surface text-[11px] font-bold px-3 py-1 rounded-full uppercase tracking-wider">
-                                                {tag}
-                                            </span>
-                                        ))}
-                                    </div>
-
-                                    {/* AI usage */}
-                                    {project.usesAi && project.aiUsage && (
-                                        <div className="rounded-xl border border-secondary/15 bg-secondary/5 p-4 mb-6">
-                                            <p className="text-[10px] font-bold text-secondary uppercase tracking-wider mb-1.5">
-                                                {t('ai_usage_label')}
-                                            </p>
-                                            <p className="text-xs text-ink-muted leading-relaxed">
-                                                {project.aiUsage}
-                                            </p>
+                                    {/* Skills */}
+                                    {skills.length > 0 && (
+                                        <div className="flex flex-wrap gap-2 mb-5">
+                                            {skills.slice(0, 4).map((skill) => (
+                                                <span
+                                                    key={skill.id}
+                                                    className="bg-ink-strong text-surface text-[11px] font-bold px-3 py-1 rounded-full uppercase tracking-wider"
+                                                >
+                                                    {skill.nombre}
+                                                </span>
+                                            ))}
+                                            {skills.length > 4 && (
+                                                <span className="bg-ink-strong text-surface text-[11px] font-bold px-3 py-1 rounded-full uppercase tracking-wider">
+                                                    +{skills.length - 4}
+                                                </span>
+                                            )}
                                         </div>
                                     )}
 
-                                    {/* Card Footer */}
-                                    <div className="mt-auto flex items-center gap-3">
+                                    {/* Footer */}
+                                    <div className="mt-auto flex items-center gap-2">
+                                        <button
+                                            type="button"
+                                            onClick={() => setSheetProject(project)}
+                                            className={`flex-1 rounded-full px-5 py-2.5 text-sm font-semibold text-center transition-colors duration-[var(--duration-fast)] ease-[var(--ease-out)] ${
+                                                expired
+                                                    ? 'bg-surface-sunken text-ink-muted cursor-default'
+                                                    : 'bg-primary text-primary-foreground hover:bg-secondary'
+                                            }`}
+                                        >
+                                            {expired ? t('badge_expired') : hasApplied ? t('view_my_offer') : t('view_project')}
+                                        </button>
                                         <button
                                             type="button"
                                             onClick={() => setSelectedProject(project)}
-                                            className="flex-1 rounded-full bg-primary text-primary-foreground px-5 py-2.5 text-sm font-semibold hover:bg-secondary transition-colors duration-[var(--duration-fast)] ease-[var(--ease-out)]"
+                                            className="flex size-10 shrink-0 items-center justify-center rounded-full border border-border bg-surface text-ink-muted hover:border-primary/30 hover:text-primary transition-colors duration-[var(--duration-fast)] ease-[var(--ease-out)]"
+                                            aria-label={t('view_project')}
                                         >
-                                            {t('view_project')}
+                                            <Sparkles className="w-4 h-4" aria-hidden="true" />
                                         </button>
+                                        <Link
+                                            href={`/${locale}/marketplace/${project.id}`}
+                                            aria-label="Abrir página completa"
+                                            className="flex size-10 shrink-0 items-center justify-center rounded-full border border-border bg-surface text-ink-muted hover:border-primary/30 hover:text-primary transition-colors duration-[var(--duration-fast)] ease-[var(--ease-out)]"
+                                        >
+                                            <ExternalLink className="w-4 h-4" aria-hidden="true" />
+                                        </Link>
                                         <button
                                             type="button"
                                             aria-label={isSaved ? t('saved_project') : t('save_project')}
                                             aria-pressed={isSaved}
-                                            onClick={() => toggleSavedProject(project.id)}
-                                            className={`w-10 h-10 shrink-0 flex items-center justify-center rounded-full transition-colors duration-[var(--duration-fast)] ease-[var(--ease-out)] ${
+                                            onClick={() => toggleSaved(project.id)}
+                                            className={`size-10 shrink-0 flex items-center justify-center rounded-full transition-colors duration-[var(--duration-fast)] ease-[var(--ease-out)] ${
                                                 isSaved
                                                     ? 'bg-highlight text-highlight-foreground'
                                                     : 'bg-ink-strong text-surface hover:bg-secondary'
@@ -692,7 +739,6 @@ export default function MarketPlace() {
                                             <Bookmark className={`w-4 h-4 ${isSaved ? 'fill-current' : ''}`} />
                                         </button>
                                     </div>
-
                                 </div>
                             );
                         })}
@@ -706,12 +752,12 @@ export default function MarketPlace() {
                             type="button"
                             aria-label={t('pagination_prev')}
                             disabled={safePage === 1}
-                            onClick={() => setCurrentPage((page) => Math.max(1, page - 1))}
+                            onClick={() => setCurrentPage((p) => Math.max(1, p - 1))}
                             className="w-9 h-9 flex items-center justify-center rounded-lg border border-border text-ink-muted bg-surface hover:bg-surface-sunken transition-colors duration-[var(--duration-fast)] ease-[var(--ease-out)] disabled:opacity-40 disabled:pointer-events-none"
                         >
                             <ChevronLeft className="w-4 h-4" />
                         </button>
-                        {Array.from({ length: totalPages }, (_, index) => index + 1).map((page) => (
+                        {Array.from({ length: totalPages }, (_, i) => i + 1).map((page) => (
                             <button
                                 key={page}
                                 type="button"
@@ -731,19 +777,19 @@ export default function MarketPlace() {
                             type="button"
                             aria-label={t('pagination_next')}
                             disabled={safePage === totalPages}
-                            onClick={() => setCurrentPage((page) => Math.min(totalPages, page + 1))}
+                            onClick={() => setCurrentPage((p) => Math.min(totalPages, p + 1))}
                             className="w-9 h-9 flex items-center justify-center rounded-lg border border-border text-ink-muted bg-surface hover:bg-surface-sunken transition-colors duration-[var(--duration-fast)] ease-[var(--ease-out)] disabled:opacity-40 disabled:pointer-events-none"
                         >
                             <ChevronRight className="w-4 h-4" />
                         </button>
                     </nav>
                 )}
-
             </div>
 
             {selectedProject && (
                 <ProjectDetailModal project={selectedProject} onClose={() => setSelectedProject(null)} />
             )}
         </div>
+        </>
     );
 }

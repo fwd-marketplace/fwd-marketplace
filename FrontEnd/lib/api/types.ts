@@ -68,32 +68,13 @@ export type CreateProjectInput = {
   publicar: boolean;
 };
 
-// ── Asistente de IA para crear proyectos ──────────────────────────────────────
-
-export type AiChatMessage = {
-  role: "user" | "assistant";
-  content: string;
-};
-
-export type ProposalSkill = {
-  id: string;
-  nombre: string;
-};
-
-/** Propuesta estructurada que devuelve el asistente, ya mapeada al formulario. */
-export type ProjectProposal = {
-  nombre: string;
-  objetivo: string;
-  area_negocio: string | null;
-  id_area_negocio: string | null;
-  plazo_dias: number;
-  habilidades: ProposalSkill[];
-  usa_ia: boolean;
-  preguntas_pendientes: string[];
-};
-
-export type GenerateProposalResponse = {
-  propuesta: ProjectProposal;
+export type UpdateProjectInput = {
+  titulo?: string;
+  descripcion?: string;
+  id_area_negocio?: string;
+  plazo_dias?: number;
+  usa_ia?: boolean;
+  skills?: string[];
 };
 
 export type ProjectOffer = {
@@ -117,9 +98,11 @@ export type MyOffer = {
   id: string;
   propuesta: string;
   prototipo_url: string | null;
+  documentacion_tecnica?: string | null;
+  documentacion_url?: string | null;
   fecha_envio: string;
   estado: { nombre: OfferState };
-  proyecto: { id: string; titulo: string } | null;
+  proyecto: { id: string; titulo: string; fecha_cierre?: string | null } | null;
 };
 
 export type MyOffersResponse = {
@@ -260,13 +243,25 @@ export type AdminProjectsResponse = {
   projects: AdminProject[];
 };
 
-export type ProjectDetailResponse = {
-  project: ApiProject;
+export type AdminStudentProfile = {
+  especialidad: string | null;
+  disponibilidad: string | null;
+  titulo_fwd: string | null;
+  reputacion: number | null;
+  url_github: string | null;
+  url_linkedin: string | null;
+  url_portfolio: string | null;
 };
 
-export type SubmitOfferInput = {
-  propuesta: string;
-  prototipo_url?: string;
+export type AdminStudentUser = {
+  id: string;
+  nombre: string;
+  apellido1: string | null;
+  correo: string;
+  estado_cuenta: AccountState;
+  fecha_registro: string;
+  role: { nombre: ApiRoleName } | null;
+  estudiante: AdminStudentProfile[] | AdminStudentProfile | null;
 };
 
 export type StudentVerification = "pendiente" | "verificado" | "rechazado";
@@ -287,3 +282,108 @@ export type AdminStudent = {
 export type AdminStudentsResponse = {
   students: AdminStudent[];
 };
+
+export type ProjectDetailResponse = {
+  project: ApiProject;
+};
+
+export type SubmitOfferInput = {
+  propuesta: string;
+  prototipo_url?: string;
+  documentacion_tecnica?: string;
+  documentacion_url?: string;
+};
+
+export type EntregableState = "pendiente" | "enviado" | "en_revision" | "aprobado";
+export type EntregableTipo = "parcial" | "final";
+
+export type Entregable = {
+  id: string;
+  id_proyecto: string;
+  tipo: EntregableTipo;
+  version: number;
+  fecha: string;
+  estado: { nombre: EntregableState };
+  url: string | null;
+  junior?: { id: string; nombre: string; apellido1: string | null } | null;
+  proyecto?: { id: string; titulo: string } | null;
+};
+
+export type SubmitEntregableInput = {
+  id_proyecto: string;
+  url: string;
+  tipo: EntregableTipo;
+};
+
+export type EntregablesResponse = {
+  entregables: Entregable[];
+};
+
+// ── IA — Asistente de proyectos ─────────────────────────────────────────────
+
+export type AiChatMessage = {
+  role: "user" | "assistant";
+  content: string;
+};
+
+export type ProposalSkill = {
+  id: string;
+  nombre: string;
+};
+
+export type ProjectProposal = {
+  nombre: string;
+  objetivo: string;
+  area_negocio: string | null;
+  id_area_negocio: string | null;
+  plazo_dias: number;
+  habilidades: ProposalSkill[];
+  usa_ia: boolean;
+  preguntas_pendientes: string[];
+};
+
+export type GenerateProposalResponse = {
+  propuesta: ProjectProposal;
+};
+
+// ── Calificaciones ───────────────────────────────────────────────────────────
+
+export type CalificarInput = {
+  calificacion: number;
+  comentario?: string;
+};
+
+export type ReplicaInput = {
+  replica: string;
+};
+
+// ── Mensajería ────────────────────────────────────────────────────────────────
+
+export type ApiMensaje = {
+  id: string;
+  contenido: string;
+  fecha_envio: string;
+  es_publico: boolean;
+  remitente: { id: string; nombre: string; apellido1: string | null } | null;
+  id_destinatario: string | null;
+};
+
+export type MensajesResponse = {
+  mensajes: ApiMensaje[];
+};
+
+// ── Ranking ───────────────────────────────────────────────────────────────────
+
+export type ApiRankedJunior = {
+  id: string;
+  especialidad: string | null;
+  disponibilidad: string | null;
+  reputacion: number;
+  usuario: { id: string; nombre: string; apellido1: string | null } | null;
+  skills: string[];
+};
+
+export type RankingResponse = {
+  juniors: ApiRankedJunior[];
+};
+
