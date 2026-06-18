@@ -423,6 +423,29 @@
       }
     }
   },
+  "project_detail": {
+    "back": "Back to marketplace",
+    "uses_ia": "Uses AI",
+    "duration": "{days} days",
+    "posted_on": "Posted on",
+    "skills_required": "Required technologies",
+    "offer_title": "Apply to this project",
+    "offer_subtitle": "Tell us why you are the right person for this project.",
+    "offer_propuesta_label": "Your proposal",
+    "offer_propuesta_placeholder": "Describe your experience, your approach to this project, and why you are the right fit...",
+    "offer_propuesta_min": "At least 50 characters",
+    "offer_propuesta_required": "The proposal is required",
+    "offer_prototipo_label": "Prototype URL (optional)",
+    "offer_prototipo_placeholder": "https://figma.com/...",
+    "offer_prototipo_invalid": "Please enter a valid URL",
+    "offer_submit": "Submit application",
+    "offer_submitting": "Sending...",
+    "offer_success": "Application sent. We will let you know when the company reviews your proposal.",
+    "offer_error_generic": "Could not send your application. Please try again.",
+    "owner_banner_title": "This is your project",
+    "owner_banner_desc": "Applications received are waiting for you in the company dashboard.",
+    "owner_banner_cta": "View applications"
+  },
   "empresa_dashboard": {
     "title": "GLOBAL TECH SOLUTIONS",
     "company_desc": "Global leader in technology solutions for Industry 4.0, focused on optimizing production processes through specialized FWD talent.",
@@ -1074,6 +1097,7 @@
     "logo": {
       "alt": "Company logo",
       "change": "Change logo",
+      "delete": "Delete logo",
       "invalid_type": "File must be an image.",
       "too_large": "Image exceeds the 5 MB limit.",
       "upload_error": "Could not upload logo. Please try again."
@@ -1118,7 +1142,8 @@
       "contact_example_name": "Ana Ramirez",
       "contact_example_role": "Talent Recruiter",
       "contact_example_email": "ana@company.com",
-      "contact_hint": "Add the contacts in charge of recruitment"
+      "contact_hint": "Add the contacts in charge of recruitment",
+      "loading_areas": "Loading areas..."
     },
     "modalities": {
       "remote": "Remote",
