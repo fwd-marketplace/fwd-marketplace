@@ -3,6 +3,7 @@ import { supabase, createEphemeralClient } from "../config/supabase";
 import { ApiError } from "../utils/ApiError";
 import { logger } from "../utils/logger";
 import { sendEmail } from "./email.service";
+import { renderOtpEmail } from "./email.templates";
 
 /** El código de 2FA vive 10 minutos. */
 const OTP_TTL_SECONDS = 600;
@@ -40,13 +41,12 @@ export async function startEmailMfa(input: {
     throw new ApiError(500, "No se pudo iniciar la verificación en dos pasos");
   }
 
+  const email = renderOtpEmail({ code, minutes: OTP_TTL_SECONDS / 60 });
   await sendEmail({
     to: input.email,
-    subject: "Tu código de acceso — FWD Marketplace",
-    body:
-      `<p>Tu código de acceso es:</p>` +
-      `<p style="font-size:28px;font-weight:bold;letter-spacing:6px">${code}</p>` +
-      `<p>Vence en 10 minutos. Si no intentaste iniciar sesión, ignorá este correo.</p>`,
+    subject: email.subject,
+    html: email.html,
+    text: email.text,
   });
 
   return ticket;

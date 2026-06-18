@@ -33,4 +33,12 @@ export const env = {
     url: process.env.APPS_SCRIPT_URL ?? "",
     secret: process.env.APPS_SCRIPT_SECRET ?? "",
   },
+
+  // Apariencia de los correos transaccionales (nombre del remitente y logo).
+  // El logo debe ser una imagen hosteada por HTTPS (PNG/JPG); los correos no
+  // renderizan SVG. Si no hay logo, la plantilla cae a un wordmark de texto.
+  email: {
+    fromName: process.env.EMAIL_FROM_NAME ?? "FWD Marketplace",
+    logoUrl: process.env.EMAIL_LOGO_URL ?? "",
+  },
 } as const;
