@@ -387,3 +387,20 @@ export type RankingResponse = {
   juniors: ApiRankedJunior[];
 };
 
+export type ApiCalificacion = {
+  id: string;
+  calificacion: number;
+  comentario_calificacion: string | null;
+  replica_calificacion: string | null;
+  updated_at: string;
+  proyecto: {
+    id: string;
+    titulo: string;
+    empresa: { razon_social: string | null } | null;
+  } | null;
+};
+
+export type CalificacionesResponse = {
+  calificaciones: ApiCalificacion[];
+};
+

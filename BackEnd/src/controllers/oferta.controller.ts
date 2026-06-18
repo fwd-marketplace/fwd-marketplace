@@ -10,6 +10,7 @@ import {
 import {
   createOferta,
   listMyOfertas,
+  listMyCalificaciones,
   listProjectOfertas,
   getOfertaContacto,
   decideOferta,
@@ -61,6 +62,13 @@ export async function listMine(req: Request, res: Response) {
   const { token, userId } = readAuth(req);
   const ofertas = await listMyOfertas(token, userId);
   res.status(200).json({ ofertas });
+}
+
+/** GET /api/ofertas/mis-calificaciones (calificaciones recibidas — junior) */
+export async function listMisCalificaciones(req: Request, res: Response) {
+  const { token, userId } = readAuth(req);
+  const calificaciones = await listMyCalificaciones(token, userId);
+  res.status(200).json({ calificaciones });
 }
 
 /** GET /api/ofertas/:id (empresa dueña ve la postulación con el contacto del junior) */
