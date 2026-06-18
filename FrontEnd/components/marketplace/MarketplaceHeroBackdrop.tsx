@@ -4,9 +4,10 @@
  * The vertical gradient lives on the section via the `bg-marketplace-sky` utility.
  */
 
-/** 4-point sparkle path on a 24x24 viewBox. */
-const SPARKLE_PATH =
-    'M12 0C12 6 6 12 0 12C6 12 12 18 12 24C12 18 18 12 24 12C18 12 12 6 12 0Z';
+import { buildSparklePoints } from "@/lib/logo-constellation";
+
+/** 8-point star polygon matching the logo-constellation sparkle shape, on a 24x24 viewBox. */
+const SPARKLE_POINTS = buildSparklePoints(12, 12, 12);
 
 type StarColor = 'white' | 'gold';
 type StarKind = 'sparkle' | 'dot';
@@ -75,7 +76,8 @@ export function MarketplaceHeroBackdrop() {
             {/* Twinkling stars */}
             {SKY_STARS.map((star, idx) => {
                 const fill = resolveStarFill(star.color);
-                const animation = `pulse ${2 + (idx % 3)}s ease-in-out ${(idx % 5) * 0.3}s infinite`;
+                const duration = `${2.5 + (idx % 4) * 0.7}s`;
+                const delay = `${(idx % 7) * 0.4}s`;
 
                 if (star.kind === 'dot') {
                     return (
@@ -88,25 +90,33 @@ export function MarketplaceHeroBackdrop() {
                                 width: star.size,
                                 height: star.size,
                                 background: fill,
-                                opacity: star.opacity,
-                                animation,
+                                ['--star-opacity' as string]: star.opacity,
+                                animation: `constellation-twinkle ${duration} ease-in-out ${delay} infinite`,
                             }}
                         />
                     );
                 }
 
                 return (
-                    <svg
+                    <span
                         key={idx}
                         className="absolute"
-                        width={star.size}
-                        height={star.size}
-                        viewBox="0 0 24 24"
-                        fill="none"
-                        style={{ top: star.top, left: star.left, opacity: star.opacity, animation }}
+                        style={{ top: star.top, left: star.left, opacity: star.opacity }}
                     >
-                        <path d={SPARKLE_PATH} fill={fill} />
-                    </svg>
+                        <svg
+                            width={star.size}
+                            height={star.size}
+                            viewBox="0 0 24 24"
+                            fill="none"
+                            style={{
+                                display: 'block',
+                                filter: `drop-shadow(0 0 3px ${fill})`,
+                                animation: `constellation-spark-twinkle ${duration} ease-in-out ${delay} infinite`,
+                            }}
+                        >
+                            <polygon points={SPARKLE_POINTS} fill={fill} />
+                        </svg>
+                    </span>
                 );
             })}
         </div>
