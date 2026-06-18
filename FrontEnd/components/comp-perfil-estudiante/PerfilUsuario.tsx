@@ -26,6 +26,7 @@ import {
   Camera,
   Loader2,
   AlertCircle,
+  Monitor,
 } from "lucide-react";
 import {
   fullName,
@@ -35,6 +36,15 @@ import {
   type MockCalificacion,
   type StudentProfile,
 } from "@/app/[locale]/(public)/perfil-estudiante/types";
+
+type WorkProject = {
+  id: string;
+  title: string;
+  description: string;
+  netlifyUrl: string;
+  tags: string[];
+};
+
 import type {
   StudentAvailability,
   StudentProfileUpdate,
@@ -75,6 +85,8 @@ const LinkedinIcon = (props: React.SVGProps<SVGSVGElement>) => (
     <circle cx="4" cy="4" r="2" />
   </svg>
 );
+
+
 
 // ── Helper pure functions ──────────────────────────────────────────────────────
 
@@ -275,6 +287,143 @@ export interface PerfilUsuarioProps {
   stats: ApplicationStats;
 }
 
+  function ProjectCard({
+  project,
+  onPreview,
+  onDelete,
+}: {
+  project: WorkProject;
+  onPreview: (project: WorkProject) => void;
+  onDelete?: (id: string) => void;
+}) {
+  const t = useTranslations("perfil_junior.work");
+  return (
+    <div className="rounded-2xl border border-border bg-surface shadow-soft overflow-hidden flex flex-col transition-all hover:shadow-md">
+      <div className="h-40 bg-gradient-to-tr from-primary to-secondary w-full" />
+      <div className="p-6 flex flex-col flex-grow">
+        <h3 className="font-heading text-xl font-extrabold text-ink-strong mb-2">{project.title}</h3>
+        <p className="text-sm text-ink-muted mb-4 line-clamp-2">{project.description}</p>
+        <div className="flex flex-wrap gap-2 mb-6 mt-auto">
+          {project.tags.map(tag => (
+            <span key={tag} className="px-2.5 py-1 text-xs font-semibold rounded-full bg-accent/10 text-accent">
+              {tag}
+            </span>
+          ))}
+        </div>
+        <div className="flex gap-3">
+          <button
+            onClick={() => { onPreview(project); }}
+            className="flex-1 flex items-center justify-center gap-2 px-4 py-2 text-sm font-semibold text-primary border border-primary/30 hover:border-primary hover:bg-primary/5 rounded-xl transition-colors text-center cursor-pointer"
+          >
+            <Monitor className="w-4 h-4" /> {t("preview_btn")}
+          </button>
+          <a
+            href={project.netlifyUrl}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="flex-1 flex items-center justify-center gap-2 px-4 py-2 text-sm font-semibold bg-surface-sunken hover:bg-border/30 text-ink rounded-xl transition-colors"
+          >
+            {t("open_btn")} <ArrowUpRight className="w-4 h-4" />
+          </a>
+          {/** Delete button */}
+          {typeof onDelete === "function" && (
+            <button
+              onClick={() => onDelete(project.id)}
+              className="flex-none items-center justify-center gap-2 px-3 py-2 text-sm font-semibold bg-magenta text-white hover:opacity-90 rounded-xl transition-colors whitespace-nowrap"
+            >
+              {t("confirm_delete.confirm")}
+            </button>
+          )}
+        </div>
+      </div>
+    </div>
+  );
+}
+
+function PreviewModal({
+  project,
+  onClose,
+}: {
+  project: WorkProject;
+  onClose: () => void;
+}) {
+  const t = useTranslations("perfil_junior.work");
+  const [iframeStatus, setIframeStatus] = useState<"loading" | "loaded" | "error">("loading");
+
+  React.useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (e.key === "Escape") onClose();
+    };
+    window.addEventListener("keydown", handleKeyDown);
+    return () => window.removeEventListener("keydown", handleKeyDown);
+  }, [onClose]);
+
+  return (
+    <div 
+      className="fixed inset-0 z-[100] flex items-center justify-center bg-ink-strong/60 backdrop-blur-sm p-4"
+      onClick={onClose}
+    >
+      <div 
+        className="w-full max-w-5xl bg-surface rounded-2xl shadow-elevated flex flex-col overflow-hidden max-h-[90vh]"
+        onClick={e => e.stopPropagation()}
+        role="dialog"
+        aria-modal="true"
+      >
+        <div className="px-6 py-4 border-b border-border flex items-center justify-between">
+          <div>
+            <h2 className="text-lg font-bold text-ink-strong">{t("preview_modal_title")}: {project.title}</h2>
+          </div>
+          <div className="flex items-center gap-4">
+            <a 
+              href={project.netlifyUrl}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="text-sm font-semibold text-primary hover:text-primary/80 transition-colors flex items-center gap-1.5"
+            >
+              {t("open_in_new_tab")} <ArrowUpRight className="w-4 h-4" />
+            </a>
+            <button
+              onClick={onClose}
+              className="p-1.5 text-ink-muted hover:text-ink hover:bg-surface-sunken rounded-lg transition-colors cursor-pointer"
+              aria-label={t("close")}
+            >
+              <X className="w-5 h-5" />
+            </button>
+          </div>
+        </div>
+        <div className="relative flex-grow bg-surface-sunken min-h-[50vh] md:h-[70vh]">
+          {iframeStatus === "loading" && (
+            <div className="absolute inset-0 flex items-center justify-center">
+              <Loader2 className="w-8 h-8 animate-spin text-primary" />
+            </div>
+          )}
+          {iframeStatus === "error" && (
+            <div className="absolute inset-0 flex flex-col items-center justify-center gap-3 p-6 text-center">
+              <AlertCircle className="w-10 h-10 text-magenta" />
+              <p className="text-sm text-ink-muted max-w-md">{t("iframe_error")}</p>
+              <a 
+                href={project.netlifyUrl}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="mt-2 px-6 py-2 bg-primary text-white font-semibold rounded-full hover:opacity-90 transition-opacity"
+              >
+                {t("open_in_new_tab")}
+              </a>
+            </div>
+          )}
+          <iframe 
+            src={project.netlifyUrl} 
+            className={`w-full h-full border-0 transition-opacity duration-300 ${iframeStatus === 'loading' ? 'opacity-0' : 'opacity-100'}`}
+            title={`Preview of ${project.title}`}
+            onLoad={() => setIframeStatus("loaded")}
+            onError={() => setIframeStatus("error")}
+          />
+        </div>
+      </div>
+    </div>
+  );
+}
+
 export default function PerfilUsuario({
   initialProfile,
   initialActivities,
@@ -290,6 +439,43 @@ export default function PerfilUsuario({
   const [profile, setProfile] = useState<StudentProfile>(initialProfile);
   const [activities, setActivities] = useState<Activity[]>(initialActivities);
   const [applications] = useState<Application[]>(initialApplications);
+  const [previewProject, setPreviewProject] = useState<WorkProject | null>(null);
+  const [projectToDelete, setProjectToDelete] = useState<WorkProject | null>(null);
+
+  const workProjects: WorkProject[] = [
+    {
+      id: "demo-project",
+      title: "Proyecto FWD",
+      description: "Demo del proyecto freelance con visualización en vivo.",
+      netlifyUrl: "https://amazing-empanada-a4e3b4.netlify.app/",
+      tags: profile.skills.length > 0 ? profile.skills.slice(0, 3) : ["React", "Tailwind", "Next.js"],
+    },
+  ];
+  const [workProjectsState, setWorkProjectsState] = useState<WorkProject[]>(workProjects);
+  const [showAddProjectModal, setShowAddProjectModal] = useState(false);
+
+  function addProject(project: Omit<WorkProject, "id">) {
+    const newProject: WorkProject = { id: `proj-${Date.now()}`, ...project };
+    setWorkProjectsState((prev) => [newProject, ...prev]);
+  }
+
+  function requestDeleteProject(id: string) {
+    const p = workProjectsState.find((w) => w.id === id) ?? null;
+    setProjectToDelete(p);
+  }
+
+  // removed: showProjectCard / selectedProjectCard — not needed per request
+
+  function confirmDeleteProject() {
+    if (!projectToDelete) return;
+    setWorkProjectsState((prev) => prev.filter((p) => p.id !== projectToDelete.id));
+    setProjectToDelete(null);
+  }
+
+  function cancelDelete() {
+    setProjectToDelete(null);
+  }
+  
 
   const [isPending, startTransition] = useTransition();
 
@@ -850,6 +1036,8 @@ export default function PerfilUsuario({
           </div>
         </section>
 
+        {/* selected project action pill is rendered near the projects list */}
+
         {/* TAB NAV */}
         <nav
           role="tablist"
@@ -889,6 +1077,8 @@ export default function PerfilUsuario({
         {activeTab === "perfil" && (
           <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
             <div className="lg:col-span-2 space-y-8">
+
+ 
 
               {/* Personal info */}
               <section className="bg-surface rounded-2xl border border-border shadow-soft p-6 md:p-8 space-y-6">
@@ -1344,9 +1534,63 @@ export default function PerfilUsuario({
               <p className="text-sm text-ink-muted leading-relaxed">{t("work.description")}</p>
             </div>
 
+            <div className="pt-8 border-t border-border/60">
+              <div className="flex items-center justify-between mb-6">
+                <div>
+                  <h2 className="text-xl font-semibold text-ink-strong">{t("work.my_projects")}</h2>
+                  <p className="text-sm text-ink-muted">{t("work.my_projects_help")}</p>
+                </div>
+                  <div className="flex items-center gap-3">
+                    <button
+                      type="button"
+                      onClick={() => setShowAddProjectModal(true)}
+                      className="inline-flex items-center gap-2 px-4 py-2 rounded-xl bg-primary text-white hover:opacity-95 transition-all"
+                    >
+                      <Plus className="w-4 h-4" /> {t("work.add_project")}
+                    </button>
+
+                  </div>
+              </div>
+
+              {workProjectsState.length > 0 ? (
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                  {workProjectsState.map((project) => (
+                    <ProjectCard
+                      key={project.id}
+                      project={project}
+                      onPreview={setPreviewProject}
+                      onDelete={requestDeleteProject}
+                    />
+                  ))}
+                </div>
+              ) : (
+                <div className="rounded-2xl border border-dashed border-border bg-surface p-8 text-center">
+                  <Briefcase className="mx-auto mb-3 w-7 h-7 text-ink-muted" />
+                  <p className="mt-2 text-sm text-ink-muted">{t("work.no_projects")}</p>
+                </div>
+              )}
+            </div>
+
+            {showAddProjectModal && (
+              <AddProjectModal
+                onClose={() => setShowAddProjectModal(false)}
+                onCreate={(data) => { addProject(data); setShowAddProjectModal(false); }}
+              />
+            )}
+            {projectToDelete && (
+              <ConfirmDeleteModal project={projectToDelete} onConfirm={confirmDeleteProject} onCancel={cancelDelete} />
+            )}
+
             {/* RF-53 — Calificaciones recibidas con réplica */}
             <CalificacionesSection t={t} initialCalificaciones={MOCK_CALIFICACIONES} />
           </section>
+        )}
+
+        {previewProject && (
+          <PreviewModal
+            project={previewProject}
+            onClose={() => setPreviewProject(null)}
+          />
         )}
 
         {/* ── TAB: POSTULACIONES ───────────────────────────────────────────────── */}
@@ -1546,6 +1790,152 @@ export default function PerfilUsuario({
           </div>
         </div>
       </footer>
+    </div>
+  );
+}
+
+function ConfirmDeleteModal({
+  project,
+  onConfirm,
+  onCancel,
+}: {
+  project: WorkProject | null;
+  onConfirm: () => void;
+  onCancel: () => void;
+}) {
+  const t = useTranslations("perfil_junior.work");
+  if (!project) return null;
+  return (
+    <div className="fixed inset-0 z-[120] flex items-center justify-center bg-ink-strong/60 p-4">
+      <div className="w-full max-w-md bg-surface rounded-2xl shadow-elevated p-6">
+        <h3 className="text-lg font-bold text-ink-strong mb-2">{t("confirm_delete.title")}</h3>
+        <p className="text-sm text-ink-muted mb-4">{t("confirm_delete.message")}</p>
+        <div className="flex gap-3 justify-end">
+          <button onClick={onCancel} className="px-4 py-2 rounded-lg bg-surface-sunken">{t("confirm_delete.cancel")}</button>
+          <button onClick={onConfirm} className="px-4 py-2 rounded-lg bg-magenta text-white">{t("confirm_delete.confirm")}</button>
+        </div>
+      </div>
+    </div>
+  );
+}
+function AddProjectModal({ onClose, onCreate }: { onClose: () => void; onCreate: (p: Omit<WorkProject, "id">) => void }) {
+  const t = useTranslations("perfil_junior.work");
+  const [name, setName] = useState("");
+  const [url, setUrl] = useState("");
+  const [description, setDescription] = useState("");
+  const [error, setError] = useState("");
+
+  // suggested techs mapped to design tokens (see README palette)
+  const SUGGESTED = [
+    { name: "React", colorVar: "--primary" },
+    { name: "Next.js", colorVar: "--secondary" },
+    { name: "Tailwind", colorVar: "--accent" },
+    { name: "Node.js", colorVar: "--highlight" },
+    { name: "TypeScript", colorVar: "--magenta" },
+  ];
+
+  const [selectedTechs, setSelectedTechs] = useState<{ name: string; colorVar: string }[]>([]);
+  const [showOtherInput, setShowOtherInput] = useState(false);
+  const [otherValue, setOtherValue] = useState("");
+
+  function toggleTech(item: { name: string; colorVar: string }) {
+    setSelectedTechs((prev) => {
+      const exists = prev.find((p) => p.name === item.name);
+      if (exists) return prev.filter((p) => p.name !== item.name);
+      return [...prev, item];
+    });
+  }
+
+  // use design token CSS variables for other tech pills
+  const OTHER_COLORS = ["--primary", "--secondary", "--accent", "--highlight", "--magenta"];
+
+  function addOther() {
+    const v = otherValue.trim();
+    if (!v) return;
+    // deterministic pick based on name
+    let hash = 0;
+    for (let i = 0; i < v.length; i++) hash = (hash << 5) - hash + v.charCodeAt(i);
+    const idx = Math.abs(hash) % OTHER_COLORS.length;
+    const colorVar = OTHER_COLORS[idx] ?? "--primary";
+    // avoid duplicates
+    setSelectedTechs((prev) => (prev.some(p => p.name.toLowerCase() === v.toLowerCase()) ? prev : [...prev, { name: v, colorVar }]));
+    setOtherValue("");
+    setShowOtherInput(false);
+  }
+
+  function handleSubmit(e: React.FormEvent) {
+    e.preventDefault();
+    setError("");
+    if (!name.trim()) { setError(t("work.errors.name_required")); return; }
+    if (!url.trim()) { setError(t("work.errors.url_required")); return; }
+    const tags = selectedTechs.map(s => s.name);
+    onCreate({ title: name.trim(), netlifyUrl: url.trim(), description: description.trim(), tags });
+  }
+
+  return (
+    <div className="fixed inset-0 z-[100] flex items-center justify-center bg-ink-strong/60 p-4" onClick={onClose}>
+      <div className="w-full max-w-2xl bg-surface rounded-2xl shadow-elevated p-6 transform transition-all duration-200 ease-[var(--ease-out)]" onClick={e => e.stopPropagation()} role="dialog" aria-modal="true">
+        <div className="flex items-center justify-between mb-4">
+          <h3 className="text-lg font-bold">{t("work.add_modal_title")}</h3>
+          <button onClick={onClose} className="text-ink-muted"><X className="w-5 h-5" /></button>
+        </div>
+        <form onSubmit={handleSubmit} className="space-y-3">
+          <div>
+            <label className="block text-xs text-ink-muted mb-1">{t("work.fields.name")}</label>
+            <input value={name} onChange={(e) => setName(e.target.value)} className="w-full px-3 py-2 rounded-lg border border-border text-ink" />
+          </div>
+          <div>
+            <label className="block text-xs text-ink-muted mb-1">{t("work.fields.url")}</label>
+            <input value={url} onChange={(e) => setUrl(e.target.value)} className="w-full px-3 py-2 rounded-lg border border-border text-ink" />
+          </div>
+          <div>
+            <label className="block text-xs text-ink-muted mb-1">{t("work.fields.description")}</label>
+            <textarea value={description} onChange={(e) => setDescription(e.target.value)} className="w-full px-3 py-2 rounded-lg border border-border text-ink" rows={3} />
+          </div>
+
+          <div>
+            <label className="block text-xs text-ink-muted mb-2">{t("work.fields.techs")}</label>
+            <div className="flex flex-wrap gap-2 mb-2">
+              {SUGGESTED.map((s) => {
+                const active = selectedTechs.some((st) => st.name === s.name);
+                return (
+                  <button
+                    type="button"
+                    key={s.name}
+                    onClick={() => toggleTech(s as any)}
+                    style={active ? { backgroundColor: `var(${(s as any).colorVar})`, color: 'white' } : undefined}
+                    className={`${active ? '' : 'bg-surface-sunken text-ink'} px-3 py-1.5 rounded-full text-sm border border-border/50`}
+                  >
+                    {s.name}
+                  </button>
+                );
+              })}
+              <button type="button" onClick={() => setShowOtherInput((v) => !v)} className={`px-3 py-1.5 rounded-full text-sm border border-border/50 bg-surface-sunken`}>Otros</button>
+            </div>
+            {showOtherInput && (
+              <div className="flex gap-2">
+                <input value={otherValue} onChange={(e) => setOtherValue(e.target.value)} placeholder={t("work.fields.techs_placeholder")} className="flex-grow px-3 py-2 rounded-lg border border-border text-ink" />
+                <button type="button" onClick={addOther} className="px-3 py-2 rounded-lg bg-primary text-white">Agregar</button>
+              </div>
+            )}
+            {selectedTechs.length > 0 && (
+              <div className="mt-3 flex flex-wrap gap-2">
+                {selectedTechs.map((st) => (
+                  <span key={st.name} style={{ backgroundColor: `var(${st.colorVar})`, color: 'white' }} className={`px-3 py-1.5 rounded-full text-sm flex items-center gap-2`}>{st.name}
+                    <button type="button" onClick={() => setSelectedTechs(prev => prev.filter(p => p.name !== st.name))} className="w-4 h-4 rounded-full bg-white/20 flex items-center justify-center text-xs">×</button>
+                  </span>
+                ))}
+              </div>
+            )}
+          </div>
+
+          {error && <p className="text-sm text-magenta">{error}</p>}
+          <div className="flex gap-2 justify-end">
+            <button type="button" onClick={onClose} className="px-4 py-2 rounded-xl bg-surface-sunken">{t("work.cancel")}</button>
+            <button type="submit" className="px-4 py-2 rounded-xl bg-primary text-white">{t("work.create")}</button>
+          </div>
+        </form>
+      </div>
     </div>
   );
 }

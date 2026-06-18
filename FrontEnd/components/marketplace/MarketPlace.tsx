@@ -14,6 +14,7 @@ import {
     Megaphone,
     ShoppingCart,
     Briefcase,
+    Sparkles,
     Search,
     Bookmark,
     ChevronDown,
@@ -23,6 +24,7 @@ import {
     Clock,
     ExternalLink,
     Zap,
+    X,
 } from 'lucide-react';
 import { MarketplaceHeroBackdrop } from '@/components/marketplace/MarketplaceHeroBackdrop';
 import { ProjectDetailSheet } from '@/components/marketplace/ProjectDetailSheet';
@@ -208,6 +210,12 @@ function getAreaIcon(areaId: string, areas: CatalogsResponse['areas'], colorClas
     return <Icon className={`w-6 h-6 ${colorClass}`} />;
 }
 
+function getMatchColor(match: number): string {
+    if (match >= 85) return 'bg-accent/10 text-accent';
+    if (match >= 70) return 'bg-primary/10 text-primary';
+    return 'bg-magenta/10 text-magenta';
+}
+
 function FilterDropdown({
     triggerLabel,
     value,
@@ -282,6 +290,98 @@ function FilterDropdown({
     );
 }
 
+/** Modal showing the full detail of a project when "Ver proyecto" is pressed (pull branch). */
+function ProjectDetailModal({ project, onClose }: { project: ApiProject; onClose: () => void }) {
+    const t = useTranslations('marketplace_page');
+
+    return (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
+            <button
+                type="button"
+                aria-label={t('close')}
+                onClick={onClose}
+                className="absolute inset-0 bg-ink-strong/50 backdrop-blur-sm"
+            />
+            <div
+                role="dialog"
+                aria-modal="true"
+                aria-labelledby="project-modal-title"
+                className="relative z-10 w-full max-w-lg max-h-[85vh] overflow-y-auto rounded-2xl border border-border bg-surface p-6 shadow-elevated"
+            >
+                <div className="flex items-start justify-between gap-4">
+                    <div className="flex items-center gap-3">
+                        <div className="w-11 h-11 rounded-xl bg-canvas flex items-center justify-center border border-border shrink-0">
+                            {project.area ? getAreaIcon(project.area.id, MOCK_CATALOGS.areas, getAreaColor(project.area.id, MOCK_CATALOGS.areas)) : <Briefcase className="w-6 h-6 text-primary" />}
+                        </div>
+                        <span className={`text-[11px] font-bold uppercase tracking-wider ${project.area ? getAreaColor(project.area.id, MOCK_CATALOGS.areas) : 'text-primary'}`}>
+                            {project.area?.nombre ?? '—'}
+                        </span>
+                    </div>
+                    <button
+                        type="button"
+                        aria-label={t('close')}
+                        onClick={onClose}
+                        className="w-8 h-8 shrink-0 flex items-center justify-center rounded-full text-ink-muted hover:bg-surface-sunken transition-colors duration-[var(--duration-fast)] ease-[var(--ease-out)]"
+                    >
+                        <X className="w-4 h-4" />
+                    </button>
+                </div>
+
+                <h2 id="project-modal-title" className="font-heading text-2xl font-bold text-ink-strong mt-4 leading-tight">
+                    {project.titulo}
+                </h2>
+
+                {project.empresa && (
+                    <p className="text-xs text-ink-muted mt-1">{project.empresa.nombre_comercial}</p>
+                )}
+
+                <p className="text-ink-muted text-sm leading-relaxed mt-4">{project.descripcion}</p>
+
+                <div className="grid grid-cols-2 gap-4 mt-5">
+                    <div>
+                        <p className="text-[10px] font-bold text-ink-subtle uppercase tracking-wider mb-1">
+                            {t('business_area_label')}
+                        </p>
+                        <p className="text-sm font-semibold text-ink-strong">{project.area?.nombre ?? '—'}</p>
+                    </div>
+                    <div>
+                        <p className="text-[10px] font-bold text-ink-subtle uppercase tracking-wider mb-1">{t('duration')}</p>
+                        <p className="text-sm font-semibold text-ink-strong">{project.plazo_dias} días</p>
+                    </div>
+                </div>
+
+                {project.skills.length > 0 && (
+                    <div className="flex flex-wrap gap-2 mt-5">
+                        {project.skills.flatMap((s) => s.skill ? [s.skill] : []).map((skill) => (
+                            <span
+                                key={skill.id}
+                                className="bg-ink-strong text-surface text-[11px] font-bold px-3 py-1 rounded-full uppercase tracking-wider"
+                            >
+                                {skill.nombre}
+                            </span>
+                        ))}
+                    </div>
+                )}
+
+                {project.usa_ia && (
+                    <div className="rounded-xl border border-secondary/15 bg-secondary/5 p-4 mt-5">
+                        <p className="text-[10px] font-bold text-secondary uppercase tracking-wider mb-1.5">
+                            {t('ai_usage_label')}
+                        </p>
+                        <p className="text-xs text-ink-muted leading-relaxed">{t('ai_usage_label')}</p>
+                    </div>
+                )}
+
+                <div className="mt-6 flex justify-end">
+                    <Button variant="default" className="rounded-full px-6" onClick={onClose}>
+                        {t('close')}
+                    </Button>
+                </div>
+            </div>
+        </div>
+    );
+}
+
 export default function MarketPlace({ initialProjects, catalogs, role = 'student', appliedProjectIds = [] }: Props) {
     const t = useTranslations('marketplace_page');
     const locale = useLocale();
@@ -298,6 +398,7 @@ export default function MarketPlace({ initialProjects, catalogs, role = 'student
     const [currentPage, setCurrentPage] = useState(1);
     const [savedProjectIds, setSavedProjectIds] = useState<ReadonlySet<string>>(new Set());
     const [sheetProject, setSheetProject] = useState<ApiProject | null>(null);
+    const [selectedProject, setSelectedProject] = useState<ApiProject | null>(null);
 
     const areaOptions: FilterOption[] = activeCatalogs.areas.map((a) => ({ value: a.id, label: a.nombre }));
     const skillOptions: FilterOption[] = activeCatalogs.skills
@@ -609,6 +710,14 @@ export default function MarketPlace({ initialProjects, catalogs, role = 'student
                                         >
                                             {expired ? t('badge_expired') : hasApplied ? t('view_my_offer') : t('view_project')}
                                         </button>
+                                        <button
+                                            type="button"
+                                            onClick={() => setSelectedProject(project)}
+                                            className="flex size-10 shrink-0 items-center justify-center rounded-full border border-border bg-surface text-ink-muted hover:border-primary/30 hover:text-primary transition-colors duration-[var(--duration-fast)] ease-[var(--ease-out)]"
+                                            aria-label={t('view_project')}
+                                        >
+                                            <Sparkles className="w-4 h-4" aria-hidden="true" />
+                                        </button>
                                         <Link
                                             href={`/${locale}/marketplace/${project.id}`}
                                             aria-label="Abrir página completa"
@@ -676,6 +785,10 @@ export default function MarketPlace({ initialProjects, catalogs, role = 'student
                     </nav>
                 )}
             </div>
+
+            {selectedProject && (
+                <ProjectDetailModal project={selectedProject} onClose={() => setSelectedProject(null)} />
+            )}
         </div>
         </>
     );
