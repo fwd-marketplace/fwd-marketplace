@@ -31,6 +31,8 @@
   --ink-subtle: oklch(0.65 0.008 245);
   --border: oklch(0.92 0.005 245);
   --border-strong: oklch(0.85 0.005 245);
+  /* Luz de estrella: casi blanco, tintado a 245° (nunca #fff puro) */
+  --starlight: oklch(0.99 0.008 245);
 
   /* ---- Motion ---- */
   --ease-out: cubic-bezier(0.23, 1, 0.32, 1);
@@ -83,6 +85,7 @@
   --color-ink-subtle: var(--ink-subtle);
   --color-border: var(--border);
   --color-border-strong: var(--border-strong);
+  --color-starlight: var(--starlight);
   --font-sans: var(--font-figtree), sans-serif;
   --font-body: var(--font-figtree), sans-serif;
   --font-heading: var(--font-archivo-narrow), sans-serif;
@@ -111,4 +114,213 @@
     color-mix(in oklab, var(--secondary) 45%, var(--canvas)) 72%,
     var(--canvas) 100%
   );
+}
+
+/* ---- Constelacion del logo FWD: cielo, campo de estrellas y animacion ---- */
+/* Cielo radial morado construido solo con tokens (sin hex sueltos). */
+.bg-constellation-sky {
+  background-image: radial-gradient(
+    120% 120% at 50% 42%,
+    color-mix(in oklab, var(--secondary) 78%, var(--canvas)) 0%,
+    var(--secondary) 42%,
+    color-mix(in oklab, var(--secondary) 58%, var(--ink-strong)) 100%
+  );
+}
+
+/* Campo de estrellas ambiente del fondo. */
+.constellation-starfield {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+}
+.constellation-starfield span {
+  position: absolute;
+  border-radius: 50%;
+  background: var(--starlight);
+  animation: constellation-twinkle 5s var(--ease-out) infinite;
+}
+@keyframes constellation-twinkle {
+  0%,
+  100% {
+    opacity: var(--star-opacity, 0.4);
+  }
+  50% {
+    opacity: 0.08;
+  }
+}
+
+/* Lienzo donde se traza el contorno y florece el logo. */
+.constellation-stage {
+  position: relative;
+  width: 100%;
+  aspect-ratio: 1 / 1;
+}
+.constellation-stage svg {
+  width: 100%;
+  height: 100%;
+  overflow: visible;
+  display: block;
+}
+
+/* Lineas del contorno. */
+.constellation-edge {
+  fill: none;
+  stroke: var(--starlight);
+  stroke-width: 0.42;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+  stroke-opacity: 0.55;
+  filter: url(#constellationLineGlow);
+  stroke-dasharray: var(--edge-length);
+  stroke-dashoffset: var(--edge-length);
+}
+.constellation-edge.is-drawing {
+  transition: stroke-dashoffset var(--draw-duration, 3600ms) linear;
+  stroke-dashoffset: 0;
+}
+
+/* Estrellas que se encienden al pasar la linea. */
+.constellation-star {
+  opacity: 0;
+  transform-box: fill-box;
+  transform-origin: center;
+  transform: scale(0.2);
+}
+.constellation-star.is-lit {
+  opacity: 1;
+  transform: scale(1);
+  transition: opacity 0.5s var(--ease-out), transform 0.6s var(--ease-out);
+}
+.constellation-scene.is-twinkling .constellation-star-pt .constellation-core {
+  animation: constellation-core-twinkle 5s ease-in-out infinite;
+}
+.constellation-scene.is-twinkling .constellation-star-tip {
+  animation: constellation-tip-twinkle 4.2s ease-in-out infinite;
+}
+@keyframes constellation-core-twinkle {
+  0%,
+  100% {
+    opacity: 1;
+  }
+  55% {
+    opacity: 0.55;
+  }
+}
+@keyframes constellation-tip-twinkle {
+  0%,
+  100% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0.8;
+  }
+}
+
+/* Logo que florece dentro del contorno. */
+.constellation-logo {
+  position: absolute;
+  left: 9.68%;
+  top: 10.94%;
+  width: 80.65%;
+  height: 78.12%;
+  object-fit: contain;
+  pointer-events: none;
+  opacity: 0;
+  will-change: clip-path, opacity, transform;
+  clip-path: circle(0% at 50.3% 48.3%);
+  filter: drop-shadow(0 0 14px color-mix(in oklab, var(--highlight) 35%, transparent));
+}
+.constellation-logo.is-shown {
+  animation: constellation-bloom 1100ms var(--ease-out) forwards;
+}
+@keyframes constellation-bloom {
+  0% {
+    opacity: 0;
+    clip-path: circle(0% at 50.3% 48.3%);
+    transform: scale(0.86);
+  }
+  35% {
+    opacity: 1;
+  }
+  100% {
+    opacity: 1;
+    clip-path: circle(155% at 50.3% 48.3%);
+    transform: scale(1);
+  }
+}
+/* Al aparecer el logo, el contorno y las estrellas originales se apagan. */
+.constellation-scene.is-logo-shown .constellation-edge {
+  stroke-opacity: 0 !important;
+  transition: stroke-opacity 1.2s var(--ease-out);
+}
+.constellation-scene.is-logo-shown .constellation-star {
+  opacity: 0 !important;
+  animation: none !important;
+  transition: opacity 1.2s var(--ease-out);
+}
+
+/* Destellos que florecen alrededor del logo cuando ya cargo. */
+.constellation-sparkles {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+}
+.constellation-sparkles .constellation-spark {
+  position: absolute;
+  transform: translate(-50%, -50%) scale(0);
+  opacity: 0;
+  color: var(--starlight);
+  will-change: transform, opacity;
+}
+.constellation-sparkles .constellation-spark svg {
+  display: block;
+  filter: drop-shadow(0 0 5px currentColor);
+}
+.constellation-sparkles .constellation-spark.is-in {
+  animation: constellation-spark-pop 0.5s var(--ease-out) forwards,
+    constellation-spark-twinkle var(--spark-twinkle, 3s) ease-in-out infinite;
+}
+.constellation-sparkles .constellation-spark.is-gold {
+  color: var(--highlight);
+}
+.constellation-sparkles .constellation-spark.is-cyan {
+  color: var(--accent);
+}
+@keyframes constellation-spark-pop {
+  from {
+    transform: translate(-50%, -50%) scale(0);
+    opacity: 0;
+  }
+  to {
+    transform: translate(-50%, -50%) scale(1);
+    opacity: 1;
+  }
+}
+@keyframes constellation-spark-twinkle {
+  0%,
+  100% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0.25;
+  }
+}
+
+/* Respeto a quienes prefieren menos movimiento: estado final, sin animar. */
+@media (prefers-reduced-motion: reduce) {
+  .constellation-starfield span,
+  .constellation-scene.is-twinkling .constellation-star-pt .constellation-core,
+  .constellation-scene.is-twinkling .constellation-star-tip,
+  .constellation-sparkles .constellation-spark.is-in {
+    animation: none !important;
+  }
+  .constellation-edge {
+    stroke-dashoffset: 0;
+  }
+  .constellation-logo.is-shown {
+    animation: none;
+    opacity: 1;
+    clip-path: circle(155% at 50.3% 48.3%);
+    transform: none;
+  }
 }
