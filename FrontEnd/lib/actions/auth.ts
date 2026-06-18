@@ -7,6 +7,7 @@ import {
   EmpresaProfileSchema,
   EmprendedorProfileSchema,
   ResetPasswordSchema,
+  NewPasswordSchema,
 } from "@/lib/validations/auth";
 import { ok, err } from "@/lib/result";
 import type { Result } from "@/lib/result";
@@ -46,18 +47,43 @@ export async function registerUser(input: {
   }
 }
 
+/**
+ * Paso 1 del login: valida email+contraseña. Con 2FA obligatorio, NO devuelve la
+ * sesión: el BackEnd manda un código por correo y devuelve un `ticket`. El FE pide
+ * el código y lo confirma con `verifyLoginOtp`.
+ */
 export async function loginUser(input: {
   email: string;
   password: string;
+}): Promise<Result<{ ticket: string }>> {
+  try {
+    const data = await apiFetch<{ mfa_required: boolean; ticket: string }>("/users/login", {
+      method: "POST",
+      body: JSON.stringify(input),
+    });
+    if (!data.ticket) return err("No se recibió el ticket de verificación");
+    return ok({ ticket: data.ticket });
+  } catch (e) {
+    return err(e instanceof ApiError ? e.message : "Error de conexión");
+  }
+}
+
+/**
+ * Paso 2 del login: confirma el código de 2FA. Si es correcto, setea las cookies
+ * httpOnly con la sesión y devuelve rol/estado para enrutar (igual que el login).
+ */
+export async function verifyLoginOtp(input: {
+  ticket: string;
+  code: string;
 }): Promise<Result<LoginResult>> {
   try {
-    const loginData = await apiFetch<{
+    const data = await apiFetch<{
       user: unknown;
       session: { access_token: string; refresh_token: string };
-    }>("/users/login", { method: "POST", body: JSON.stringify(input) });
+    }>("/users/login/verify-otp", { method: "POST", body: JSON.stringify(input) });
 
-    const token = loginData.session?.access_token;
-    const refreshToken = loginData.session?.refresh_token;
+    const token = data.session?.access_token;
+    const refreshToken = data.session?.refresh_token;
     if (!token) return err("No se recibió sesión del servidor");
 
     const jar = await cookies();
@@ -66,10 +92,9 @@ export async function loginUser(input: {
       jar.set(REFRESH_COOKIE, refreshToken, COOKIE_OPTS);
     }
 
-    const meData = await apiFetch<{ user: unknown; profile: ProfileData | null }>(
-      "/users/me",
-      { headers: { Authorization: `Bearer ${token}` } },
-    );
+    const meData = await apiFetch<{ user: unknown; profile: ProfileData | null }>("/users/me", {
+      headers: { Authorization: `Bearer ${token}` },
+    });
 
     if (!meData.profile) {
       return ok({ role: "none", estado_cuenta: "no_profile" });
@@ -84,6 +109,56 @@ export async function loginUser(input: {
   }
 }
 
+/** Pide al BackEnd la URL de autorización del provider para iniciar el login social. */
+export async function startOAuth(
+  provider: "google" | "github",
+  locale: string,
+): Promise<Result<{ url: string }>> {
+  try {
+    const data = await apiFetch<{ url: string }>(
+      `/users/oauth/${provider}?locale=${encodeURIComponent(locale)}`,
+    );
+    return ok(data);
+  } catch (e) {
+    return err(e instanceof ApiError ? e.message : "Error de conexión");
+  }
+}
+
+/**
+ * Completa el login social: valida la sesión que llegó en el fragment del
+ * callback (vía /me), setea las cookies httpOnly y devuelve rol/estado para
+ * enrutar. Si el usuario no tiene perfil (típico de Google), va a onboarding.
+ */
+export async function completeOAuth(input: {
+  accessToken: string;
+  refreshToken: string;
+}): Promise<Result<LoginResult>> {
+  if (!input.accessToken || !input.refreshToken) {
+    return err("No se recibió la sesión del proveedor");
+  }
+  try {
+    // Valida el token y trae el perfil antes de setear las cookies.
+    const meData = await apiFetch<{ user: unknown; profile: ProfileData | null }>("/users/me", {
+      headers: { Authorization: `Bearer ${input.accessToken}` },
+    });
+
+    const jar = await cookies();
+    jar.set(SESSION_COOKIE, input.accessToken, COOKIE_OPTS);
+    jar.set(REFRESH_COOKIE, input.refreshToken, COOKIE_OPTS);
+
+    if (!meData.profile) {
+      return ok({ role: "none", estado_cuenta: "no_profile" });
+    }
+    return ok({
+      role: meData.profile.role.nombre,
+      estado_cuenta: meData.profile.estado_cuenta,
+    });
+  } catch (e) {
+    return err(e instanceof ApiError ? e.message : "Error de conexión");
+  }
+}
+
+/** Paso 1: pide el correo de recuperación (con el enlace para definir la clave). */
 export async function resetPassword(raw: unknown): Promise<Result<void>> {
   const parsed = ResetPasswordSchema.safeParse(raw);
   if (!parsed.success) {
@@ -92,7 +167,48 @@ export async function resetPassword(raw: unknown): Promise<Result<void>> {
   try {
     await apiFetch("/users/reset-password", {
       method: "POST",
-      body: JSON.stringify({ email: parsed.data.email, password: parsed.data.password }),
+      body: JSON.stringify({ email: parsed.data.email }),
+    });
+    return ok(undefined);
+  } catch (e) {
+    return err(e instanceof ApiError ? e.message : "Error de conexión");
+  }
+}
+
+/**
+ * Paso 2: confirma la contraseña nueva con la sesión de recovery que trae el
+ * enlace del correo. Los tokens los lee la página `/nueva-contrasena` del
+ * fragment de la URL (no se pueden leer en el servidor) y los pasa aquí.
+ */
+export async function confirmResetPassword(input: {
+  accessToken?: string;
+  refreshToken?: string;
+  tokenHash?: string;
+  password: string;
+  confirmPassword: string;
+}): Promise<Result<void>> {
+  const parsed = NewPasswordSchema.safeParse({
+    password: input.password,
+    confirmPassword: input.confirmPassword,
+  });
+  if (!parsed.success) {
+    return err(parsed.error.issues[0]?.message ?? "Datos inválidos");
+  }
+
+  const body: Record<string, string> = { password: parsed.data.password };
+  if (input.tokenHash) {
+    body.token_hash = input.tokenHash;
+  } else if (input.accessToken && input.refreshToken) {
+    body.access_token = input.accessToken;
+    body.refresh_token = input.refreshToken;
+  } else {
+    return err("El enlace de recuperación es inválido o expiró");
+  }
+
+  try {
+    await apiFetch("/users/reset-password/confirm", {
+      method: "POST",
+      body: JSON.stringify(body),
     });
     return ok(undefined);
   } catch (e) {
