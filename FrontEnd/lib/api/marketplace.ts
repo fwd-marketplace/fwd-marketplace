@@ -1,12 +1,16 @@
 import { ApiError, apiAuth } from "@/lib/api-client";
 import { err, ok, type Result } from "@/lib/result";
 import type {
+  ApiProject,
   CatalogsResponse,
   CompanyProjectState,
   CreateProjectInput,
   MyOffersResponse,
+  ProjectDetailResponse,
+  ProjectOffer,
   ProjectOffersResponse,
   ProjectsResponse,
+  SubmitOfferInput,
 } from "@/lib/api/types";
 
 async function asResult<T>(operation: () => Promise<T>): Promise<Result<T>> {
@@ -58,5 +62,22 @@ export function changeProjectState(projectId: string, estado: CompanyProjectStat
       method: "PATCH",
       body: JSON.stringify({ estado }),
     });
+  });
+}
+
+export function getProjectById(id: string): Promise<Result<ApiProject>> {
+  return asResult(async () => {
+    const res = await apiAuth<ProjectDetailResponse>(`/projects/${id}`);
+    return res.project;
+  });
+}
+
+export function submitOffer(projectId: string, input: SubmitOfferInput): Promise<Result<ProjectOffer>> {
+  return asResult(async () => {
+    const res = await apiAuth<{ oferta: ProjectOffer }>(`/projects/${projectId}/ofertas`, {
+      method: "POST",
+      body: JSON.stringify(input),
+    });
+    return res.oferta;
   });
 }

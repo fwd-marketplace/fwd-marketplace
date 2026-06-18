@@ -277,6 +277,25 @@
         "selected_count": "{count} seleccionadas"
       },
       "step6": {
+      "perfil_junior": {
+        "work": {
+          "add_modal_title": "Agregar nuevo proyecto",
+          "fields": {
+            "name": "Nombre del proyecto",
+            "url": "URL / Enlace",
+            "description": "Descripción breve",
+            "techs": "Tecnologías (separadas por comas)",
+            "techs_placeholder": "Ej. React, Node.js"
+          },
+          "create": "Crear proyecto",
+          "cancel": "Cancelar",
+          "preview_btn": "Vista previa",
+          "errors": {
+            "name_required": "El nombre del proyecto es obligatorio.",
+            "url_required": "La URL del proyecto es obligatoria."
+          }
+        }
+      },
         "eyebrow": "Opcional",
         "title": "¿Tienes portafolio o proyectos?",
         "description": "Agrega enlaces para mostrar tu trabajo. Puedes completar esto después.",
@@ -435,6 +454,29 @@
         "placeholder": "Describe tu proyecto, el problema que resuelve y tu visión a largo plazo..."
       }
     }
+  },
+  "project_detail": {
+    "back": "Volver al marketplace",
+    "uses_ia": "Usa IA",
+    "duration": "{days} días",
+    "posted_on": "Publicado el",
+    "skills_required": "Tecnologías requeridas",
+    "offer_title": "Postulá a este proyecto",
+    "offer_subtitle": "Contanos por qué sos la persona indicada para este proyecto.",
+    "offer_propuesta_label": "Tu propuesta",
+    "offer_propuesta_placeholder": "Describí tu experiencia, tu enfoque para este proyecto y por qué sos la persona indicada...",
+    "offer_propuesta_min": "Mínimo 50 caracteres",
+    "offer_propuesta_required": "La propuesta es requerida",
+    "offer_prototipo_label": "URL de prototipo (opcional)",
+    "offer_prototipo_placeholder": "https://figma.com/...",
+    "offer_prototipo_invalid": "Ingresá una URL válida",
+    "offer_submit": "Enviar postulación",
+    "offer_submitting": "Enviando...",
+    "offer_success": "Postulación enviada. Te avisaremos cuando la empresa revise tu propuesta.",
+    "offer_error_generic": "No se pudo enviar la postulación. Intentá de nuevo.",
+    "owner_banner_title": "Este es tu proyecto",
+    "owner_banner_desc": "Las postulaciones recibidas te esperan en el panel de empresa.",
+    "owner_banner_cta": "Ver postulaciones"
   },
   "empresa_dashboard": {
     "title": "GLOBAL TECH SOLUTIONS",
@@ -759,11 +801,55 @@
       "manage": "Gestionar postulaciones"
     },
     "work": {
-      "title": "Mi trabajo",
+      "title": "Mi PORTAFOLIOS",
       "description": "Gestioná y exhibí tus desarrollos más impactantes. Visualizá tus productos terminados y añadí nuevas piezas a tu portafolio profesional.",
       "badge_product": "Product",
-      "add_title": "Agregar proyecto",
-      "add_formats": "Formatos soportados: Link, Figma, GitHub"
+      "add_title": "Agregar PORTAFOLIO",
+      "add_formats": "Formatos soportados: Link, Figma, GitHub",
+      "add_project": "Agregar PORTAFOLIO",
+      "my_projects": "Mis PORTAFOLIOS",
+      "my_projects_help": "Gestioná y exhibí tus desarrollos más impactantes.",
+      "preview_btn": "Vista previa",
+      "open_btn": "Abrir",
+      "preview_modal_title": "Vista previa",
+      "open_in_new_tab": "Abrir en nueva pestaña",
+      "close": "Cerrar",
+      "iframe_error": "Este sitio no permite ser embebido. Podés abrirlo directamente.",
+      "no_projects": "Todavía no hay PORTAFOLIOS en tu portfolio.",
+      "add_modal_title": "Agregar nuevo PORTAFOLIO",
+      "fields": {
+        "name": "Nombre del PORTAFOLIO",
+        "url": "URL / Enlace",
+        "description": "Descripción breve",
+        "techs": "Tecnologías (separadas por comas)",
+        "techs_placeholder": "Ej. React, Tailwind, Next.js"
+      },
+      "create": "Crear proyecto",
+      "cancel": "Cancelar",
+        "errors": {
+        "name_required": "El nombre del PORTAFOLIO es obligatorio.",
+        "url_required": "La URL del PORTAFOLIO es obligatoria."
+      }
+      ,
+      "confirm_delete": {
+        "title": "Eliminar proyecto",
+        "message": "¿Estás seguro que querés eliminar este proyecto?",
+        "cancel": "Cancelar",
+        "confirm": "Eliminar"
+      }
+      ,
+      "work": {
+        "add_modal_title": "Agregar nuevo PORTAFOLIO",
+        "fields": {
+          "name": "Nombre del PORTAFOLIO",
+          "url": "URL / Enlace",
+          "description": "Descripción breve",
+          "techs": "Tecnologías (separadas por comas)",
+          "techs_placeholder": "Ej. React, Tailwind, Next.js"
+        },
+        "create": "Crear PORTAFOLIO",
+        "cancel": "Cancelar"
+      }
     },
     "applications": {
       "title": "Mis postulaciones",
@@ -869,20 +955,46 @@
     "marketplace_page": {
     "eyebrow": "MARKETPLACE",
     "title": "Proyectos disponibles",
+    "hero_title": "Marketplace",
+    "hero_subtitle": "Explorá proyectos reales alineados con tus habilidades y encontrá oportunidades para desarrollar experiencia profesional.",
     "search_label": "Buscar por nombre o tecnología",
-    "search_placeholder": "Ej: React, Figma, Backend...",
+    "search_placeholder": "Buscar proyectos, habilidades o empresas...",
     "specialty_label": "Especialidad",
     "specialty_all": "Todas las áreas",
     "active_filters": "FILTROS ACTIVOS:",
     "clear_all": "Limpiar todo",
+    "filter_area": "Área",
+    "filter_duration": "Duración",
+    "filter_skills": "Habilidades",
+    "filter_ai_projects": "Proyectos con IA",
+    "filter_sort": "Ordenar",
+    "business_area_label": "ÁREA DE NEGOCIO",
+    "ai_usage_label": "USO DE IA",
     "budget": "PRESUPUESTO",
     "duration": "DURACIÓN",
     "experience": "EXPERIENCIA",
     "hourly_rate": "TARIFA HORA",
     "view_project": "Ver proyecto",
+    "save_project": "Guardar proyecto",
+    "saved_project": "Quitar de guardados",
+    "filter_all": "Todas",
+    "sort_match_desc": "Mayor match",
+    "sort_match_asc": "Menor match",
+    "sort_duration_asc": "Menor duración",
+    "duration_short": "Hasta 30 días",
+    "duration_medium": "31 a 60 días",
+    "duration_long": "Más de 60 días",
+    "results_count": "{count, plural, =0 {Sin proyectos} one {# proyecto} other {# proyectos}}",
+    "no_results_title": "Sin resultados",
+    "no_results_body": "Probá ajustar la búsqueda o los filtros para ver más proyectos.",
+    "clear_filters": "Limpiar filtros",
+    "close": "Cerrar",
+    "pagination_prev": "Anterior",
+    "pagination_next": "Siguiente",
+    "pagination_page": "Página {page}",
     "filter_remote": "Remoto",
     "filter_senior": "Senior",
-    "match_suffix": "match",
+    "match_suffix": "MATCH",
     "badges": {
       "urgent": "URGENTE",
       "full_time": "FULL-TIME",
@@ -1097,6 +1209,7 @@
     "logo": {
       "alt": "Logo de la empresa",
       "change": "Cambiar logo",
+      "delete": "Eliminar logo",
       "invalid_type": "El archivo debe ser una imagen.",
       "too_large": "La imagen supera el máximo de 5 MB.",
       "upload_error": "No se pudo subir el logo. Intentá de nuevo."
@@ -1141,7 +1254,8 @@
       "contact_example_name": "Ana Ramírez",
       "contact_example_role": "Reclutadora de Talento",
       "contact_example_email": "ana@empresa.com",
-      "contact_hint": "Agregá los contactos encargados del reclutamiento"
+      "contact_hint": "Agregá los contactos encargados del reclutamiento",
+      "loading_areas": "Cargando áreas..."
     },
     "modalities": {
       "remote": "Remoto",
@@ -1180,7 +1294,10 @@
       "applications": "Solicitudes Egresados",
       "users": "Usuarios",
       "projects": "Proyectos",
-      "companies": "Empresas"
+      "companies": "Empresas",
+      "talent": "Talento",
+      "reports": "Reportes",
+      "config": "Configuración"
     },
     "applications": {
       "title": "Solicitudes de ingreso de egresados",
@@ -1214,13 +1331,23 @@
       "title": "Gestión de Proyectos",
       "company": "Empresa",
       "budget": "Presupuesto",
+      "col_project": "Proyecto",
+      "col_applications": "Postulaciones",
+      "search_placeholder": "Buscar por nombre o empresa...",
+      "filter_status": "Todos los estados",
       "status": "Estado",
       "status_active": "Activo",
       "status_paused": "Pausado",
       "status_moderation": "Pendiente Moderación",
+      "status_closed": "Cerrado",
       "approve": "Aprobar",
       "pause": "Pausar",
-      "delete": "Eliminar"
+      "reactivate": "Reactivar",
+      "delete": "Eliminar",
+      "delete_confirm_title": "¿Eliminar proyecto?",
+      "delete_confirm_desc": "Esta acción no se puede deshacer. El proyecto y sus postulaciones serán eliminados.",
+      "delete_cancel": "Cancelar",
+      "empty": "No hay proyectos registrados."
     },
     "companies": {
       "title": "Gestión de Empresas",
@@ -1232,6 +1359,63 @@
       "approve": "Aprobar",
       "reject": "Rechazar",
       "suspend": "Suspender"
+    },
+    "talent": {
+      "title": "Gestión de Talento",
+      "search_placeholder": "Buscar por nombre, correo o especialización...",
+      "filter_specialty": "Todas las especializaciones",
+      "filter_status": "Todos los estados",
+      "col_talent": "Talento",
+      "col_specialty": "Especialización",
+      "col_applications": "Postulaciones",
+      "col_status": "Estado",
+      "col_actions": "Acciones",
+      "status_active": "Activo",
+      "status_suspended": "Suspendido",
+      "actions_suspend": "Suspender",
+      "actions_activate": "Activar",
+      "empty": "No hay egresados registrados aún."
+    },
+    "reports": {
+      "title": "Reportes y Analítica",
+      "subtitle": "Métricas del ciclo actual",
+      "kpi_new_projects": "Proyectos este mes",
+      "kpi_total_applications": "Postulaciones totales",
+      "kpi_acceptance_rate": "Tasa de aceptación",
+      "kpi_active_talents": "Talentos activos",
+      "recent_activity": "Actividad Reciente",
+      "activity_empty": "No hay actividad reciente.",
+      "activity_col_event": "Evento",
+      "activity_col_actor": "Actor",
+      "activity_col_date": "Fecha",
+      "breakdown_projects": "Proyectos por estado",
+      "breakdown_applications": "Postulaciones por estado",
+      "export_btn": "Exportar reporte",
+      "export_success": "Reporte generado correctamente."
+    },
+    "config": {
+      "title": "Configuración del Sistema",
+      "save_btn": "Guardar cambios",
+      "save_success": "Configuración guardada correctamente.",
+      "section_platform": "Plataforma",
+      "platform_name_label": "Nombre de la plataforma",
+      "platform_name_placeholder": "FWD Marketplace",
+      "platform_email_label": "Correo de soporte",
+      "platform_email_placeholder": "soporte@fwdcostarica.com",
+      "platform_slogan_label": "Eslogan",
+      "platform_slogan_placeholder": "Talento que avanza.",
+      "section_notifications": "Notificaciones",
+      "notif_new_request": "Notificar en nuevas solicitudes de ingreso",
+      "notif_company_approved": "Notificar cuando se apruebe una empresa",
+      "notif_project_moderation": "Notificar cuando un proyecto entre en moderación",
+      "section_moderation": "Moderación",
+      "mod_min_match_label": "Porcentaje mínimo de match (%)",
+      "mod_max_days_label": "Días máximos para moderar un proyecto",
+      "validation_name_required": "El nombre es obligatorio.",
+      "validation_email_invalid": "Correo electrónico inválido.",
+      "validation_slogan_max": "Máximo 60 caracteres.",
+      "validation_min_match_range": "Debe estar entre 0 y 100.",
+      "validation_max_days_min": "Debe ser mayor a 0."
     }
   }
 }

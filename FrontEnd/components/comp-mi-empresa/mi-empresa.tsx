@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useTransition, useRef, type FormEvent } from 'react';
+import { useState, useTransition, useRef } from 'react';
 import { useTranslations } from 'next-intl';
 import {
   Edit2,
@@ -25,8 +25,8 @@ import { Badge } from '@/components/ui/badge';
 import { Avatar, AvatarFallback } from '@/components/ui/avatar';
 import { FwdGeoBackdrop } from '@/components/ui/fwd-geo-backdrop';
 import { cn } from '@/lib/utils';
-import type { ApiMeProfile } from '@/lib/api/types';
-import { updateEmpresarioProfile, uploadEmpresarioLogo } from '@/lib/actions/perfil';
+import type { ApiMeProfile, CatalogArea } from '@/lib/api/types';
+import { updateEmpresarioProfile, uploadEmpresarioLogo, deleteEmpresarioLogo } from '@/lib/actions/perfil';
 import { EmpresaSubnav } from '@/components/layout/empresa-subnav';
 
 type ProjectType =
@@ -110,17 +110,6 @@ type Contact = {
   initial: string;
 };
 
-type Sector =
-  | 'tech'
-  | 'fintech'
-  | 'health'
-  | 'logistics'
-  | 'education'
-  | 'energy'
-  | 'retail'
-  | 'manufacturing'
-  | 'consulting'
-  | 'other';
 
 type CompanyData = {
   // compartido
@@ -136,8 +125,7 @@ type CompanyData = {
   contacts: Contact[];
   // empresa
   empleados: EmployeeRange;
-  sector: string;
-  sectors: Sector[];
+  sectors: string[];
   mission: string;
   vision: string;
   values: string[];
@@ -163,7 +151,6 @@ const MOCK_DATA: CompanyData = {
   contacts: [],
   // empresa
   empleados: '1-10',
-  sector: '',
   sectors: [],
   mission: '',
   vision: '',
@@ -222,22 +209,14 @@ function parseContacts(raw: string | null | undefined): Contact[] {
   }
 }
 
-function parseSector(raw: string | null | undefined): string {
-  if (!raw) return MOCK_DATA.sector;
-  try {
-    const parsed = JSON.parse(raw) as string[];
-    return parsed[0] ?? MOCK_DATA.sector;
-  } catch {
-    return raw;
-  }
-}
-
 function buildInitialData(profile: ApiMeProfile | null): CompanyData {
   const emp = profile?.empresario;
   const { provincia, canton } = parseLocation(emp?.direccion);
 
   const projectTypes = parseJsonArray<ProjectType>(emp?.tipos_proyecto, MOCK_DATA.projectTypes);
   const neededSupport = parseJsonArray<TechSupport>(emp?.apoyo_tecnico_necesario, MOCK_DATA.neededSupport);
+  const sectors = parseJsonArray<string>(emp?.sector, MOCK_DATA.sectors);
+  const modalities = parseJsonArray<string>(emp?.modalidades, MOCK_DATA.modalities);
 
   return {
     ...MOCK_DATA,
@@ -245,7 +224,9 @@ function buildInitialData(profile: ApiMeProfile | null): CompanyData {
     description: emp?.descripcion ?? MOCK_DATA.description,
     comercialName: emp?.nombre_comercial ?? MOCK_DATA.comercialName,
     website: emp?.url_sitio_web ?? MOCK_DATA.website,
-    sector: parseSector(emp?.sector),
+    sectors,
+    modalities,
+    scheduleType: (emp?.horario as 'flexible' | 'fixed' | null) ?? MOCK_DATA.scheduleType,
     logoUrl: emp?.url_logo ?? null,
     provincia,
     canton,
@@ -266,16 +247,19 @@ function buildInitialData(profile: ApiMeProfile | null): CompanyData {
 export function CompanyProfile({
   initialProfile,
   tipo = 'empresa',
+  initialAreas = [],
 }: {
   initialProfile: ApiMeProfile | null;
   tipo?: 'empresa' | 'emprendedor';
+  initialAreas?: CatalogArea[];
 }) {
   const t = useTranslations('mi_empresa');
-  const tSector = useTranslations('mi_empresa.sector_labels');
   const tStage = useTranslations('register.emprendedor.step2');
   const tTechSupport = useTranslations('register.emprendedor.step3');
   const tBudget = useTranslations('register.emprendedor.step4');
   const tPT = useTranslations('register.empresa.step5');
+
+  const catalogAreas = initialAreas;
 
   const [isEditing, setIsEditing] = useState(false);
   const [company, setCompany] = useState<CompanyData>(() => buildInitialData(initialProfile));
@@ -290,6 +274,7 @@ export function CompanyProfile({
   const websiteError = fieldErrors['website'] ?? null;
   const [isSaving, startSaveTransition] = useTransition();
   const [isUploadingLogo, setIsUploadingLogo] = useState(false);
+  const [isDeletingLogo, setIsDeletingLogo] = useState(false);
   const [logoError, setLogoError] = useState<string | null>(null);
   const logoInputRef = useRef<HTMLInputElement>(null);
 
@@ -302,7 +287,7 @@ export function CompanyProfile({
     }));
   }
 
-  function handleAddValue(e: FormEvent) {
+  function handleAddValue(e: React.SyntheticEvent) {
     e.preventDefault();
     const trimmed = newValueInput.trim();
     if (trimmed && !company.values.includes(trimmed)) {
@@ -342,7 +327,7 @@ export function CompanyProfile({
       const payload = tipo === 'empresa'
         ? {
             ...(company.comercialName && { nombre_comercial: company.comercialName }),
-            ...(company.sector && { sector: [company.sector] }),
+            ...(company.sectors.length > 0 && { sector: company.sectors }),
             ...(company.description && { descripcion: company.description }),
             url_sitio_web: company.website,
             direccion,
@@ -353,6 +338,8 @@ export function CompanyProfile({
             valores: company.values,
             contactos: contactosPayload,
             cantidad_empleados: company.empleados,
+            modalidades: company.modalities,
+            horario: company.scheduleType,
           }
         : {
             ...(company.name && { nombre_comercial: company.name }),
@@ -376,6 +363,18 @@ export function CompanyProfile({
         setSaveError(result.error);
       }
     });
+  }
+
+  async function handleDeleteLogo() {
+    setLogoError(null);
+    setIsDeletingLogo(true);
+    const result = await deleteEmpresarioLogo();
+    setIsDeletingLogo(false);
+    if (!result.ok) {
+      setLogoError(result.error);
+      return;
+    }
+    setCompany((prev) => ({ ...prev, logoUrl: null }));
   }
 
   async function handleLogoChange(e: React.ChangeEvent<HTMLInputElement>) {
@@ -457,7 +456,7 @@ export function CompanyProfile({
     }
   }
 
-  function handleSaveContact(e: FormEvent) {
+  function handleSaveContact(e: React.SyntheticEvent) {
     e.preventDefault();
     if (!contactForm.name.trim() || !contactForm.role.trim() || !contactForm.email.trim()) return;
     const initial = contactForm.name
@@ -512,19 +511,36 @@ export function CompanyProfile({
                   <Building2 className="size-14 text-highlight" />
                 )}
               </div>
-              <button
-                type="button"
-                onClick={() => logoInputRef.current?.click()}
-                disabled={isUploadingLogo}
-                aria-label={t('logo.change')}
-                className="absolute -bottom-2 -right-2 flex size-9 cursor-pointer items-center justify-center rounded-full bg-highlight text-secondary shadow-soft transition-opacity duration-[var(--duration-fast)] hover:opacity-90 disabled:cursor-not-allowed disabled:opacity-60"
-              >
-                {isUploadingLogo ? (
-                  <Loader2 className="size-4 animate-spin" />
-                ) : (
-                  <Camera className="size-4" />
+              <div className="absolute -bottom-4 left-1/2 flex -translate-x-1/2 gap-1">
+                {company.logoUrl && (
+                  <button
+                    type="button"
+                    onClick={handleDeleteLogo}
+                    disabled={isDeletingLogo || isUploadingLogo}
+                    aria-label={t('logo.delete')}
+                    className="flex size-8 cursor-pointer items-center justify-center rounded-full bg-magenta text-white shadow-soft transition-opacity duration-[var(--duration-fast)] hover:opacity-90 disabled:cursor-not-allowed disabled:opacity-60"
+                  >
+                    {isDeletingLogo ? (
+                      <Loader2 className="size-3.5 animate-spin" />
+                    ) : (
+                      <Trash2 className="size-3.5" />
+                    )}
+                  </button>
                 )}
-              </button>
+                <button
+                  type="button"
+                  onClick={() => logoInputRef.current?.click()}
+                  disabled={isUploadingLogo || isDeletingLogo}
+                  aria-label={t('logo.change')}
+                  className="flex size-8 cursor-pointer items-center justify-center rounded-full bg-highlight text-secondary shadow-soft transition-opacity duration-[var(--duration-fast)] hover:opacity-90 disabled:cursor-not-allowed disabled:opacity-60"
+                >
+                  {isUploadingLogo ? (
+                    <Loader2 className="size-3.5 animate-spin" />
+                  ) : (
+                    <Camera className="size-3.5" />
+                  )}
+                </button>
+              </div>
               <input
                 ref={logoInputRef}
                 type="file"
@@ -631,14 +647,14 @@ export function CompanyProfile({
               <>
                 {/* Información General — Emprendedor */}
                 <section className="space-y-4">
-                  <h2 className="flex items-center gap-3 font-heading text-lg font-bold uppercase tracking-tight text-ink-strong">
+                  <h2 className="flex items-center gap-3 font-heading text-xl font-bold tracking-tight text-ink-strong">
                     <Building2 className="size-6 text-primary" />
-                    {t('sections.general')}<span className="text-primary">.</span>
+                    {t('sections.general')}
                   </h2>
                   <Card className="space-y-5 border-border bg-surface p-5">
                     <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
                       <div>
-                        <label className="text-xs font-bold uppercase tracking-widest text-ink-subtle">
+                        <label className="font-body text-xs font-bold tracking-wide text-ink-muted">
                           {t('fields.project_name')}
                         </label>
                         {isEditing ? (
@@ -651,7 +667,7 @@ export function CompanyProfile({
                         )}
                       </div>
                       <div>
-                        <label className="text-xs font-bold uppercase tracking-widest text-ink-subtle">
+                        <label className="font-body text-xs font-bold tracking-wide text-ink-muted">
                           {t('fields.website')}
                         </label>
                         {isEditing ? (
@@ -682,19 +698,25 @@ export function CompanyProfile({
                             )}
                           </div>
                         ) : (
-                          <p className="text-sm font-medium text-primary">
-                            <Globe className="mr-1 inline size-4" />{company.website}
-                          </p>
+                          <a
+                            href={company.website}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className="mt-1 flex items-start gap-1 text-sm font-medium text-primary hover:underline"
+                          >
+                            <Globe className="mt-0.5 size-4 shrink-0" />
+                            <span className="break-all">{company.website}</span>
+                          </a>
                         )}
                       </div>
                       <div>
-                        <label className="text-xs font-bold uppercase tracking-widest text-ink-subtle">
+                        <label className="font-body text-xs font-bold tracking-wide text-ink-muted">
                           {t('fields.country')}
                         </label>
                         <p className="text-sm font-medium text-ink">Costa Rica</p>
                       </div>
                       <div>
-                        <label className="text-xs font-bold uppercase tracking-widest text-ink-subtle">
+                        <label className="font-body text-xs font-bold tracking-wide text-ink-muted">
                           {t('fields.provincia')}
                         </label>
                         {isEditing ? (
@@ -708,7 +730,7 @@ export function CompanyProfile({
                         )}
                       </div>
                       <div>
-                        <label className="text-xs font-bold uppercase tracking-widest text-ink-subtle">
+                        <label className="font-body text-xs font-bold tracking-wide text-ink-muted">
                           {t('fields.canton')}
                         </label>
                         {isEditing ? (
@@ -727,9 +749,9 @@ export function CompanyProfile({
 
                 {/* Acerca del Proyecto — Emprendedor */}
                 <section className="space-y-4">
-                  <h2 className="flex items-center gap-3 font-heading text-lg font-bold uppercase tracking-tight text-ink-strong">
+                  <h2 className="flex items-center gap-3 font-heading text-xl font-bold tracking-tight text-ink-strong">
                     <Target className="size-6 text-primary" />
-                    {t('sections.project_description')}<span className="text-primary">.</span>
+                    {t('sections.project_description')}
                   </h2>
                   <Card className="border-border bg-surface p-5">
                     <textarea
@@ -748,16 +770,16 @@ export function CompanyProfile({
             <>
             {/* Información General */}
             <section className="space-y-4">
-              <h2 className="flex items-center gap-3 font-heading text-lg font-bold uppercase tracking-tight text-ink-strong">
+              <h2 className="flex items-center gap-3 font-heading text-xl font-bold tracking-tight text-ink-strong">
                 <Building2 className="size-6 text-primary" />
-                {t('sections.general')}<span className="text-primary">.</span>
+                {t('sections.general')}
               </h2>
               <Card className="space-y-5 border-border bg-surface p-5">
                 <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
 
                   {/* Nombre comercial */}
                   <div>
-                    <label className="text-xs font-bold uppercase tracking-widest text-ink-subtle">
+                    <label className="font-body text-xs font-bold tracking-wide text-ink-muted">
                       {t('fields.comercial_name')}
                     </label>
                     {isEditing ? (
@@ -780,9 +802,79 @@ export function CompanyProfile({
                     )}
                   </div>
 
+                  {/* Provincia */}
+                  <div>
+                    <label className="font-body text-xs font-bold tracking-wide text-ink-muted">
+                      {t('fields.provincia')}
+                    </label>
+                    {isEditing ? (
+                      <select
+                        value={company.provincia}
+                        onChange={(e) => handleProvinciaChange(e.target.value)}
+                        className="w-full border-b border-border bg-transparent py-1 text-sm font-medium text-ink focus:border-primary focus:outline-none"
+                      >
+                        {CR_PROVINCES.map((p) => (
+                          <option key={p} value={p}>{p}</option>
+                        ))}
+                      </select>
+                    ) : (
+                      <p className="text-sm font-medium text-ink">{company.provincia}</p>
+                    )}
+                  </div>
+
+                  {/* Número de empleados */}
+                  <div>
+                    <label className="font-body text-xs font-bold tracking-wide text-ink-muted">
+                      {t('fields.employees')}
+                    </label>
+                    {isEditing ? (
+                      <select
+                        value={company.empleados}
+                        onChange={(e) => setCompany({ ...company, empleados: e.target.value as EmployeeRange })}
+                        className="w-full border-b border-border bg-transparent py-1 text-sm font-medium text-ink focus:border-primary focus:outline-none"
+                      >
+                        {EMPLOYEE_RANGES.map((r) => (
+                          <option key={r} value={r}>{r} {t('fields.employees_unit')}</option>
+                        ))}
+                      </select>
+                    ) : (
+                      <p className="text-sm font-medium text-ink">
+                        {company.empleados} {t('fields.employees_unit')}
+                      </p>
+                    )}
+                  </div>
+
+                  {/* Cantón */}
+                  <div>
+                    <label className="font-body text-xs font-bold tracking-wide text-ink-muted">
+                      {t('fields.canton')}
+                    </label>
+                    {isEditing ? (
+                      <select
+                        value={company.canton}
+                        onChange={(e) => setCompany({ ...company, canton: e.target.value })}
+                        className="w-full border-b border-border bg-transparent py-1 text-sm font-medium text-ink focus:border-primary focus:outline-none"
+                      >
+                        {(CR_CANTONS[company.provincia] ?? []).map((c) => (
+                          <option key={c} value={c}>{c}</option>
+                        ))}
+                      </select>
+                    ) : (
+                      <p className="text-sm font-medium text-ink">{company.canton}</p>
+                    )}
+                  </div>
+
+                  {/* País (fijo) */}
+                  <div>
+                    <label className="font-body text-xs font-bold tracking-wide text-ink-muted">
+                      {t('fields.country')}
+                    </label>
+                    <p className="text-sm font-medium text-ink">Costa Rica</p>
+                  </div>
+
                   {/* Sitio web */}
                   <div>
-                    <label className="text-xs font-bold uppercase tracking-widest text-ink-subtle">
+                    <label className="font-body text-xs font-bold tracking-wide text-ink-muted">
                       {t('fields.website')}
                     </label>
                     {isEditing ? (
@@ -813,79 +905,15 @@ export function CompanyProfile({
                         )}
                       </div>
                     ) : (
-                      <p className="text-sm font-medium text-primary">
-                        <Globe className="mr-1 inline size-4" />{company.website}
-                      </p>
-                    )}
-                  </div>
-
-                  {/* País (fijo) */}
-                  <div>
-                    <label className="text-xs font-bold uppercase tracking-widest text-ink-subtle">
-                      {t('fields.country')}
-                    </label>
-                    <p className="text-sm font-medium text-ink">Costa Rica</p>
-                  </div>
-
-                  {/* Provincia */}
-                  <div>
-                    <label className="text-xs font-bold uppercase tracking-widest text-ink-subtle">
-                      {t('fields.provincia')}
-                    </label>
-                    {isEditing ? (
-                      <select
-                        value={company.provincia}
-                        onChange={(e) => handleProvinciaChange(e.target.value)}
-                        className="w-full border-b border-border bg-transparent py-1 text-sm font-medium text-ink focus:border-primary focus:outline-none"
+                      <a
+                        href={company.website}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="mt-1 flex items-start gap-1 text-sm font-medium text-primary hover:underline"
                       >
-                        {CR_PROVINCES.map((p) => (
-                          <option key={p} value={p}>{p}</option>
-                        ))}
-                      </select>
-                    ) : (
-                      <p className="text-sm font-medium text-ink">{company.provincia}</p>
-                    )}
-                  </div>
-
-                  {/* Cantón */}
-                  <div>
-                    <label className="text-xs font-bold uppercase tracking-widest text-ink-subtle">
-                      {t('fields.canton')}
-                    </label>
-                    {isEditing ? (
-                      <select
-                        value={company.canton}
-                        onChange={(e) => setCompany({ ...company, canton: e.target.value })}
-                        className="w-full border-b border-border bg-transparent py-1 text-sm font-medium text-ink focus:border-primary focus:outline-none"
-                      >
-                        {(CR_CANTONS[company.provincia] ?? []).map((c) => (
-                          <option key={c} value={c}>{c}</option>
-                        ))}
-                      </select>
-                    ) : (
-                      <p className="text-sm font-medium text-ink">{company.canton}</p>
-                    )}
-                  </div>
-
-                  {/* Número de empleados */}
-                  <div>
-                    <label className="text-xs font-bold uppercase tracking-widest text-ink-subtle">
-                      {t('fields.employees')}
-                    </label>
-                    {isEditing ? (
-                      <select
-                        value={company.empleados}
-                        onChange={(e) => setCompany({ ...company, empleados: e.target.value as EmployeeRange })}
-                        className="w-full border-b border-border bg-transparent py-1 text-sm font-medium text-ink focus:border-primary focus:outline-none"
-                      >
-                        {EMPLOYEE_RANGES.map((r) => (
-                          <option key={r} value={r}>{r} {t('fields.employees_unit')}</option>
-                        ))}
-                      </select>
-                    ) : (
-                      <p className="text-sm font-medium text-ink">
-                        {company.empleados} {t('fields.employees_unit')}
-                      </p>
+                        <Globe className="mt-0.5 size-4 shrink-0" />
+                        <span className="break-all">{company.website}</span>
+                      </a>
                     )}
                   </div>
 
@@ -893,7 +921,7 @@ export function CompanyProfile({
 
                 {/* Descripción */}
                 <div className="border-t border-border pt-4">
-                  <label className="text-xs font-bold uppercase tracking-widest text-ink-subtle">
+                  <label className="font-body text-xs font-bold tracking-wide text-ink-muted">
                     {t('fields.description')}
                   </label>
                   {isEditing ? (
@@ -919,57 +947,56 @@ export function CompanyProfile({
 
                 {/* Áreas de negocio */}
                 <div className="border-t border-border pt-4">
-                  <p className="mb-3 text-xs font-bold uppercase tracking-widest text-ink-subtle">
+                  <p className="mb-3 font-body text-xs font-bold tracking-wide text-ink-muted">
                     {t('sections.business_areas')}
                   </p>
-                  <div className="flex flex-wrap gap-2">
-                    {(
-                      [
-                        'tech', 'fintech', 'health', 'logistics', 'education',
-                        'energy', 'retail', 'manufacturing', 'consulting', 'other',
-                      ] as Sector[]
-                    ).map((s) => {
-                      const isSelected = company.sectors.includes(s);
-                      return (
-                        <button
-                          key={s}
-                          type="button"
-                          disabled={!isEditing}
-                          onClick={() =>
-                            setCompany((prev) => ({
-                              ...prev,
-                              sectors: isSelected
-                                ? prev.sectors.filter((x) => x !== s)
-                                : [...prev.sectors, s],
-                            }))
-                          }
-                          className={cn(
-                            'rounded-full border px-3 py-1 text-xs font-semibold transition-colors duration-[var(--duration-fast)] ease-[var(--ease-out)] disabled:cursor-default',
-                            isSelected
-                              ? 'border-secondary bg-secondary text-white'
-                              : 'border-border bg-canvas text-ink-muted',
-                            isEditing && !isSelected && 'hover:border-border-strong hover:text-ink',
-                          )}
-                        >
-                          {tSector(s)}
-                        </button>
-                      );
-                    })}
-                  </div>
+                  {catalogAreas.length === 0 ? (
+                    <p className="text-xs text-ink-muted/60">{t('placeholders.loading_areas')}</p>
+                  ) : (
+                    <div className="flex flex-wrap gap-2">
+                      {catalogAreas.map((area) => {
+                        const isSelected = company.sectors.includes(area.nombre);
+                        return (
+                          <button
+                            key={area.id}
+                            type="button"
+                            disabled={!isEditing}
+                            onClick={() =>
+                              setCompany((prev) => ({
+                                ...prev,
+                                sectors: isSelected
+                                  ? prev.sectors.filter((x) => x !== area.nombre)
+                                  : [...prev.sectors, area.nombre],
+                              }))
+                            }
+                            className={cn(
+                              'rounded-full border px-3 py-1 text-xs font-semibold transition-colors duration-[var(--duration-fast)] ease-[var(--ease-out)] disabled:cursor-default',
+                              isSelected
+                                ? 'border-secondary bg-secondary text-white'
+                                : 'border-border bg-canvas text-ink-muted',
+                              isEditing && !isSelected && 'hover:border-border-strong hover:text-ink',
+                            )}
+                          >
+                            {area.nombre}
+                          </button>
+                        );
+                      })}
+                    </div>
+                  )}
                 </div>
               </Card>
             </section>
 
             {/* Identidad y Cultura */}
             <section className="space-y-4">
-              <h2 className="flex items-center gap-3 font-heading text-lg font-bold uppercase tracking-tight text-ink-strong">
+              <h2 className="flex items-center gap-3 font-heading text-xl font-bold tracking-tight text-ink-strong">
                 <Target className="size-6 text-primary" />
-                {t('sections.culture')}<span className="text-primary">.</span>
+                {t('sections.culture')}
               </h2>
               <Card className="space-y-5 border-border bg-surface p-5">
                 <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
                   <div className="space-y-2">
-                    <h3 className="text-sm font-bold uppercase tracking-widest text-secondary">{t('fields.mission')}</h3>
+                    <h3 className="font-body text-base font-bold tracking-wide text-secondary">{t('fields.mission')}</h3>
                     {isEditing ? (
                       <>
                         <textarea
@@ -991,7 +1018,7 @@ export function CompanyProfile({
                     )}
                   </div>
                   <div className="space-y-2">
-                    <h3 className="text-sm font-bold uppercase tracking-widest text-secondary">{t('fields.vision')}</h3>
+                    <h3 className="font-body text-base font-bold tracking-wide text-secondary">{t('fields.vision')}</h3>
                     {isEditing ? (
                       <>
                         <textarea
@@ -1015,7 +1042,7 @@ export function CompanyProfile({
                 </div>
 
                 <div className="space-y-2 border-t border-border pt-4">
-                  <h3 className="text-sm font-bold uppercase tracking-widest text-secondary">{t('fields.organization')}</h3>
+                  <h3 className="font-body text-base font-bold tracking-wide text-secondary">{t('fields.organization')}</h3>
                   {isEditing ? (
                     <>
                       <textarea
@@ -1038,7 +1065,7 @@ export function CompanyProfile({
                 </div>
 
                 <div className="space-y-3 border-t border-border pt-4">
-                  <h3 className="text-sm font-bold uppercase tracking-widest text-secondary">{t('fields.values')}</h3>
+                  <h3 className="font-body text-base font-bold tracking-wide text-secondary">{t('fields.values')}</h3>
                   <div className="flex flex-wrap items-center gap-2">
                     {company.values.map((v, idx) => (
                       <Badge
@@ -1093,7 +1120,7 @@ export function CompanyProfile({
             {/* Empresa: Necesidades Actuales */}
             {tipo === 'empresa' && (
               <section className="space-y-4">
-                <h2 className="flex items-center gap-2 font-heading text-base font-bold uppercase tracking-tight text-ink-strong">
+                <h2 className="flex items-center gap-2 font-heading text-lg font-bold tracking-tight text-ink-strong">
                   <ShieldCheck className="size-5 text-primary" />
                   {t('sections.needs')}
                 </h2>
@@ -1127,7 +1154,7 @@ export function CompanyProfile({
             {/* Emprendedor: Etapa del Proyecto */}
             {tipo === 'emprendedor' && (
               <section className="space-y-4">
-                <h2 className="flex items-center gap-2 font-heading text-base font-bold uppercase tracking-tight text-ink-strong">
+                <h2 className="flex items-center gap-2 font-heading text-lg font-bold tracking-tight text-ink-strong">
                   <Target className="size-5 text-accent" />
                   {t('sections.stage')}<span className="text-accent">.</span>
                 </h2>
@@ -1170,9 +1197,9 @@ export function CompanyProfile({
             {/* Emprendedor: Apoyo Técnico */}
             {tipo === 'emprendedor' && (
               <section className="space-y-4">
-                <h2 className="flex items-center gap-2 font-heading text-base font-bold uppercase tracking-tight text-ink-strong">
+                <h2 className="flex items-center gap-2 font-heading text-lg font-bold tracking-tight text-ink-strong">
                   <ShieldCheck className="size-5 text-primary" />
-                  {t('sections.tech_support')}<span className="text-primary">.</span>
+                  {t('sections.tech_support')}
                 </h2>
                 <Card className="border-border bg-surface p-5">
                   <div className="flex flex-wrap gap-2">
@@ -1204,7 +1231,7 @@ export function CompanyProfile({
             {/* Emprendedor: Presupuesto */}
             {tipo === 'emprendedor' && (
               <section className="space-y-4">
-                <h2 className="font-heading text-base font-bold uppercase tracking-tight text-ink-strong">
+                <h2 className="font-heading text-lg font-bold tracking-tight text-ink-strong">
                   {t('sections.budget')}
                 </h2>
                 <div className="space-y-2">
@@ -1234,7 +1261,7 @@ export function CompanyProfile({
 
             {/* Modalidades y Horarios */}
             <section className="space-y-4">
-              <h2 className="font-heading text-base font-bold uppercase tracking-tight text-ink-strong">
+              <h2 className="font-heading text-lg font-bold tracking-tight text-ink-strong">
                 {t('sections.modalities')}
               </h2>
               <div className="grid grid-cols-2 gap-3">
@@ -1267,10 +1294,10 @@ export function CompanyProfile({
               >
                 <Clock className="size-5 text-warning" />
                 <div>
-                  <p className="text-xs font-bold uppercase text-ink-strong">
+                  <p className="text-xs font-bold text-ink-strong">
                     {company.scheduleType === 'flexible' ? t('schedules.flexible') : t('schedules.fixed')}
                   </p>
-                  <p className="text-[10px] uppercase text-ink-muted">{t('schedules.timezone')}</p>
+                  <p className="text-[10px] text-ink-muted">{t('schedules.timezone')}</p>
                 </div>
               </Card>
             </section>
@@ -1278,7 +1305,7 @@ export function CompanyProfile({
             {/* Contactos de Reclutamiento */}
             <section className="space-y-4">
               <div className="flex items-center justify-between">
-                <h2 className="font-heading text-base font-bold uppercase tracking-tight text-ink-strong">
+                <h2 className="font-heading text-lg font-bold tracking-tight text-ink-strong">
                   {t('sections.contacts')}
                 </h2>
                 <Button
@@ -1305,7 +1332,7 @@ export function CompanyProfile({
                     </Avatar>
                     <div className="min-w-0 flex-1">
                       <p className="truncate text-sm font-bold text-ink-strong">{contact.name}</p>
-                      <p className="truncate text-[10px] uppercase tracking-wider text-ink-muted">{contact.role}</p>
+                      <p className="truncate text-[10px] tracking-wide text-ink-muted">{contact.role}</p>
                       <p className="truncate text-[10px] text-primary underline">{contact.email}</p>
                     </div>
                   </Card>
@@ -1318,7 +1345,7 @@ export function CompanyProfile({
                       </Avatar>
                       <div className="min-w-0 flex-1">
                         <p className="truncate text-sm font-bold italic text-ink-muted/70">{t('placeholders.contact_example_name')}</p>
-                        <p className="truncate text-[10px] uppercase tracking-wider text-ink-muted/60">{t('placeholders.contact_example_role')}</p>
+                        <p className="truncate text-[10px] tracking-wide text-ink-muted/60">{t('placeholders.contact_example_role')}</p>
                         <p className="truncate text-[10px] italic text-primary/50">{t('placeholders.contact_example_email')}</p>
                       </div>
                     </Card>
@@ -1343,7 +1370,7 @@ export function CompanyProfile({
             </button>
 
             <div className="space-y-2">
-              <h3 className="font-heading text-base font-bold uppercase tracking-tight text-ink-strong">
+              <h3 className="font-heading text-lg font-bold tracking-tight text-ink-strong">
                 {editingContactIndex !== null ? t('contacts.edit_title') : t('contacts.add_title')}
               </h3>
               <p className="text-xs text-ink-muted">{t('contacts.subtitle')}</p>
@@ -1351,7 +1378,7 @@ export function CompanyProfile({
 
             <form onSubmit={handleSaveContact} className="space-y-4">
               <div className="space-y-1">
-                <label className="text-xs font-bold uppercase tracking-widest text-ink-subtle">
+                <label className="font-body text-xs font-bold tracking-wide text-ink-muted">
                   {t('contacts.name_label')}
                 </label>
                 <input
@@ -1363,7 +1390,7 @@ export function CompanyProfile({
                 />
               </div>
               <div className="space-y-1">
-                <label className="text-xs font-bold uppercase tracking-widest text-ink-subtle">
+                <label className="font-body text-xs font-bold tracking-wide text-ink-muted">
                   {t('contacts.role_label')}
                 </label>
                 <input
@@ -1375,7 +1402,7 @@ export function CompanyProfile({
                 />
               </div>
               <div className="space-y-1">
-                <label className="text-xs font-bold uppercase tracking-widest text-ink-subtle">
+                <label className="font-body text-xs font-bold tracking-wide text-ink-muted">
                   {t('contacts.email_label')}
                 </label>
                 <input

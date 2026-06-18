@@ -191,6 +191,8 @@ export type ApiEmpresarioDetail = {
   valores: string | null;
   contactos: string | null;
   cantidad_empleados: string | null;
+  modalidades: string | null;
+  horario: string | null;
 };
 
 export type EmpresarioUpdateInput = {
@@ -209,6 +211,8 @@ export type EmpresarioUpdateInput = {
   valores?: string[];
   contactos?: Array<{ name: string; role: string; email: string }>;
   cantidad_empleados?: string;
+  modalidades?: string[];
+  horario?: string;
 };
 
 export type ApiMeProfile = {
@@ -254,6 +258,15 @@ export type AdminProject = {
 
 export type AdminProjectsResponse = {
   projects: AdminProject[];
+};
+
+export type ProjectDetailResponse = {
+  project: ApiProject;
+};
+
+export type SubmitOfferInput = {
+  propuesta: string;
+  prototipo_url?: string;
 };
 
 export type StudentVerification = "pendiente" | "verificado" | "rechazado";
