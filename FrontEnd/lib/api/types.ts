@@ -68,6 +68,34 @@ export type CreateProjectInput = {
   publicar: boolean;
 };
 
+// ── Asistente de IA para crear proyectos ──────────────────────────────────────
+
+export type AiChatMessage = {
+  role: "user" | "assistant";
+  content: string;
+};
+
+export type ProposalSkill = {
+  id: string;
+  nombre: string;
+};
+
+/** Propuesta estructurada que devuelve el asistente, ya mapeada al formulario. */
+export type ProjectProposal = {
+  nombre: string;
+  objetivo: string;
+  area_negocio: string | null;
+  id_area_negocio: string | null;
+  plazo_dias: number;
+  habilidades: ProposalSkill[];
+  usa_ia: boolean;
+  preguntas_pendientes: string[];
+};
+
+export type GenerateProposalResponse = {
+  propuesta: ProjectProposal;
+};
+
 export type ProjectOffer = {
   id: string;
   propuesta: string;
