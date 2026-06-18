@@ -1,6 +1,6 @@
 "use client";
 
-import { useMemo, useState, useTransition } from "react";
+import { useEffect, useMemo, useRef, useState, useTransition } from "react";
 import { useLocale, useTranslations } from "next-intl";
 import {
   AlertCircle,
@@ -8,6 +8,7 @@ import {
   ArrowRight,
   CheckCircle2,
   Download,
+  Edit2,
   ExternalLink,
   Filter,
   FolderOpen,
@@ -15,8 +16,10 @@ import {
   MessageSquare,
   Plus,
   Search,
+  Send,
   Sparkles,
   Users,
+  Wand2,
   X,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
@@ -30,11 +33,11 @@ import {
   reviewEntregableAction,
   updateProjectAction,
 } from "@/lib/actions/marketplace";
+import { generateProposalAction } from "@/lib/actions/ai";
+import { streamAssistant } from "@/lib/api/ai-client";
 import { formatDateLabel } from "@/lib/api/safe-json";
-import {
-  Edit2,
-} from "lucide-react";
 import type {
+  AiChatMessage,
   ApiProject,
   CatalogArea,
   CatalogSkill,
@@ -42,6 +45,7 @@ import type {
   Entregable,
   EntregableState,
   ProjectOffer,
+  ProjectProposal,
   ProjectState,
   UpdateProjectInput,
 } from "@/lib/api/types";
@@ -122,6 +126,285 @@ function Toast({
   );
 }
 
+function ChatBubble({ role, content }: { role: "user" | "assistant"; content: string }) {
+  const isUser = role === "user";
+  return (
+    <div className={`flex ${isUser ? "justify-end" : "justify-start"}`}>
+      <div
+        className={`max-w-[85%] whitespace-pre-wrap rounded-2xl px-3 py-2 font-body text-sm ${
+          isUser ? "bg-primary text-white" : "bg-surface-sunken text-ink-strong"
+        }`}
+      >
+        {content}
+      </div>
+    </div>
+  );
+}
+
+function TypingIndicator({ label }: { label: string }) {
+  return (
+    <div className="flex items-center gap-2 text-ink-muted">
+      <span className="flex gap-1" aria-hidden="true">
+        <span className="size-1.5 animate-bounce rounded-full bg-ink-muted" />
+        <span className="size-1.5 animate-bounce rounded-full bg-ink-muted [animation-delay:150ms]" />
+        <span className="size-1.5 animate-bounce rounded-full bg-ink-muted [animation-delay:300ms]" />
+      </span>
+      <span className="font-body text-xs">{label}</span>
+    </div>
+  );
+}
+
+/**
+ * Asistente de IA del modal: chat conversacional con streaming que, al final,
+ * genera una propuesta y prellena el formulario manual (vía `onApply`). Siempre
+ * deja salida a "continuar manualmente".
+ */
+function AiAssistant({ onApply }: { onApply: (proposal: ProjectProposal) => void }) {
+  const t = useTranslations("empresa_dashboard.new_project_modal.ai");
+  const [idea, setIdea] = useState("");
+  const [messages, setMessages] = useState<AiChatMessage[]>([]);
+  const [streamingText, setStreamingText] = useState("");
+  const [isStreaming, setIsStreaming] = useState(false);
+  const [reply, setReply] = useState("");
+  const [error, setError] = useState<string | null>(null);
+  const [isGenerating, setIsGenerating] = useState(false);
+  const [pendingQuestions, setPendingQuestions] = useState<string[]>([]);
+  const [applied, setApplied] = useState(false);
+  const abortRef = useRef<AbortController | null>(null);
+  const scrollRef = useRef<HTMLDivElement | null>(null);
+
+  // Aborta el stream en curso si el modal/componente se desmonta.
+  useEffect(() => () => abortRef.current?.abort(), []);
+
+  // Auto-scroll al último mensaje.
+  useEffect(() => {
+    const node = scrollRef.current;
+    if (node) node.scrollTop = node.scrollHeight;
+  }, [messages, streamingText, isStreaming]);
+
+  const hasConversation = messages.length > 0;
+  const canGenerate =
+    messages.some((message) => message.role === "assistant") && !isStreaming && !isGenerating;
+
+  async function runTurn(history: AiChatMessage[]) {
+    setError(null);
+    setIsStreaming(true);
+    setStreamingText("");
+    const controller = new AbortController();
+    abortRef.current = controller;
+    let accumulated = "";
+    let failed = false;
+    await streamAssistant(
+      history,
+      (event) => {
+        if (event.type === "delta") {
+          accumulated += event.text;
+          setStreamingText(accumulated);
+        } else if (event.type === "error") {
+          failed = true;
+          setError(event.error);
+        }
+      },
+      controller.signal,
+    );
+    setIsStreaming(false);
+    setStreamingText("");
+    if (accumulated.trim()) {
+      setMessages((prev) => [...prev, { role: "assistant", content: accumulated.trim() }]);
+    } else if (!failed) {
+      setError(t("error_generic"));
+    }
+  }
+
+  async function startConversation() {
+    const text = idea.trim();
+    if (!text || isStreaming) return;
+    const history: AiChatMessage[] = [{ role: "user", content: text }];
+    setMessages(history);
+    setIdea("");
+    setApplied(false);
+    setPendingQuestions([]);
+    await runTurn(history);
+  }
+
+  async function sendReply() {
+    const text = reply.trim();
+    if (!text || isStreaming) return;
+    const history: AiChatMessage[] = [...messages, { role: "user", content: text }];
+    setMessages(history);
+    setReply("");
+    await runTurn(history);
+  }
+
+  async function generate() {
+    setIsGenerating(true);
+    setError(null);
+    const result = await generateProposalAction(messages);
+    setIsGenerating(false);
+    if (result.ok) {
+      onApply(result.data);
+      setPendingQuestions(result.data.preguntas_pendientes);
+      setApplied(true);
+    } else {
+      setError(result.error);
+    }
+  }
+
+  function restart() {
+    abortRef.current?.abort();
+    setMessages([]);
+    setStreamingText("");
+    setIsStreaming(false);
+    setReply("");
+    setError(null);
+    setIsGenerating(false);
+    setPendingQuestions([]);
+    setApplied(false);
+    setIdea("");
+  }
+
+  return (
+    <div className="mt-4 rounded-xl border border-primary/20 bg-primary/5 p-4">
+      <div className="mb-3 flex items-center gap-2">
+        <Sparkles className="size-4 text-primary" />
+        <span className="font-body text-sm font-bold text-primary">{t("section_title")}</span>
+        <span className="rounded-full bg-highlight px-2 py-0.5 font-body text-[10px] font-bold uppercase tracking-wide text-secondary">
+          {t("badge")}
+        </span>
+      </div>
+
+      {!hasConversation ? (
+        <div className="space-y-3">
+          <div className="space-y-1">
+            <label
+              htmlFor="ai-idea"
+              className="block font-body text-xs font-bold uppercase tracking-wider text-ink-muted"
+            >
+              {t("idea_label")}
+            </label>
+            <textarea
+              id="ai-idea"
+              value={idea}
+              onChange={(event) => setIdea(event.target.value)}
+              placeholder={t("idea_placeholder")}
+              rows={3}
+              className="w-full resize-none rounded-xl border border-border bg-surface-sunken px-3.5 py-2 font-body text-sm text-ink-strong placeholder:text-ink-subtle outline-none focus:ring-2 focus:ring-primary/20"
+            />
+          </div>
+          <button
+            type="button"
+            onClick={startConversation}
+            disabled={!idea.trim()}
+            className="flex w-full items-center justify-center gap-2 rounded-xl bg-primary px-4 py-2 font-body text-sm font-bold text-white transition-colors duration-[var(--duration-fast)] ease-[var(--ease-out)] hover:bg-primary/90 disabled:cursor-not-allowed disabled:opacity-50"
+          >
+            <Sparkles className="size-4" />
+            {t("fill_btn")}
+          </button>
+          <p className="font-body text-xs text-ink-muted">{t("conversation_empty")}</p>
+        </div>
+      ) : (
+        <div className="space-y-3">
+          <div
+            ref={scrollRef}
+            className="max-h-56 space-y-3 overflow-y-auto rounded-xl border border-border bg-surface p-3"
+          >
+            {messages.map((message, index) => (
+              <ChatBubble key={index} role={message.role} content={message.content} />
+            ))}
+            {isStreaming &&
+              (streamingText ? (
+                <ChatBubble role="assistant" content={streamingText} />
+              ) : (
+                <TypingIndicator label={t("typing")} />
+              ))}
+          </div>
+
+          {applied && (
+            <div className="space-y-2 rounded-xl border border-accent/30 bg-accent/10 p-3">
+              <div className="flex items-center gap-2">
+                <CheckCircle2 className="size-4 shrink-0 text-accent" />
+                <p className="font-body text-xs font-semibold text-ink-strong">{t("applied")}</p>
+              </div>
+              {pendingQuestions.length > 0 && (
+                <div className="space-y-1 pl-6">
+                  <p className="font-body text-[11px] font-bold uppercase tracking-wider text-ink-muted">
+                    {t("pending_title")}
+                  </p>
+                  <ul className="list-disc space-y-0.5 pl-4 font-body text-xs text-ink-muted">
+                    {pendingQuestions.map((question, index) => (
+                      <li key={index}>{question}</li>
+                    ))}
+                  </ul>
+                </div>
+              )}
+            </div>
+          )}
+
+          {error && (
+            <p className="rounded-xl border border-magenta/30 bg-magenta/10 px-3 py-2 font-body text-xs font-semibold text-magenta">
+              {error}
+            </p>
+          )}
+
+          {!applied && (
+            <div className="flex items-center gap-2">
+              <input
+                type="text"
+                value={reply}
+                onChange={(event) => setReply(event.target.value)}
+                onKeyDown={(event) => {
+                  if (event.key === "Enter") {
+                    event.preventDefault();
+                    void sendReply();
+                  }
+                }}
+                disabled={isStreaming}
+                placeholder={t("reply_placeholder")}
+                className="w-full rounded-xl border border-border bg-surface-sunken px-3.5 py-2 font-body text-sm text-ink-strong placeholder:text-ink-subtle outline-none focus:ring-2 focus:ring-primary/20 disabled:opacity-60"
+              />
+              <Button
+                type="button"
+                size="icon"
+                onClick={() => void sendReply()}
+                disabled={!reply.trim() || isStreaming}
+                aria-label={t("send")}
+              >
+                <Send className="size-4" />
+              </Button>
+            </div>
+          )}
+
+          <div className="flex flex-wrap items-center justify-between gap-2">
+            {!applied && (
+              <Button
+                type="button"
+                variant="accent"
+                onClick={() => void generate()}
+                disabled={!canGenerate}
+                className="gap-2"
+              >
+                {isGenerating ? (
+                  <Loader2 className="size-4 animate-spin" />
+                ) : (
+                  <Wand2 className="size-4" />
+                )}
+                {isGenerating ? t("generating") : t("generate_btn")}
+              </Button>
+            )}
+            <button
+              type="button"
+              onClick={restart}
+              className="font-body text-xs font-semibold text-ink-muted underline-offset-2 hover:text-primary hover:underline"
+            >
+              {applied ? t("restart") : t("continue_manually")}
+            </button>
+          </div>
+        </div>
+      )}
+    </div>
+  );
+}
+
 export function MisProyectos({
   initialProjects,
   areas,
@@ -150,7 +433,6 @@ export function MisProyectos({
 
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [form, setForm] = useState<NewProjectForm>(() => buildEmptyForm(areas));
-  const [aiIdea, setAiIdea] = useState("");
 
   const [isEditModalOpen, setIsEditModalOpen] = useState(false);
   const [editForm, setEditForm] = useState<UpdateProjectInput>({});
@@ -290,7 +572,6 @@ export function MisProyectos({
   function closeModal() {
     setIsModalOpen(false);
     setForm(buildEmptyForm(areas));
-    setAiIdea("");
   }
 
   function toggleSkill(skillId: string) {
@@ -299,6 +580,25 @@ export function MisProyectos({
       skills: prev.skills.includes(skillId)
         ? prev.skills.filter((id) => id !== skillId)
         : [...prev.skills, skillId],
+    }));
+  }
+
+  // Prellena el formulario manual con la propuesta del asistente. El usuario
+  // revisa y edita antes de crear. Solo se aplican ids que existan en el catálogo.
+  function applyProposal(proposal: ProjectProposal) {
+    setForm((prev) => ({
+      ...prev,
+      titulo: proposal.nombre || prev.titulo,
+      descripcion: proposal.objetivo || prev.descripcion,
+      id_area_negocio:
+        proposal.id_area_negocio && areas.some((area) => area.id === proposal.id_area_negocio)
+          ? proposal.id_area_negocio
+          : prev.id_area_negocio,
+      plazo_dias: proposal.plazo_dias,
+      usa_ia: proposal.usa_ia,
+      skills: proposal.habilidades
+        .map((skill) => skill.id)
+        .filter((id) => catalogSkills.some((skill) => skill.id === id)),
     }));
   }
 
@@ -1272,54 +1572,7 @@ export function MisProyectos({
             </div>
 
             {/* AI assistant section */}
-            <div className="mt-4 rounded-xl border border-primary/20 bg-primary/5 p-4">
-              <div className="mb-3 flex items-center gap-2">
-                <Sparkles className="size-4 text-primary" />
-                <span className="font-body text-sm font-bold text-primary">
-                  {tModal("new_project_modal.ai.section_title")}
-                </span>
-                <span className="rounded-full bg-highlight px-2 py-0.5 font-body text-[10px] font-bold uppercase tracking-wide text-secondary">
-                  {tModal("new_project_modal.ai.badge_soon")}
-                </span>
-              </div>
-
-              <div className="mb-3 space-y-1">
-                <label
-                  htmlFor="ai-idea"
-                  className="block font-body text-xs font-bold uppercase tracking-wider text-ink-muted"
-                >
-                  {tModal("new_project_modal.ai.idea_label")}
-                </label>
-                <textarea
-                  id="ai-idea"
-                  disabled
-                  value={aiIdea}
-                  onChange={(e) => setAiIdea(e.target.value)}
-                  placeholder={tModal("new_project_modal.ai.idea_placeholder")}
-                  rows={3}
-                  className="w-full resize-none rounded-xl border border-border bg-surface-sunken px-3.5 py-2 font-body text-sm text-ink-strong placeholder:text-ink-subtle outline-none disabled:cursor-not-allowed disabled:opacity-50"
-                />
-              </div>
-
-              <div className="mb-3 flex min-h-14 items-center justify-center rounded-xl border border-dashed border-border bg-surface px-4 py-3">
-                <div className="flex items-center gap-2 text-ink-muted">
-                  <MessageSquare className="size-4 shrink-0" />
-                  <p className="font-body text-xs">
-                    {tModal("new_project_modal.ai.conversation_empty")}
-                  </p>
-                </div>
-              </div>
-
-              <button
-                type="button"
-                disabled
-                title={tModal("new_project_modal.ai.badge_soon")}
-                className="flex w-full cursor-not-allowed items-center justify-center gap-2 rounded-xl bg-primary/30 px-4 py-2 font-body text-sm font-bold text-white opacity-60"
-              >
-                <Sparkles className="size-4" />
-                {tModal("new_project_modal.ai.fill_btn")}
-              </button>
-            </div>
+            <AiAssistant onApply={applyProposal} />
 
             <div className="relative flex items-center gap-3 py-1">
               <div className="h-px flex-1 bg-border" />

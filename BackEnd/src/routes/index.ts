@@ -6,6 +6,7 @@ import adminRoutes from "./admin.routes";
 import catalogRoutes from "./catalog.routes";
 import projectRoutes from "./proyecto.routes";
 import ofertaRoutes from "./oferta.routes";
+import aiRoutes from "./ai.routes";
 import { asyncHandler } from "../utils/asyncHandler";
 import { isDatabaseReachable } from "../services/health.service";
 
@@ -30,6 +31,6 @@ router.use("/admin", adminRoutes);
 router.use("/catalogs", catalogRoutes);
 router.use("/projects", projectRoutes);
 router.use("/ofertas", ofertaRoutes);
- 
+router.use("/ai", aiRoutes);
 
 export default router;

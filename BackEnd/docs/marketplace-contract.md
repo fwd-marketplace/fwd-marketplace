@@ -145,6 +145,59 @@ Los links del `estudiante` pueden venir `null`/`""` si el junior no los complet�
 > a `pendiente` automáticamente (hay que re-verificarlo). El `estado_verificacion` viene en
 > `GET /api/users/me` y `GET /api/users/me/perfil` para que el FE muestre el estado/badge.
 
+## IA — Asistente para crear proyectos
+
+Ayuda a una empresa (a menudo sin perfil técnico) a definir un proyecto en lenguaje
+natural: hace preguntas aclaratorias y luego genera una propuesta estructurada que
+**prellena el formulario manual** de "Crear proyecto" (el usuario revisa/edita y guarda).
+
+- Ambas rutas son `Bearer` (empresa autenticada) y tienen **rate limit por usuario**:
+  20 req/min; al excederlo, `429` + `Retry-After`.
+- La key del proveedor vive solo en el BackEnd (`GROQ_API_KEY`). Si no está configurada,
+  responde `503`. Siempre debe existir el escape "continuar manualmente" en el FrontEnd.
+
+### POST /api/ai/asistente-proyecto  (Bearer — streaming SSE)
+Maneja un turno conversacional. Como la API no tiene memoria, se envía **todo el historial**.
+```json
+{ "history": [
+  { "role": "user", "content": "Quiero una app para agendar citas" },
+  { "role": "assistant", "content": "¿Es web o móvil?" },
+  { "role": "user", "content": "Web, para mis clientes" }
+] }
+```
+- `role`: `user` o `assistant` (el `system` lo pone el BackEnd; no se envía). `content`: 1-5000.
+- Respuesta: `Content-Type: text/event-stream`. Eventos:
+  - `event: delta` → `data: { "text": "fragmento" }` (ir concatenando para el efecto "escribiendo").
+  - `event: done`  → `data: { "usage": { "promptTokens": n, "completionTokens": n, "totalTokens": n } | null }`.
+  - `event: error` → `data: { "error": "mensaje" }` (si el proveedor falla a mitad; degradar a manual).
+- Validación del body inválida → `400` (JSON, antes de abrir el stream).
+
+### POST /api/ai/generar-propuesta  (Bearer)
+A partir de la conversación (mismo `history`) devuelve el JSON estructurado final, **ya mapeado
+al formulario** (con ids resueltos contra el catálogo real).
+```json
+{ "propuesta": {
+  "nombre": "Agenda de citas online",
+  "objetivo": "Permitir que los clientes reserven, vean su historial y reciban recordatorios",
+  "area_negocio": "Desarrollo Web",
+  "id_area_negocio": "uuid | null",
+  "plazo_dias": 12,
+  "habilidades": [{ "id": "uuid", "nombre": "React" }],
+  "usa_ia": false,
+  "preguntas_pendientes": ["¿Necesitan pasarela de pagos?"]
+} }
+```
+- `plazo_dias`: entero **acotado a 5-15** (rango del `POST /projects`). Mapear a `plazo_dias`.
+- `habilidades`: **solo** habilidades válidas del catálogo (las inventadas se descartan). Usar los
+  `id` para precargar las casillas; mapean a `skills: [uuid]` del `POST /projects`.
+- `id_area_negocio`: uuid del área o `null` si el modelo no acertó una del catálogo (que el FE
+  deje elegir). `nombre`→`titulo`, `objetivo`→`descripcion`, `usa_ia`→toggle "usa IA".
+- `preguntas_pendientes`: aspectos sin aclarar (mostrar como avisos; no bloquean el guardado).
+- Si el modelo no devuelve algo usable → `502`: el FrontEnd debe **degradar al formulario manual**.
+
+> Flujo FE: propuesta → prellenar el modal "Nuevo proyecto" (editable) → el usuario confirma con
+> el `POST /api/projects` de siempre. El asistente nunca crea el proyecto por su cuenta.
+
 ## Pendientes para el FrontEnd
 
 Trabajo de FrontEnd que habilitan los endpoints de arriba (lo construye el grupo de FrontEnd;

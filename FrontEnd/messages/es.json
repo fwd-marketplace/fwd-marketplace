@@ -549,12 +549,22 @@
     "new_project_modal": {
       "ai": {
         "section_title": "Asistente IA",
-        "badge_soon": "Próximamente",
+        "badge": "Beta",
         "idea_label": "Contanos la idea del proyecto",
         "idea_placeholder": "Ej: Necesito una app web para que mis clientes agenden citas online, vean su historial y reciban recordatorios por correo. No tenemos equipo técnico interno.",
         "fill_btn": "Rellenar con IA",
         "divider": "o completá manualmente",
-        "conversation_empty": "El asistente te hará preguntas para entender mejor tu proyecto y completará los campos técnicos por vos."
+        "conversation_empty": "El asistente te hará preguntas para entender mejor tu proyecto y completará los campos técnicos por vos.",
+        "reply_placeholder": "Escribí tu respuesta...",
+        "send": "Enviar",
+        "typing": "El asistente está escribiendo...",
+        "generate_btn": "Generar propuesta",
+        "generating": "Generando propuesta...",
+        "restart": "Empezar de nuevo",
+        "continue_manually": "Continuar manualmente",
+        "applied": "Propuesta aplicada abajo. Revisá y ajustá los campos antes de crear el proyecto.",
+        "pending_title": "Quedó por aclarar:",
+        "error_generic": "No se pudo contactar al asistente. Probá de nuevo o continuá manualmente."
       },
       "title": "Nuevo proyecto",
       "name_label": "Nombre del proyecto",
