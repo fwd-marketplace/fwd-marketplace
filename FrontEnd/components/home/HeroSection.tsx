@@ -1,11 +1,18 @@
-import { useTranslations } from 'next-intl';
+import { getTranslations } from 'next-intl/server';
 import Link from 'next/link';
 import { ArrowRight } from 'lucide-react';
 import { ConstellationBackdrop } from '@/components/home/ConstellationBackdrop';
 import { LogoConstellation } from '@/components/home/LogoConstellation';
+import { isAuthenticated } from '@/lib/auth-session';
 
-export default function HeroSection({ locale }: { locale: string }) {
-  const t = useTranslations('landing.hero');
+export default async function HeroSection({ locale }: { locale: string }) {
+  const t = await getTranslations('landing.hero');
+
+  // Sin sesion iniciada, "Ver proyectos" lleva al registro en vez del marketplace.
+  const hasSession = await isAuthenticated();
+  const projectsHref = hasSession
+    ? `/${locale}/marketplace`
+    : `/${locale}/register`;
 
   return (
     <section className="relative overflow-hidden bg-secondary py-20 text-secondary-foreground lg:py-32">
@@ -28,7 +35,7 @@ export default function HeroSection({ locale }: { locale: string }) {
 
           <div className="flex flex-col items-center justify-center gap-4 sm:flex-row lg:justify-start">
             <Link
-              href={`/${locale}/marketplace`}
+              href={projectsHref}
               className="inline-flex h-12 items-center justify-center rounded-full bg-highlight px-8 font-semibold text-highlight-foreground transition-opacity hover:opacity-90"
             >
               {t('cta_projects')}
