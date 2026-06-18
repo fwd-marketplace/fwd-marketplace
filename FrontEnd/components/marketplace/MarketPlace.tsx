@@ -14,7 +14,6 @@ import {
     Megaphone,
     ShoppingCart,
     Briefcase,
-    Sparkles,
     Search,
     Bookmark,
     ChevronDown,
@@ -483,7 +482,6 @@ export default function MarketPlace({ initialProjects, catalogs, role = 'student
     const [currentPage, setCurrentPage] = useState(1);
     const [savedProjectIds, setSavedProjectIds] = useState<ReadonlySet<string>>(new Set());
     const [sheetProject, setSheetProject] = useState<ApiProject | null>(null);
-    const [selectedProject, setSelectedProject] = useState<ApiProject | null>(null);
 
     const areaOptions: FilterOption[] = activeCatalogs.areas.map((a) => ({ value: a.id, label: a.nombre }));
     const skillOptions: FilterOption[] = activeCatalogs.skills
@@ -833,14 +831,6 @@ export default function MarketPlace({ initialProjects, catalogs, role = 'student
                                         >
                                             {expired ? t('badge_expired') : hasApplied ? t('view_my_offer') : t('view_project')}
                                         </button>
-                                        <button
-                                            type="button"
-                                            onClick={() => setSelectedProject(project)}
-                                            className="flex size-10 shrink-0 items-center justify-center rounded-full border border-border bg-surface text-ink-muted hover:border-primary/30 hover:text-primary transition-colors duration-[var(--duration-fast)] ease-[var(--ease-out)]"
-                                            aria-label={t('view_project')}
-                                        >
-                                            <Sparkles className="w-4 h-4" aria-hidden="true" />
-                                        </button>
                                         <Link
                                             href={`/${locale}/marketplace/${project.id}`}
                                             aria-label="Abrir página completa"
@@ -909,9 +899,6 @@ export default function MarketPlace({ initialProjects, catalogs, role = 'student
                 )}
             </div>
 
-            {selectedProject && (
-                <ProjectDetailModal project={selectedProject} onClose={() => setSelectedProject(null)} />
-            )}
         </div>
         </>
     );
