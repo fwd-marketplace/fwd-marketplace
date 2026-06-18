@@ -34,3 +34,15 @@ export const ChangeProjectStateSchema = z.object({
 });
 
 export type ChangeProjectStateInput = z.infer<typeof ChangeProjectStateSchema>;
+
+/** Cuerpo para editar un proyecto existente. Todos los campos son opcionales. */
+export const UpdateProjectSchema = z.object({
+  titulo: z.string().min(1).max(255).optional(),
+  descripcion: z.string().min(1).optional(),
+  id_area_negocio: z.string().uuid().optional(),
+  plazo_dias: z.number().int().min(5).max(15).optional(),
+  usa_ia: z.boolean().optional(),
+  skills: z.array(z.string().uuid()).optional(),
+});
+
+export type UpdateProjectInput = z.infer<typeof UpdateProjectSchema>;

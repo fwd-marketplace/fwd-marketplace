@@ -51,6 +51,7 @@ import type {
   StudentSpecialty,
 } from "@/lib/api/types";
 import { updateStudentProfile, uploadStudentAvatar } from "@/lib/actions/perfil";
+import { replicarCalificacionAction } from "@/lib/actions/marketplace";
 import { getInitials } from "@/lib/api/safe-json";
 
 // ── Inline SVG icons ───────────────────────────────────────────────────────────
@@ -140,8 +141,11 @@ function CalificacionesSection({
 
   function handleSendReply(id: string) {
     if (!replyDraft.trim()) return;
+    const target = calificaciones.find((c) => c.id === id);
     startSaving(async () => {
-      await new Promise<void>((res) => setTimeout(res, 500));
+      if (target?.ofertaId) {
+        await replicarCalificacionAction(target.ofertaId, { replica: replyDraft.trim() });
+      }
       setCalificaciones((prev) =>
         prev.map((c) => (c.id === id ? { ...c, reply: replyDraft.trim() } : c)),
       );

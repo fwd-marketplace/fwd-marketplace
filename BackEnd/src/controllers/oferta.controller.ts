@@ -1,13 +1,21 @@
 import type { Request, Response } from "express";
 import { z } from "zod";
 import { ApiError } from "../utils/ApiError";
-import { CreateOfertaSchema, DecideOfertaSchema } from "../validations/oferta";
+import {
+  CreateOfertaSchema,
+  DecideOfertaSchema,
+  CalificarOfertaSchema,
+  ReplicarCalificacionSchema,
+} from "../validations/oferta";
 import {
   createOferta,
   listMyOfertas,
   listProjectOfertas,
   getOfertaContacto,
   decideOferta,
+  withdrawOferta,
+  calificarOferta,
+  replicarCalificacion,
 } from "../services/oferta.service";
 
 const idParamSchema = z.string().uuid();
@@ -72,5 +80,37 @@ export async function decide(req: Request, res: Response) {
     throw new ApiError(400, parsed.error.issues[0]?.message ?? "Acción inválida");
   }
   const oferta = await decideOferta(token, userId, ofertaId, parsed.data);
+  res.status(200).json({ oferta });
+}
+
+/** DELETE /api/ofertas/:id/retirar (junior retira su postulación) */
+export async function withdraw(req: Request, res: Response) {
+  const { token, userId } = readAuth(req);
+  const ofertaId = readUuidParam(req.params.id, "de la postulación");
+  await withdrawOferta(token, userId, ofertaId);
+  res.status(200).json({ ok: true });
+}
+
+/** POST /api/ofertas/:id/calificar (empresa califica al junior) */
+export async function calificar(req: Request, res: Response) {
+  const { token, userId } = readAuth(req);
+  const ofertaId = readUuidParam(req.params.id, "de la postulación");
+  const parsed = CalificarOfertaSchema.safeParse(req.body);
+  if (!parsed.success) {
+    throw new ApiError(400, parsed.error.issues[0]?.message ?? "Datos inválidos");
+  }
+  const oferta = await calificarOferta(token, userId, ofertaId, parsed.data);
+  res.status(200).json({ oferta });
+}
+
+/** POST /api/ofertas/:id/replica (junior replica a su calificación) */
+export async function replica(req: Request, res: Response) {
+  const { token, userId } = readAuth(req);
+  const ofertaId = readUuidParam(req.params.id, "de la postulación");
+  const parsed = ReplicarCalificacionSchema.safeParse(req.body);
+  if (!parsed.success) {
+    throw new ApiError(400, parsed.error.issues[0]?.message ?? "Datos inválidos");
+  }
+  const oferta = await replicarCalificacion(token, userId, ofertaId, parsed.data);
   res.status(200).json({ oferta });
 }

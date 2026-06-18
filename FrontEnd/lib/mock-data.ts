@@ -1,4 +1,4 @@
-import type { ApiProject, CatalogArea, CatalogSkill, MockThread, MyOffer } from "@/lib/api/types";
+import type { ApiProject, CatalogArea, CatalogSkill, MyOffer } from "@/lib/api/types";
 
 // ─── Mock Catalogs ────────────────────────────────────────────────────────────
 
@@ -256,77 +256,3 @@ export const MOCK_OFFERS: MyOffer[] = [
   },
 ];
 
-// ─── Mock Threads de Mensajería (RF-45) ──────────────────────────────────────
-
-export const MOCK_THREADS: MockThread[] = [
-  {
-    projectId: "proj-1",
-    projectTitle: "Dashboard de análisis de ventas en tiempo real",
-    companyName: "Global Tech Solutions S.A.",
-    unreadCount: 2,
-    messages: [
-      {
-        id: "msg-1-1",
-        author: "empresa",
-        text: "Hola, vimos tu propuesta y nos parece muy completa. ¿Podés contarnos un poco más sobre tu experiencia con Power BI?",
-        timestamp: "2026-06-10T10:00:00Z",
-      },
-      {
-        id: "msg-1-2",
-        author: "junior",
-        text: "Con gusto. Trabajé con Power BI en dos proyectos universitarios donde construí dashboards de seguimiento de inventario y KPIs de ventas. Puedo compartirte los links si te interesa.",
-        timestamp: "2026-06-10T10:45:00Z",
-      },
-      {
-        id: "msg-1-3",
-        author: "empresa",
-        text: "Perfecto, sí compartílos. También queríamos confirmar tu disponibilidad para empezar la próxima semana.",
-        timestamp: "2026-06-10T11:20:00Z",
-      },
-      {
-        id: "msg-1-4",
-        author: "empresa",
-        text: "Ah, y una pregunta más: ¿tenés experiencia con APIs REST para consumir datos en tiempo real?",
-        timestamp: "2026-06-11T09:00:00Z",
-      },
-    ],
-  },
-  {
-    projectId: "proj-3",
-    projectTitle: "App móvil de gestión de inventario",
-    companyName: "LogiTech CR",
-    unreadCount: 0,
-    messages: [
-      {
-        id: "msg-3-1",
-        author: "empresa",
-        text: "Buen día. Te confirmamos que tu postulación fue adjudicada. Vamos a estar coordinando los primeros pasos del proyecto por aquí.",
-        timestamp: "2026-06-08T08:30:00Z",
-      },
-      {
-        id: "msg-3-2",
-        author: "junior",
-        text: "Muchas gracias por la confianza. Estoy listo para empezar. ¿Cuál es el primer entregable que necesitan?",
-        timestamp: "2026-06-08T09:10:00Z",
-      },
-      {
-        id: "msg-3-3",
-        author: "empresa",
-        text: "Para empezar necesitamos un wireframe de las pantallas principales: login, listado de inventario y detalle de producto. Plazo: 3 días.",
-        timestamp: "2026-06-08T14:00:00Z",
-      },
-      {
-        id: "msg-3-4",
-        author: "junior",
-        text: "Entendido. Estaré entregando el wireframe el jueves a más tardar.",
-        timestamp: "2026-06-08T14:30:00Z",
-      },
-      {
-        id: "msg-3-5",
-        author: "empresa",
-        text: "El wireframe que entregaste se ve muy bien. Tenemos algunos comentarios menores. Los coordino por acá mañana.",
-        timestamp: "2026-06-11T17:00:00Z",
-      },
-    ],
-  },
-];

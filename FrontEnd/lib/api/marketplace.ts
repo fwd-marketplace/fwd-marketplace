@@ -2,6 +2,8 @@ import { ApiError, apiAuth } from "@/lib/api-client";
 import { err, ok, type Result } from "@/lib/result";
 import type {
   ApiProject,
+  ApiRankedJunior,
+  CalificarInput,
   CatalogsResponse,
   CompanyProjectState,
   CreateProjectInput,
@@ -12,6 +14,8 @@ import type {
   ProjectOffer,
   ProjectOffersResponse,
   ProjectsResponse,
+  RankingResponse,
+  ReplicaInput,
   SubmitEntregableInput,
   SubmitOfferInput,
   UpdateProjectInput,
@@ -100,13 +104,46 @@ export function submitEntregable(input: SubmitEntregableInput): Promise<Result<E
 
 export function reviewEntregable(
   entregableId: string,
-  accion: "revisar" | "aprobar",
+  accion: "revisar" | "aprobar" | "solicitar_cambios",
+  comentario?: string,
 ): Promise<Result<void>> {
   return asResult(async () => {
     await apiAuth(`/entregables/${entregableId}`, {
       method: "PATCH",
-      body: JSON.stringify({ accion }),
+      body: JSON.stringify({ accion, ...(comentario ? { comentario } : {}) }),
     });
+  });
+}
+
+export function calificarOferta(
+  ofertaId: string,
+  input: CalificarInput,
+): Promise<Result<void>> {
+  return asResult(async () => {
+    await apiAuth(`/ofertas/${ofertaId}/calificar`, {
+      method: "POST",
+      body: JSON.stringify(input),
+    });
+  });
+}
+
+export function replicarCalificacion(
+  ofertaId: string,
+  input: ReplicaInput,
+): Promise<Result<void>> {
+  return asResult(async () => {
+    await apiAuth(`/ofertas/${ofertaId}/replica`, {
+      method: "POST",
+      body: JSON.stringify(input),
+    });
+  });
+}
+
+export function getRanking(especialidad?: string): Promise<Result<ApiRankedJunior[]>> {
+  return asResult(async () => {
+    const params = especialidad ? `?especialidad=${especialidad}` : "";
+    const res = await apiAuth<RankingResponse>(`/ranking${params}`);
+    return res.juniors;
   });
 }
 

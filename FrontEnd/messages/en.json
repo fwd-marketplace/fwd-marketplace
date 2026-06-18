@@ -697,7 +697,8 @@
       "cancel": "Cancel",
       "confirm": "Submit rating",
       "saving": "Saving...",
-      "toast_saved": "Rating submitted. The junior's reputation will be updated."
+      "toast_saved": "Rating submitted. The junior's reputation will be updated.",
+      "error_no_offer": "No awarded offer found."
     },
     "filters": {
       "title": "Filters",
@@ -1527,7 +1528,8 @@
     "availability_immediate": "Available now",
     "availability_two_weeks": "In 2 weeks",
     "availability_one_month": "In 1 month",
-    "mock_disclaimer": "Demo data. The real ranking updates with completed projects."
+    "mock_disclaimer": "Demo data. The real ranking updates with completed projects.",
+    "loading": "Loading ranking..."
   },
   "preferencias_notificaciones": {
     "title": "Notification preferences",
@@ -1569,7 +1571,9 @@
     "compose_placeholder": "Write your message... (Enter to send)",
     "send_btn": "Send message",
     "mock_badge": "Demo mode",
-    "mock_disclaimer": "Messaging in demo mode. Real connection in Phase 2.0."
+    "mock_disclaimer": "Messaging in demo mode. Real connection in Phase 2.0.",
+    "no_messages": "No messages yet in this conversation.",
+    "unnamed_project": "Untitled project"
   },
   "notification_panel": {
     "aria_open": "Notifications",
@@ -1582,5 +1586,4 @@
     "view_all": "View all activity",
     "preferences": "Preferences"
   }
-}
 }

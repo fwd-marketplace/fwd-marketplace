@@ -284,6 +284,31 @@ export async function deleteMyLogo(accessToken: string, userId: string): Promise
   if (error) throw new ApiError(400, error.message);
 }
 
+/**
+ * Guarda las preferencias de notificación del usuario.
+ * El campo `preferencias_notificacion` es de tipo Json en Supabase; se castea
+ * a Record<string, boolean> porque el schema de la tabla lo define como un
+ * mapa de claves booleanas de preferencias del usuario.
+ */
+export async function savePreferenciasNotificacion(
+  accessToken: string,
+  userId: string,
+  preferencias: Record<string, boolean>,
+): Promise<{ ok: true }> {
+  const client = supabaseForToken(accessToken);
+  const { error } = await client
+    .from("users")
+    .update({
+      // Cast justificado: el campo Json de Supabase almacena un objeto de preferencias
+      // booleanas; el tipo generado es Json (union de primitivos), pero en la práctica
+      // siempre es Record<string, boolean> según el schema de la BD.
+      preferencias_notificacion: preferencias as unknown as import("../types/database.types").Json,
+    })
+    .eq("id", userId);
+  if (error) throw new ApiError(400, error.message);
+  return { ok: true };
+}
+
 export async function updateMyAvatar(
   accessToken: string,
   userId: string,

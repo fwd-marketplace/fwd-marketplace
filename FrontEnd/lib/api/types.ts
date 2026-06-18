@@ -346,21 +346,44 @@ export type GenerateProposalResponse = {
   propuesta: ProjectProposal;
 };
 
-// ── Mensajería (mock, Etapa 13 conecta con backend) ─────────────────────────
+// ── Calificaciones ───────────────────────────────────────────────────────────
 
-export type MessageAuthor = "junior" | "empresa";
+export type CalificarInput = {
+  calificacion: number;
+  comentario?: string;
+};
 
-export type MockMessage = {
+export type ReplicaInput = {
+  replica: string;
+};
+
+// ── Mensajería ────────────────────────────────────────────────────────────────
+
+export type ApiMensaje = {
   id: string;
-  author: MessageAuthor;
-  text: string;
-  timestamp: string;
+  contenido: string;
+  fecha_envio: string;
+  es_publico: boolean;
+  remitente: { id: string; nombre: string; apellido1: string | null } | null;
+  id_destinatario: string | null;
 };
 
-export type MockThread = {
-  projectId: string;
-  projectTitle: string;
-  companyName: string;
-  messages: MockMessage[];
-  unreadCount: number;
+export type MensajesResponse = {
+  mensajes: ApiMensaje[];
 };
+
+// ── Ranking ───────────────────────────────────────────────────────────────────
+
+export type ApiRankedJunior = {
+  id: string;
+  especialidad: string | null;
+  disponibilidad: string | null;
+  reputacion: number;
+  usuario: { id: string; nombre: string; apellido1: string | null } | null;
+  skills: string[];
+};
+
+export type RankingResponse = {
+  juniors: ApiRankedJunior[];
+};
+

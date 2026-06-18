@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useTransition } from "react";
+import { savePreferenciasNotificacionAction } from "@/lib/actions/preferencias";
 import {
   Bell,
   Briefcase,
@@ -197,8 +198,7 @@ export function PreferenciasNotificaciones({ role }: Props) {
   function handleSave() {
     setSaved(false);
     startTransition(async () => {
-      // RF-48: UI-only, Etapa 13 conecta con backend
-      await new Promise<void>((res) => setTimeout(res, 600));
+      await savePreferenciasNotificacionAction(prefs as Record<string, boolean>);
       setSaved(true);
     });
   }
