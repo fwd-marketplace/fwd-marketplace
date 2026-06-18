@@ -586,10 +586,10 @@ export default function MarketPlace({ initialProjects, catalogs, role = 'student
             <section className="relative overflow-hidden z-10 px-6 pt-10 pb-24 md:pt-14 md:pb-32">
                 <MarketplaceHeroBackdrop />
                 <div className="relative z-10 max-w-6xl mx-auto px-6 text-left">
-                    <h1 className="font-heading text-6xl md:text-7xl font-bold tracking-tight text-white">
+                    <h1 className="font-heading text-4xl md:text-5xl font-bold tracking-tight text-white">
                         {t('hero_title')}<span className="text-primary" aria-hidden="true">.</span>
                     </h1>
-                    <p className="mt-5 text-base md:text-lg text-white/80 leading-relaxed">
+                    <p className="mt-3 text-sm md:text-base text-white/80 leading-relaxed">
                         {t('hero_subtitle')}
                     </p>
                 </div>
