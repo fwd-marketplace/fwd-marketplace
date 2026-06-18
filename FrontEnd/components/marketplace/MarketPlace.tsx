@@ -585,7 +585,7 @@ export default function MarketPlace({ initialProjects, catalogs, role = 'student
             {/* Hero — backdrop is contained here so it never stretches with the cards */}
             <section className="relative overflow-hidden z-10 px-6 pt-10 pb-24 md:pt-14 md:pb-32">
                 <MarketplaceHeroBackdrop />
-                <div className="relative z-10 mx-auto max-w-3xl text-center">
+                <div className="relative z-10 max-w-6xl mx-auto px-6 text-left">
                     <h1 className="font-heading text-6xl md:text-7xl font-bold tracking-tight text-white">
                         {t('hero_title')}<span className="text-primary" aria-hidden="true">.</span>
                     </h1>
