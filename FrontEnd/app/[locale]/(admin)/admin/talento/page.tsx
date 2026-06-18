@@ -9,12 +9,8 @@ interface Props {
 export default async function AdminTalentoPage({ params }: Props) {
   const { locale } = await params;
   setRequestLocale(locale);
-
-  const result = await getAdminStudents();
-
-  if (!result.ok) {
-    return <EgresadosView users={[]} error={result.error} />;
-  }
-
-  return <EgresadosView users={result.data.users} />;
+  const studentsResult = await getAdminStudents();
+  return (
+    <EgresadosView initialStudents={studentsResult.ok ? studentsResult.data.students : []} />
+  );
 }

@@ -4,9 +4,8 @@ import { useState, useTransition } from "react";
 import { useParams } from "next/navigation";
 import Link from "next/link";
 import { useTranslations } from "next-intl";
-import { Eye, EyeOff, Lock, RotateCcwKey } from "lucide-react";
+import { Lock, RotateCcwKey } from "lucide-react";
 import { resetPassword } from "@/lib/actions/auth";
-import { MIN_PASSWORD_LENGTH } from "@/lib/validations/auth";
 
 const EMAIL_PATTERN = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 
@@ -16,18 +15,12 @@ export function ResetPasswordForm() {
   const locale = params.locale as string;
 
   const [email, setEmail] = useState("");
-  const [password, setPassword] = useState("");
-  const [confirmPassword, setConfirmPassword] = useState("");
-  const [isPasswordVisible, setIsPasswordVisible] = useState(false);
-  const [isConfirmVisible, setIsConfirmVisible] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [submittedEmail, setSubmittedEmail] = useState<string | null>(null);
   const [isPending, startTransition] = useTransition();
 
   function validate(): string | null {
     if (!EMAIL_PATTERN.test(email.trim())) return t("error_email");
-    if (password.length < MIN_PASSWORD_LENGTH) return t("error_password_length");
-    if (password !== confirmPassword) return t("error_mismatch");
     return null;
   }
 
@@ -40,7 +33,7 @@ export function ResetPasswordForm() {
     }
     setError(null);
     startTransition(async () => {
-      const result = await resetPassword({ email: email.trim(), password, confirmPassword });
+      const result = await resetPassword({ email: email.trim() });
       if (!result.ok) {
         setError(result.error);
         return;
@@ -120,70 +113,6 @@ export function ResetPasswordForm() {
                 />
               </div>
 
-              <div className="flex flex-col gap-1.5">
-                <label
-                  htmlFor="reset-password"
-                  className="font-body text-sm font-semibold text-ink-strong"
-                >
-                  {t("password_label")}
-                </label>
-                <div className="relative">
-                  <input
-                    id="reset-password"
-                    type={isPasswordVisible ? "text" : "password"}
-                    autoComplete="new-password"
-                    value={password}
-                    onChange={(e) => setPassword(e.target.value)}
-                    placeholder={t("password_placeholder")}
-                    className="w-full rounded-xl bg-surface-sunken px-4 py-3 pr-12 font-body text-sm text-ink-strong placeholder:text-ink-subtle outline-none focus:ring-2 focus:ring-primary/40"
-                  />
-                  <button
-                    type="button"
-                    onClick={() => setIsPasswordVisible((prev) => !prev)}
-                    aria-label={isPasswordVisible ? t("hide_password") : t("show_password")}
-                    className="absolute right-4 top-1/2 -translate-y-1/2 text-ink-subtle transition-colors duration-[--duration-fast] hover:text-ink-muted"
-                  >
-                    {isPasswordVisible ? (
-                      <EyeOff size={18} strokeWidth={2} aria-hidden="true" />
-                    ) : (
-                      <Eye size={18} strokeWidth={2} aria-hidden="true" />
-                    )}
-                  </button>
-                </div>
-              </div>
-
-              <div className="flex flex-col gap-1.5">
-                <label
-                  htmlFor="reset-confirm"
-                  className="font-body text-sm font-semibold text-ink-strong"
-                >
-                  {t("confirm_label")}
-                </label>
-                <div className="relative">
-                  <input
-                    id="reset-confirm"
-                    type={isConfirmVisible ? "text" : "password"}
-                    autoComplete="new-password"
-                    value={confirmPassword}
-                    onChange={(e) => setConfirmPassword(e.target.value)}
-                    placeholder={t("confirm_placeholder")}
-                    className="w-full rounded-xl bg-surface-sunken px-4 py-3 pr-12 font-body text-sm text-ink-strong placeholder:text-ink-subtle outline-none focus:ring-2 focus:ring-primary/40"
-                  />
-                  <button
-                    type="button"
-                    onClick={() => setIsConfirmVisible((prev) => !prev)}
-                    aria-label={isConfirmVisible ? t("hide_password") : t("show_password")}
-                    className="absolute right-4 top-1/2 -translate-y-1/2 text-ink-subtle transition-colors duration-[--duration-fast] hover:text-ink-muted"
-                  >
-                    {isConfirmVisible ? (
-                      <EyeOff size={18} strokeWidth={2} aria-hidden="true" />
-                    ) : (
-                      <Eye size={18} strokeWidth={2} aria-hidden="true" />
-                    )}
-                  </button>
-                </div>
-              </div>
-
               <hr className="border-border" />
 
               {error ? (
@@ -191,7 +120,7 @@ export function ResetPasswordForm() {
                   {error}
                 </p>
               ) : (
-                <p className="font-body text-sm text-ink-muted">{t("hint")}</p>
+                <p className="font-body text-sm text-ink-muted">{t("request_hint")}</p>
               )}
 
               <button

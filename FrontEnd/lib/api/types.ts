@@ -68,6 +68,34 @@ export type CreateProjectInput = {
   publicar: boolean;
 };
 
+// ── Asistente de IA para crear proyectos ──────────────────────────────────────
+
+export type AiChatMessage = {
+  role: "user" | "assistant";
+  content: string;
+};
+
+export type ProposalSkill = {
+  id: string;
+  nombre: string;
+};
+
+/** Propuesta estructurada que devuelve el asistente, ya mapeada al formulario. */
+export type ProjectProposal = {
+  nombre: string;
+  objetivo: string;
+  area_negocio: string | null;
+  id_area_negocio: string | null;
+  plazo_dias: number;
+  habilidades: ProposalSkill[];
+  usa_ia: boolean;
+  preguntas_pendientes: string[];
+};
+
+export type GenerateProposalResponse = {
+  propuesta: ProjectProposal;
+};
+
 export type ProjectOffer = {
   id: string;
   propuesta: string;
@@ -144,6 +172,49 @@ export type StudentPerfilResponse = {
   skills?: string[];
 };
 
+export type ApiEmpresarioDetail = {
+  tipo: 'empresa' | 'emprendedor';
+  nombre_comercial: string | null;
+  sector: string | null;
+  descripcion: string | null;
+  url_sitio_web: string | null;
+  cedula_juridica: string | null;
+  etapa: 'idea' | 'mvp' | 'validating' | 'scaling' | null;
+  apoyo_tecnico_necesario: string | null;
+  presupuesto: 'under_500' | 'range_500_1000' | 'range_1000_2500' | 'flexible' | null;
+  tipos_proyecto: string | null;
+  direccion: string | null;
+  url_logo: string | null;
+  mision: string | null;
+  vision: string | null;
+  cultura: string | null;
+  valores: string | null;
+  contactos: string | null;
+  cantidad_empleados: string | null;
+  modalidades: string | null;
+  horario: string | null;
+};
+
+export type EmpresarioUpdateInput = {
+  nombre_comercial?: string;
+  sector?: string[];
+  descripcion?: string;
+  url_sitio_web?: string;
+  direccion?: string;
+  tipos_proyecto?: string[];
+  soporte_tecnico?: string[];
+  etapa?: 'idea' | 'mvp' | 'validating' | 'scaling';
+  presupuesto?: 'under_500' | 'range_500_1000' | 'range_1000_2500' | 'flexible';
+  mision?: string;
+  vision?: string;
+  cultura?: string;
+  valores?: string[];
+  contactos?: Array<{ name: string; role: string; email: string }>;
+  cantidad_empleados?: string;
+  modalidades?: string[];
+  horario?: string;
+};
+
 export type ApiMeProfile = {
   id: string;
   nombre: string;
@@ -155,6 +226,7 @@ export type ApiMeProfile = {
   fecha_registro: string;
   role: { nombre: ApiRoleName };
   estudiante?: ApiEstudianteDetail | null;
+  empresario?: ApiEmpresarioDetail | null;
 };
 
 export type MeResponse = {
@@ -188,27 +260,30 @@ export type AdminProjectsResponse = {
   projects: AdminProject[];
 };
 
-export type AdminStudentProfile = {
-  especialidad: string | null;
-  disponibilidad: string | null;
-  titulo_fwd: string | null;
-  reputacion: number | null;
-  url_github: string | null;
-  url_linkedin: string | null;
-  url_portfolio: string | null;
+export type ProjectDetailResponse = {
+  project: ApiProject;
 };
 
-export type AdminStudentUser = {
+export type SubmitOfferInput = {
+  propuesta: string;
+  prototipo_url?: string;
+};
+
+export type StudentVerification = "pendiente" | "verificado" | "rechazado";
+
+export type AdminStudent = {
   id: string;
-  nombre: string;
-  apellido1: string | null;
-  correo: string;
-  estado_cuenta: AccountState;
-  fecha_registro: string;
-  role: { nombre: ApiRoleName } | null;
-  estudiante: AdminStudentProfile[] | AdminStudentProfile | null;
+  especialidad: string | null;
+  modalidad_preferida: string | null;
+  disponibilidad: string | null;
+  titulo_fwd: string | null;
+  estado_verificacion: StudentVerification;
+  reputacion: number | null;
+  url_avatar: string | null;
+  usuario: { id: string; nombre: string; apellido1: string | null; correo: string } | null;
+  skills: string[];
 };
 
 export type AdminStudentsResponse = {
-  users: AdminStudentUser[];
+  students: AdminStudent[];
 };

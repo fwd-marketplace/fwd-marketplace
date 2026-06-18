@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useRef, useTransition } from "react";
+import { useState, useRef, useTransition, useEffect } from "react";
 import { useRouter, useParams } from "next/navigation";
 import { useTranslations } from "next-intl";
 import { ArrowRight, Upload } from "lucide-react";
@@ -8,14 +8,32 @@ import { FwdGeoBackdrop } from "@/components/ui/fwd-geo-backdrop";
 import { ProgressDots } from "@/components/onboarding/ProgressDots";
 import { saveStep, getOnboarding, clearOnboarding } from "@/lib/onboarding-storage";
 import { saveEmpresaProfile } from "@/lib/actions/auth";
+import { uploadEmpresarioLogo } from "@/lib/actions/perfil";
 
 const TOTAL_STEPS = 6;
 const OPTIONAL_STEPS = new Set([6]);
 const MAX_LOGO_FILE_SIZE_BYTES = 5 * 1_024 * 1_024;
 
-function Step1({ onChange }: { onChange: (val: string) => void }) {
+function Step1({
+  onChange,
+  showErrors = false,
+}: {
+  onChange: (val: string) => void;
+  showErrors?: boolean;
+}) {
   const t = useTranslations("register.empresa.step1");
   const [nameValue, setNameValue] = useState("");
+  const [touched, setTouched] = useState(false);
+
+  function getError(): string | null {
+    if (!showErrors && !touched) return null;
+    const value = nameValue.trim();
+    if (!value) return t("error_required");
+    if (value.length < 2) return t("error_min_2");
+    return null;
+  }
+
+  const error = getError();
 
   return (
     <div className="flex flex-col gap-6">
@@ -29,16 +47,29 @@ function Step1({ onChange }: { onChange: (val: string) => void }) {
         <p className="mt-2 font-body text-sm text-ink-muted">{t("description")}</p>
       </div>
 
-      <label htmlFor="empresa-name" className="sr-only">{t("label")}</label>
-      <input
-        id="empresa-name"
-        type="text"
-        value={nameValue}
-        onChange={(e) => { setNameValue(e.target.value); onChange(e.target.value); }}
-        placeholder={t("placeholder")}
-        autoFocus
-        className="w-full rounded-2xl bg-surface-sunken px-5 py-4 font-body text-sm text-ink-strong placeholder:text-ink-subtle outline-none focus:ring-2 focus:ring-primary/40"
-      />
+      <div className="flex flex-col gap-1">
+        <label htmlFor="empresa-name" className="sr-only">{t("label")}</label>
+        <input
+          id="empresa-name"
+          type="text"
+          value={nameValue}
+          onChange={(e) => { setNameValue(e.target.value); onChange(e.target.value); }}
+          onBlur={() => setTouched(true)}
+          placeholder={t("placeholder")}
+          autoFocus
+          aria-describedby={error ? "empresa-name-error" : undefined}
+          aria-invalid={error ? true : undefined}
+          className={[
+            "w-full rounded-2xl bg-surface-sunken px-5 py-4 font-body text-sm text-ink-strong placeholder:text-ink-subtle outline-none focus:ring-2",
+            error ? "ring-1 ring-red-400/60 focus:ring-red-400/60" : "focus:ring-primary/40",
+          ].join(" ")}
+        />
+        {error && (
+          <p id="empresa-name-error" role="alert" className="px-1 font-body text-xs text-red-500">
+            {error}
+          </p>
+        )}
+      </div>
       <div className="h-2" />
     </div>
   );
@@ -51,16 +82,16 @@ function Step2({ onChange }: { onChange: (val: Sector[]) => void }) {
   const [selectedSectors, setSelectedSectors] = useState<Sector[]>([]);
 
   const SECTOR_LABELS: Record<Sector, string> = {
-    tech:          t("tech"),
-    fintech:       t("fintech"),
-    health:        t("health"),
-    logistics:     t("logistics"),
-    education:     t("education"),
-    energy:        t("energy"),
-    retail:        t("retail"),
+    tech: t("tech"),
+    fintech: t("fintech"),
+    health: t("health"),
+    logistics: t("logistics"),
+    education: t("education"),
+    energy: t("energy"),
+    retail: t("retail"),
     manufacturing: t("manufacturing"),
-    consulting:    t("consulting"),
-    other:         t("other"),
+    consulting: t("consulting"),
+    other: t("other"),
   };
 
   function toggleSector(sector: Sector) {
@@ -112,10 +143,27 @@ function Step2({ onChange }: { onChange: (val: Sector[]) => void }) {
 
 const DESC_MAX_CHARS = 300;
 
-function Step3({ onChange }: { onChange: (val: string) => void }) {
+function Step3({
+  onChange,
+  showErrors = false,
+}: {
+  onChange: (val: string) => void;
+  showErrors?: boolean;
+}) {
   const t = useTranslations("register.empresa.step3");
   const [descriptionValue, setDescriptionValue] = useState("");
+  const [touched, setTouched] = useState(false);
   const remainingChars = DESC_MAX_CHARS - descriptionValue.length;
+
+  function getError(): string | null {
+    if (!showErrors && !touched) return null;
+    const value = descriptionValue.trim();
+    if (!value) return t("error_required");
+    if (value.length < 10) return t("error_min_10");
+    return null;
+  }
+
+  const error = getError();
 
   return (
     <div className="flex flex-col gap-6">
@@ -129,29 +177,42 @@ function Step3({ onChange }: { onChange: (val: string) => void }) {
         <p className="mt-2 font-body text-sm text-ink-muted">{t("description")}</p>
       </div>
 
-      <div className="relative">
-        <label htmlFor="empresa-description" className="sr-only">{t("label")}</label>
-        <textarea
-          id="empresa-description"
-          value={descriptionValue}
-          onChange={(e) => {
-            const nextValue = e.target.value.slice(0, DESC_MAX_CHARS);
-            setDescriptionValue(nextValue);
-            onChange(nextValue);
-          }}
-          placeholder={t("placeholder")}
-          rows={5}
-          className="w-full resize-none rounded-2xl bg-surface-sunken px-5 py-4 font-body text-sm text-ink-strong placeholder:text-ink-subtle outline-none focus:ring-2 focus:ring-primary/40"
-        />
-        <span
-          aria-live="polite"
-          className={[
-            "absolute bottom-3 right-4 font-body text-xs tabular-nums",
-            remainingChars <= 50 ? "text-warning" : "text-ink-subtle",
-          ].join(" ")}
-        >
-          {remainingChars}
-        </span>
+      <div className="flex flex-col gap-1">
+        <div className="relative">
+          <label htmlFor="empresa-description" className="sr-only">{t("label")}</label>
+          <textarea
+            id="empresa-description"
+            value={descriptionValue}
+            onChange={(e) => {
+              const nextValue = e.target.value.slice(0, DESC_MAX_CHARS);
+              setDescriptionValue(nextValue);
+              onChange(nextValue);
+            }}
+            onBlur={() => setTouched(true)}
+            placeholder={t("placeholder")}
+            rows={5}
+            aria-describedby={error ? "empresa-desc-error" : undefined}
+            aria-invalid={error ? true : undefined}
+            className={[
+              "w-full resize-none rounded-2xl bg-surface-sunken px-5 py-4 font-body text-sm text-ink-strong placeholder:text-ink-subtle outline-none focus:ring-2",
+              error ? "ring-1 ring-red-400/60 focus:ring-red-400/60" : "focus:ring-primary/40",
+            ].join(" ")}
+          />
+          <span
+            aria-live="polite"
+            className={[
+              "absolute bottom-3 right-4 font-body text-xs tabular-nums",
+              remainingChars <= 50 ? "text-warning" : "text-ink-subtle",
+            ].join(" ")}
+          >
+            {remainingChars}
+          </span>
+        </div>
+        {error && (
+          <p id="empresa-desc-error" role="alert" className="px-1 font-body text-xs text-red-500">
+            {error}
+          </p>
+        )}
       </div>
     </div>
   );
@@ -159,14 +220,41 @@ function Step3({ onChange }: { onChange: (val: string) => void }) {
 
 type LegalData = { direccion: string; cedulaJuridica: string };
 
-function Step4({ onChange }: { onChange: (val: LegalData) => void }) {
+function Step4({
+  onChange,
+  showErrors = false,
+}: {
+  onChange: (val: LegalData) => void;
+  showErrors?: boolean;
+}) {
   const t = useTranslations("register.empresa.step4");
   const [direccion, setDireccion] = useState("");
   const [cedulaJuridica, setCedulaJuridica] = useState("");
+  const [touchedDireccion, setTouchedDireccion] = useState(false);
+  const [touchedCedula, setTouchedCedula] = useState(false);
 
   function notifyChange(nextDireccion: string, nextCedula: string) {
     onChange({ direccion: nextDireccion, cedulaJuridica: nextCedula });
   }
+
+  function getDireccionError(): string | null {
+    if (!showErrors && !touchedDireccion) return null;
+    const value = direccion.trim();
+    if (!value) return t("error_required");
+    if (value.length < 5) return t("error_min_5");
+    return null;
+  }
+
+  function getCedulaError(): string | null {
+    if (!showErrors && !touchedCedula) return null;
+    const value = cedulaJuridica.trim();
+    if (!value) return t("error_required");
+    if (value.length < 5) return t("error_min_5");
+    return null;
+  }
+
+  const direccionError = getDireccionError();
+  const cedulaError = getCedulaError();
 
   return (
     <div className="flex flex-col gap-6">
@@ -181,7 +269,7 @@ function Step4({ onChange }: { onChange: (val: LegalData) => void }) {
       </div>
 
       <div className="space-y-3">
-        <div className="flex flex-col gap-1.5">
+        <div className="flex flex-col gap-1">
           <label htmlFor="empresa-direccion" className="font-body text-xs font-semibold text-ink-muted">
             {t("direccion_label")}
           </label>
@@ -190,11 +278,22 @@ function Step4({ onChange }: { onChange: (val: LegalData) => void }) {
             type="text"
             value={direccion}
             onChange={(e) => { setDireccion(e.target.value); notifyChange(e.target.value, cedulaJuridica); }}
+            onBlur={() => setTouchedDireccion(true)}
             placeholder={t("direccion_placeholder")}
-            className="w-full rounded-2xl bg-surface-sunken px-5 py-3.5 font-body text-sm text-ink-strong placeholder:text-ink-subtle outline-none focus:ring-2 focus:ring-primary/40"
+            aria-describedby={direccionError ? "empresa-dir-error" : undefined}
+            aria-invalid={direccionError ? true : undefined}
+            className={[
+              "w-full rounded-2xl bg-surface-sunken px-5 py-3.5 font-body text-sm text-ink-strong placeholder:text-ink-subtle outline-none focus:ring-2",
+              direccionError ? "ring-1 ring-red-400/60 focus:ring-red-400/60" : "focus:ring-primary/40",
+            ].join(" ")}
           />
+          {direccionError && (
+            <p id="empresa-dir-error" role="alert" className="px-1 font-body text-xs text-red-500">
+              {direccionError}
+            </p>
+          )}
         </div>
-        <div className="flex flex-col gap-1.5">
+        <div className="flex flex-col gap-1">
           <label htmlFor="empresa-cedula" className="font-body text-xs font-semibold text-ink-muted">
             {t("cedula_label")}
           </label>
@@ -203,9 +302,20 @@ function Step4({ onChange }: { onChange: (val: LegalData) => void }) {
             type="text"
             value={cedulaJuridica}
             onChange={(e) => { setCedulaJuridica(e.target.value); notifyChange(direccion, e.target.value); }}
+            onBlur={() => setTouchedCedula(true)}
             placeholder={t("cedula_placeholder")}
-            className="w-full rounded-2xl bg-surface-sunken px-5 py-3.5 font-body text-sm text-ink-strong placeholder:text-ink-subtle outline-none focus:ring-2 focus:ring-primary/40"
+            aria-describedby={cedulaError ? "empresa-ced-error" : undefined}
+            aria-invalid={cedulaError ? true : undefined}
+            className={[
+              "w-full rounded-2xl bg-surface-sunken px-5 py-3.5 font-body text-sm text-ink-strong placeholder:text-ink-subtle outline-none focus:ring-2",
+              cedulaError ? "ring-1 ring-red-400/60 focus:ring-red-400/60" : "focus:ring-primary/40",
+            ].join(" ")}
           />
+          {cedulaError && (
+            <p id="empresa-ced-error" role="alert" className="px-1 font-body text-xs text-red-500">
+              {cedulaError}
+            </p>
+          )}
         </div>
       </div>
     </div>
@@ -219,15 +329,15 @@ function Step5({ onChange }: { onChange: (val: ProjectType[]) => void }) {
   const [selectedProjectTypes, setSelectedProjectTypes] = useState<ProjectType[]>([]);
 
   const PROJECT_TYPE_LABELS: Record<ProjectType, string> = {
-    web:          t("web"),
-    mobile:       t("mobile"),
-    ai:           t("ai"),
-    automation:   t("automation"),
-    dashboards:   t("dashboards"),
+    web: t("web"),
+    mobile: t("mobile"),
+    ai: t("ai"),
+    automation: t("automation"),
+    dashboards: t("dashboards"),
     integrations: t("integrations"),
-    ux:           t("ux"),
-    data:         t("data"),
-    other:        t("other"),
+    ux: t("ux"),
+    data: t("data"),
+    other: t("other"),
   };
 
   function toggleProjectType(projectType: ProjectType) {
@@ -277,7 +387,7 @@ function Step5({ onChange }: { onChange: (val: ProjectType[]) => void }) {
   );
 }
 
-function Step6() {
+function Step6({ onLogoFile }: { onLogoFile: (file: File) => void }) {
   const t = useTranslations("register.empresa.step6");
   const [logoPreviewUrl, setLogoPreviewUrl] = useState<string | null>(null);
   const [isDraggingOver, setIsDraggingOver] = useState(false);
@@ -287,6 +397,7 @@ function Step6() {
     if (!file.type.startsWith("image/")) return;
     if (file.size > MAX_LOGO_FILE_SIZE_BYTES) return;
     setLogoPreviewUrl(URL.createObjectURL(file));
+    onLogoFile(file);
   }
 
   function handleFileInputChange(e: React.ChangeEvent<HTMLInputElement>) {
@@ -364,10 +475,36 @@ export function EmpresaOnboarding() {
 
   const [pendingValue, setPendingValue] = useState<unknown>(null);
   const [submitError, setSubmitError] = useState<string | null>(null);
+  const [showStepErrors, setShowStepErrors] = useState(false);
   const [isSubmitting, startTransition] = useTransition();
+  const logoFileRef = useRef<File | null>(null);
+
+  useEffect(() => {
+    setPendingValue(null);
+    setShowStepErrors(false);
+  }, [currentStep]);
+
+  function getStepValidationMessage(): string | null {
+    if (!showStepErrors || OPTIONAL_STEPS.has(currentStep) || pendingValue !== null) return null;
+    switch (currentStep) {
+      case 1: return t("nav.error_field_required");
+      case 2: return t("nav.error_select_several");
+      case 3: return t("nav.error_field_required");
+      case 4: return t("nav.error_step1");
+      case 5: return t("nav.error_select_several");
+      default: return null;
+    }
+  }
 
   function handleNext() {
     setSubmitError(null);
+
+    if (!OPTIONAL_STEPS.has(currentStep) && !pendingValue) {
+      setShowStepErrors(true);
+      return;
+    }
+
+    setShowStepErrors(false);
     saveStep("empresa", currentStep, pendingValue);
 
     if (currentStep < TOTAL_STEPS) {
@@ -378,23 +515,29 @@ export function EmpresaOnboarding() {
     const stored = getOnboarding("empresa");
     const step4 = stored.step4 as { direccion: string; cedulaJuridica: string } | undefined;
     const raw = {
-      companyName:    stored.step1 as string,
-      sectors:        stored.step2,
-      description:    stored.step3 as string,
+      companyName: stored.step1 as string,
+      sectors: stored.step2,
+      description: stored.step3 as string,
       cedulaJuridica: step4?.cedulaJuridica ?? "",
-      direccion:      step4?.direccion ?? "",
-      projectTypes:   stored.step5,
-      logoUrl:        "",
+      direccion: step4?.direccion ?? "",
+      projectTypes: stored.step5,
+      logoUrl: "",
     };
 
     startTransition(async () => {
       const result = await saveEmpresaProfile(raw);
-      if (result.ok) {
-        clearOnboarding("empresa");
-        router.push(`/${locale}/register/onboarding/empresa/done`);
-      } else {
+      if (!result.ok) {
         setSubmitError(result.error);
+        return;
       }
+      // Subir el logo si el usuario seleccionó uno
+      if (logoFileRef.current) {
+        const formData = new FormData();
+        formData.append("file", logoFileRef.current);
+        await uploadEmpresarioLogo(formData);
+      }
+      clearOnboarding("empresa");
+      router.push(`/${locale}/register/onboarding/empresa/done`);
     });
   }
 
@@ -404,7 +547,8 @@ export function EmpresaOnboarding() {
     }
   }
 
-  const canContinue = !isSubmitting && (OPTIONAL_STEPS.has(currentStep) || Boolean(pendingValue));
+  const stepValidationMessage = getStepValidationMessage();
+  const footerMessage = submitError ?? stepValidationMessage;
 
   return (
     <div className="relative flex min-h-[100dvh] flex-col bg-secondary">
@@ -423,30 +567,39 @@ export function EmpresaOnboarding() {
       <div className="relative flex flex-1 items-center justify-center px-4">
         <div className="w-full max-w-md rounded-[2rem] bg-surface px-6 py-8 shadow-elevated sm:px-10 sm:py-10">
           {currentStep === 1 && (
-            <Step1 onChange={(val) => setPendingValue(val.trim() || null)} />
+            <Step1
+              showErrors={showStepErrors}
+              onChange={(val) => setPendingValue(val.trim() || null)}
+            />
           )}
           {currentStep === 2 && (
             <Step2 onChange={(val) => setPendingValue(val.length > 0 ? val : null)} />
           )}
           {currentStep === 3 && (
-            <Step3 onChange={(val) => setPendingValue(val.trim() || null)} />
+            <Step3
+              showErrors={showStepErrors}
+              onChange={(val) => setPendingValue(val.trim() || null)}
+            />
           )}
           {currentStep === 4 && (
-            <Step4 onChange={(val) => setPendingValue(
-              val.direccion.trim() && val.cedulaJuridica.trim() ? val : null
-            )} />
+            <Step4
+              showErrors={showStepErrors}
+              onChange={(val) => setPendingValue(
+                val.direccion.trim() && val.cedulaJuridica.trim() ? val : null
+              )}
+            />
           )}
           {currentStep === 5 && (
             <Step5 onChange={(val) => setPendingValue(val.length > 0 ? val : null)} />
           )}
-          {currentStep === 6 && <Step6 />}
+          {currentStep === 6 && <Step6 onLogoFile={(f) => { logoFileRef.current = f; }} />}
         </div>
       </div>
 
       <footer className="relative flex flex-col items-center gap-2 px-4 py-5 sm:px-8 sm:py-6">
-        {submitError && (
+        {footerMessage && (
           <p role="alert" className="w-full max-w-md text-center font-body text-xs text-red-500">
-            {submitError}
+            {footerMessage}
           </p>
         )}
         <div className="flex w-full items-center justify-between">
@@ -468,7 +621,7 @@ export function EmpresaOnboarding() {
           <button
             type="button"
             onClick={handleNext}
-            disabled={!canContinue}
+            disabled={isSubmitting}
             className="flex items-center gap-2 rounded-full bg-primary px-5 py-2.5 font-body text-sm font-semibold text-white transition-opacity duration-[--duration-fast] hover:opacity-90 disabled:cursor-not-allowed disabled:opacity-40 sm:px-6"
           >
             {isSubmitting ? t("nav.finishing") : currentStep === TOTAL_STEPS ? t("nav.finish") : t("nav.next")}
