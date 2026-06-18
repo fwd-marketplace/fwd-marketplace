@@ -101,3 +101,14 @@
     @apply bg-canvas text-ink;
   }
 } */
+
+/* ---- Marketplace hero sky: degradado vertical con tokens FWD ---- */
+.bg-marketplace-sky {
+  background-image: linear-gradient(
+    to bottom,
+    color-mix(in oklab, var(--secondary) 72%, var(--ink-strong)) 0%,
+    var(--secondary) 45%,
+    color-mix(in oklab, var(--secondary) 45%, var(--canvas)) 72%,
+    var(--canvas) 100%
+  );
+}
