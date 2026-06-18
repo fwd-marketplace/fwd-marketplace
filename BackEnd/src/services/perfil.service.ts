@@ -223,6 +223,8 @@ export async function updateMyPerfil(accessToken: string, userId: string, body: 
       .maybeSingle();
     if (error) throw new ApiError(400, error.message);
     if (!data) throw new ApiError(404, "No tenés un perfil de empresa");
+    // No se realizan consultas externas aquí.
+
     return data;
   }
 
