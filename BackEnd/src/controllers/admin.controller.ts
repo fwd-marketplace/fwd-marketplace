@@ -8,6 +8,7 @@ import {
   suspendUser,
   listAllProjects,
   cancelProject,
+  listAllStudents,
   listPendingStudents,
   verifyStudent,
   rejectStudent,
@@ -62,6 +63,12 @@ export async function cancel(req: Request, res: Response) {
   const id = readUuid(req.params.id, "del proyecto");
   const project = await cancelProject(getToken(req), id);
   res.status(200).json({ project });
+}
+
+/** GET /api/admin/students (todos los estudiantes — vista Talento) */
+export async function listStudents(req: Request, res: Response) {
+  const students = await listAllStudents(getToken(req));
+  res.status(200).json({ students });
 }
 
 /** GET /api/admin/students/pending (egresados FWD por verificar) */

@@ -1,6 +1,10 @@
 import { ApiError, apiAuth } from "@/lib/api-client";
 import { err, ok, type Result } from "@/lib/result";
-import type { AdminPendingUsersResponse, AdminProjectsResponse } from "@/lib/api/types";
+import type {
+  AdminPendingUsersResponse,
+  AdminProjectsResponse,
+  AdminStudentsResponse,
+} from "@/lib/api/types";
 
 async function asResult<T>(operation: () => Promise<T>): Promise<Result<T>> {
   try {
@@ -16,6 +20,10 @@ export function getPendingUsers(): Promise<Result<AdminPendingUsersResponse>> {
 
 export function getAdminProjects(): Promise<Result<AdminProjectsResponse>> {
   return asResult(() => apiAuth<AdminProjectsResponse>("/admin/projects"));
+}
+
+export function getAdminStudents(): Promise<Result<AdminStudentsResponse>> {
+  return asResult(() => apiAuth<AdminStudentsResponse>("/admin/students"));
 }
 
 export function approveAdminUser(userId: string): Promise<Result<void>> {

@@ -227,3 +227,22 @@ export type AdminProject = {
 export type AdminProjectsResponse = {
   projects: AdminProject[];
 };
+
+export type StudentVerification = "pendiente" | "verificado" | "rechazado";
+
+export type AdminStudent = {
+  id: string;
+  especialidad: string | null;
+  modalidad_preferida: string | null;
+  disponibilidad: string | null;
+  titulo_fwd: string | null;
+  estado_verificacion: StudentVerification;
+  reputacion: number | null;
+  url_avatar: string | null;
+  usuario: { id: string; nombre: string; apellido1: string | null; correo: string } | null;
+  skills: string[];
+};
+
+export type AdminStudentsResponse = {
+  students: AdminStudent[];
+};
