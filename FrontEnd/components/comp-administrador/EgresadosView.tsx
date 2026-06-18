@@ -5,8 +5,9 @@ import { GraduationCap, Briefcase, UserSearch, Rocket, AlertCircle, X } from "lu
 import { PageTitle } from "@/components/ui/page-title";
 import { Button } from "@/components/ui/button";
 import { FilterSelect, Pagination, EmptyRow } from "@/components/comp-administrador/admin-controls";
+import type { AdminStudent, StudentVerification } from "@/lib/api/types";
 
-type Status = "Buscando oportunidades" | "Contratado" | "Disponible" | "En proyecto";
+type Status = "Pendiente" | "Verificado" | "Rechazado";
 
 interface Egresado {
   uid: number;
@@ -25,11 +26,24 @@ interface Egresado {
 const PAGE_SIZE = 5;
 
 const STATUS_STYLES: Record<Status, string> = {
-  "Buscando oportunidades": "border-warning/30 bg-warning/10 text-warning",
-  Contratado: "border-accent/30 bg-accent/10 text-accent",
-  Disponible: "border-primary/30 bg-primary/10 text-primary",
-  "En proyecto": "border-secondary/30 bg-secondary/10 text-secondary",
+  Verificado: "border-accent/30 bg-accent/10 text-accent",
+  Pendiente: "border-warning/30 bg-warning/10 text-warning",
+  Rechazado: "border-magenta/30 bg-magenta/10 text-magenta",
 };
+
+/** Etiqueta visible del estado de verificación que devuelve el backend. */
+const STATUS_LABEL: Record<StudentVerification, Status> = {
+  verificado: "Verificado",
+  pendiente: "Pendiente",
+  rechazado: "Rechazado",
+};
+
+/** Iniciales a partir del nombre y primer apellido. */
+function toInitials(nombre: string, apellido: string | null): string {
+  const a = nombre.trim().charAt(0);
+  const b = (apellido ?? "").trim().charAt(0);
+  return (a + b).toUpperCase() || "?";
+}
 
 const STATS = [
   { icon: GraduationCap, iconBg: "bg-primary/10", iconTone: "text-primary", badge: "+8% mes", badgeTone: "bg-accent/10 text-accent", label: "Egresados Totales", value: "452" },
@@ -44,27 +58,43 @@ const TRACKING = [
   { label: "En proyectos", value: "13.0%", width: "13%", bar: "bg-secondary" },
 ];
 
-const EGRESADOS: Egresado[] = [
-  { uid: 1, initials: "LM", name: "Lucía Mendoza", email: "lucia.m@alumni.fwd", year: "2025", specialty: "Fullstack Dev", strengths: ["React", "Next.js", "TypeScript", "Node"], status: "Buscando oportunidades", company: "No contratado", companyMuted: true, last: "Hoy, 09:12" },
-  { uid: 2, initials: "JS", name: "Javier Solís", email: "j.solis@alumni.fwd", year: "2024", specialty: "UX/UI Designer", strengths: ["Figma", "Prototyping"], status: "Contratado", company: "Microsoft", companyMuted: false, last: "Hace días" },
-  { uid: 3, initials: "SV", name: "Sara Valadez", email: "sara.v@alumni.fwd", year: "2025", specialty: "Backend Dev", strengths: ["Python", "Django", "Postgres"], status: "Disponible", company: "No contratado", companyMuted: true, last: "Hace horas" },
-  { uid: 4, initials: "MO", name: "Mateo Ortega", email: "m.ortega@alumni.fwd", year: "2024", specialty: "Mobile Developer", strengths: ["Flutter", "Firebase"], status: "En proyecto", company: "IBM - Lab Project", companyMuted: false, last: "Ayer" },
-  { uid: 5, initials: "CR", name: "Carla Ramírez", email: "c.ramirez@alumni.fwd", year: "2023", specialty: "Fullstack Dev", strengths: ["React", "Node", "AWS"], status: "Contratado", company: "Globant", companyMuted: false, last: "Hace 2 días" },
-  { uid: 6, initials: "DP", name: "Diego Paredes", email: "d.paredes@alumni.fwd", year: "2025", specialty: "Backend Dev", strengths: ["Go", "Postgres", "Redis"], status: "Buscando oportunidades", company: "No contratado", companyMuted: true, last: "Hoy, 11:40" },
-  { uid: 7, initials: "VN", name: "Valeria Núñez", email: "v.nunez@alumni.fwd", year: "2024", specialty: "UX/UI Designer", strengths: ["Figma", "Research"], status: "Disponible", company: "No contratado", companyMuted: true, last: "Hace horas" },
-  { uid: 8, initials: "AF", name: "Andrés Fuentes", email: "a.fuentes@alumni.fwd", year: "2023", specialty: "Mobile Developer", strengths: ["Flutter", "Kotlin"], status: "En proyecto", company: "FWD Lab", companyMuted: false, last: "Ayer" },
-  { uid: 9, initials: "PM", name: "Paula Marín", email: "p.marin@alumni.fwd", year: "2025", specialty: "Fullstack Dev", strengths: ["Next.js", "TypeScript"], status: "Buscando oportunidades", company: "No contratado", companyMuted: true, last: "Hoy, 08:05" },
-  { uid: 10, initials: "RG", name: "Ricardo Gómez", email: "r.gomez@alumni.fwd", year: "2024", specialty: "Backend Dev", strengths: ["Python", "FastAPI"], status: "Contratado", company: "Amazon", companyMuted: false, last: "Hace 4 días" },
-  { uid: 11, initials: "IT", name: "Inés Torres", email: "i.torres@alumni.fwd", year: "2023", specialty: "UX/UI Designer", strengths: ["Figma", "Design Systems"], status: "Disponible", company: "No contratado", companyMuted: true, last: "Hace horas" },
-  { uid: 12, initials: "FM", name: "Felipe Mora", email: "f.mora@alumni.fwd", year: "2025", specialty: "Mobile Developer", strengths: ["React Native", "Firebase"], status: "En proyecto", company: "Rappi", companyMuted: false, last: "Ayer" },
-];
+const STATUSES = ["Todos", "Verificado", "Pendiente", "Rechazado"];
 
-const STATUSES = ["Todos", "Buscando oportunidades", "Contratado", "Disponible", "En proyecto"];
-const YEARS = ["Todos", "2025", "2024", "2023"];
-const SPECIALTIES = ["Todas", ...Array.from(new Set(EGRESADOS.map((e) => e.specialty)))];
-const STRENGTHS = ["Todas", ...Array.from(new Set(EGRESADOS.flatMap((e) => e.strengths)))];
+export function EgresadosView({ initialStudents }: { initialStudents: AdminStudent[] }) {
+  // Mapea los estudiantes del backend a las filas de la tabla. Los campos que el
+  // modelo no tiene (empresa actual, última actividad) quedan como "—".
+  const egresados = useMemo<Egresado[]>(
+    () =>
+      initialStudents.map((student, index) => ({
+        uid: index,
+        initials: toInitials(student.usuario?.nombre ?? "", student.usuario?.apellido1 ?? null),
+        name: [student.usuario?.nombre, student.usuario?.apellido1].filter(Boolean).join(" ") || "—",
+        email: student.usuario?.correo ?? "—",
+        year: student.titulo_fwd ?? "—",
+        specialty: student.especialidad ?? "—",
+        strengths: student.skills,
+        status: STATUS_LABEL[student.estado_verificacion],
+        company: "—",
+        companyMuted: true,
+        last: "—",
+      })),
+    [initialStudents],
+  );
 
-export function EgresadosView() {
+  // Filtros derivados de la data real (los estáticos quedan en STATUSES).
+  const YEARS = useMemo(
+    () => ["Todos", ...Array.from(new Set(egresados.map((e) => e.year)))],
+    [egresados],
+  );
+  const SPECIALTIES = useMemo(
+    () => ["Todas", ...Array.from(new Set(egresados.map((e) => e.specialty)))],
+    [egresados],
+  );
+  const STRENGTHS = useMemo(
+    () => ["Todas", ...Array.from(new Set(egresados.flatMap((e) => e.strengths)))],
+    [egresados],
+  );
+
   const [estado, setEstado] = useState("Todos");
   const [year, setYear] = useState("Todos");
   const [specialty, setSpecialty] = useState("Todas");
@@ -74,15 +104,15 @@ export function EgresadosView() {
   const [selected, setSelected] = useState<Set<number>>(new Set());
 
   const filtered = useMemo(() => {
-    return EGRESADOS.filter((person) => {
+    return egresados.filter((person) => {
       if (estado !== "Todos" && person.status !== estado) return false;
       if (year !== "Todos" && person.year !== year) return false;
       if (specialty !== "Todas" && person.specialty !== specialty) return false;
       if (strength !== "Todas" && !person.strengths.includes(strength)) return false;
-      if (needsOpportunity && person.status !== "Buscando oportunidades" && person.status !== "Disponible") return false;
+      if (needsOpportunity && person.status !== "Pendiente") return false;
       return true;
     });
-  }, [estado, year, specialty, strength, needsOpportunity]);
+  }, [egresados, estado, year, specialty, strength, needsOpportunity]);
 
   const pageCount = Math.max(1, Math.ceil(filtered.length / PAGE_SIZE));
   const safePage = Math.min(page, pageCount);
@@ -125,7 +155,7 @@ export function EgresadosView() {
     });
   }
 
-  const selectedList = EGRESADOS.filter((person) => selected.has(person.uid));
+  const selectedList = egresados.filter((person) => selected.has(person.uid));
 
   return (
     <div className="mx-auto max-w-7xl space-y-6 px-6 py-8 pb-28 md:px-10">
@@ -182,7 +212,7 @@ export function EgresadosView() {
               needsOpportunity ? "bg-warning/20 text-warning ring-warning/40" : "bg-warning/10 text-warning ring-warning/30"
             }`}
           >
-            <AlertCircle className="size-4" aria-hidden="true" /> Talento que requiere oportunidades
+            <AlertCircle className="size-4" aria-hidden="true" /> Solo pendientes de verificar
           </button>
           <button type="button" onClick={clearFilters} className="ml-auto inline-flex items-center gap-1.5 font-body text-sm font-semibold text-primary hover:underline">
             <X className="size-4" aria-hidden="true" /> Limpiar
