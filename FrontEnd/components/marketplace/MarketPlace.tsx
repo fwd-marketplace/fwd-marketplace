@@ -572,23 +572,16 @@ export default function MarketPlace({ initialProjects, catalogs, role = 'student
                 </div>
             </div>
 
-            {/* Ambient stars scattered in the cards area — spread as content grows */}
+            {/* Ambient stars scattered in the cards area */}
             <div className="pointer-events-none absolute inset-x-0 bottom-0 z-0" style={{ top: '420px' }} aria-hidden="true">
                 {([
-                    { t: '4%',  l: '1%',   s: 10, g: true,  sp: true,  o: 0.65, d: '3.2s', dl: '0.3s' },
-                    { t: '6%',  l: '97%',  s: 4,  g: false, sp: false, o: 0.4,  d: '2.8s', dl: '1.1s' },
-                    { t: '14%', l: '99%',  s: 10, g: true,  sp: true,  o: 0.7,  d: '3.6s', dl: '0.6s' },
-                    { t: '18%', l: '0.5%', s: 4,  g: false, sp: false, o: 0.45, d: '3.0s', dl: '1.4s' },
-                    { t: '26%', l: '2%',   s: 5,  g: true,  sp: false, o: 0.55, d: '2.6s', dl: '0.8s' },
-                    { t: '30%', l: '98%',  s: 4,  g: false, sp: false, o: 0.4,  d: '3.4s', dl: '0.2s' },
-                    { t: '40%', l: '0%',   s: 10, g: false, sp: true,  o: 0.6,  d: '3.1s', dl: '1.6s' },
-                    { t: '45%', l: '97%',  s: 5,  g: true,  sp: false, o: 0.6,  d: '2.9s', dl: '0.5s' },
-                    { t: '55%', l: '1.5%', s: 4,  g: false, sp: false, o: 0.45, d: '3.3s', dl: '1.0s' },
-                    { t: '60%', l: '99%',  s: 10, g: true,  sp: true,  o: 0.75, d: '2.7s', dl: '0.4s' },
-                    { t: '70%', l: '0.5%', s: 5,  g: false, sp: false, o: 0.5,  d: '3.5s', dl: '1.2s' },
-                    { t: '78%', l: '98%',  s: 4,  g: false, sp: false, o: 0.4,  d: '3.0s', dl: '0.7s' },
-                    { t: '86%', l: '2%',   s: 10, g: true,  sp: true,  o: 0.65, d: '2.8s', dl: '0.9s' },
-                    { t: '92%', l: '96%',  s: 5,  g: false, sp: false, o: 0.45, d: '3.2s', dl: '1.5s' },
+                    { t: '8%',  l: '1%',   s: 10, g: true,  sp: true,  o: 0.65, d: '3.2s', dl: '0.3s' },
+                    { t: '15%', l: '98%',  s: 10, g: true,  sp: true,  o: 0.7,  d: '3.6s', dl: '0.6s' },
+                    { t: '35%', l: '0.5%', s: 4,  g: false, sp: false, o: 0.45, d: '3.0s', dl: '1.4s' },
+                    { t: '45%', l: '99%',  s: 5,  g: true,  sp: false, o: 0.6,  d: '2.9s', dl: '0.5s' },
+                    { t: '62%', l: '1%',   s: 10, g: false, sp: true,  o: 0.6,  d: '3.1s', dl: '1.6s' },
+                    { t: '75%', l: '98%',  s: 10, g: true,  sp: true,  o: 0.75, d: '2.7s', dl: '0.4s' },
+                    { t: '88%', l: '2%',   s: 5,  g: false, sp: false, o: 0.5,  d: '3.5s', dl: '1.2s' },
                 ] as const).map((s, i) => {
                     const fill = s.g ? 'var(--highlight)' : 'var(--surface)';
                     if (s.sp) {
