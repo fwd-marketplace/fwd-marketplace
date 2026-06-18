@@ -107,13 +107,7 @@
 
 /* ---- Marketplace hero sky: degradado vertical con tokens FWD ---- */
 .bg-marketplace-sky {
-  background-image: linear-gradient(
-    to bottom,
-    color-mix(in oklab, var(--secondary) 72%, var(--ink-strong)) 0%,
-    var(--secondary) 45%,
-    color-mix(in oklab, var(--secondary) 45%, var(--canvas)) 72%,
-    color-mix(in oklab, var(--secondary) 38%, var(--canvas)) 100%
-  );
+  background-color: var(--secondary);
 }
 
 /* ---- Constelacion del logo FWD: cielo, campo de estrellas y animacion ---- */
