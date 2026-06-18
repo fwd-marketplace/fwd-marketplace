@@ -27,11 +27,14 @@ import {
     X,
 } from 'lucide-react';
 import { MarketplaceHeroBackdrop } from '@/components/marketplace/MarketplaceHeroBackdrop';
+import { buildSparklePoints } from '@/lib/logo-constellation';
+
+const CONTENT_SPARKLE_POINTS = buildSparklePoints(12, 12, 12);
 import { ProjectDetailSheet } from '@/components/marketplace/ProjectDetailSheet';
 import { Button } from '@/components/ui/button';
 import type { ApiProject, ApiRoleName, CatalogsResponse } from '@/lib/api/types';
 
-const PAGE_SIZE = 6;
+const PAGE_SIZE = 9;
 
 const MOCK_AREA_ID = {
     fintech: 'mock-area-1',
@@ -497,11 +500,11 @@ export default function MarketPlace({ initialProjects, catalogs, role = 'student
             alreadyApplied={sheetProject ? appliedProjectIds.includes(sheetProject.id) : false}
             isProjectExpired={sheetProject ? isExpired(sheetProject.fecha_cierre) : false}
         />
-        <div className="bg-marketplace-sky relative overflow-hidden min-h-screen text-ink font-body pb-20">
-            <MarketplaceHeroBackdrop />
+        <div className="bg-marketplace-sky relative min-h-screen text-ink font-body pb-20">
 
-            {/* Hero */}
-            <section className="relative z-10 px-6 pt-16 pb-40 md:pt-24 md:pb-52">
+            {/* Hero — backdrop is contained here so it never stretches with the cards */}
+            <section className="relative overflow-hidden z-10 px-6 pt-16 pb-40 md:pt-24 md:pb-52">
+                <MarketplaceHeroBackdrop />
                 <div className="relative z-10 mx-auto max-w-3xl text-center">
                     <h1 className="font-heading text-6xl md:text-7xl font-bold tracking-tight text-white">
                         {t('hero_title')}<span className="text-primary" aria-hidden="true">.</span>
@@ -569,17 +572,56 @@ export default function MarketPlace({ initialProjects, catalogs, role = 'student
                 </div>
             </div>
 
+            {/* Ambient stars scattered in the cards area — spread as content grows */}
+            <div className="pointer-events-none absolute inset-x-0 bottom-0 z-0" style={{ top: '420px' }} aria-hidden="true">
+                {([
+                    { t: '4%',  l: '1%',   s: 10, g: true,  sp: true,  o: 0.65, d: '3.2s', dl: '0.3s' },
+                    { t: '6%',  l: '97%',  s: 4,  g: false, sp: false, o: 0.4,  d: '2.8s', dl: '1.1s' },
+                    { t: '14%', l: '99%',  s: 10, g: true,  sp: true,  o: 0.7,  d: '3.6s', dl: '0.6s' },
+                    { t: '18%', l: '0.5%', s: 4,  g: false, sp: false, o: 0.45, d: '3.0s', dl: '1.4s' },
+                    { t: '26%', l: '2%',   s: 5,  g: true,  sp: false, o: 0.55, d: '2.6s', dl: '0.8s' },
+                    { t: '30%', l: '98%',  s: 4,  g: false, sp: false, o: 0.4,  d: '3.4s', dl: '0.2s' },
+                    { t: '40%', l: '0%',   s: 10, g: false, sp: true,  o: 0.6,  d: '3.1s', dl: '1.6s' },
+                    { t: '45%', l: '97%',  s: 5,  g: true,  sp: false, o: 0.6,  d: '2.9s', dl: '0.5s' },
+                    { t: '55%', l: '1.5%', s: 4,  g: false, sp: false, o: 0.45, d: '3.3s', dl: '1.0s' },
+                    { t: '60%', l: '99%',  s: 10, g: true,  sp: true,  o: 0.75, d: '2.7s', dl: '0.4s' },
+                    { t: '70%', l: '0.5%', s: 5,  g: false, sp: false, o: 0.5,  d: '3.5s', dl: '1.2s' },
+                    { t: '78%', l: '98%',  s: 4,  g: false, sp: false, o: 0.4,  d: '3.0s', dl: '0.7s' },
+                    { t: '86%', l: '2%',   s: 10, g: true,  sp: true,  o: 0.65, d: '2.8s', dl: '0.9s' },
+                    { t: '92%', l: '96%',  s: 5,  g: false, sp: false, o: 0.45, d: '3.2s', dl: '1.5s' },
+                ] as const).map((s, i) => {
+                    const fill = s.g ? 'var(--highlight)' : 'var(--surface)';
+                    if (s.sp) {
+                        return (
+                            <span key={i} className="absolute" style={{ top: s.t, left: s.l, opacity: s.o }}>
+                                <svg width={s.s} height={s.s} viewBox="0 0 24 24" fill="none"
+                                    style={{ display: 'block', filter: `drop-shadow(0 0 3px ${fill})`, animation: `constellation-spark-twinkle ${s.d} ease-in-out ${s.dl} infinite` }}>
+                                    <polygon points={CONTENT_SPARKLE_POINTS} fill={fill} />
+                                </svg>
+                            </span>
+                        );
+                    }
+                    return (
+                        <span key={i} className="absolute rounded-full" style={{
+                            top: s.t, left: s.l, width: s.s, height: s.s, background: fill,
+                            ['--star-opacity' as string]: s.o,
+                            animation: `constellation-twinkle ${s.d} ease-in-out ${s.dl} infinite`,
+                        }} />
+                    );
+                })}
+            </div>
+
             {/* Results */}
             <div className="max-w-6xl mx-auto px-6 mt-14 relative z-10">
                 <div className="flex items-center justify-between gap-4 mb-5">
-                    <p className="text-base font-bold text-ink-strong">
+                    <p className="text-sm font-semibold text-white">
                         {t('results_count', { count: totalResults })}
                     </p>
                     {hasActiveFilters && (
                         <button
                             type="button"
                             onClick={clearAllFilters}
-                            className="text-xs font-semibold text-primary hover:underline"
+                            className="text-sm font-semibold text-white hover:underline"
                         >
                             {t('clear_filters')}
                         </button>
@@ -684,13 +726,13 @@ export default function MarketPlace({ initialProjects, catalogs, role = 'student
                                             {skills.slice(0, 4).map((skill) => (
                                                 <span
                                                     key={skill.id}
-                                                    className="bg-ink-strong text-surface text-[11px] font-bold px-3 py-1 rounded-full uppercase tracking-wider"
+                                                    className="border border-primary text-primary text-[11px] font-bold px-3 py-1 rounded-full uppercase tracking-wider"
                                                 >
                                                     {skill.nombre}
                                                 </span>
                                             ))}
                                             {skills.length > 4 && (
-                                                <span className="bg-ink-strong text-surface text-[11px] font-bold px-3 py-1 rounded-full uppercase tracking-wider">
+                                                <span className="border border-primary text-primary text-[11px] font-bold px-3 py-1 rounded-full uppercase tracking-wider">
                                                     +{skills.length - 4}
                                                 </span>
                                             )}
@@ -705,7 +747,7 @@ export default function MarketPlace({ initialProjects, catalogs, role = 'student
                                             className={`flex-1 rounded-full px-5 py-2.5 text-sm font-semibold text-center transition-colors duration-[var(--duration-fast)] ease-[var(--ease-out)] ${
                                                 expired
                                                     ? 'bg-surface-sunken text-ink-muted cursor-default'
-                                                    : 'bg-primary text-primary-foreground hover:bg-secondary'
+                                                    : 'bg-secondary text-white hover:bg-secondary/80'
                                             }`}
                                         >
                                             {expired ? t('badge_expired') : hasApplied ? t('view_my_offer') : t('view_project')}
@@ -730,13 +772,13 @@ export default function MarketPlace({ initialProjects, catalogs, role = 'student
                                             aria-label={isSaved ? t('saved_project') : t('save_project')}
                                             aria-pressed={isSaved}
                                             onClick={() => toggleSaved(project.id)}
-                                            className={`size-10 shrink-0 flex items-center justify-center rounded-full transition-colors duration-[var(--duration-fast)] ease-[var(--ease-out)] ${
+                                            className={`size-10 shrink-0 flex items-center justify-center rounded-full border transition-colors duration-[var(--duration-fast)] ease-[var(--ease-out)] bg-highlight ${
                                                 isSaved
-                                                    ? 'bg-highlight text-highlight-foreground'
-                                                    : 'bg-ink-strong text-surface hover:bg-secondary'
+                                                    ? 'border-white text-white'
+                                                    : 'border-white text-white/0'
                                             }`}
                                         >
-                                            <Bookmark className={`w-4 h-4 ${isSaved ? 'fill-current' : ''}`} />
+                                            <Bookmark className={`w-4 h-4 stroke-white ${isSaved ? 'fill-white' : 'fill-none'}`} />
                                         </button>
                                     </div>
                                 </div>
