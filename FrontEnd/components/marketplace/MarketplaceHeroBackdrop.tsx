@@ -54,6 +54,27 @@ const SKY_STARS: readonly SkyStar[] = [
     { top: '90%', left: '76%', size: 6, color: 'gold', kind: 'dot', opacity: 0.7 },
     { top: '93%', left: '78%', size: 14, color: 'white', kind: 'sparkle', opacity: 0.85 },
     { top: '86%', left: '86%', size: 4, color: 'white', kind: 'dot', opacity: 0.4 },
+    // extra density
+    { top: '3%', left: '60%', size: 4, color: 'white', kind: 'dot', opacity: 0.45 },
+    { top: '8%', left: '38%', size: 5, color: 'white', kind: 'dot', opacity: 0.5 },
+    { top: '13%', left: '58%', size: 12, color: 'white', kind: 'sparkle', opacity: 0.8 },
+    { top: '4%', left: '82%', size: 4, color: 'white', kind: 'dot', opacity: 0.4 },
+    { top: '19%', left: '15%', size: 5, color: 'gold', kind: 'dot', opacity: 0.65 },
+    { top: '27%', left: '72%', size: 4, color: 'white', kind: 'dot', opacity: 0.5 },
+    { top: '29%', left: '44%', size: 12, color: 'gold', kind: 'sparkle', opacity: 0.75 },
+    { top: '36%', left: '20%', size: 4, color: 'white', kind: 'dot', opacity: 0.4 },
+    { top: '38%', left: '52%', size: 5, color: 'white', kind: 'dot', opacity: 0.55 },
+    { top: '45%', left: '78%', size: 12, color: 'white', kind: 'sparkle', opacity: 0.8 },
+    { top: '52%', left: '14%', size: 4, color: 'gold', kind: 'dot', opacity: 0.6 },
+    { top: '57%', left: '32%', size: 5, color: 'white', kind: 'dot', opacity: 0.45 },
+    { top: '59%', left: '56%', size: 4, color: 'white', kind: 'dot', opacity: 0.5 },
+    { top: '66%', left: '46%', size: 12, color: 'gold', kind: 'sparkle', opacity: 0.8 },
+    { top: '70%', left: '85%', size: 4, color: 'white', kind: 'dot', opacity: 0.45 },
+    { top: '77%', left: '39%', size: 5, color: 'white', kind: 'dot', opacity: 0.55 },
+    { top: '80%', left: '65%', size: 4, color: 'gold', kind: 'dot', opacity: 0.6 },
+    { top: '88%', left: '22%', size: 12, color: 'white', kind: 'sparkle', opacity: 0.75 },
+    { top: '95%', left: '48%', size: 4, color: 'white', kind: 'dot', opacity: 0.4 },
+    { top: '91%', left: '94%', size: 5, color: 'gold', kind: 'dot', opacity: 0.6 },
 ];
 
 function resolveStarFill(color: StarColor): string {
