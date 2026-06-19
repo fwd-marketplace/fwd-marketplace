@@ -46,7 +46,7 @@ export function PoliticasDePrivacidad() {
             </p>
             <ul className="list-disc pl-6 mt-2 space-y-2 text-ink-muted">
               <li>Facilitar la creación y gestión de tu cuenta en la plataforma.</li>
-              <li>Habilitar la herramienta de "matching", conectando perfiles de Juniors FWD con los requerimientos técnicos de los proyectos publicados por las Empresas.</li>
+              <li>Habilitar la herramienta de &quot;matching&quot;, conectando perfiles de Juniors FWD con los requerimientos técnicos de los proyectos publicados por las Empresas.</li>
               <li>Permitir la comunicación inicial y las postulaciones a proyectos.</li>
               <li>Enviar notificaciones importantes sobre el estado de tus proyectos, actualizaciones de la plataforma o cambios en nuestras políticas.</li>
               <li>Mejorar el rendimiento, la seguridad y la experiencia de usuario del marketplace.</li>
@@ -84,7 +84,7 @@ export function PoliticasDePrivacidad() {
           <section>
             <h2 className="font-heading text-2xl font-bold text-ink-strong mb-4">7. Tus Derechos</h2>
             <p>
-              Tienes el derecho de acceder, rectificar, actualizar o solicitar la eliminación de tu información personal en cualquier momento. Puedes gestionar la mayoría de tus datos directamente desde la sección "Perfil" en la plataforma. Si deseas ejercer algún derecho adicional o solicitar la eliminación completa de tu cuenta, puedes contactarnos.
+              Tienes el derecho de acceder, rectificar, actualizar o solicitar la eliminación de tu información personal en cualquier momento. Puedes gestionar la mayoría de tus datos directamente desde la sección &quot;Perfil&quot; en la plataforma. Si deseas ejercer algún derecho adicional o solicitar la eliminación completa de tu cuenta, puedes contactarnos.
             </p>
           </section>
 

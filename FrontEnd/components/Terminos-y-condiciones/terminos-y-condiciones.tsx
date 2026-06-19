@@ -24,14 +24,14 @@ export function TerminosYCondiciones() {
           <section>
             <h2 className="font-heading text-2xl font-bold text-ink-strong mb-4">1. Introducción y Aceptación</h2>
             <p>
-              Bienvenido al Marketplace de Proyectos Freelance de FWD Talent, una iniciativa de la Fundación Forward Costa Rica. Este documento constituye un acuerdo legalmente vinculante entre usted (el "Usuario") y la Fundación Forward Costa Rica ("la Fundación"). Al utilizar esta plataforma, usted acepta en su totalidad estos Términos y Condiciones.
+              Bienvenido al Marketplace de Proyectos Freelance de FWD Talent, una iniciativa de la Fundación Forward Costa Rica. Este documento constituye un acuerdo legalmente vinculante entre usted (el &quot;Usuario&quot;) y la Fundación Forward Costa Rica (&quot;la Fundación&quot;). Al utilizar esta plataforma, usted acepta en su totalidad estos Términos y Condiciones.
             </p>
           </section>
 
           <section>
             <h2 className="font-heading text-2xl font-bold text-ink-strong mb-4">2. Naturaleza del Servicio</h2>
             <p>
-              Nuestra plataforma funciona exclusivamente como un espacio de intermediación tecnológica. Su propósito es conectar a egresados de la Fundación ("Juniors FWD") con empresas o clientes ("Empresas") que buscan talento para proyectos de corta duración.
+              Nuestra plataforma funciona exclusivamente como un espacio de intermediación tecnológica. Su propósito es conectar a egresados de la Fundación (&quot;Juniors FWD&quot;) con empresas o clientes (&quot;Empresas&quot;) que buscan talento para proyectos de corta duración.
             </p>
           </section>
 
@@ -89,7 +89,7 @@ export function TerminosYCondiciones() {
           <section>
             <h2 className="font-heading text-2xl font-bold text-ink-strong mb-4">10. Proceso de Selección y Adjudicación</h2>
             <p>
-              La Empresa es la única responsable de evaluar y seleccionar al candidato idóneo. La Fundación ofrece herramientas de "matching", pero no garantiza la adjudicación, ni obliga a la Empresa a seleccionar a un Junior específico.
+              La Empresa es la única responsable de evaluar y seleccionar al candidato idóneo. La Fundación ofrece herramientas de &quot;matching&quot;, pero no garantiza la adjudicación, ni obliga a la Empresa a seleccionar a un Junior específico.
             </p>
           </section>
 
@@ -152,14 +152,14 @@ export function TerminosYCondiciones() {
           <section>
             <h2 className="font-heading text-2xl font-bold text-ink-strong mb-4">19. Responsabilidad y Limitaciones (Disclaimer)</h2>
             <p>
-              La Fundación provee la plataforma "tal cual" (as is) sin garantías implícitas. No seremos responsables por daños indirectos, lucro cesante, pérdida de datos o interrupciones de negocio derivados del uso de la plataforma o del resultado de los proyectos freelance.
+              La Fundación provee la plataforma &quot;tal cual&quot; (as is) sin garantías implícitas. No seremos responsables por daños indirectos, lucro cesante, pérdida de datos o interrupciones de negocio derivados del uso de la plataforma o del resultado de los proyectos freelance.
             </p>
           </section>
 
           <section>
             <h2 className="font-heading text-2xl font-bold text-ink-strong mb-4">20. Privacidad y Tratamiento de Datos</h2>
             <p>
-              Toda recolección y tratamiento de datos personales se rige por nuestra Política de Privacidad, alineada a las regulaciones nacionales pertinentes. La información se utiliza exclusivamente para fines de "matching" y operación de la plataforma.
+              Toda recolección y tratamiento de datos personales se rige por nuestra Política de Privacidad, alineada a las regulaciones nacionales pertinentes. La información se utiliza exclusivamente para fines de &quot;matching&quot; y operación de la plataforma.
             </p>
           </section>
 

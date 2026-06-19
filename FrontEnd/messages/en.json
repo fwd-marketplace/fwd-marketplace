@@ -3,6 +3,18 @@
     "name": "FWD Marketplace",
     "description": "Freelance project marketplace for junior graduates of Fundación Forward Costa Rica."
   },
+  "site_footer": {
+    "brand_name": "FWD Talent Marketplace",
+    "logo_alt": "Fundación Forward Costa Rica logo",
+    "description": "We connect junior talent who graduated from Fundación Forward with companies looking to build real projects.",
+    "links_title": "Resources",
+    "terms": "Terms of use",
+    "privacy": "Privacy policy",
+    "copyright": "© 2026 Fundación Forward Costa Rica",
+    "rights": "FWD Talent Marketplace • All rights reserved",
+    "facebook": "Follow Fundación Forward on Facebook",
+    "linkedin": "Follow Fundación Forward on LinkedIn"
+  },
   "nav": {
     "marketplace": "Marketplace",
     "metodologia": "Methodology",
@@ -209,6 +221,8 @@
       "terms_link": "Terms of Service",
       "terms_connector": "and the",
       "privacy_link": "Privacy Policy",
+      "login_link": "Sign in",
+      "back_home": "Back to home",
       "amcham_badge": "Endorsed by AmCham Costa Rica"
     },
     "junior": {
@@ -743,6 +757,7 @@
     "notifications": "Notifications",
     "user_menu": "User menu",
     "logout": "Log out",
+    "nav_home": "Home",
     "nav_marketplace": "Marketplace",
     "nav_my_applications": "My applications",
     "nav_mensajes": "Messages",
@@ -750,8 +765,17 @@
     "nav_my_projects": "My projects",
     "nav_postulaciones": "Applications",
     "nav_my_company": "My company",
+    "nav_terms": "Terms and conditions",
+    "nav_privacy": "Privacy",
+    "settings": "Settings",
+    "learning_map": "Learning map",
+    "logo_alt": "FWD Talent logo",
     "profile_link": "View profile",
-    "open_menu": "Open menu"
+    "open_menu": "Open menu",
+    "language": "Language",
+    "lang_es": "Español",
+    "lang_en": "English",
+    "dark_mode": "Dark mode"
   },
   "mis_postulaciones": {
     "title": "My applications",

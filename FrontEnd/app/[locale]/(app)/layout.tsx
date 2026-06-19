@@ -14,7 +14,7 @@ export default async function AppLayout({
 
   return (
     <div className="flex min-h-[100dvh] flex-col bg-canvas">
-      <AppHeader userName={userName} avatarUrl={avatarUrl} role={role} />
+      <AppHeader userName={userName} avatarUrl={avatarUrl} role={role} tone="student" />
       <main className="flex-1">{children}</main>
     </div>
   );

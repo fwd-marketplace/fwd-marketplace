@@ -3,7 +3,8 @@
 import { useState, useTransition } from "react";
 import { useTranslations } from "next-intl";
 import { useParams, useRouter } from "next/navigation";
-import { Eye, EyeOff } from "lucide-react";
+import Link from "next/link";
+import { ArrowLeft, Eye, EyeOff } from "lucide-react";
 import { FwdGeoBackdrop } from "@/components/ui/fwd-geo-backdrop";
 import { registerUser, startOAuth } from "@/lib/actions/auth";
 
@@ -221,6 +222,13 @@ export function RegisterForm() {
             >
               {isPending ? t("submitting") : t("submit")}
             </button>
+
+            <Link
+              href={`/${locale}/login`}
+              className="flex w-full items-center justify-center rounded-full border border-border-strong bg-surface px-6 py-3 font-body text-sm font-semibold text-ink-strong transition-colors duration-[--duration-fast] hover:bg-surface-sunken"
+            >
+              {t("login_link")}
+            </Link>
           </form>
 
           <p className="mt-6 text-center font-body text-xs text-ink-subtle">
@@ -234,6 +242,16 @@ export function RegisterForm() {
             </a>
             .
           </p>
+
+          <div className="mt-6 border-t border-border pt-6">
+            <Link
+              href={`/${locale}/home`}
+              className="flex w-full items-center justify-center gap-2 rounded-full px-6 py-3 font-body text-sm font-medium text-ink-muted transition-colors duration-[--duration-fast] hover:bg-surface-sunken hover:text-ink-strong"
+            >
+              <ArrowLeft size={16} strokeWidth={2} aria-hidden="true" />
+              {t("back_home")}
+            </Link>
+          </div>
         </div>
 
         <div className="mt-10 flex flex-col items-center gap-2">

@@ -3,6 +3,18 @@
     "name": "FWD Marketplace",
     "description": "Marketplace de proyectos freelance para juniors egresados de Fundación Forward Costa Rica."
   },
+  "site_footer": {
+    "brand_name": "FWD Talent Marketplace",
+    "logo_alt": "Logotipo de Fundación Forward Costa Rica",
+    "description": "Conectamos talento junior egresado de Fundación Forward con empresas que buscan desarrollar proyectos reales.",
+    "links_title": "Recursos",
+    "terms": "Términos de uso",
+    "privacy": "Políticas de privacidad",
+    "copyright": "© 2026 Fundación Forward Costa Rica",
+    "rights": "FWD Talent Marketplace • Todos los derechos reservados",
+    "facebook": "Seguir a Fundación Forward en Facebook",
+    "linkedin": "Seguir a Fundación Forward en LinkedIn"
+  },
   "nav": {
     "marketplace": "Marketplace",
     "metodologia": "Metodología",
@@ -209,6 +221,8 @@
       "terms_link": "Términos de Servicio",
       "terms_connector": "y la",
       "privacy_link": "Política de Privacidad",
+      "login_link": "Iniciar sesión",
+      "back_home": "Volver al inicio",
       "amcham_badge": "Avalado por AmCham Costa Rica"
     },
     "junior": {
@@ -762,6 +776,7 @@
     "notifications": "Notificaciones",
     "user_menu": "Menú de usuario",
     "logout": "Cerrar sesión",
+    "nav_home": "Inicio",
     "nav_marketplace": "Marketplace",
     "nav_my_applications": "Mis postulaciones",
     "nav_mensajes": "Mensajes",
@@ -769,8 +784,17 @@
     "nav_my_projects": "Mis proyectos",
     "nav_postulaciones": "Postulaciones",
     "nav_my_company": "Mi empresa",
+    "nav_terms": "Términos y condiciones",
+    "nav_privacy": "Políticas",
+    "settings": "Configuración",
+    "learning_map": "Mapa de aprendizaje",
+    "logo_alt": "Logotipo FWD Talent",
     "profile_link": "Ver perfil",
-    "open_menu": "Abrir menú"
+    "open_menu": "Abrir menú",
+    "language": "Idioma",
+    "lang_es": "Español",
+    "lang_en": "English",
+    "dark_mode": "Modo oscuro"
   },
   "mis_postulaciones": {
     "title": "Mis postulaciones",
