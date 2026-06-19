@@ -1732,6 +1732,19 @@
     "proceso_entregables_empty": "Aún no hay entregables enviados para este proyecto.",
     "proceso_no_offer": "No tenés una propuesta activa para este proyecto.",
     "empresa_proposals_label": "Propuestas recibidas",
-    "empresa_proposals_empty": "Aún no hay propuestas para este proyecto."
+    "empresa_proposals_empty": "Aún no hay propuestas para este proyecto.",
+    "proceso_propuestas_label": "Propuestas",
+    "proceso_propuesta_n": "Propuesta {n}",
+    "proceso_propuesta_placeholder": "Se habilita cuando la empresa solicite cambios.",
+    "proceso_documentacion_label": "Prototipo / Documentación",
+    "proceso_observaciones_label": "Observaciones y revisión",
+    "proceso_observaciones_empty": "Aún no hay observaciones de la empresa.",
+    "proceso_comentario_label": "Comentarios de revisión",
+    "proceso_comentario_placeholder": "Escribí tus comentarios aquí...",
+    "proceso_version_singular": "versión",
+    "proceso_accion_revision": "Marcar en revisión",
+    "proceso_accion_adjudicar": "Adjudicar",
+    "proceso_accion_cambios": "Solicitar cambios",
+    "proceso_accion_rechazar": "No seleccionar"
   }
 }

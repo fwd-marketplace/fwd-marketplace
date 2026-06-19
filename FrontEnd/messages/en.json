@@ -1678,6 +1678,19 @@
     "proceso_entregables_empty": "No deliverables submitted yet for this project.",
     "proceso_no_offer": "You have no active proposal for this project.",
     "empresa_proposals_label": "Received proposals",
-    "empresa_proposals_empty": "No proposals yet for this project."
+    "empresa_proposals_empty": "No proposals yet for this project.",
+    "proceso_propuestas_label": "Proposals",
+    "proceso_propuesta_n": "Proposal {n}",
+    "proceso_propuesta_placeholder": "Enabled when the company requests changes.",
+    "proceso_documentacion_label": "Prototype / Documentation",
+    "proceso_observaciones_label": "Observations & review",
+    "proceso_observaciones_empty": "No observations from the company yet.",
+    "proceso_comentario_label": "Review comments",
+    "proceso_comentario_placeholder": "Write your comments here...",
+    "proceso_version_singular": "version",
+    "proceso_accion_revision": "Mark as in review",
+    "proceso_accion_adjudicar": "Award",
+    "proceso_accion_cambios": "Request changes",
+    "proceso_accion_rechazar": "Don't select"
   }
 }

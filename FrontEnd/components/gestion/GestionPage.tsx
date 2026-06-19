@@ -1,8 +1,9 @@
 "use client";
 
-import { useState } from "react";
+import { useState, type ReactNode } from "react";
 import { useLocale, useTranslations } from "next-intl";
 import {
+  AlertCircle,
   ArrowLeft,
   Calendar,
   CheckCircle2,
@@ -13,7 +14,9 @@ import {
   FileText,
   FolderOpen,
   GitBranch,
+  Lock,
   MessageSquare,
+  X,
   Zap,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
@@ -52,6 +55,63 @@ const ENTREGABLE_STATE: Record<EntregableState, { label: string; cls: string }> 
   aprobado:    { label: "Aprobado",    cls: "bg-accent/10 text-accent border-accent/20" },
 };
 
+// Simulated empresa observations per project (mock only)
+const MOCK_OBSERVACIONES: Record<string, string> = {
+  "proj-1": "La propuesta es muy sólida. Sin embargo, necesitamos más detalle en el cronograma de entregas y confirmar la compatibilidad con la API de pagos actual. Ajustá el alcance de la primera fase y reenvía una nueva versión.",
+};
+
+// ── Circle helpers ─────────────────────────────────────────────────────────────
+
+function getCircleClasses(estado: OfferState): { bg: string; icon: ReactNode } {
+  switch (estado) {
+    case "enviada":
+      return {
+        bg: "border-2 border-primary/40 bg-transparent",
+        icon: <span className="font-heading text-xs font-bold text-primary">1</span>,
+      };
+    case "en_revision":
+      return {
+        bg: "bg-warning",
+        icon: <Clock className="size-4 text-white" aria-hidden="true" />,
+      };
+    case "adjudicada":
+      return {
+        bg: "bg-accent",
+        icon: <CheckCircle2 className="size-4 text-white" aria-hidden="true" />,
+      };
+    case "no_seleccionada":
+      return {
+        bg: "bg-ink-muted/50",
+        icon: <X className="size-4 text-white" aria-hidden="true" />,
+      };
+  }
+}
+
+function getCircleClassesSmall(estado: OfferState): { bg: string; icon: ReactNode } {
+  switch (estado) {
+    case "enviada":
+      return {
+        bg: "border-2 border-primary/40 bg-transparent",
+        icon: null,
+      };
+    case "en_revision":
+      return {
+        bg: "bg-warning",
+        icon: <Clock className="size-3.5 text-white" aria-hidden="true" />,
+      };
+    case "adjudicada":
+      return {
+        bg: "bg-accent",
+        icon: <CheckCircle2 className="size-3.5 text-white" aria-hidden="true" />,
+      };
+    case "no_seleccionada":
+      return {
+        bg: "bg-border",
+        icon: <X className="size-3.5 text-ink-muted" aria-hidden="true" />,
+      };
+  }
+}
+
 // ── Main component ─────────────────────────────────────────────────────────────
 
 interface Props {
@@ -66,8 +126,6 @@ export function GestionPage({ role }: Props) {
 
   const [selectedId, setSelectedId] = useState<string | null>(null);
   const [section, setSection]       = useState<Section>("info");
-
-  // ── Resolved data ────────────────────────────────────────────────────────
 
   const selectedProject: ApiProject | null = isEmpresa
     ? (MOCK_PROJECTS.find((p) => p.id === selectedId) ?? null)
@@ -84,16 +142,12 @@ export function GestionPage({ role }: Props) {
     ? MOCK_PROCESO_ENTREGABLES.filter((e) => e.id_proyecto === selectedId)
     : [];
 
-  // ── Handlers ─────────────────────────────────────────────────────────────
-
   const handleSelect = (id: string) => {
     setSelectedId(id);
     setSection("info");
   };
 
   const handleBack = () => setSelectedId(null);
-
-  // ── Render ────────────────────────────────────────────────────────────────
 
   return (
     <div className="flex h-[calc(100vh-4rem)] overflow-hidden">
@@ -108,7 +162,6 @@ export function GestionPage({ role }: Props) {
         )}
       >
         {!selectedId ? (
-          // ── Project list ───────────────────────────────────────────────
           <>
             <div className="shrink-0 border-b border-white/10 px-5 py-5">
               <p className="mb-1 font-body text-xs font-bold uppercase tracking-wider text-white/50">
@@ -187,7 +240,6 @@ export function GestionPage({ role }: Props) {
             </div>
           </>
         ) : (
-          // ── Project nav ────────────────────────────────────────────────
           <>
             <div className="shrink-0 border-b border-white/10 px-5 py-5">
               <button
@@ -248,7 +300,7 @@ export function GestionPage({ role }: Props) {
           <ContentEmpty text={t("select_project_prompt")} />
         ) : (
           <>
-            {/* Mobile back */}
+            {/* Mobile back bar */}
             <div className="sticky top-0 z-10 flex items-center gap-3 border-b border-border bg-canvas/95 px-4 py-3 backdrop-blur-sm md:hidden">
               <button
                 onClick={handleBack}
@@ -270,6 +322,7 @@ export function GestionPage({ role }: Props) {
                 offer={selectedOffer}
                 entregables={selectedEntregables}
                 projectOffers={projectOffers}
+                project={selectedProject}
                 locale={locale}
                 t={t}
               />
@@ -320,7 +373,6 @@ function InfoPanel({
 
   return (
     <div className="mx-auto max-w-2xl px-6 py-8 md:px-8">
-      {/* Title block */}
       <div className="mb-6">
         {project.area && (
           <p className="mb-1 font-body text-xs font-bold uppercase tracking-wider text-primary">
@@ -337,7 +389,6 @@ function InfoPanel({
         )}
       </div>
 
-      {/* Meta pills */}
       <div className="mb-6 flex flex-wrap gap-2">
         <span className="inline-flex items-center gap-1.5 rounded-full border border-border bg-surface px-3 py-1.5 font-body text-sm text-ink-muted">
           <Clock className="size-3.5" aria-hidden="true" />
@@ -360,7 +411,6 @@ function InfoPanel({
         )}
       </div>
 
-      {/* Description */}
       <div className="mb-4 rounded-2xl border border-border bg-surface p-5">
         <p className="mb-3 font-body text-xs font-bold uppercase tracking-wider text-ink-muted">
           {t("description_label")}
@@ -368,7 +418,6 @@ function InfoPanel({
         <p className="font-body text-base leading-relaxed text-ink">{project.descripcion}</p>
       </div>
 
-      {/* Skills */}
       {skills.length > 0 && (
         <div className="rounded-2xl border border-border bg-surface p-5">
           <p className="mb-3 font-body text-xs font-bold uppercase tracking-wider text-ink-muted">
@@ -415,6 +464,7 @@ function ProcesoPanel({
   offer,
   entregables,
   projectOffers,
+  project,
   locale,
   t,
 }: {
@@ -422,34 +472,86 @@ function ProcesoPanel({
   offer: MyOffer | null;
   entregables: Entregable[];
   projectOffers: ProjectOffer[];
+  project: ApiProject | null;
   locale: string;
   t: T;
 }) {
   if (isEmpresa) {
-    return <EmpresaProcesoView offers={projectOffers} locale={locale} t={t} />;
+    return <EmpresaProcesoView offers={projectOffers} project={project} locale={locale} t={t} />;
   }
-  return <JuniorProcesoView offer={offer} entregables={entregables} locale={locale} t={t} />;
+  return <JuniorProcesoView offer={offer} project={project} entregables={entregables} locale={locale} t={t} />;
+}
+
+// ── Link preview — browser mockup ──────────────────────────────────────────────
+
+function LinkPreview({
+  href,
+  title,
+  area,
+  excerpt,
+}: {
+  href: string;
+  title: string;
+  area?: string | undefined;
+  excerpt?: string | undefined;
+}) {
+  return (
+    <div className="overflow-hidden rounded-2xl border border-border">
+      {/* Browser chrome */}
+      <div className="flex items-center gap-2 border-b border-border bg-surface px-3 py-2.5">
+        <span className="size-2.5 rounded-full bg-magenta" aria-hidden="true" />
+        <span className="size-2.5 rounded-full bg-warning" aria-hidden="true" />
+        <span className="size-2.5 rounded-full bg-accent"  aria-hidden="true" />
+        <div className="ml-1 flex-1 truncate rounded-md border border-border bg-canvas px-3 py-1 font-body text-xs text-ink-muted">
+          {href}
+        </div>
+        <a
+          href={href}
+          target="_blank"
+          rel="noopener noreferrer"
+          className="inline-flex shrink-0 items-center gap-1 font-body text-xs font-semibold text-primary hover:underline"
+        >
+          <ExternalLink className="size-3" aria-hidden="true" />
+          Abrir
+        </a>
+      </div>
+      {/* Preview content */}
+      <div className="min-h-36 bg-gradient-to-b from-canvas to-surface px-7 py-6">
+        <p className="font-heading text-xl font-extrabold tracking-tight text-ink-strong line-clamp-1">
+          {title}
+        </p>
+        {area && (
+          <span className="mt-2 inline-block rounded-full bg-secondary/10 px-3 py-1 font-body text-xs font-semibold text-secondary">
+            {area}
+          </span>
+        )}
+        {excerpt && (
+          <p className="mt-3 font-body text-sm leading-relaxed text-ink-muted line-clamp-3">
+            {excerpt}
+          </p>
+        )}
+      </div>
+    </div>
+  );
 }
 
 // ── Junior proceso view ────────────────────────────────────────────────────────
 
-const TRACKER_STEPS = [
-  { key: "enviada",  label: "Propuesta enviada" },
-  { key: "revision", label: "En revisión" },
-  { key: "decision", label: "Decisión final" },
-];
-
 function JuniorProcesoView({
   offer,
+  project,
   entregables,
   locale,
   t,
 }: {
   offer: MyOffer | null;
+  project: ApiProject | null;
   entregables: Entregable[];
   locale: string;
   t: T;
 }) {
+  const [expandedV, setExpandedV] = useState<number>(1);
+
   if (!offer) {
     return (
       <div className="flex h-full flex-col items-center justify-center px-6 py-16 text-center">
@@ -459,26 +561,21 @@ function JuniorProcesoView({
     );
   }
 
-  const estado     = offer.estado.nombre;
-  const cfg        = OFFER_STATE_CONFIG[estado];
-  const isAdj      = estado === "adjudicada";
-  const isRejected = estado === "no_seleccionada";
-
-  const stepsDone: boolean[] = [true, false, false];
-  if (estado === "en_revision" || estado === "adjudicada" || estado === "no_seleccionada") {
-    stepsDone[1] = true;
-  }
-  if (estado === "adjudicada" || estado === "no_seleccionada") {
-    stepsDone[2] = true;
-  }
+  const estado        = offer.estado.nombre;
+  const cfg           = OFFER_STATE_CONFIG[estado];
+  const isAdj         = estado === "adjudicada";
+  const isRejected    = estado === "no_seleccionada";
+  const isFinal       = isAdj || isRejected;
+  const observaciones = project?.id ? (MOCK_OBSERVACIONES[project.id] ?? "") : "";
+  const circle        = getCircleClasses(estado);
 
   return (
     <div className="mx-auto max-w-2xl px-6 py-8 md:px-8">
 
-      {/* State banner */}
+      {/* Estado actual banner */}
       <div
         className={cn(
-          "mb-6 flex items-center gap-3 rounded-2xl border p-4",
+          "mb-6 flex items-center gap-4 rounded-2xl border p-5",
           isAdj      && "border-accent/30 bg-accent/5",
           isRejected && "border-magenta/20 bg-magenta/5",
           !isAdj && !isRejected && "border-border bg-surface",
@@ -489,127 +586,190 @@ function JuniorProcesoView({
           <p className="font-body text-xs font-bold uppercase tracking-wider text-ink-muted">
             {t("proceso_state_label")}
           </p>
-          <span className={cn("mt-1 inline-block rounded-full border px-3 py-1 font-body text-sm font-bold", cfg.badge)}>
+          <span className={cn(
+            "mt-1.5 inline-block rounded-full border px-3 py-1 font-body text-sm font-bold",
+            cfg.badge,
+          )}>
             {cfg.label}
           </span>
         </div>
       </div>
 
-      {/* Step tracker */}
-      <div className="mb-6 rounded-2xl border border-border bg-surface p-5">
+      {/* Propuestas stepper */}
+      <div className="rounded-2xl border border-border bg-surface p-5">
         <p className="mb-5 font-body text-xs font-bold uppercase tracking-wider text-ink-muted">
-          {t("proceso_tracker_label")}
+          {t("proceso_propuestas_label")}
         </p>
+
         <ol className="flex flex-col" role="list">
-          {TRACKER_STEPS.map((step, i) => {
-            const done       = stepsDone[i] === true;
-            const isFinal    = i === TRACKER_STEPS.length - 1;
-            const isRejFinal = isRejected && i === 2;
 
-            const circleClass = cn(
-              "flex size-7 shrink-0 items-center justify-center rounded-full border-2 transition-colors",
-              done
-                ? isRejFinal ? "border-magenta bg-magenta" : "border-accent bg-accent"
-                : "border-border bg-transparent",
-            );
+          {/* Version 1 — actual submitted offer */}
+          <li className="flex gap-4">
+            <div className="flex flex-col items-center">
+              <button
+                onClick={() => setExpandedV(expandedV === 1 ? 0 : 1)}
+                className={cn(
+                  "flex size-8 shrink-0 items-center justify-center rounded-full transition-colors duration-[var(--duration-fast)]",
+                  circle.bg,
+                )}
+                aria-label={t("proceso_propuesta_n", { n: 1 })}
+              >
+                {circle.icon}
+              </button>
+              {!isFinal && (
+                <div
+                  className="my-1 w-0.5 flex-1 bg-border"
+                  style={{ minHeight: "3rem" }}
+                  aria-hidden="true"
+                />
+              )}
+            </div>
 
-            const lineClass = cn(
-              "my-1 w-0.5 self-stretch",
-              done
-                ? isRejected && i >= 1 ? "bg-magenta/40" : "bg-accent"
-                : "bg-border",
-            );
-
-            return (
-              <li key={step.key} className="flex gap-4">
-                <div className="flex flex-col items-center">
-                  <div className={circleClass} aria-hidden="true">
-                    {done && <CheckCircle2 className="size-3.5 text-white" aria-hidden="true" />}
-                  </div>
-                  {!isFinal && (
-                    <div className={lineClass} style={{ minHeight: "2rem" }} aria-hidden="true" />
+            <div className={cn("min-w-0 flex-1", !isFinal && "pb-3")}>
+              {/* Version header row */}
+              <button
+                onClick={() => setExpandedV(expandedV === 1 ? 0 : 1)}
+                className="flex w-full items-center gap-2 text-left"
+              >
+                <span className="font-heading text-base font-bold text-ink-strong">
+                  {t("proceso_propuesta_n", { n: 1 })}
+                </span>
+                <span className="font-body text-xs text-ink-muted">
+                  · {new Date(offer.fecha_envio).toLocaleDateString(locale, {
+                    day: "numeric",
+                    month: "long",
+                  })}
+                </span>
+                <ChevronDown
+                  className={cn(
+                    "ml-auto size-4 shrink-0 text-ink-muted transition-transform duration-[var(--duration-fast)]",
+                    expandedV === 1 && "rotate-180",
                   )}
-                </div>
-                <div className={cn("pb-5", isFinal && "pb-0")}>
-                  <p className={cn(
-                    "font-heading text-sm font-bold",
-                    done ? "text-ink-strong" : "text-ink-muted",
-                  )}>
-                    {step.label}
-                  </p>
-                  {i === 0 && (
-                    <p className="mt-0.5 font-body text-xs text-ink-muted">
-                      {new Date(offer.fecha_envio).toLocaleDateString(locale, {
-                        day: "numeric",
-                        month: "long",
-                      })}
+                  aria-hidden="true"
+                />
+              </button>
+
+              <span className={cn(
+                "mt-1.5 inline-block rounded-full border px-2.5 py-0.5 font-body text-xs font-bold",
+                cfg.badge,
+              )}>
+                {cfg.label}
+              </span>
+
+              {/* Version detail */}
+              {expandedV === 1 && (
+                <div className="mt-4 flex flex-col gap-4">
+
+                  {/* Description */}
+                  <div className="rounded-xl border border-border bg-canvas p-4">
+                    <p className="mb-2 font-body text-xs font-bold uppercase tracking-wider text-ink-muted">
+                      {t("description_label")}
                     </p>
+                    <p className="font-body text-sm leading-relaxed text-ink">
+                      {offer.propuesta}
+                    </p>
+                  </div>
+
+                  {/* Link preview */}
+                  {offer.prototipo_url && (
+                    <div>
+                      <p className="mb-2 font-body text-xs font-bold uppercase tracking-wider text-ink-muted">
+                        {t("proceso_documentacion_label")}
+                      </p>
+                      <LinkPreview
+                        href={offer.prototipo_url}
+                        title={project?.titulo ?? t("proceso_propuesta_n", { n: 1 })}
+                        area={project?.area?.nombre}
+                        excerpt={offer.propuesta}
+                      />
+                    </div>
                   )}
+
+                  {/* Observaciones */}
+                  <div
+                    className={cn(
+                      "rounded-xl border p-4",
+                      observaciones
+                        ? "border-warning/30 bg-warning/5"
+                        : "border-border bg-canvas",
+                    )}
+                  >
+                    <div className="mb-2 flex items-center gap-2">
+                      {observaciones && (
+                        <AlertCircle className="size-4 shrink-0 text-warning" aria-hidden="true" />
+                      )}
+                      <p className="font-body text-xs font-bold uppercase tracking-wider text-ink-muted">
+                        {t("proceso_observaciones_label")}
+                      </p>
+                    </div>
+                    <p className="font-body text-sm leading-relaxed text-ink">
+                      {observaciones || t("proceso_observaciones_empty")}
+                    </p>
+                  </div>
                 </div>
-              </li>
-            );
-          })}
+              )}
+            </div>
+          </li>
+
+          {/* Placeholder version 2 — shown when not in final state */}
+          {!isFinal && (
+            <li className="flex gap-4 opacity-50">
+              <div className="flex flex-col items-center pt-0.5">
+                <div
+                  className="flex size-8 shrink-0 items-center justify-center rounded-full border-2 border-dashed border-border bg-transparent"
+                  aria-hidden="true"
+                >
+                  <Lock className="size-3.5 text-ink-muted" />
+                </div>
+              </div>
+              <div className="min-w-0 flex-1 py-1">
+                <p className="font-heading text-base font-bold text-ink-muted">
+                  {t("proceso_propuesta_n", { n: 2 })}
+                </p>
+                <p className="mt-1 font-body text-xs leading-relaxed text-ink-muted">
+                  {t("proceso_propuesta_placeholder")}
+                </p>
+              </div>
+            </li>
+          )}
         </ol>
       </div>
 
-      {/* Propuesta */}
-      <div className="mb-4 rounded-2xl border border-border bg-surface p-5">
-        <p className="mb-3 font-body text-xs font-bold uppercase tracking-wider text-ink-muted">
-          {t("proceso_tu_propuesta")}
-        </p>
-        <p className="font-body text-sm leading-relaxed text-ink">{offer.propuesta}</p>
-        {offer.prototipo_url && (
-          <a
-            href={offer.prototipo_url}
-            target="_blank"
-            rel="noopener noreferrer"
-            className="mt-3 inline-flex items-center gap-1.5 font-body text-sm font-semibold text-primary hover:underline"
-          >
-            <ExternalLink className="size-3.5" aria-hidden="true" />
-            Ver prototipo
-          </a>
-        )}
-      </div>
-
       {/* Entregables — only when adjudicada */}
-      {isAdj && (
-        <div className="rounded-2xl border border-border bg-surface p-5">
+      {isAdj && entregables.length > 0 && (
+        <div className="mt-4 rounded-2xl border border-border bg-surface p-5">
           <p className="mb-3 font-body text-xs font-bold uppercase tracking-wider text-ink-muted">
             {t("proceso_entregables_label")}
           </p>
-          {entregables.length === 0 ? (
-            <p className="font-body text-sm text-ink-muted">{t("proceso_entregables_empty")}</p>
-          ) : (
-            <ul className="flex flex-col gap-3">
-              {entregables.map((ent) => {
-                const stateInfo = ENTREGABLE_STATE[ent.estado.nombre];
-                return (
-                  <li
-                    key={ent.id}
-                    className="flex items-center gap-3 rounded-xl border border-border p-3"
-                  >
-                    <span className={cn("rounded-full border px-2.5 py-0.5 font-body text-xs font-bold", stateInfo.cls)}>
-                      {stateInfo.label}
-                    </span>
-                    <span className="flex-1 font-body text-sm font-semibold text-ink">
-                      {ent.tipo === "parcial" ? "Entrega parcial" : "Entrega final"} v{ent.version}
-                    </span>
-                    {ent.url && (
-                      <a
-                        href={ent.url}
-                        target="_blank"
-                        rel="noopener noreferrer"
-                        className="inline-flex items-center gap-1 font-body text-xs font-semibold text-primary hover:underline"
-                      >
-                        <ExternalLink className="size-3" aria-hidden="true" />
-                        Ver
-                      </a>
-                    )}
-                  </li>
-                );
-              })}
-            </ul>
-          )}
+          <ul className="flex flex-col gap-3">
+            {entregables.map((ent) => {
+              const stateInfo = ENTREGABLE_STATE[ent.estado.nombre];
+              return (
+                <li
+                  key={ent.id}
+                  className="flex items-center gap-3 rounded-xl border border-border p-3"
+                >
+                  <span className={cn("rounded-full border px-2.5 py-0.5 font-body text-xs font-bold", stateInfo.cls)}>
+                    {stateInfo.label}
+                  </span>
+                  <span className="flex-1 font-body text-sm font-semibold text-ink">
+                    {ent.tipo === "parcial" ? "Entrega parcial" : "Entrega final"} v{ent.version}
+                  </span>
+                  {ent.url && (
+                    <a
+                      href={ent.url}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="inline-flex items-center gap-1 font-body text-xs font-semibold text-primary hover:underline"
+                    >
+                      <ExternalLink className="size-3" aria-hidden="true" />
+                      Ver
+                    </a>
+                  )}
+                </li>
+              );
+            })}
+          </ul>
         </div>
       )}
     </div>
@@ -620,14 +780,19 @@ function JuniorProcesoView({
 
 function EmpresaProcesoView({
   offers,
+  project,
   locale,
   t,
 }: {
   offers: ProjectOffer[];
+  project: ApiProject | null;
   locale: string;
   t: T;
 }) {
-  const [expandedId, setExpandedId] = useState<string | null>(null);
+  const [expandedStudentId, setExpandedStudentId] = useState<string | null>(null);
+  const [expandedVersionId, setExpandedVersionId] = useState<string | null>(null);
+  const [localStates, setLocalStates]             = useState<Record<string, OfferState>>({});
+  const [comments, setComments]                   = useState<Record<string, string>>({});
 
   const sorted = [...offers].sort((a, b) => {
     const ORDER: Record<OfferState, number> = {
@@ -635,6 +800,24 @@ function EmpresaProcesoView({
     };
     return ORDER[a.estado.nombre] - ORDER[b.estado.nombre];
   });
+
+  const toggleStudent = (id: string) => {
+    if (expandedStudentId === id) {
+      setExpandedStudentId(null);
+      setExpandedVersionId(null);
+    } else {
+      setExpandedStudentId(id);
+      setExpandedVersionId(null);
+    }
+  };
+
+  const toggleVersion = (key: string) => {
+    setExpandedVersionId(expandedVersionId === key ? null : key);
+  };
+
+  const changeState = (offerId: string, newState: OfferState) => {
+    setLocalStates((prev) => ({ ...prev, [offerId]: newState }));
+  };
 
   return (
     <div>
@@ -656,14 +839,17 @@ function EmpresaProcesoView({
       ) : (
         <ul className="divide-y divide-border">
           {sorted.map((oferta) => {
-            const estado     = oferta.estado.nombre;
-            const cfg        = OFFER_STATE_CONFIG[estado];
-            const isAdj      = estado === "adjudicada";
-            const isRejected = estado === "no_seleccionada";
-            const isExpanded = expandedId === oferta.id;
-            const initials   = (
+            const effectiveState = localStates[oferta.id] ?? oferta.estado.nombre;
+            const cfg            = OFFER_STATE_CONFIG[effectiveState];
+            const isAdj          = effectiveState === "adjudicada";
+            const isRejected     = effectiveState === "no_seleccionada";
+            const isExpanded     = expandedStudentId === oferta.id;
+            const versionKey     = `${oferta.id}-0`;
+            const isVExpanded    = expandedVersionId === versionKey;
+            const initials       = (
               (oferta.junior.nombre[0] ?? "") + (oferta.junior.apellido1?.[0] ?? "")
             ).toUpperCase();
+            const circle         = getCircleClassesSmall(effectiveState);
 
             return (
               <li
@@ -673,9 +859,9 @@ function EmpresaProcesoView({
                   isRejected && !isExpanded && "opacity-50",
                 )}
               >
-                {/* Row */}
+                {/* Student row */}
                 <button
-                  onClick={() => setExpandedId(isExpanded ? null : oferta.id)}
+                  onClick={() => toggleStudent(oferta.id)}
                   className={cn(
                     "flex w-full items-center gap-4 px-6 py-4 text-left transition-colors duration-[var(--duration-fast)] ease-[var(--ease-out)] md:px-8",
                     isAdj ? "bg-accent/5 hover:bg-accent/8" : "hover:bg-surface",
@@ -692,11 +878,15 @@ function EmpresaProcesoView({
                     {initials}
                   </div>
 
-                  {/* Name + date */}
                   <div className="min-w-0 flex-1">
-                    <p className="font-heading text-base font-bold text-ink-strong">
-                      {oferta.junior.nombre} {oferta.junior.apellido1}
-                    </p>
+                    <div className="flex flex-wrap items-center gap-2">
+                      <p className="font-heading text-base font-bold text-ink-strong">
+                        {oferta.junior.nombre} {oferta.junior.apellido1}
+                      </p>
+                      <span className="rounded-full border border-border bg-surface px-2.5 py-0.5 font-body text-xs text-ink-muted">
+                        1 {t("proceso_version_singular")}
+                      </span>
+                    </div>
                     <p className="mt-0.5 font-body text-xs text-ink-muted">
                       {new Date(oferta.fecha_envio).toLocaleDateString(locale, {
                         day: "numeric",
@@ -705,7 +895,6 @@ function EmpresaProcesoView({
                     </p>
                   </div>
 
-                  {/* State badge — hidden on xs */}
                   <span className={cn(
                     "hidden rounded-full border px-3 py-1 font-body text-xs font-bold sm:inline-block",
                     cfg.badge,
@@ -726,35 +915,150 @@ function EmpresaProcesoView({
                   />
                 </button>
 
-                {/* Expanded */}
+                {/* Expanded — version sub-stepper */}
                 {isExpanded && (
-                  <div className="border-t border-border bg-canvas px-6 py-6 md:px-8">
-                    {/* State badge on mobile */}
-                    <span className={cn(
-                      "mb-4 inline-block rounded-full border px-3 py-1 font-body text-xs font-bold sm:hidden",
-                      cfg.badge,
-                    )}>
-                      {cfg.label}
-                    </span>
-
-                    <p className="mb-2 font-body text-xs font-bold uppercase tracking-wider text-ink-muted">
-                      {t("proceso_tu_propuesta")}
-                    </p>
-                    <p className="mb-4 font-body text-sm leading-relaxed text-ink">
-                      {oferta.propuesta}
+                  <div className="border-t border-border bg-canvas px-6 pb-8 pt-5 md:px-10">
+                    <p className="mb-5 font-body text-xs font-bold uppercase tracking-wider text-ink-muted">
+                      {t("proceso_propuestas_label")}
                     </p>
 
-                    {oferta.prototipo_url && (
-                      <a
-                        href={oferta.prototipo_url}
-                        target="_blank"
-                        rel="noopener noreferrer"
-                        className="inline-flex items-center gap-1.5 font-body text-sm font-semibold text-primary hover:underline"
-                      >
-                        <ExternalLink className="size-3.5" aria-hidden="true" />
-                        Ver prototipo / portafolio
-                      </a>
-                    )}
+                    <ol className="flex flex-col" role="list">
+                      <li className="flex gap-4">
+                        {/* Circle */}
+                        <div className="flex flex-col items-center pt-0.5">
+                          <div
+                            className={cn(
+                              "flex size-7 shrink-0 items-center justify-center rounded-full",
+                              circle.bg,
+                            )}
+                            aria-hidden="true"
+                          >
+                            {circle.icon}
+                          </div>
+                        </div>
+
+                        <div className="min-w-0 flex-1">
+                          {/* Version header */}
+                          <button
+                            onClick={() => toggleVersion(versionKey)}
+                            className="flex w-full items-center gap-2 text-left"
+                          >
+                            <span className="font-heading text-sm font-bold text-ink-strong">
+                              {t("proceso_propuesta_n", { n: 1 })}
+                            </span>
+                            <span className="font-body text-xs text-ink-muted">
+                              · {new Date(oferta.fecha_envio).toLocaleDateString(locale, {
+                                day: "numeric",
+                                month: "long",
+                              })}
+                            </span>
+                            <ChevronDown
+                              className={cn(
+                                "ml-auto size-4 shrink-0 text-ink-muted transition-transform duration-[var(--duration-fast)]",
+                                isVExpanded && "rotate-180",
+                              )}
+                              aria-hidden="true"
+                            />
+                          </button>
+
+                          {/* Mobile badge */}
+                          <span className={cn(
+                            "mt-1.5 inline-block rounded-full border px-2.5 py-0.5 font-body text-xs font-bold sm:hidden",
+                            cfg.badge,
+                          )}>
+                            {cfg.label}
+                          </span>
+
+                          {/* Version detail */}
+                          {isVExpanded && (
+                            <div className="mt-4 flex flex-col gap-4">
+
+                              {/* Description */}
+                              <div className="rounded-xl border border-border bg-surface p-4">
+                                <p className="mb-2 font-body text-xs font-bold uppercase tracking-wider text-ink-muted">
+                                  {t("description_label")}
+                                </p>
+                                <p className="font-body text-sm leading-relaxed text-ink">
+                                  {oferta.propuesta}
+                                </p>
+                              </div>
+
+                              {/* Link preview */}
+                              {oferta.prototipo_url && (
+                                <LinkPreview
+                                  href={oferta.prototipo_url}
+                                  title={project?.titulo ?? t("proceso_propuesta_n", { n: 1 })}
+                                  area={project?.area?.nombre}
+                                  excerpt={oferta.propuesta}
+                                />
+                              )}
+
+                              {/* Review comments */}
+                              <div>
+                                <label
+                                  htmlFor={`comentario-${oferta.id}`}
+                                  className="mb-2 block font-body text-xs font-bold uppercase tracking-wider text-ink-muted"
+                                >
+                                  {t("proceso_comentario_label")}
+                                </label>
+                                <textarea
+                                  id={`comentario-${oferta.id}`}
+                                  rows={3}
+                                  value={comments[oferta.id] ?? ""}
+                                  onChange={(e) =>
+                                    setComments((prev) => ({ ...prev, [oferta.id]: e.target.value }))
+                                  }
+                                  placeholder={t("proceso_comentario_placeholder")}
+                                  className="w-full resize-none rounded-xl border border-border bg-surface p-3 font-body text-sm text-ink placeholder:text-ink-muted/60 focus:border-primary focus:outline-none focus:ring-2 focus:ring-primary/20"
+                                />
+                              </div>
+
+                              {/* Action buttons */}
+                              <div className="flex flex-wrap gap-2">
+                                {effectiveState === "enviada" && (
+                                  <button
+                                    onClick={() => changeState(oferta.id, "en_revision")}
+                                    className="rounded-full bg-primary px-4 py-2 font-body text-sm font-bold text-white transition-colors duration-[var(--duration-fast)] hover:bg-primary/80"
+                                  >
+                                    {t("proceso_accion_revision")}
+                                  </button>
+                                )}
+                                {effectiveState === "en_revision" && (
+                                  <>
+                                    <button
+                                      onClick={() => changeState(oferta.id, "adjudicada")}
+                                      className="rounded-full bg-accent px-4 py-2 font-body text-sm font-bold text-white transition-colors duration-[var(--duration-fast)] hover:bg-accent/80"
+                                    >
+                                      {t("proceso_accion_adjudicar")}
+                                    </button>
+                                    <button
+                                      onClick={() => changeState(oferta.id, "enviada")}
+                                      className="rounded-full bg-warning px-4 py-2 font-body text-sm font-bold text-white transition-colors duration-[var(--duration-fast)] hover:bg-warning/80"
+                                    >
+                                      {t("proceso_accion_cambios")}
+                                    </button>
+                                    <button
+                                      onClick={() => changeState(oferta.id, "no_seleccionada")}
+                                      className="rounded-full border border-magenta/30 bg-transparent px-4 py-2 font-body text-sm font-bold text-magenta transition-colors duration-[var(--duration-fast)] hover:bg-magenta/5"
+                                    >
+                                      {t("proceso_accion_rechazar")}
+                                    </button>
+                                  </>
+                                )}
+                                {(effectiveState === "adjudicada" || effectiveState === "no_seleccionada") && (
+                                  <span className={cn(
+                                    "rounded-full border px-4 py-2 font-body text-sm font-bold",
+                                    cfg.badge,
+                                  )}>
+                                    {cfg.label}
+                                  </span>
+                                )}
+                              </div>
+                            </div>
+                          )}
+                        </div>
+                      </li>
+                    </ol>
                   </div>
                 )}
               </li>
