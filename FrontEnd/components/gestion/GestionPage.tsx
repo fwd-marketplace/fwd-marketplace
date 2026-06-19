@@ -435,7 +435,7 @@ function InfoPanel({ project, locale, t }: { project: ApiProject | null; locale:
   if (!project) return null;
   const skills = project.skills.filter((s) => s.skill != null);
   return (
-    <div className="mx-auto max-w-[880px] px-6 py-12 md:px-14">
+    <div className="px-6 py-10 md:px-10">
       <div className="mb-6">
         {project.area && (
           <p className="mb-1 font-body text-xs font-bold uppercase tracking-wider text-primary">
@@ -582,7 +582,7 @@ function JuniorProcesoView({
   const [proposals, setProposals] = useState<JuniorProposal[]>(
     () => initJuniorProposals(offer, project),
   );
-  const [closed, setClosed] = useState(false);
+  const closed = false;
 
   // ── State helpers ────────────────────────────────────────────────────────
   const patch = (i: number, p: Partial<JuniorProposal>) =>
@@ -637,7 +637,7 @@ function JuniorProcesoView({
   else if (lastReal?.status === "cambios") lockCaption = t("proceso_placeholder_cambios");
 
   return (
-    <div className="mx-auto max-w-[880px] px-6 py-12 md:px-14">
+    <div className="px-6 py-10 md:px-10">
 
       {/* Card 1 — Estado actual */}
       <div className="mb-5 rounded-2xl border border-border bg-surface px-7 py-[22px] shadow-sm">
