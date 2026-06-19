@@ -19,7 +19,7 @@ export default async function MarketplacePage({ params }: Props) {
   const projects = projectsResult.ok ? projectsResult.data.projects : [];
   const catalogs = catalogsResult.ok
     ? catalogsResult.data
-    : { areas: [], skills: [], projectStates: [] };
+    : { areas: [], skills: [], projectStates: [], conocimientos: [] };
 
   const appliedProjectIds = offersResult.ok
     ? offersResult.data.ofertas.flatMap((o) => (o.proyecto ? [o.proyecto.id] : []))

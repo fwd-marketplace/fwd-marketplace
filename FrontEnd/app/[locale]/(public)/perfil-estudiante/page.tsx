@@ -9,7 +9,7 @@ import {
   type ApplicationStats,
   type StudentProfile,
 } from "@/app/[locale]/(public)/perfil-estudiante/types";
-import { getMyOffers } from "@/lib/api/marketplace";
+import { getCatalogs, getMyOffers } from "@/lib/api/marketplace";
 import { getMe } from "@/lib/api/profile";
 import { parseJsonStringArray } from "@/lib/api/safe-json";
 import type { ApiMeProfile, MyOffer, OfferState } from "@/lib/api/types";
@@ -29,6 +29,7 @@ const EMPTY_PROFILE: StudentProfile = {
   bio: "",
   badges: [],
   skills: [],
+  conocimientos: [],
   avatarUrl: "",
   links: {},
   reputacion: null,
@@ -71,6 +72,7 @@ function mapProfile(profile: ApiMeProfile | null): StudentProfile {
     bio: estudiante?.descripcion ?? "",
     badges: modalidades,
     skills: estudiante?.skills ?? [],
+    conocimientos: estudiante?.conocimientos ?? [],
     avatarUrl: estudiante?.url_avatar ?? "",
     links,
     reputacion: estudiante?.reputacion ?? null,
@@ -99,10 +101,17 @@ function buildStats(applications: Application[]): ApplicationStats {
 export default async function EstudianteProfile({ params }: Props) {
   const { locale } = await params;
   setRequestLocale(locale);
-  const [meResult, offersResult] = await Promise.all([getMe(), getMyOffers()]);
+  const [meResult, offersResult, catalogsResult] = await Promise.all([
+    getMe(),
+    getMyOffers(),
+    getCatalogs(),
+  ]);
   const profile = mapProfile(meResult.ok ? meResult.data.profile : null);
   const applications = offersResult.ok ? offersResult.data.ofertas.map(mapOffer) : [];
   const activities: Activity[] = [];
+  const knowledgeSuggestions = catalogsResult.ok
+    ? catalogsResult.data.conocimientos.map((conocimiento) => conocimiento.nombre)
+    : [];
 
   return (
     <div className="flex min-h-[100dvh] flex-col bg-canvas">
@@ -113,6 +122,7 @@ export default async function EstudianteProfile({ params }: Props) {
         initialActivities={activities}
         initialApplications={applications}
         stats={buildStats(applications)}
+        knowledgeSuggestions={knowledgeSuggestions}
       />
     </div>
   );

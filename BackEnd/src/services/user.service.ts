@@ -238,6 +238,20 @@ async function getEstudianteSkills(
   return (skills ?? []).map((skill) => skill.nombre);
 }
 
+/** Conocimientos adicionales (no técnicos) de un estudiante (`estudiante_conocimiento`). */
+async function getEstudianteConocimientos(
+  client: ReturnType<typeof supabaseForToken>,
+  estudianteId: string,
+): Promise<string[]> {
+  const { data, error } = await client
+    .from("estudiante_conocimiento")
+    .select("nombre")
+    .eq("id_estudiante", estudianteId);
+  if (error) throw new ApiError(500, error.message);
+
+  return (data ?? []).map((row) => row.nombre);
+}
+
 /**
  * Devuelve el perfil del usuario en la BD (fila `users` + nombre del rol),
  * o `null` si todavía no completó el onboarding. Para el junior anida además
@@ -267,7 +281,10 @@ export async function getMyProfile(accessToken: string, userId: string) {
     if (estudianteError) throw new ApiError(500, estudianteError.message);
     if (!estudiante) return { ...user, estudiante: null };
 
-    const skills = await getEstudianteSkills(client, estudiante.id);
+    const [skills, conocimientos] = await Promise.all([
+      getEstudianteSkills(client, estudiante.id),
+      getEstudianteConocimientos(client, estudiante.id),
+    ]);
     return {
       ...user,
       estudiante: {
@@ -283,6 +300,7 @@ export async function getMyProfile(accessToken: string, userId: string) {
         url_linkedin: estudiante.url_linkedin,
         url_portfolio: estudiante.url_portfolio,
         skills,
+        conocimientos,
       },
     };
   }

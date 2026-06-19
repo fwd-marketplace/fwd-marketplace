@@ -980,6 +980,47 @@ export type Database = {
           },
         ]
       }
+      conocimiento: {
+        Row: {
+          categoria: string | null
+          id: string
+          nombre: string
+        }
+        Insert: {
+          categoria?: string | null
+          id?: string
+          nombre: string
+        }
+        Update: {
+          categoria?: string | null
+          id?: string
+          nombre?: string
+        }
+        Relationships: []
+      }
+      estudiante_conocimiento: {
+        Row: {
+          id_estudiante: string
+          nombre: string
+        }
+        Insert: {
+          id_estudiante: string
+          nombre: string
+        }
+        Update: {
+          id_estudiante?: string
+          nombre?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "estudiante_conocimiento_id_estudiante_fkey"
+            columns: ["id_estudiante"]
+            isOneToOne: false
+            referencedRelation: "estudiante"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       skills: {
         Row: {
           categoria: string | null

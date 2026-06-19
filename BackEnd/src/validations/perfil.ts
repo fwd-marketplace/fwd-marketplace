@@ -23,6 +23,10 @@ export const PerfilEstudianteSchema = z
     modalidad: z.array(z.string().min(1)).optional(),
     disponibilidad: z.enum(["immediate", "two_weeks", "one_month", "unavailable"]).optional(),
     skills: z.array(z.string().min(1)).optional(),
+    // Conocimientos adicionales no técnicos (contabilidad, RRHH, etc.). Admite
+    // valores libres además de los del catálogo de sugerencias; se acotan en
+    // largo y cantidad para evitar abuso.
+    conocimientos: z.array(z.string().min(1).max(60)).max(30).optional(),
     link_github: optionalUrl,
     link_linkedin: optionalUrl,
     link_portfolio: optionalUrl,

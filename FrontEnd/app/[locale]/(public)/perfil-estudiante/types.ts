@@ -9,6 +9,7 @@ export interface StudentProfile {
   bio: string;
   badges: string[];
   skills: string[];
+  conocimientos: string[];
   avatarUrl: string;
   links: {
     github?: string;
