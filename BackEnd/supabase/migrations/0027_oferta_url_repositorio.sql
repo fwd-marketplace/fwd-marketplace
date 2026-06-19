@@ -1,4 +1,4 @@
--- 0026_oferta_url_repositorio.sql
+-- 0027_oferta_url_repositorio.sql
 -- Repositorio del prototipo en la propuesta del junior. Junto con prototipo_url
 -- (deploy embebible) y documentacion_url/documentacion_tecnica (link y notas),
 -- permite que la empresa revise el demo más allá de lo visual. La visibilidad de
