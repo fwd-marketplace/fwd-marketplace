@@ -379,13 +379,17 @@ function UserMenu({
               <DropdownMenu.Separator className="my-1 h-px bg-border" />
               <DropdownMenu.Item
                 onSelect={handleSwitchLanguage}
-                className="flex cursor-pointer items-center justify-between gap-3 rounded-lg px-3 py-2 font-body text-sm font-medium text-ink outline-none transition-colors duration-[var(--duration-fast)] ease-[var(--ease-out)] hover:bg-surface-sunken data-highlighted:bg-surface-sunken"
+                aria-label={t("language")}
+                className="flex cursor-pointer items-center justify-center gap-2 rounded-lg px-3 py-2 font-body text-sm font-medium text-ink outline-none transition-colors duration-[var(--duration-fast)] ease-[var(--ease-out)] hover:bg-surface-sunken data-highlighted:bg-surface-sunken"
               >
-                <span className="flex items-center gap-2">
-                  <Languages className="size-4" aria-hidden="true" />
-                  {t("language")}
+                <Languages className="size-4 text-ink-muted" aria-hidden="true" />
+                <span className={cn("text-xs font-semibold", !isEnglish ? "text-primary" : "text-ink-subtle")}>
+                  {t("lang_es")}
                 </span>
                 <Switch checked={isEnglish} tabIndex={-1} aria-hidden="true" className="pointer-events-none" />
+                <span className={cn("text-xs font-semibold", isEnglish ? "text-primary" : "text-ink-subtle")}>
+                  {t("lang_en")}
+                </span>
               </DropdownMenu.Item>
               <DropdownMenu.Item
                 onSelect={(event) => {
@@ -479,13 +483,22 @@ function UserMenu({
                         setMobileOpen(false);
                         handleSwitchLanguage();
                       }}
+                      aria-label={t("language")}
                       className="flex w-full items-center justify-between gap-3 rounded-lg px-3 py-2 font-body text-sm font-medium text-ink transition-colors hover:bg-surface-sunken"
                     >
                       <span className="flex items-center gap-2">
                         <Languages className="size-4" aria-hidden="true" />
                         {t("language")}
                       </span>
-                      <Switch checked={isEnglish} tabIndex={-1} aria-hidden="true" className="pointer-events-none" />
+                      <span className="flex items-center gap-2">
+                        <span className={cn("text-xs font-semibold", !isEnglish ? "text-primary" : "text-ink-subtle")}>
+                          {t("lang_es")}
+                        </span>
+                        <Switch checked={isEnglish} tabIndex={-1} aria-hidden="true" className="pointer-events-none" />
+                        <span className={cn("text-xs font-semibold", isEnglish ? "text-primary" : "text-ink-subtle")}>
+                          {t("lang_en")}
+                        </span>
+                      </span>
                     </button>
                     <button
                       type="button"

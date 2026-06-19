@@ -22,7 +22,8 @@
   --destructive: oklch(0.577 0.245 27.325);
 
   /* ---- FWD neutrals (oklch tinted toward 245° azul, chroma <= 0.01) ---- */
-  --canvas: oklch(0.985 0.003 245);
+  /* Blanco de marca de la pagina = #FAFAFA */
+  --canvas: #fafafa;
   --surface: oklch(1 0 0);
   --surface-sunken: oklch(0.97 0.003 245);
   --ink-strong: oklch(0.18 0.01 245);
