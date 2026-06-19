@@ -25,7 +25,7 @@ import {
   decideOfferAction,
   getProjectOffersAction,
 } from "@/lib/actions/marketplace";
-import { generateProposalAction } from "@/lib/actions/ai";
+import { generateProposalAction, suggestStackAction } from "@/lib/actions/ai";
 import { streamAssistant } from "@/lib/api/ai-client";
 import { formatDateLabel } from "@/lib/api/safe-json";
 import type {
@@ -37,6 +37,7 @@ import type {
   ProjectOffer,
   ProjectProposal,
   ProjectState,
+  SuggestStackInput,
 } from "@/lib/api/types";
 
 type TabType = "project" | "applications" | "mockups";
@@ -156,6 +157,7 @@ function AiAssistant({ onApply }: { onApply: (proposal: ProjectProposal) => void
   const [error, setError] = useState<string | null>(null);
   const [isGenerating, setIsGenerating] = useState(false);
   const [pendingQuestions, setPendingQuestions] = useState<string[]>([]);
+  const [disenos, setDisenos] = useState<string[]>([]);
   const [applied, setApplied] = useState(false);
   const abortRef = useRef<AbortController | null>(null);
   const scrollRef = useRef<HTMLDivElement | null>(null);
@@ -231,6 +233,7 @@ function AiAssistant({ onApply }: { onApply: (proposal: ProjectProposal) => void
     if (result.ok) {
       onApply(result.data);
       setPendingQuestions(result.data.preguntas_pendientes);
+      setDisenos(result.data.estilos_diseno);
       setApplied(true);
     } else {
       setError(result.error);
@@ -246,6 +249,7 @@ function AiAssistant({ onApply }: { onApply: (proposal: ProjectProposal) => void
     setError(null);
     setIsGenerating(false);
     setPendingQuestions([]);
+    setDisenos([]);
     setApplied(false);
     setIdea("");
   }
@@ -312,6 +316,18 @@ function AiAssistant({ onApply }: { onApply: (proposal: ProjectProposal) => void
                 <CheckCircle2 className="size-4 shrink-0 text-accent" />
                 <p className="font-body text-xs font-semibold text-ink-strong">{t("applied")}</p>
               </div>
+              {disenos.length > 0 && (
+                <div className="space-y-1 pl-6">
+                  <p className="font-body text-[11px] font-bold uppercase tracking-wider text-ink-muted">
+                    {t("design_title")}
+                  </p>
+                  <ul className="list-disc space-y-0.5 pl-4 font-body text-xs text-ink-muted">
+                    {disenos.map((estilo, index) => (
+                      <li key={index}>{estilo}</li>
+                    ))}
+                  </ul>
+                </div>
+              )}
               {pendingQuestions.length > 0 && (
                 <div className="space-y-1 pl-6">
                   <p className="font-body text-[11px] font-bold uppercase tracking-wider text-ink-muted">
@@ -417,6 +433,7 @@ export function MisProyectos({
 
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [form, setForm] = useState<NewProjectForm>(() => buildEmptyForm(areas));
+  const [isSuggestingStack, setIsSuggestingStack] = useState(false);
 
   const selectedProject = projects.find((p) => p.id === selectedProjectId) ?? null;
   const selectedOffers = selectedProjectId ? (offersByProject[selectedProjectId] ?? []) : [];
@@ -509,7 +526,7 @@ export function MisProyectos({
     setForm((prev) => ({
       ...prev,
       titulo: proposal.nombre || prev.titulo,
-      descripcion: proposal.objetivo || prev.descripcion,
+      descripcion: proposal.descripcion || proposal.objetivo || prev.descripcion,
       id_area_negocio:
         proposal.id_area_negocio && areas.some((area) => area.id === proposal.id_area_negocio)
           ? proposal.id_area_negocio
@@ -520,6 +537,33 @@ export function MisProyectos({
         .map((skill) => skill.id)
         .filter((id) => catalogSkills.some((skill) => skill.id === id)),
     }));
+  }
+
+  // Sugerencia de stack para el flujo manual: la IA recomienda habilidades del catálogo
+  // a partir de la descripción y se pre-marcan las casillas (el usuario puede ajustar).
+  async function handleSuggestStack() {
+    if (isSuggestingStack) return;
+    const descripcion = form.descripcion.trim();
+    if (descripcion.length < 10) {
+      triggerToast(tModal("new_project_modal.stack_need_desc"));
+      return;
+    }
+    setIsSuggestingStack(true);
+    const input: SuggestStackInput = { descripcion };
+    if (form.titulo.trim()) input.titulo = form.titulo.trim();
+    if (form.id_area_negocio) input.id_area_negocio = form.id_area_negocio;
+
+    const result = await suggestStackAction(input);
+    setIsSuggestingStack(false);
+    if (!result.ok) {
+      triggerToast(result.error);
+      return;
+    }
+    const ids = result.data.habilidades
+      .map((habilidad) => habilidad.id)
+      .filter((id) => catalogSkills.some((skill) => skill.id === id));
+    setForm((prev) => ({ ...prev, skills: [...new Set([...prev.skills, ...ids])] }));
+    triggerToast(tModal("new_project_modal.stack_applied"));
   }
 
   function submitProject(event: React.FormEvent<HTMLFormElement>) {
@@ -1092,9 +1136,28 @@ export function MisProyectos({
               </div>
 
               <fieldset className="space-y-2">
-                <legend className="font-body text-xs font-bold uppercase tracking-wider text-ink-muted">
-                  {tModal("new_project_modal.skills_label")}
-                </legend>
+                <div className="flex flex-wrap items-center justify-between gap-2">
+                  <legend className="font-body text-xs font-bold uppercase tracking-wider text-ink-muted">
+                    {tModal("new_project_modal.skills_label")}
+                  </legend>
+                  <Button
+                    type="button"
+                    size="sm"
+                    variant="accent"
+                    onClick={handleSuggestStack}
+                    disabled={isSuggestingStack || form.descripcion.trim().length < 10}
+                    className="gap-1.5"
+                  >
+                    {isSuggestingStack ? (
+                      <Loader2 className="size-3.5 animate-spin" />
+                    ) : (
+                      <Wand2 className="size-3.5" />
+                    )}
+                    {isSuggestingStack
+                      ? tModal("new_project_modal.suggesting")
+                      : tModal("new_project_modal.suggest_stack_btn")}
+                  </Button>
+                </div>
                 <div className="flex max-h-36 flex-wrap gap-2 overflow-y-auto rounded-xl border border-border bg-surface-sunken p-3">
                   {catalogSkills.map((skill) => (
                     <label

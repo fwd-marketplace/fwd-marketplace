@@ -84,16 +84,36 @@ export type ProposalSkill = {
 export type ProjectProposal = {
   nombre: string;
   objetivo: string;
+  funcionalidades: string[];
+  publico_objetivo: string | null;
+  /** Descripción rica (objetivo + funcionalidades + público), lista para el textarea. */
+  descripcion: string;
   area_negocio: string | null;
   id_area_negocio: string | null;
   plazo_dias: number;
   habilidades: ProposalSkill[];
   usa_ia: boolean;
+  estilos_diseno: string[];
   preguntas_pendientes: string[];
 };
 
 export type GenerateProposalResponse = {
   propuesta: ProjectProposal;
+};
+
+export type SuggestStackInput = {
+  titulo?: string;
+  descripcion: string;
+  id_area_negocio?: string;
+};
+
+export type StackSuggestion = {
+  habilidades: ProposalSkill[];
+  justificacion: string;
+};
+
+export type SuggestStackResponse = {
+  sugerencia: StackSuggestion;
 };
 
 export type ProjectOffer = {
