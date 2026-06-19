@@ -245,9 +245,8 @@ export function GestionPage({ role }: Props) {
     ? (MOCK_PROJECTS.find((p) => p.id === selectedId) ?? null)
     : (MOCK_MARKETPLACE_PROJECTS.find((p) => p.id === selectedId) ?? null);
 
-  const selectedOffer: MyOffer | null = isEmpresa
-    ? null
-    : (MOCK_OFFERS.find((o) => o.proyecto?.id === selectedId) ?? null);
+  // Junior always starts fresh in demo — offer lookup only for sidebar status badges
+  const selectedOffer: MyOffer | null = null;
 
   const projectOffers: ProjectOffer[] =
     isEmpresa && selectedId === "proj-1" ? MOCK_PROJECT_OFFERS : [];
@@ -836,7 +835,7 @@ function JuniorProcesoView({
                     <div className="my-[22px] h-px bg-border" />
 
                     <p className="font-body text-[13px] font-bold text-ink">{t("proceso_recursos_titulo")}</p>
-                    <p className="mb-4 mt-[3px] font-body text-[13px] text-ink-muted">{t("proceso_recursos_subtitulo")}</p>
+                    <p className="mb-4 mt-[3px] font-body text-[13px] text-secondary">{t("proceso_recursos_subtitulo")}</p>
 
                     <div className="grid gap-[14px]" style={{ gridTemplateColumns: "130px 1fr", alignItems: "center", columnGap: 16 }}>
                       <label className="font-body text-[13px] font-semibold text-ink">{t("proceso_recursos_nombre")}</label>
