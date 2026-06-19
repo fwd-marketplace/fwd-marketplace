@@ -14,8 +14,7 @@ import {
   Calendar,
   CheckCircle2,
   Circle,
-  ChevronDown,
-  ChevronUp,
+
   Clock,
   ExternalLink,
   FileDown,
@@ -225,7 +224,7 @@ export function ProcesoPage({
 
   const [localOffers,     setLocalOffers]     = useState<ProjectOffer[]>(projectOffers ?? MOCK_PROJECT_OFFERS);
   const [expandedOfferId, setExpandedOfferId] = useState<string | null>("po-adjudicada");
-  const [offerFilter,     setOfferFilter]     = useState<"all" | OfferState>("all");
+
   const [localEntregablesE, setLocalEntregablesE] = useState<Entregable[]>(MOCK_PROCESO_ENTREGABLES);
   const [revisionMessages,  setRevisionMessages]  = useState<RevisionMessage[]>(MOCK_REVISION_MESSAGES);
   const [revisionInput,     setRevisionInput]     = useState("");
@@ -246,9 +245,6 @@ export function ProcesoPage({
 
   const adjudicadaOffer = localOffers.find((o) => o.estado.nombre === "adjudicada") ?? null;
 
-  const filteredOffers = offerFilter === "all"
-    ? localOffers
-    : localOffers.filter((o) => o.estado.nombre === offerFilter);
 
   const TABS: { key: Tab; label: string; icon: React.ElementType }[] = [
     { key: "info",    label: tp("tab_info"),    icon: Info },
@@ -655,251 +651,235 @@ export function ProcesoPage({
 
           /* ── EMPRESA VIEW ─────────────────────────────────────────────── */
           role === "company" ? (
-            <div className="px-8 py-8 space-y-6">
+            <div className="px-8 py-8 space-y-8">
               {/* Header */}
-              <div className="flex flex-wrap items-end justify-between gap-4">
-                <div>
-                  <h2 className="font-heading text-2xl font-extrabold tracking-tight text-ink-strong">
-                    {tp("empresa_proposals_title")}<span className="text-primary" aria-hidden="true">.</span>
-                  </h2>
-                  <p className="mt-1 font-body text-sm text-ink-muted">{localOffers.length} propuestas recibidas</p>
-                </div>
+              <div>
+                <h2 className="font-heading text-2xl font-extrabold tracking-tight text-ink-strong">
+                  {tp("empresa_proposals_title")}<span className="text-primary" aria-hidden="true">.</span>
+                </h2>
+                <p className="mt-1 font-body text-sm text-ink-muted">{localOffers.length} propuestas recibidas</p>
               </div>
 
-              {/* Filter chips */}
-              <div className="flex flex-wrap gap-2">
-                {(["all", "enviada", "en_revision", "adjudicada", "no_seleccionada"] as const).map((f) => (
-                  <button
-                    key={f}
-                    type="button"
-                    onClick={() => setOfferFilter(f)}
-                    className={cn(
-                      "rounded-full border px-4 py-1.5 font-body text-sm font-semibold transition-colors duration-[var(--duration-fast)] ease-[var(--ease-out)]",
-                      offerFilter === f
-                        ? "border-primary bg-primary text-white"
-                        : "border-border bg-surface text-ink-muted hover:border-primary/30 hover:text-primary"
-                    )}
-                  >
-                    {f === "all" ? tp("empresa_filter_all") : OFFER_STATE_CONFIG[f].label}
-                    {" "}
-                    <span className="opacity-70">
-                      ({f === "all" ? localOffers.length : localOffers.filter((o) => o.estado.nombre === f).length})
-                    </span>
-                  </button>
-                ))}
-              </div>
+              {/* ── Circles row ── */}
+              {localOffers.length === 0 ? (
+                <p className="font-body text-base text-ink-muted">{tp("empresa_proposals_empty")}</p>
+              ) : (
+                <div className="flex flex-wrap gap-6">
+                  {localOffers.map((oferta) => {
+                    const isSelected = expandedOfferId === oferta.id;
+                    const isAdj      = oferta.estado.nombre === "adjudicada";
+                    const isRevision = oferta.estado.nombre === "en_revision";
+                    const isRejected = oferta.estado.nombre === "no_seleccionada";
+                    const initials   = getInitials(oferta.junior.nombre, oferta.junior.apellido1);
 
-              {/* Offer cards */}
-              <div className="space-y-4">
-                {filteredOffers.length === 0 && (
-                  <p className="font-body text-base text-ink-muted">{tp("empresa_proposals_empty")}</p>
-                )}
+                    const ringColor = isAdj      ? "ring-accent bg-accent/15 text-accent"
+                      : isRevision               ? "ring-warning bg-warning/15 text-warning"
+                      : isRejected               ? "ring-border bg-surface text-ink-muted"
+                      :                            "ring-primary/40 bg-primary/10 text-primary";
 
-                {filteredOffers.map((oferta) => {
-                  const cfg        = OFFER_STATE_CONFIG[oferta.estado.nombre];
-                  const isExpanded = expandedOfferId === oferta.id;
-                  const isAdj      = oferta.estado.nombre === "adjudicada";
-                  const isRejected = oferta.estado.nombre === "no_seleccionada";
-                  const initials   = getInitials(oferta.junior.nombre, oferta.junior.apellido1);
-
-                  return (
-                    <div
-                      key={oferta.id}
-                      className={cn(
-                        "rounded-2xl border bg-surface shadow-[var(--shadow-soft)] transition-all duration-[var(--duration-base)] ease-[var(--ease-out)]",
-                        isAdj && "border-accent/30 ring-1 ring-accent/10",
-                        isRejected && "border-border opacity-60",
-                        !isAdj && !isRejected && "border-border hover:border-primary/20 hover:shadow-[var(--shadow-elevated)]"
-                      )}
-                    >
-                      {/* Card header */}
+                    return (
                       <button
+                        key={oferta.id}
                         type="button"
-                        onClick={() => setExpandedOfferId(isExpanded ? null : oferta.id)}
-                        className="flex w-full items-center gap-4 p-5 text-left"
+                        onClick={() => setExpandedOfferId(isSelected ? null : oferta.id)}
+                        className={cn(
+                          "flex flex-col items-center gap-2 transition-opacity duration-[var(--duration-fast)]",
+                          isRejected && !isSelected && "opacity-40"
+                        )}
                       >
-                        {/* Avatar */}
                         <div className={cn(
-                          "flex size-11 flex-shrink-0 items-center justify-center rounded-full font-body text-sm font-bold",
-                          isAdj ? "bg-accent/20 text-accent" : "bg-primary/10 text-primary"
+                          "flex size-16 items-center justify-center rounded-full font-heading text-xl font-extrabold ring-2 transition-all duration-[var(--duration-base)] ease-[var(--ease-out)]",
+                          ringColor,
+                          isSelected && "ring-4 ring-offset-2 ring-offset-canvas scale-110"
                         )}>
                           {initials}
                         </div>
-
-                        {/* Info */}
-                        <div className="min-w-0 flex-1">
-                          <div className="flex flex-wrap items-center gap-2 mb-1">
-                            <span className="font-heading text-base font-bold text-ink-strong">
-                              {oferta.junior.nombre} {oferta.junior.apellido1}
-                            </span>
-                            <span className={cn("rounded-full border px-3 py-0.5 font-body text-xs font-bold", cfg.className)}>
-                              {cfg.label}
-                            </span>
-                          </div>
-                          <p className="font-body text-sm text-ink-muted line-clamp-1">
-                            {oferta.propuesta.slice(0, 100)}…
-                          </p>
-                        </div>
-
-                        {/* Date + expand */}
-                        <div className="flex flex-shrink-0 flex-col items-end gap-1">
-                          <span className="font-body text-xs text-ink-subtle">
-                            {new Date(oferta.fecha_envio).toLocaleDateString(locale, { day: "numeric", month: "short" })}
-                          </span>
-                          {isExpanded
-                            ? <ChevronUp className="size-4 text-ink-muted" aria-hidden="true" />
-                            : <ChevronDown className="size-4 text-ink-muted" aria-hidden="true" />}
-                        </div>
+                        <span className={cn(
+                          "font-body text-xs font-semibold transition-colors",
+                          isSelected ? "text-ink-strong" : "text-ink-muted"
+                        )}>
+                          {oferta.junior.nombre}
+                        </span>
                       </button>
+                    );
+                  })}
+                </div>
+              )}
 
-                      {/* Expanded content */}
-                      {isExpanded && (
-                        <div className="border-t border-border px-5 pb-5 pt-4 space-y-4">
-                          {/* Full proposal */}
-                          <p className="whitespace-pre-line font-body text-base leading-relaxed text-ink">
-                            {oferta.propuesta}
+              {/* ── Detail panel ── */}
+              {expandedOfferId && (() => {
+                const oferta = localOffers.find((o) => o.id === expandedOfferId);
+                if (!oferta) return null;
+                const cfg        = OFFER_STATE_CONFIG[oferta.estado.nombre];
+                const isAdj      = oferta.estado.nombre === "adjudicada";
+                const isRejected = oferta.estado.nombre === "no_seleccionada";
+
+                return (
+                  <div className="rounded-2xl border border-border bg-surface shadow-[var(--shadow-soft)] overflow-hidden">
+                    {/* Panel header */}
+                    <div className="flex flex-wrap items-center justify-between gap-3 border-b border-border px-6 py-5">
+                      <div className="flex items-center gap-3">
+                        <div className={cn(
+                          "flex size-10 items-center justify-center rounded-full font-heading text-base font-extrabold",
+                          isAdj ? "bg-accent/20 text-accent" : "bg-primary/10 text-primary"
+                        )}>
+                          {getInitials(oferta.junior.nombre, oferta.junior.apellido1)}
+                        </div>
+                        <div>
+                          <p className="font-heading text-base font-bold text-ink-strong">
+                            {oferta.junior.nombre} {oferta.junior.apellido1}
                           </p>
+                          <p className="font-body text-xs text-ink-subtle">
+                            {new Date(oferta.fecha_envio).toLocaleDateString(locale, { day: "numeric", month: "long", year: "numeric" })}
+                          </p>
+                        </div>
+                      </div>
+                      <span className={cn("rounded-full border px-4 py-1.5 font-body text-sm font-semibold", cfg.className)}>
+                        {cfg.label}
+                      </span>
+                    </div>
 
-                          {/* Prototype link */}
-                          {oferta.prototipo_url && (
-                            <a href={oferta.prototipo_url} target="_blank" rel="noopener noreferrer"
-                              className="inline-flex items-center gap-1.5 font-body text-sm font-semibold text-primary hover:underline">
-                              Ver prototipo
-                              <ExternalLink className="size-3.5" aria-hidden="true" />
-                            </a>
+                    {/* Proposal text */}
+                    <div className="px-6 py-5 space-y-4">
+                      <p className="whitespace-pre-line font-body text-base leading-relaxed text-ink">
+                        {oferta.propuesta}
+                      </p>
+
+                      {oferta.prototipo_url && (
+                        <a href={oferta.prototipo_url} target="_blank" rel="noopener noreferrer"
+                          className="inline-flex items-center gap-1.5 font-body text-sm font-semibold text-primary hover:underline">
+                          Ver prototipo
+                          <ExternalLink className="size-3.5" aria-hidden="true" />
+                        </a>
+                      )}
+
+                      {/* Action buttons */}
+                      {!isRejected && !isAdj && (
+                        <div className="flex flex-wrap gap-3 pt-1">
+                          {oferta.estado.nombre === "enviada" && (
+                            <>
+                              <button type="button"
+                                onClick={() => decideOffer(oferta.id, "revision")}
+                                className="rounded-full bg-primary px-5 py-2.5 font-body text-sm font-semibold text-white hover:bg-secondary transition-colors">
+                                {tp("empresa_move_to_review")}
+                              </button>
+                              <button type="button"
+                                onClick={() => decideOffer(oferta.id, "rechazar")}
+                                className="rounded-full border border-magenta/30 px-5 py-2.5 font-body text-sm font-semibold text-magenta hover:bg-magenta/5 transition-colors">
+                                {tp("empresa_reject")}
+                              </button>
+                            </>
                           )}
-
-                          {/* Action buttons */}
-                          {!isRejected && !isAdj && (
-                            <div className="flex flex-wrap gap-3 pt-2">
-                              {oferta.estado.nombre === "enviada" && (
-                                <>
-                                  <button type="button"
-                                    onClick={() => decideOffer(oferta.id, "revision")}
-                                    className="rounded-full bg-primary px-5 py-2.5 font-body text-sm font-semibold text-white hover:bg-secondary transition-colors">
-                                    {tp("empresa_move_to_review")}
-                                  </button>
-                                  <button type="button"
-                                    onClick={() => decideOffer(oferta.id, "rechazar")}
-                                    className="rounded-full border border-magenta/30 px-5 py-2.5 font-body text-sm font-semibold text-magenta hover:bg-magenta/5 transition-colors">
-                                    {tp("empresa_reject")}
-                                  </button>
-                                </>
-                              )}
-                              {oferta.estado.nombre === "en_revision" && (
-                                <>
-                                  <button type="button"
-                                    onClick={() => decideOffer(oferta.id, "adjudicar")}
-                                    className="rounded-full bg-accent px-5 py-2.5 font-body text-sm font-semibold text-white hover:bg-accent/80 transition-colors">
-                                    {tp("empresa_adjudicate")}
-                                  </button>
-                                  <button type="button"
-                                    onClick={() => decideOffer(oferta.id, "rechazar")}
-                                    className="rounded-full border border-magenta/30 px-5 py-2.5 font-body text-sm font-semibold text-magenta hover:bg-magenta/5 transition-colors">
-                                    {tp("empresa_reject")}
-                                  </button>
-                                </>
-                              )}
-                            </div>
-                          )}
-
-                          {/* Entregables (solo adjudicada) */}
-                          {isAdj && (
-                            <div className="space-y-4 border-t border-border pt-4">
-                              <h4 className="flex items-center gap-2 font-heading text-sm font-bold uppercase tracking-wider text-ink-muted">
-                                <PackageCheck className="size-4" aria-hidden="true" />
-                                {tm("entregable_label")}
-                              </h4>
-
-                              {localEntregablesE.length === 0 && (
-                                <p className="font-body text-sm text-ink-subtle">El junior todavía no ha enviado entregables.</p>
-                              )}
-
-                              <div className="space-y-2">
-                                {[...localEntregablesE].sort((a, b) => b.version - a.version).map((ent) => {
-                                  const entCfg = ENTREGABLE_STATE_CONFIG[ent.estado.nombre];
-                                  return (
-                                    <div key={ent.id}
-                                      className="flex flex-wrap items-center justify-between gap-3 rounded-xl border border-border bg-surface-sunken px-5 py-3">
-                                      <div className="flex flex-wrap items-center gap-3">
-                                        <span className="font-body text-sm font-bold text-ink-muted">v{ent.version} · {tm(`entregable_tipo_${ent.tipo}`)}</span>
-                                        <span className={cn("rounded-full px-3 py-0.5 font-body text-sm font-semibold", entCfg.className)}>{entCfg.label}</span>
-                                      </div>
-                                      <div className="flex items-center gap-2">
-                                        {ent.url && (
-                                          <a href={ent.url} target="_blank" rel="noopener noreferrer"
-                                            className="inline-flex items-center gap-1 font-body text-sm font-semibold text-primary hover:underline">
-                                            Ver <ExternalLink className="size-3" aria-hidden="true" />
-                                          </a>
-                                        )}
-                                        {(ent.estado.nombre === "enviado" || ent.estado.nombre === "en_revision") && (
-                                          <>
-                                            <button type="button"
-                                              onClick={() => decideEntregableEmpresa(ent.id, "aprobar")}
-                                              className="rounded-full bg-accent px-3 py-1 font-body text-xs font-semibold text-white hover:bg-accent/80">
-                                              {tp("empresa_entregable_approve")}
-                                            </button>
-                                            <button type="button"
-                                              onClick={() => decideEntregableEmpresa(ent.id, "cambios")}
-                                              className="rounded-full border border-warning/30 px-3 py-1 font-body text-xs font-semibold text-warning hover:bg-warning/5">
-                                              {tp("empresa_entregable_changes")}
-                                            </button>
-                                          </>
-                                        )}
-                                      </div>
-                                    </div>
-                                  );
-                                })}
-                              </div>
-
-                              {/* Revision chat */}
-                              <div>
-                                <h4 className="mb-3 flex items-center gap-2 font-heading text-sm font-bold uppercase tracking-wider text-ink-muted">
-                                  <MessageCircle className="size-4" aria-hidden="true" />
-                                  {tp("empresa_revision_title")}
-                                </h4>
-
-                                <div className="mb-3 max-h-48 space-y-3 overflow-y-auto rounded-xl bg-surface-sunken p-4">
-                                  {revisionMessages.map((m) => (
-                                    <div key={m.id} className={cn("flex gap-2", m.from === "empresa" && "flex-row-reverse")}>
-                                      <div className={cn(
-                                        "flex size-7 flex-shrink-0 items-center justify-center rounded-full font-body text-xs font-bold",
-                                        m.from === "empresa" ? "bg-primary/10 text-primary" : "bg-secondary/10 text-secondary"
-                                      )}>
-                                        {m.from === "empresa" ? <Building2 className="size-4" /> : <User className="size-4" />}
-                                      </div>
-                                      <div className={cn(
-                                        "max-w-[75%] rounded-xl px-3 py-2 font-body text-sm leading-relaxed",
-                                        m.from === "empresa" ? "bg-primary text-white" : "border border-border bg-surface text-ink"
-                                      )}>
-                                        {m.text}
-                                      </div>
-                                    </div>
-                                  ))}
-                                </div>
-
-                                <div className="flex gap-2">
-                                  <input
-                                    value={revisionInput}
-                                    onChange={(e) => setRevisionInput(e.target.value)}
-                                    onKeyDown={(e) => { if (e.key === "Enter" && !e.shiftKey) { e.preventDefault(); sendRevision(); } }}
-                                    placeholder={tp("empresa_revision_input")}
-                                    className="flex-1 rounded-full border border-border bg-surface-sunken px-4 py-2.5 font-body text-base text-ink outline-none focus:ring-2 focus:ring-primary/30"
-                                  />
-                                  <button type="button" onClick={sendRevision} aria-label="Enviar"
-                                    className="flex size-10 flex-shrink-0 items-center justify-center rounded-full bg-primary text-white hover:bg-secondary transition-colors">
-                                    <Send className="size-4" aria-hidden="true" />
-                                  </button>
-                                </div>
-                              </div>
-                            </div>
+                          {oferta.estado.nombre === "en_revision" && (
+                            <>
+                              <button type="button"
+                                onClick={() => decideOffer(oferta.id, "adjudicar")}
+                                className="rounded-full bg-accent px-5 py-2.5 font-body text-sm font-semibold text-white hover:bg-accent/80 transition-colors">
+                                {tp("empresa_adjudicate")}
+                              </button>
+                              <button type="button"
+                                onClick={() => decideOffer(oferta.id, "rechazar")}
+                                className="rounded-full border border-magenta/30 px-5 py-2.5 font-body text-sm font-semibold text-magenta hover:bg-magenta/5 transition-colors">
+                                {tp("empresa_reject")}
+                              </button>
+                            </>
                           )}
                         </div>
                       )}
+
+                      {/* Entregables + chat (solo adjudicada) */}
+                      {isAdj && (
+                        <div className="space-y-4 border-t border-border pt-5">
+                          <h4 className="flex items-center gap-2 font-heading text-sm font-bold uppercase tracking-wider text-ink-muted">
+                            <PackageCheck className="size-4" aria-hidden="true" />
+                            {tm("entregable_label")}
+                          </h4>
+
+                          {localEntregablesE.length === 0 && (
+                            <p className="font-body text-sm text-ink-subtle">El junior todavía no ha enviado entregables.</p>
+                          )}
+
+                          <div className="space-y-2">
+                            {[...localEntregablesE].sort((a, b) => b.version - a.version).map((ent) => {
+                              const entCfg = ENTREGABLE_STATE_CONFIG[ent.estado.nombre];
+                              return (
+                                <div key={ent.id}
+                                  className="flex flex-wrap items-center justify-between gap-3 rounded-xl border border-border bg-surface-sunken px-5 py-3">
+                                  <div className="flex flex-wrap items-center gap-3">
+                                    <span className="font-body text-sm font-bold text-ink-muted">v{ent.version} · {tm(`entregable_tipo_${ent.tipo}`)}</span>
+                                    <span className={cn("rounded-full px-3 py-0.5 font-body text-sm font-semibold", entCfg.className)}>{entCfg.label}</span>
+                                  </div>
+                                  <div className="flex items-center gap-2">
+                                    {ent.url && (
+                                      <a href={ent.url} target="_blank" rel="noopener noreferrer"
+                                        className="inline-flex items-center gap-1 font-body text-sm font-semibold text-primary hover:underline">
+                                        Ver <ExternalLink className="size-3" aria-hidden="true" />
+                                      </a>
+                                    )}
+                                    {(ent.estado.nombre === "enviado" || ent.estado.nombre === "en_revision") && (
+                                      <>
+                                        <button type="button"
+                                          onClick={() => decideEntregableEmpresa(ent.id, "aprobar")}
+                                          className="rounded-full bg-accent px-3 py-1 font-body text-xs font-semibold text-white hover:bg-accent/80">
+                                          {tp("empresa_entregable_approve")}
+                                        </button>
+                                        <button type="button"
+                                          onClick={() => decideEntregableEmpresa(ent.id, "cambios")}
+                                          className="rounded-full border border-warning/30 px-3 py-1 font-body text-xs font-semibold text-warning hover:bg-warning/5">
+                                          {tp("empresa_entregable_changes")}
+                                        </button>
+                                      </>
+                                    )}
+                                  </div>
+                                </div>
+                              );
+                            })}
+                          </div>
+
+                          {/* Revision chat */}
+                          <div>
+                            <h4 className="mb-3 flex items-center gap-2 font-heading text-sm font-bold uppercase tracking-wider text-ink-muted">
+                              <MessageCircle className="size-4" aria-hidden="true" />
+                              {tp("empresa_revision_title")}
+                            </h4>
+                            <div className="mb-3 max-h-48 space-y-3 overflow-y-auto rounded-xl bg-surface-sunken p-4">
+                              {revisionMessages.map((m) => (
+                                <div key={m.id} className={cn("flex gap-2", m.from === "empresa" && "flex-row-reverse")}>
+                                  <div className={cn(
+                                    "flex size-7 flex-shrink-0 items-center justify-center rounded-full font-body text-xs font-bold",
+                                    m.from === "empresa" ? "bg-primary/10 text-primary" : "bg-secondary/10 text-secondary"
+                                  )}>
+                                    {m.from === "empresa" ? <Building2 className="size-4" /> : <User className="size-4" />}
+                                  </div>
+                                  <div className={cn(
+                                    "max-w-[75%] rounded-xl px-3 py-2 font-body text-sm leading-relaxed",
+                                    m.from === "empresa" ? "bg-primary text-white" : "border border-border bg-surface text-ink"
+                                  )}>
+                                    {m.text}
+                                  </div>
+                                </div>
+                              ))}
+                            </div>
+                            <div className="flex gap-2">
+                              <input
+                                value={revisionInput}
+                                onChange={(e) => setRevisionInput(e.target.value)}
+                                onKeyDown={(e) => { if (e.key === "Enter" && !e.shiftKey) { e.preventDefault(); sendRevision(); } }}
+                                placeholder={tp("empresa_revision_input")}
+                                className="flex-1 rounded-full border border-border bg-surface-sunken px-4 py-2.5 font-body text-base text-ink outline-none focus:ring-2 focus:ring-primary/30"
+                              />
+                              <button type="button" onClick={sendRevision} aria-label="Enviar"
+                                className="flex size-10 flex-shrink-0 items-center justify-center rounded-full bg-primary text-white hover:bg-secondary transition-colors">
+                                <Send className="size-4" aria-hidden="true" />
+                              </button>
+                            </div>
+                          </div>
+                        </div>
+                      )}
                     </div>
-                  );
-                })}
-              </div>
+                  </div>
+                );
+              })()}
             </div>
 
           ) : (
