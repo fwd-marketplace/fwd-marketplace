@@ -3,16 +3,12 @@ import Link from 'next/link';
 import { ArrowRight } from 'lucide-react';
 import { ConstellationBackdrop } from '@/components/home/ConstellationBackdrop';
 import { LogoConstellation } from '@/components/home/LogoConstellation';
-import { isAuthenticated } from '@/lib/auth-session';
 
 export default async function HeroSection({ locale }: { locale: string }) {
   const t = await getTranslations('landing.hero');
 
-  // Sin sesion iniciada, "Ver proyectos" lleva al registro en vez del marketplace.
-  const hasSession = await isAuthenticated();
-  const projectsHref = hasSession
-    ? `/${locale}/marketplace`
-    : `/${locale}/register`;
+  // "Ver proyectos" lleva al registro.
+  const projectsHref = `/${locale}/register`;
 
   return (
     <section className="relative overflow-hidden bg-secondary py-20 text-secondary-foreground lg:py-32">

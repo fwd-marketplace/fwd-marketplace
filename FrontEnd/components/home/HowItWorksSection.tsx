@@ -35,21 +35,21 @@ export default function HowItWorksSection() {
           </h2>
         </div>
 
-        <div className="grid md:grid-cols-3 gap-12 relative">
-          {/* Connecting line for desktop */}
-          <div className="hidden md:block absolute top-12 left-1/6 right-1/6 h-[1px] bg-border-strong -z-10"></div>
-          
+        <div className="grid md:grid-cols-3 gap-8">
           {steps.map((step, index) => {
             const Icon = step.icon;
             return (
-              <div key={index} className="flex flex-col items-center md:items-start text-center md:text-left">
+              <div
+                key={index}
+                className="flex flex-col items-center md:items-start text-center md:text-left rounded-2xl border border-secondary/20 bg-secondary/5 p-8 shadow-soft transition-shadow duration-[var(--duration-base)] ease-[var(--ease-out)] hover:shadow-md"
+              >
                 <div className="flex items-center gap-4 mb-6">
                   <span className="text-5xl font-heading font-light text-secondary">{step.num}</span>
-                  <div className="w-12 h-12 rounded-full bg-secondary/10 flex items-center justify-center text-secondary">
+                  <div className="w-12 h-12 rounded-full bg-secondary text-white flex items-center justify-center">
                     <Icon className="w-6 h-6" />
                   </div>
                 </div>
-                <h3 className="text-xl font-bold mb-3 text-ink-strong">{step.title}</h3>
+                <h3 className="text-xl font-bold mb-3 text-secondary">{step.title}</h3>
                 <p className="text-ink-muted leading-relaxed">
                   {step.desc}
                 </p>

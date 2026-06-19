@@ -1,4 +1,4 @@
-import type { ApiProject, CatalogArea, CatalogSkill } from "@/lib/api/types";
+import type { ApiProject, CatalogArea, CatalogSkill, MyOffer } from "@/lib/api/types";
 
 // ─── Mock Catalogs ────────────────────────────────────────────────────────────
 
@@ -31,7 +31,7 @@ export const MOCK_SKILLS: CatalogSkill[] = [
   { id: "sk-15", nombre: "Git / GitHub",   tipo: "habilidad",  categoria: "General" },
 ];
 
-// ─── Mock Projects ────────────────────────────────────────────────────────────
+// ─── Mock Projects — empresa dashboard ───────────────────────────────────────
 
 export const MOCK_PROJECTS: ApiProject[] = [
   {
@@ -111,3 +111,148 @@ export const MOCK_PROJECTS: ApiProject[] = [
     ],
   },
 ];
+
+// ─── Mock Projects — marketplace público (IDs mock-1..6) ─────────────────────
+// Fallback cuando el backend no está disponible.
+
+export const MOCK_MARKETPLACE_PROJECTS: ApiProject[] = [
+  {
+    id: 'mock-1',
+    titulo: 'Sistema de Gestión de Créditos',
+    descripcion: 'Rediseño integral de la plataforma B2B para optimizar flujos de aprobación y visualización de KPIs financieros en tiempo real.',
+    usa_ia: true,
+    plazo_dias: 15,
+    fecha_publicacion: '2026-06-10T00:00:00Z',
+    fecha_cierre: null,
+    estado: { nombre: 'en_recepcion' },
+    area: { id: 'mock-area-1', nombre: 'Fintech' },
+    empresa: { nombre_comercial: 'BancaCR Digital', tipo: 'empresa' },
+    skills: [
+      { skill: { id: 'sk-1', nombre: 'React', tipo: 'tecnologia', categoria: 'Frontend' } },
+      { skill: { id: 'sk-5', nombre: 'Python', tipo: 'tecnologia', categoria: 'Backend' } },
+      { skill: { id: 'sk-6', nombre: 'PostgreSQL', tipo: 'tecnologia', categoria: 'Base de datos' } },
+    ],
+  },
+  {
+    id: 'mock-2',
+    titulo: 'Plataforma de Telemedicina',
+    descripcion: 'Módulo de citas virtuales con videollamada integrada, historial clínico y recordatorios automáticos para pacientes y médicos.',
+    usa_ia: false,
+    plazo_dias: 12,
+    fecha_publicacion: '2026-06-08T00:00:00Z',
+    fecha_cierre: null,
+    estado: { nombre: 'en_recepcion' },
+    area: { id: 'mock-area-2', nombre: 'Salud' },
+    empresa: { nombre_comercial: 'MediConnect CR', tipo: 'empresa' },
+    skills: [
+      { skill: { id: 'sk-4', nombre: 'Node.js', tipo: 'tecnologia', categoria: 'Backend' } },
+      { skill: { id: 'sk-2', nombre: 'TypeScript', tipo: 'tecnologia', categoria: 'Frontend' } },
+    ],
+  },
+  {
+    id: 'mock-3',
+    titulo: 'App de Seguimiento de Pedidos',
+    descripcion: 'Aplicación móvil para que clientes rastreen sus pedidos en tiempo real con notificaciones push y mapa de ruta del repartidor.',
+    usa_ia: false,
+    plazo_dias: 10,
+    fecha_publicacion: '2026-06-05T00:00:00Z',
+    fecha_cierre: null,
+    estado: { nombre: 'en_recepcion' },
+    area: { id: 'mock-area-3', nombre: 'E-Commerce' },
+    empresa: { nombre_comercial: 'ShopRápido', tipo: 'emprendedor' },
+    skills: [
+      { skill: { id: 'sk-13', nombre: 'Vue.js', tipo: 'tecnologia', categoria: 'Frontend' } },
+      { skill: { id: 'sk-4', nombre: 'Node.js', tipo: 'tecnologia', categoria: 'Backend' } },
+    ],
+  },
+  {
+    id: 'mock-4',
+    titulo: 'Dashboard de Métricas de Distribución',
+    descripcion: 'Panel interactivo para supervisores de flota con métricas de entregas, rutas óptimas y alertas de desviación en tiempo real.',
+    usa_ia: true,
+    plazo_dias: 14,
+    fecha_publicacion: '2026-06-03T00:00:00Z',
+    fecha_cierre: null,
+    estado: { nombre: 'en_recepcion' },
+    area: { id: 'mock-area-4', nombre: 'Logística' },
+    empresa: { nombre_comercial: 'FleetOps Latam', tipo: 'empresa' },
+    skills: [
+      { skill: { id: 'sk-1', nombre: 'React', tipo: 'tecnologia', categoria: 'Frontend' } },
+      { skill: { id: 'sk-2', nombre: 'TypeScript', tipo: 'tecnologia', categoria: 'Frontend' } },
+      { skill: { id: 'sk-5', nombre: 'Python', tipo: 'tecnologia', categoria: 'Backend' } },
+    ],
+  },
+  {
+    id: 'mock-5',
+    titulo: 'Plataforma de Cursos en Vivo',
+    descripcion: 'Aulas virtuales con video en tiempo real, pizarra colaborativa y seguimiento de progreso por estudiante y módulo.',
+    usa_ia: false,
+    plazo_dias: 15,
+    fecha_publicacion: '2026-06-01T00:00:00Z',
+    fecha_cierre: null,
+    estado: { nombre: 'en_recepcion' },
+    area: { id: 'mock-area-5', nombre: 'Edutech' },
+    empresa: { nombre_comercial: 'AprenderCR', tipo: 'emprendedor' },
+    skills: [
+      { skill: { id: 'sk-1', nombre: 'React', tipo: 'tecnologia', categoria: 'Frontend' } },
+      { skill: { id: 'sk-4', nombre: 'Node.js', tipo: 'tecnologia', categoria: 'Backend' } },
+    ],
+  },
+  {
+    id: 'mock-6',
+    titulo: 'Automatización de Reportes de Campaña',
+    descripcion: 'Herramienta que conecta con Google Ads y Meta Ads para generar reportes automáticos con visualizaciones y exportación a PDF.',
+    usa_ia: true,
+    plazo_dias: 8,
+    fecha_publicacion: '2026-05-28T00:00:00Z',
+    fecha_cierre: null,
+    estado: { nombre: 'en_recepcion' },
+    area: { id: 'mock-area-6', nombre: 'Marketing' },
+    empresa: { nombre_comercial: 'GrowthLab CR', tipo: 'empresa' },
+    skills: [
+      { skill: { id: 'sk-5', nombre: 'Python', tipo: 'tecnologia', categoria: 'Backend' } },
+      { skill: { id: 'sk-2', nombre: 'TypeScript', tipo: 'tecnologia', categoria: 'Frontend' } },
+    ],
+  },
+];
+
+export const MOCK_MARKETPLACE_BY_ID = new Map(
+  MOCK_MARKETPLACE_PROJECTS.map((p) => [p.id, p]),
+);
+
+// ─── Mock Offers — mis-postulaciones (fallback cuando el backend no responde) ──
+
+export const MOCK_OFFERS: MyOffer[] = [
+  {
+    id: "offer-1",
+    propuesta:
+      "Tengo experiencia sólida en React y TypeScript. He desarrollado dashboards financieros con integración de APIs REST y visualizaciones dinámicas con Recharts. Mi propuesta es implementar el módulo por fases semanales, comenzando por los KPIs críticos, con entregas parciales para mantener visibilidad del avance.",
+    prototipo_url: null,
+    fecha_envio: "2026-06-12T10:00:00Z",
+    estado: { nombre: "en_revision" },
+    proyecto: { id: "mock-1", titulo: "Sistema de Gestión de Créditos" },
+  },
+  {
+    id: "offer-2",
+    propuesta:
+      "Soy desarrolladora full-stack con experiencia en proyectos de salud digital. He trabajado en módulos de agendamiento similares y conozco los estándares de privacidad de datos médicos. Adjunto prototipo de la interfaz de citas.",
+    prototipo_url: "https://www.figma.com/file/example-telemedicina",
+    fecha_envio: "2026-06-10T14:30:00Z",
+    estado: { nombre: "adjudicada" },
+    proyecto: { id: "mock-2", titulo: "Plataforma de Telemedicina", fecha_cierre: null },
+  },
+  {
+    id: "offer-3",
+    propuesta:
+      "Me especializo en dashboards con React y D3.js. Propongo un panel interactivo con WebSockets para actualizaciones en tiempo real, exportación a PDF y diseño adaptable para supervisores de flota en campo.",
+    prototipo_url: null,
+    fecha_envio: "2026-06-08T09:15:00Z",
+    estado: { nombre: "enviada" },
+    proyecto: {
+      id: "mock-4",
+      titulo: "Dashboard de Métricas de Distribución",
+      fecha_cierre: new Date(Date.now() + 30 * 60 * 60 * 1000).toISOString(),
+    },
+  },
+];
+
