@@ -54,6 +54,7 @@ export type ApiProject = {
   descripcion: string;
   usa_ia: boolean;
   plazo_dias: number;
+  tecnologias_extra?: string[];
   fecha_publicacion: string | null;
   fecha_cierre: string | null;
   estado: { id?: string; nombre: ProjectState };
@@ -73,6 +74,7 @@ export type CreateProjectInput = {
   plazo_dias: number;
   usa_ia: boolean;
   skills: string[];
+  tecnologias_extra?: string[];
   publicar: boolean;
 };
 

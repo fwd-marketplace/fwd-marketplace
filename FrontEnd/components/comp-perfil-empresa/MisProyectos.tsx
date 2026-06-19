@@ -13,7 +13,6 @@ import {
   Filter,
   FolderOpen,
   Loader2,
-  MessageSquare,
   Plus,
   Search,
   Send,
@@ -74,6 +73,7 @@ type NewProjectForm = {
   plazo_dias: number;
   usa_ia: boolean;
   skills: string[];
+  tecnologias_extra: string[];
   publicar: boolean;
 };
 
@@ -85,6 +85,7 @@ function buildEmptyForm(areas: CatalogArea[]): NewProjectForm {
     plazo_dias: DEFAULT_DEADLINE_DAYS,
     usa_ia: false,
     skills: [],
+    tecnologias_extra: [],
     publicar: true,
   };
 }
@@ -451,6 +452,7 @@ export function MisProyectos({
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [form, setForm] = useState<NewProjectForm>(() => buildEmptyForm(areas));
   const [isSuggestingStack, setIsSuggestingStack] = useState(false);
+  const [otrosInput, setOtrosInput] = useState("");
 
   const [isEditModalOpen, setIsEditModalOpen] = useState(false);
   const [editForm, setEditForm] = useState<UpdateProjectInput>({});
@@ -622,6 +624,13 @@ export function MisProyectos({
     }));
   }
 
+  // Solo habilidades de tipo tecnología: en un proyecto técnico no aplican las
+  // habilidades blandas (comunicación, trabajo en equipo, etc.).
+  const techSkills = useMemo(
+    () => catalogSkills.filter((skill) => skill.tipo === "tecnologia"),
+    [catalogSkills],
+  );
+
   // Prellena el formulario manual con la propuesta del asistente. El usuario
   // revisa y edita antes de crear. Solo se aplican ids que existan en el catálogo.
   function applyProposal(proposal: ProjectProposal) {
@@ -637,7 +646,7 @@ export function MisProyectos({
       usa_ia: proposal.usa_ia,
       skills: proposal.habilidades
         .map((skill) => skill.id)
-        .filter((id) => catalogSkills.some((skill) => skill.id === id)),
+        .filter((id) => techSkills.some((skill) => skill.id === id)),
     }));
   }
 
@@ -663,9 +672,29 @@ export function MisProyectos({
     }
     const ids = result.data.habilidades
       .map((habilidad) => habilidad.id)
-      .filter((id) => catalogSkills.some((skill) => skill.id === id));
+      .filter((id) => techSkills.some((skill) => skill.id === id));
     setForm((prev) => ({ ...prev, skills: [...new Set([...prev.skills, ...ids])] }));
     triggerToast(tModal("new_project_modal.stack_applied"));
+  }
+
+  // "Otros": tecnologías escritas a mano que no están en el catálogo. Se guardan por
+  // proyecto (no en el catálogo global) y se muestran como chips en la misma sección.
+  function addOtraTecnologia() {
+    const tech = otrosInput.trim();
+    if (!tech) return;
+    setForm((prev) =>
+      prev.tecnologias_extra.some((t) => t.toLowerCase() === tech.toLowerCase())
+        ? prev
+        : { ...prev, tecnologias_extra: [...prev.tecnologias_extra, tech] },
+    );
+    setOtrosInput("");
+  }
+
+  function removeOtraTecnologia(tech: string) {
+    setForm((prev) => ({
+      ...prev,
+      tecnologias_extra: prev.tecnologias_extra.filter((t) => t !== tech),
+    }));
   }
 
   function submitProject(event: React.FormEvent<HTMLFormElement>) {
@@ -908,7 +937,8 @@ export function MisProyectos({
             </div>
 
             <aside className="space-y-5">
-              {selectedProject.skills.length > 0 && (
+              {(selectedProject.skills.length > 0 ||
+                (selectedProject.tecnologias_extra?.length ?? 0) > 0) && (
                 <div className="space-y-3 rounded-xl border border-border bg-surface-sunken p-5">
                   <h3 className="font-body text-[10px] font-bold uppercase tracking-widest text-ink-muted">
                     {t("stack_title")}
@@ -924,6 +954,14 @@ export function MisProyectos({
                         </span>
                       ) : null,
                     )}
+                    {(selectedProject.tecnologias_extra ?? []).map((tech) => (
+                      <span
+                        key={tech}
+                        className="rounded-lg border border-primary/30 bg-surface px-3 py-1 font-body text-xs font-semibold text-primary"
+                      >
+                        {tech}
+                      </span>
+                    ))}
                   </div>
                 </div>
               )}
@@ -1369,7 +1407,7 @@ export function MisProyectos({
                 className="w-full rounded-xl border border-border bg-surface-sunken px-3.5 py-2 font-body text-sm text-ink-strong outline-none focus:ring-2 focus:ring-primary/20"
               >
                 <option value="all">{t("filters.skill_all")}</option>
-                {catalogSkills.map((skill) => (
+                {techSkills.map((skill) => (
                   <option key={skill.id} value={skill.id}>
                     {skill.nombre}
                   </option>
@@ -1579,7 +1617,7 @@ export function MisProyectos({
                   {tModal("new_project_modal.skills_label")}
                 </legend>
                 <div className="flex max-h-36 flex-wrap gap-2 overflow-y-auto rounded-xl border border-border bg-surface-sunken p-3">
-                  {catalogSkills.map((skill) => (
+                  {techSkills.map((skill) => (
                     <label
                       key={skill.id}
                       className="inline-flex cursor-pointer items-center gap-2 rounded-full border border-border bg-surface px-3 py-1 font-body text-xs font-semibold text-ink"
@@ -1755,7 +1793,7 @@ export function MisProyectos({
                   </Button>
                 </div>
                 <div className="flex max-h-36 flex-wrap gap-2 overflow-y-auto rounded-xl border border-border bg-surface-sunken p-3">
-                  {catalogSkills.map((skill) => (
+                  {techSkills.map((skill) => (
                     <label
                       key={skill.id}
                       className="inline-flex cursor-pointer items-center gap-2 rounded-full border border-border bg-surface px-3 py-1 font-body text-xs font-semibold text-ink"
@@ -1769,6 +1807,54 @@ export function MisProyectos({
                       {skill.nombre}
                     </label>
                   ))}
+                </div>
+
+                {/* Otros: tecnologías que no están en el catálogo (se guardan por proyecto) */}
+                <div className="space-y-2">
+                  <div className="flex items-center gap-2">
+                    <input
+                      type="text"
+                      value={otrosInput}
+                      onChange={(e) => setOtrosInput(e.target.value)}
+                      onKeyDown={(e) => {
+                        if (e.key === "Enter") {
+                          e.preventDefault();
+                          addOtraTecnologia();
+                        }
+                      }}
+                      placeholder={tModal("new_project_modal.otros_placeholder")}
+                      className="w-full rounded-xl border border-border bg-surface-sunken px-3.5 py-2 font-body text-sm text-ink-strong placeholder:text-ink-subtle outline-none focus:ring-2 focus:ring-primary/20"
+                    />
+                    <Button
+                      type="button"
+                      variant="outline"
+                      size="sm"
+                      onClick={addOtraTecnologia}
+                      disabled={!otrosInput.trim()}
+                    >
+                      {tModal("new_project_modal.otros_add")}
+                    </Button>
+                  </div>
+                  {form.tecnologias_extra.length > 0 && (
+                    <div className="flex flex-wrap gap-2">
+                      {form.tecnologias_extra.map((tech) => (
+                        <span
+                          key={tech}
+                          className="inline-flex items-center gap-1.5 rounded-full bg-primary/10 px-3 py-1 font-body text-xs font-semibold text-primary"
+                        >
+                          {tech}
+                          <button
+                            type="button"
+                            onClick={() => removeOtraTecnologia(tech)}
+                            aria-label={tModal("new_project_modal.otros_remove")}
+                            className="rounded-full p-0.5 hover:bg-primary/20"
+                          >
+                            <X className="size-3" />
+                          </button>
+                        </span>
+                      ))}
+                    </div>
+                  )}
                 </div>
               </fieldset>
 

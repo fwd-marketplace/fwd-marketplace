@@ -9,6 +9,8 @@ export const CreateProjectSchema = z.object({
   usa_ia: z.boolean().optional(),
   // ids de skills del catálogo (tecnologías requeridas por el proyecto).
   skills: z.array(z.string().uuid()).optional(),
+  // Tecnologías "Otros" escritas a mano (no están en el catálogo de skills).
+  tecnologias_extra: z.array(z.string().trim().min(1).max(50)).max(20).optional(),
   // true -> se publica (en_recepcion); false/omitido -> queda en borrador.
   publicar: z.boolean().optional(),
 });
