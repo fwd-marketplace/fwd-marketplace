@@ -31,6 +31,7 @@ const EMPTY_PROFILE: StudentProfile = {
   skills: [],
   avatarUrl: "",
   links: {},
+  reputacion: null,
 };
 
 function mapOfferStatus(status: OfferState): Application["status"] {
@@ -72,6 +73,7 @@ function mapProfile(profile: ApiMeProfile | null): StudentProfile {
     skills: estudiante?.skills ?? [],
     avatarUrl: estudiante?.url_avatar ?? "",
     links,
+    reputacion: estudiante?.reputacion ?? null,
   };
 }
 
@@ -104,7 +106,7 @@ export default async function EstudianteProfile({ params }: Props) {
 
   return (
     <div className="flex min-h-[100dvh] flex-col bg-canvas">
-      <AppHeader userName={fullName(profile)} avatarUrl={profile.avatarUrl} />
+      <AppHeader userName={fullName(profile)} avatarUrl={profile.avatarUrl} role="student" />
       <JuniorSubnav />
       <PerfilUsuario
         initialProfile={profile}

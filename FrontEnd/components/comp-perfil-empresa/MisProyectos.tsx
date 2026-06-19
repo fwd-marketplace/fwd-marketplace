@@ -3,12 +3,17 @@
 import { useEffect, useMemo, useRef, useState, useTransition } from "react";
 import { useLocale, useTranslations } from "next-intl";
 import {
+  AlertCircle,
   ArrowLeft,
   ArrowRight,
   CheckCircle2,
+  Download,
+  Edit2,
+  ExternalLink,
   Filter,
   FolderOpen,
   Loader2,
+  MessageSquare,
   Plus,
   Search,
   Send,
@@ -20,10 +25,14 @@ import {
 import { Button } from "@/components/ui/button";
 import { StatusPill } from "@/components/ui/status-pill";
 import {
+  calificarOfertaAction,
   changeProjectStateAction,
   createProjectAction,
   decideOfferAction,
+  getProjectEntregablesAction,
   getProjectOffersAction,
+  reviewEntregableAction,
+  updateProjectAction,
 } from "@/lib/actions/marketplace";
 import { generateProposalAction, suggestStackAction } from "@/lib/actions/ai";
 import { streamAssistant } from "@/lib/api/ai-client";
@@ -34,14 +43,18 @@ import type {
   CatalogArea,
   CatalogSkill,
   CompanyProjectState,
+  Entregable,
+  EntregableState,
   ProjectOffer,
   ProjectProposal,
   ProjectState,
   SuggestStackInput,
 } from "@/lib/api/types";
 
-type TabType = "project" | "applications" | "mockups";
+type TabType = "project" | "applications" | "entregables";
 type ViewType = "list" | "detail";
+
+const STAR_CHAR = "★";
 
 const COMPANY_STATES: CompanyProjectState[] = [
   "en_recepcion",
@@ -427,7 +440,10 @@ export function MisProyectos({
   const [activeTab, setActiveTab] = useState<TabType>("project");
   const [searchQuery, setSearchQuery] = useState("");
   const [statusFilter, setStatusFilter] = useState<ProjectState | "all">("all");
+  const [areaFilter, setAreaFilter] = useState<string>("all");
+  const [skillFilter, setSkillFilter] = useState<string>("all");
   const [offersByProject, setOffersByProject] = useState<Record<string, ProjectOffer[]>>({});
+  const [entregablesByProject, setEntregablesByProject] = useState<Record<string, Entregable[]>>({});
   const [toastMessage, setToastMessage] = useState<string | null>(null);
   const [isPending, startTransition] = useTransition();
 
@@ -435,20 +451,38 @@ export function MisProyectos({
   const [form, setForm] = useState<NewProjectForm>(() => buildEmptyForm(areas));
   const [isSuggestingStack, setIsSuggestingStack] = useState(false);
 
+  const [isEditModalOpen, setIsEditModalOpen] = useState(false);
+  const [editForm, setEditForm] = useState<UpdateProjectInput>({});
+  const [requestChangesTarget, setRequestChangesTarget] = useState<Entregable | null>(null);
+  const [requestChangesComment, setRequestChangesComment] = useState("");
+  const [isRequestingChanges, startRequestChangesTransition] = useTransition();
+
+  const [isRatingOpen, setIsRatingOpen] = useState(false);
+  const [ratingStars, setRatingStars] = useState(0);
+  const [ratingHover, setRatingHover] = useState(0);
+  const [ratingComment, setRatingComment] = useState("");
+  const [isRatingPending, startRatingTransition] = useTransition();
+
   const selectedProject = projects.find((p) => p.id === selectedProjectId) ?? null;
   const selectedOffers = selectedProjectId ? (offersByProject[selectedProjectId] ?? []) : [];
 
   const filteredProjects = useMemo(
     () =>
       projects.filter((project) => {
-        const matchesSearch = project.titulo
-          .toLowerCase()
-          .includes(searchQuery.toLowerCase());
-        const matchesStatus =
-          statusFilter === "all" || project.estado.nombre === statusFilter;
-        return matchesSearch && matchesStatus;
+        if (searchQuery && !project.titulo.toLowerCase().includes(searchQuery.toLowerCase()))
+          return false;
+        if (statusFilter !== "all" && project.estado.nombre !== statusFilter)
+          return false;
+        if (areaFilter !== "all" && project.area?.id !== areaFilter)
+          return false;
+        if (
+          skillFilter !== "all" &&
+          !project.skills.some((s) => s.skill?.id === skillFilter)
+        )
+          return false;
+        return true;
       }),
-    [projects, searchQuery, statusFilter],
+    [projects, searchQuery, statusFilter, areaFilter, skillFilter],
   );
 
   function triggerToast(message: string) {
@@ -464,6 +498,73 @@ export function MisProyectos({
       } else {
         triggerToast(result.error);
       }
+    });
+  }
+
+  function loadEntregables(projectId: string) {
+    startTransition(async () => {
+      const result = await getProjectEntregablesAction(projectId);
+      if (result.ok) {
+        setEntregablesByProject((prev) => ({ ...prev, [projectId]: result.data.entregables }));
+      } else {
+        triggerToast(result.error);
+      }
+    });
+  }
+
+  function handleReviewEntregable(entregableId: string, accion: "revisar" | "aprobar") {
+    startTransition(async () => {
+      const result = await reviewEntregableAction(entregableId, accion);
+      if (!result.ok) {
+        triggerToast(result.error);
+        return;
+      }
+      if (selectedProjectId) loadEntregables(selectedProjectId);
+      triggerToast(accion === "aprobar" ? t("entregables.toast_approved") : t("entregables.toast_reviewed"));
+    });
+  }
+
+  function handleRequestChangesConfirm() {
+    if (!requestChangesTarget || !requestChangesComment.trim()) return;
+    startRequestChangesTransition(async () => {
+      const result = await reviewEntregableAction(
+        requestChangesTarget.id,
+        "solicitar_cambios",
+        requestChangesComment.trim(),
+      );
+      if (!result.ok) {
+        triggerToast(result.error);
+        return;
+      }
+      triggerToast(t("entregables.toast_changes_requested"));
+      if (selectedProjectId) loadEntregables(selectedProjectId);
+      setRequestChangesTarget(null);
+      setRequestChangesComment("");
+    });
+  }
+
+  function handleRatingConfirm() {
+    if (ratingStars === 0 || !selectedProject) return;
+    startRatingTransition(async () => {
+      const adjudicada = (offersByProject[selectedProject.id] ?? []).find(
+        (o) => o.estado.nombre === "adjudicada",
+      );
+      if (!adjudicada) {
+        triggerToast(t("rating.error_no_offer"));
+        return;
+      }
+      const result = await calificarOfertaAction(adjudicada.id, {
+        calificacion: ratingStars,
+        ...(ratingComment.trim() ? { comentario: ratingComment.trim() } : {}),
+      });
+      if (!result.ok) {
+        triggerToast(result.error);
+        return;
+      }
+      triggerToast(t("rating.toast_saved"));
+      setIsRatingOpen(false);
+      setRatingStars(0);
+      setRatingComment("");
     });
   }
 
@@ -584,6 +685,52 @@ export function MisProyectos({
   function clearFilters() {
     setSearchQuery("");
     setStatusFilter("all");
+    setAreaFilter("all");
+    setSkillFilter("all");
+  }
+
+  function openEditModal() {
+    if (!selectedProject) return;
+    setEditForm({
+      titulo: selectedProject.titulo,
+      descripcion: selectedProject.descripcion,
+      id_area_negocio: selectedProject.area?.id ?? areas[0]?.id ?? "",
+      plazo_dias: selectedProject.plazo_dias,
+      usa_ia: selectedProject.usa_ia,
+      skills: selectedProject.skills.flatMap((s) => (s.skill ? [s.skill.id] : [])),
+    });
+    setIsEditModalOpen(true);
+  }
+
+  function closeEditModal() {
+    setIsEditModalOpen(false);
+    setEditForm({});
+  }
+
+  function toggleEditSkill(skillId: string) {
+    setEditForm((prev) => ({
+      ...prev,
+      skills: (prev.skills ?? []).includes(skillId)
+        ? (prev.skills ?? []).filter((id) => id !== skillId)
+        : [...(prev.skills ?? []), skillId],
+    }));
+  }
+
+  function submitEditProject(event: React.FormEvent<HTMLFormElement>) {
+    event.preventDefault();
+    if (!selectedProject) return;
+    startTransition(async () => {
+      const result = await updateProjectAction(selectedProject.id, editForm);
+      if (!result.ok) {
+        triggerToast(result.error);
+        return;
+      }
+      setProjects((prev) =>
+        prev.map((p) => (p.id === selectedProject.id ? result.data : p)),
+      );
+      triggerToast(t("notifications.state_updated"));
+      closeEditModal();
+    });
   }
 
   // ── DETAIL VIEW ──────────────────────────────────────────────────────────────
@@ -610,6 +757,39 @@ export function MisProyectos({
           </button>
 
           <div className="flex items-center gap-2">
+            {/* RF-49/RF-50: Calificar junior — solo si el proyecto está cerrado */}
+            {selectedProject.estado.nombre === "cerrado" && (
+              <Button
+                size="sm"
+                variant="highlight"
+                onClick={() => setIsRatingOpen(true)}
+                className="gap-1.5 rounded-full"
+              >
+                <span aria-hidden="true">{STAR_CHAR}</span>
+                {t("rating.open_btn")}
+              </Button>
+            )}
+
+            {/* Editar — solo si no hay ofertas adjudicadas */}
+            {(() => {
+              const hasAdjudicada = (offersByProject[selectedProject.id] ?? []).some(
+                (o) => o.estado.nombre === "adjudicada",
+              );
+              return (
+                <Button
+                  size="sm"
+                  variant="outline"
+                  disabled={isPending || hasAdjudicada}
+                  onClick={openEditModal}
+                  className="gap-1.5 rounded-full"
+                  title={hasAdjudicada ? t("edit_blocked") : undefined}
+                >
+                  <Edit2 className="size-3.5" />
+                  {t("edit_btn")}
+                </Button>
+              );
+            })()}
+
             <label
               htmlFor="detail-state"
               className="font-body text-xs font-bold uppercase tracking-wider text-ink-muted"
@@ -690,13 +870,14 @@ export function MisProyectos({
         {/* Tabs */}
         <div className="border-b border-border">
           <div className="flex gap-6">
-            {(["project", "mockups", "applications"] as TabType[]).map((tab) => (
+            {(["project", "entregables", "applications"] as TabType[]).map((tab) => (
               <button
                 key={tab}
                 type="button"
                 onClick={() => {
                   setActiveTab(tab);
                   if (tab === "applications") loadOffers(selectedProject.id);
+                  if (tab === "entregables") loadEntregables(selectedProject.id);
                 }}
                 className={`relative pb-3 font-body text-sm font-bold transition-colors ${
                   activeTab === tab
@@ -763,11 +944,109 @@ export function MisProyectos({
           </div>
         )}
 
-        {/* Tab: Maquetas */}
-        {activeTab === "mockups" && (
-          <p className="rounded-xl border border-dashed border-border bg-surface-sunken p-10 text-center font-body text-sm text-ink-muted">
-            {t("two_point_zero_placeholder")}
-          </p>
+        {/* Tab: Entregables */}
+        {activeTab === "entregables" && (
+          <div className="space-y-3">
+            {isPending ? (
+              <p className="rounded-xl border border-dashed border-border bg-surface-sunken p-10 text-center font-body text-sm text-ink-muted">
+                {t("loading")}
+              </p>
+            ) : (entregablesByProject[selectedProject.id] ?? []).length > 0 ? (
+              (entregablesByProject[selectedProject.id] ?? []).map((entregable) => {
+                const juniorName = entregable.junior
+                  ? [entregable.junior.nombre, entregable.junior.apellido1].filter(Boolean).join(" ")
+                  : "—";
+                const estadoStyles: Record<string, string> = {
+                  pendiente:   "bg-ink-muted/10 text-ink-muted",
+                  enviado:     "bg-primary/10 text-primary",
+                  en_revision: "bg-warning/10 text-warning",
+                  aprobado:    "bg-accent/10 text-accent",
+                };
+                const estadoNombre = entregable.estado.nombre as EntregableState;
+                return (
+                  <div
+                    key={entregable.id}
+                    className="rounded-xl border border-border bg-surface p-5 shadow-[var(--shadow-soft)]"
+                  >
+                    <div className="flex flex-col justify-between gap-4 md:flex-row md:items-start">
+                      <div className="space-y-1.5">
+                        <div className="flex flex-wrap items-center gap-2">
+                          <p className="font-heading text-base font-bold text-ink-strong">{juniorName}</p>
+                          <span className={`rounded-full px-3 py-1 text-xs font-semibold ${estadoStyles[estadoNombre] ?? estadoStyles.enviado}`}>
+                            {t(`entregables.state_${estadoNombre}`)}
+                          </span>
+                          <span className="rounded-lg bg-surface-sunken px-2 py-0.5 font-body text-[10px] font-bold uppercase tracking-wider text-ink-muted">
+                            {t(`entregables.tipo_${entregable.tipo}`)} v{entregable.version}
+                          </span>
+                        </div>
+                        <p className="font-body text-xs text-ink-muted">
+                          {new Date(entregable.fecha).toLocaleDateString(locale, {
+                            day: "numeric",
+                            month: "long",
+                            year: "numeric",
+                          })}
+                        </p>
+                        {/* RF-43: Botones de vista/descarga claros */}
+                        {entregable.url && (
+                          <div className="flex flex-wrap gap-2 pt-0.5">
+                            <a
+                              href={entregable.url}
+                              target="_blank"
+                              rel="noreferrer"
+                              className="inline-flex items-center gap-1.5 rounded-full bg-primary/10 px-3 py-1.5 font-body text-xs font-bold text-primary transition-colors hover:bg-primary hover:text-white"
+                            >
+                              <ExternalLink className="size-3.5" aria-hidden="true" />
+                              {t("entregables.view_link")}
+                            </a>
+                            <a
+                              href={entregable.url}
+                              download
+                              className="inline-flex items-center gap-1.5 rounded-full border border-border px-3 py-1.5 font-body text-xs font-bold text-ink-muted transition-colors hover:border-primary/30 hover:text-primary"
+                            >
+                              <Download className="size-3.5" aria-hidden="true" />
+                              {t("entregables.download_btn")}
+                            </a>
+                          </div>
+                        )}
+                      </div>
+                      <div className="flex flex-wrap gap-2">
+                        <Button
+                          size="sm"
+                          variant="outline"
+                          disabled={isPending || estadoNombre === "en_revision" || estadoNombre === "aprobado"}
+                          onClick={() => handleReviewEntregable(entregable.id, "revisar")}
+                        >
+                          {t("entregables.review_btn")}
+                        </Button>
+                        {/* RF-44: Solicitar cambios */}
+                        <Button
+                          size="sm"
+                          variant="warning"
+                          disabled={isPending || estadoNombre === "aprobado"}
+                          onClick={() => { setRequestChangesTarget(entregable); setRequestChangesComment(""); }}
+                        >
+                          <AlertCircle className="size-3.5" aria-hidden="true" />
+                          {t("entregables.request_changes_btn")}
+                        </Button>
+                        <Button
+                          size="sm"
+                          variant="accent"
+                          disabled={isPending || estadoNombre === "aprobado"}
+                          onClick={() => handleReviewEntregable(entregable.id, "aprobar")}
+                        >
+                          {t("entregables.approve_btn")}
+                        </Button>
+                      </div>
+                    </div>
+                  </div>
+                );
+              })
+            ) : (
+              <p className="rounded-xl border border-dashed border-border bg-surface-sunken p-10 text-center font-body text-sm text-ink-muted">
+                {t("entregables.empty")}
+              </p>
+            )}
+          </div>
         )}
 
         {/* Tab: Postulaciones */}
@@ -854,6 +1133,145 @@ export function MisProyectos({
         />
       )}
 
+      {/* RF-44: Modal solicitar cambios */}
+      {requestChangesTarget && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-ink-strong/50 p-4 backdrop-blur-sm">
+          <div className="w-full max-w-md rounded-2xl border border-border bg-surface p-6 shadow-[var(--shadow-elevated)]">
+            <div className="flex items-start justify-between gap-3 mb-4">
+              <div className="flex size-10 shrink-0 items-center justify-center rounded-full bg-warning/10">
+                <AlertCircle className="size-5 text-warning" aria-hidden="true" />
+              </div>
+              <button
+                type="button"
+                onClick={() => { setRequestChangesTarget(null); setRequestChangesComment(""); }}
+                className="rounded-full p-1 text-ink-muted hover:bg-surface-sunken"
+                aria-label={t("entregables.request_changes_cancel")}
+              >
+                <X className="size-4" />
+              </button>
+            </div>
+            <h3 className="font-heading text-lg font-bold text-ink-strong mb-1">
+              {t("entregables.request_changes_title")}
+            </h3>
+            <p className="font-body text-sm text-ink-muted mb-4">
+              {t("entregables.request_changes_desc")}
+            </p>
+            <label htmlFor="request-changes-comment" className="mb-1.5 block font-body text-xs font-semibold text-ink-muted">
+              {t("entregables.request_changes_comment_label")}
+              <span className="text-magenta ml-0.5" aria-hidden="true">*</span>
+            </label>
+            <textarea
+              id="request-changes-comment"
+              rows={4}
+              required
+              value={requestChangesComment}
+              onChange={(e) => setRequestChangesComment(e.target.value)}
+              placeholder={t("entregables.request_changes_comment_placeholder")}
+              className="mb-4 w-full resize-none rounded-xl border border-border bg-surface-sunken px-3 py-2.5 font-body text-sm text-ink-strong outline-none focus:ring-2 focus:ring-primary/20"
+            />
+            <div className="flex justify-end gap-3">
+              <button
+                type="button"
+                onClick={() => { setRequestChangesTarget(null); setRequestChangesComment(""); }}
+                className="rounded-full border border-border px-4 py-2 font-body text-sm font-semibold text-ink-muted hover:bg-surface-sunken"
+              >
+                {t("entregables.request_changes_cancel")}
+              </button>
+              <button
+                type="button"
+                disabled={isRequestingChanges || !requestChangesComment.trim()}
+                onClick={handleRequestChangesConfirm}
+                className="inline-flex items-center gap-2 rounded-full bg-warning px-4 py-2 font-body text-sm font-semibold text-white transition-colors hover:bg-warning/90 disabled:opacity-50"
+              >
+                {isRequestingChanges
+                  ? <Loader2 className="size-4 animate-spin" />
+                  : <AlertCircle className="size-4" />
+                }
+                {isRequestingChanges
+                  ? t("entregables.request_changes_sending")
+                  : t("entregables.request_changes_confirm")}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* RF-49/RF-50: Modal de calificación del junior */}
+      {isRatingOpen && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-ink-strong/50 p-4 backdrop-blur-sm">
+          <div className="w-full max-w-md rounded-2xl border border-border bg-surface p-6 shadow-[var(--shadow-elevated)]">
+            <div className="flex items-start justify-between gap-3 mb-4">
+              <div className="flex size-10 shrink-0 items-center justify-center rounded-full bg-highlight/10">
+                <span className="text-xl text-highlight" aria-hidden="true">{STAR_CHAR}</span>
+              </div>
+              <button
+                type="button"
+                onClick={() => { setIsRatingOpen(false); setRatingStars(0); setRatingComment(""); }}
+                className="rounded-full p-1 text-ink-muted hover:bg-surface-sunken"
+                aria-label={t("rating.cancel")}
+              >
+                <X className="size-4" />
+              </button>
+            </div>
+            <h3 className="font-heading text-lg font-bold text-ink-strong mb-1">
+              {t("rating.title")}
+            </h3>
+            <p className="font-body text-sm text-ink-muted mb-5">
+              {t("rating.desc")}
+            </p>
+
+            {/* Stars */}
+            <div className="flex justify-center gap-2 mb-5" role="group" aria-label={t("rating.stars_label")}>
+              {[1, 2, 3, 4, 5].map((star) => (
+                <button
+                  key={star}
+                  type="button"
+                  aria-label={`${star} ${t("rating.stars_label")}`}
+                  onClick={() => setRatingStars(star)}
+                  onMouseEnter={() => setRatingHover(star)}
+                  onMouseLeave={() => setRatingHover(0)}
+                  className={`text-4xl transition-transform duration-[var(--duration-fast)] hover:scale-110 ${
+                    star <= (ratingHover || ratingStars) ? "text-highlight" : "text-border"
+                  }`}
+                >
+                  {STAR_CHAR}
+                </button>
+              ))}
+            </div>
+
+            <label htmlFor="rating-comment" className="mb-1.5 block font-body text-xs font-semibold text-ink-muted">
+              {t("rating.comment_label")}
+            </label>
+            <textarea
+              id="rating-comment"
+              rows={4}
+              value={ratingComment}
+              onChange={(e) => setRatingComment(e.target.value)}
+              placeholder={t("rating.comment_placeholder")}
+              className="mb-4 w-full resize-none rounded-xl border border-border bg-surface-sunken px-3 py-2.5 font-body text-sm text-ink-strong outline-none focus:ring-2 focus:ring-primary/20"
+            />
+            <div className="flex justify-end gap-3">
+              <button
+                type="button"
+                onClick={() => { setIsRatingOpen(false); setRatingStars(0); setRatingComment(""); }}
+                className="rounded-full border border-border px-4 py-2 font-body text-sm font-semibold text-ink-muted hover:bg-surface-sunken"
+              >
+                {t("rating.cancel")}
+              </button>
+              <button
+                type="button"
+                disabled={isRatingPending || ratingStars === 0}
+                onClick={handleRatingConfirm}
+                className="inline-flex items-center gap-2 rounded-full bg-highlight px-4 py-2 font-body text-sm font-semibold text-highlight-foreground transition-colors hover:bg-highlight/90 disabled:opacity-50"
+              >
+                {isRatingPending ? <Loader2 className="size-4 animate-spin" /> : null}
+                {isRatingPending ? t("rating.saving") : t("rating.confirm")}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
       {/* Page header */}
       <div className="flex items-center justify-between gap-4">
         <h1 className="font-heading text-3xl font-extrabold tracking-tight text-ink-strong">
@@ -881,7 +1299,7 @@ export function MisProyectos({
             </h2>
           </div>
 
-          <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
+          <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
             <div className="relative">
               <label htmlFor="project-search" className="sr-only">
                 {t("filters.search_label")}
@@ -919,9 +1337,47 @@ export function MisProyectos({
                 )}
               </select>
             </div>
+
+            <div>
+              <label htmlFor="project-area-filter" className="sr-only">
+                {t("filters.area_label")}
+              </label>
+              <select
+                id="project-area-filter"
+                value={areaFilter}
+                onChange={(e) => setAreaFilter(e.target.value)}
+                className="w-full rounded-xl border border-border bg-surface-sunken px-3.5 py-2 font-body text-sm text-ink-strong outline-none focus:ring-2 focus:ring-primary/20"
+              >
+                <option value="all">{t("filters.area_all")}</option>
+                {areas.map((area) => (
+                  <option key={area.id} value={area.id}>
+                    {area.nombre}
+                  </option>
+                ))}
+              </select>
+            </div>
+
+            <div>
+              <label htmlFor="project-skill-filter" className="sr-only">
+                {t("filters.skill_label")}
+              </label>
+              <select
+                id="project-skill-filter"
+                value={skillFilter}
+                onChange={(e) => setSkillFilter(e.target.value)}
+                className="w-full rounded-xl border border-border bg-surface-sunken px-3.5 py-2 font-body text-sm text-ink-strong outline-none focus:ring-2 focus:ring-primary/20"
+              >
+                <option value="all">{t("filters.skill_all")}</option>
+                {catalogSkills.map((skill) => (
+                  <option key={skill.id} value={skill.id}>
+                    {skill.nombre}
+                  </option>
+                ))}
+              </select>
+            </div>
           </div>
 
-          {(searchQuery || statusFilter !== "all") && (
+          {(searchQuery || statusFilter !== "all" || areaFilter !== "all" || skillFilter !== "all") && (
             <div className="flex justify-end pt-2">
               <Button variant="outline" onClick={clearFilters} className="h-8 text-xs">
                 {t("filters.clear")}
@@ -1020,6 +1476,145 @@ export function MisProyectos({
           <p className="max-w-md font-body text-sm text-ink-muted">
             {t("filters.empty_desc")}
           </p>
+        </div>
+      )}
+
+      {/* Edit project modal */}
+      {isEditModalOpen && selectedProject && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-ink-strong/50 p-4 backdrop-blur-xs">
+          <div className="max-h-[92dvh] w-full max-w-2xl overflow-y-auto rounded-2xl border border-border bg-surface p-6 shadow-[var(--shadow-elevated)]">
+            <div className="flex items-center justify-between border-b border-border pb-3">
+              <h3 className="font-heading text-lg font-bold text-ink-strong">
+                {t("edit_modal.title")}
+              </h3>
+              <button
+                type="button"
+                onClick={closeEditModal}
+                className="rounded-full p-1 text-ink-muted transition-colors hover:bg-surface-sunken hover:text-ink-strong"
+                aria-label={t("edit_modal.cancel")}
+              >
+                <X className="size-5" />
+              </button>
+            </div>
+
+            <form onSubmit={submitEditProject} className="mt-4 space-y-4">
+              <div className="space-y-1">
+                <label
+                  htmlFor="edit-project-title"
+                  className="block font-body text-xs font-bold uppercase tracking-wider text-ink-muted"
+                >
+                  {tModal("new_project_modal.name_label")}
+                </label>
+                <input
+                  id="edit-project-title"
+                  type="text"
+                  required
+                  value={editForm.titulo ?? ""}
+                  onChange={(e) => setEditForm((c) => ({ ...c, titulo: e.target.value }))}
+                  className="w-full rounded-xl border border-border bg-surface-sunken px-3.5 py-2 font-body text-sm text-ink-strong outline-none focus:ring-2 focus:ring-primary/20"
+                />
+              </div>
+
+              <div className="space-y-1">
+                <label
+                  htmlFor="edit-project-description"
+                  className="block font-body text-xs font-bold uppercase tracking-wider text-ink-muted"
+                >
+                  {tModal("new_project_modal.description_label")}
+                </label>
+                <textarea
+                  id="edit-project-description"
+                  required
+                  value={editForm.descripcion ?? ""}
+                  onChange={(e) => setEditForm((c) => ({ ...c, descripcion: e.target.value }))}
+                  className="min-h-28 w-full rounded-xl border border-border bg-surface-sunken px-3.5 py-2 font-body text-sm text-ink-strong outline-none focus:ring-2 focus:ring-primary/20"
+                />
+              </div>
+
+              <div className="grid gap-4 md:grid-cols-2">
+                <div className="space-y-1">
+                  <label
+                    htmlFor="edit-project-area"
+                    className="block font-body text-xs font-bold uppercase tracking-wider text-ink-muted"
+                  >
+                    {tModal("new_project_modal.area_label")}
+                  </label>
+                  <select
+                    id="edit-project-area"
+                    value={editForm.id_area_negocio ?? ""}
+                    onChange={(e) => setEditForm((c) => ({ ...c, id_area_negocio: e.target.value }))}
+                    className="w-full rounded-xl border border-border bg-surface-sunken px-3.5 py-2 font-body text-sm text-ink-strong outline-none focus:ring-2 focus:ring-primary/20"
+                  >
+                    {areas.map((area) => (
+                      <option key={area.id} value={area.id}>
+                        {area.nombre}
+                      </option>
+                    ))}
+                  </select>
+                </div>
+
+                <div className="space-y-1">
+                  <label
+                    htmlFor="edit-project-deadline"
+                    className="block font-body text-xs font-bold uppercase tracking-wider text-ink-muted"
+                  >
+                    {tModal("new_project_modal.deadline_label")}
+                  </label>
+                  <input
+                    id="edit-project-deadline"
+                    type="number"
+                    min={5}
+                    max={15}
+                    required
+                    value={editForm.plazo_dias ?? 10}
+                    onChange={(e) => setEditForm((c) => ({ ...c, plazo_dias: Number(e.target.value) }))}
+                    className="w-full rounded-xl border border-border bg-surface-sunken px-3.5 py-2 font-body text-sm text-ink-strong outline-none focus:ring-2 focus:ring-primary/20"
+                  />
+                </div>
+              </div>
+
+              <fieldset className="space-y-2">
+                <legend className="font-body text-xs font-bold uppercase tracking-wider text-ink-muted">
+                  {tModal("new_project_modal.skills_label")}
+                </legend>
+                <div className="flex max-h-36 flex-wrap gap-2 overflow-y-auto rounded-xl border border-border bg-surface-sunken p-3">
+                  {catalogSkills.map((skill) => (
+                    <label
+                      key={skill.id}
+                      className="inline-flex cursor-pointer items-center gap-2 rounded-full border border-border bg-surface px-3 py-1 font-body text-xs font-semibold text-ink"
+                    >
+                      <input
+                        type="checkbox"
+                        checked={(editForm.skills ?? []).includes(skill.id)}
+                        onChange={() => toggleEditSkill(skill.id)}
+                        className="accent-primary"
+                      />
+                      {skill.nombre}
+                    </label>
+                  ))}
+                </div>
+              </fieldset>
+
+              <label className="inline-flex cursor-pointer items-center gap-2 font-body text-sm font-semibold text-ink">
+                <input
+                  type="checkbox"
+                  checked={editForm.usa_ia ?? false}
+                  onChange={(e) => setEditForm((c) => ({ ...c, usa_ia: e.target.checked }))}
+                  className="accent-primary"
+                />
+                {tModal("new_project_modal.ai_label")}
+              </label>
+
+              <div className="mt-6 flex justify-end gap-3 border-t border-border pt-3">
+                <Button type="button" variant="outline" onClick={closeEditModal}>
+                  {t("edit_modal.cancel")}
+                </Button>
+                <Button type="submit" disabled={isPending}>
+                  {t("edit_modal.save")}
+                </Button>
+              </div>
+            </form>
+          </div>
         </div>
       )}
 

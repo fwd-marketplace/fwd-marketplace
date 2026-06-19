@@ -2,6 +2,7 @@ import { notFound } from "next/navigation";
 import { setRequestLocale } from "next-intl/server";
 import { getMe } from "@/lib/api/profile";
 import { getProjectById } from "@/lib/api/marketplace";
+import { MOCK_MARKETPLACE_BY_ID } from "@/lib/mock-data";
 import { ProjectDetail } from "@/components/marketplace/ProjectDetail";
 
 interface Props {
@@ -17,10 +18,14 @@ export default async function ProjectDetailPage({ params }: Props) {
     getProjectById(id),
   ]);
 
-  if (!projectResult.ok) notFound();
+  const project = projectResult.ok
+    ? projectResult.data
+    : MOCK_MARKETPLACE_BY_ID.get(id) ?? null;
+
+  if (!project) notFound();
 
   const profile = meResult.ok ? meResult.data.profile : null;
   const role = profile?.role.nombre ?? null;
 
-  return <ProjectDetail project={projectResult.data} role={role} />;
+  return <ProjectDetail project={project} role={role} />;
 }

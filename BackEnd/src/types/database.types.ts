@@ -242,6 +242,7 @@ export type Database = {
       }
       entregable: {
         Row: {
+          comentario_revision: string | null
           fecha: string
           group_id: string
           id: string
@@ -249,9 +250,11 @@ export type Database = {
           id_proyecto: string
           id_usuario: string
           tipo: string
+          url: string | null
           version: number
         }
         Insert: {
+          comentario_revision?: string | null
           fecha?: string
           group_id: string
           id?: string
@@ -259,9 +262,11 @@ export type Database = {
           id_proyecto: string
           id_usuario: string
           tipo: string
+          url?: string | null
           version?: number
         }
         Update: {
+          comentario_revision?: string | null
           fecha?: string
           group_id?: string
           id?: string
@@ -269,6 +274,7 @@ export type Database = {
           id_proyecto?: string
           id_usuario?: string
           tipo?: string
+          url?: string | null
           version?: number
         }
         Relationships: [
@@ -723,6 +729,8 @@ export type Database = {
         Row: {
           calificacion: number | null
           comentario_calificacion: string | null
+          documentacion_tecnica: string | null
+          documentacion_url: string | null
           fecha_envio: string
           id: string
           id_estado: string
@@ -736,6 +744,8 @@ export type Database = {
         Insert: {
           calificacion?: number | null
           comentario_calificacion?: string | null
+          documentacion_tecnica?: string | null
+          documentacion_url?: string | null
           fecha_envio?: string
           id?: string
           id_estado: string
@@ -749,6 +759,8 @@ export type Database = {
         Update: {
           calificacion?: number | null
           comentario_calificacion?: string | null
+          documentacion_tecnica?: string | null
+          documentacion_url?: string | null
           fecha_envio?: string
           id?: string
           id_estado?: string
