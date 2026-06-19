@@ -120,6 +120,10 @@ function buildNavLinks(role?: ApiRoleName): NavItem[] {
     { key: "nav_home", href: role ? (HOME_HREF[role] ?? "/bienvenida") : "/home" },
     { key: "nav_marketplace", href: "/marketplace" },
   ];
+  // La gestión (info, chat y proceso) aplica a junior y empresa con sesión.
+  if (role === "student" || role === "company") {
+    links.push({ key: "nav_gestion", href: "/gestion" });
+  }
   // El perfil solo aplica con sesión iniciada.
   if (role) {
     links.push({

@@ -6,9 +6,12 @@ import {
   changeProjectState,
   createProject,
   decideOffer,
+  getMyOffers,
+  getMyProjects,
   getProjectById,
   getProjectEntregables,
   getProjectOffers,
+  getProjects,
   replicarCalificacion,
   reviewEntregable,
   submitEntregable,
@@ -116,4 +119,16 @@ export async function replicarCalificacionAction(ofertaId: string, input: Replic
     revalidatePath("/");
   }
   return result;
+}
+
+export async function getMyProjectsAction() {
+  return getMyProjects();
+}
+
+export async function getProjectsAction() {
+  return getProjects();
+}
+
+export async function getMyOffersAction() {
+  return getMyOffers();
 }

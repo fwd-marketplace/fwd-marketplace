@@ -14,7 +14,6 @@ import {
     Megaphone,
     ShoppingCart,
     Briefcase,
-    Sparkles,
     Search,
     Bookmark,
     ChevronDown,
@@ -22,16 +21,18 @@ import {
     ChevronRight,
     CheckCircle2,
     Clock,
-    ExternalLink,
     Zap,
     X,
 } from 'lucide-react';
 import { MarketplaceHeroBackdrop } from '@/components/marketplace/MarketplaceHeroBackdrop';
-import { ProjectDetailSheet } from '@/components/marketplace/ProjectDetailSheet';
+import { HeroJourneyBadge } from '@/components/ui/HeroJourneyBadge';
+import { buildSparklePoints } from '@/lib/logo-constellation';
+
+const CONTENT_SPARKLE_POINTS = buildSparklePoints(12, 12, 12);
 import { Button } from '@/components/ui/button';
 import type { ApiProject, ApiRoleName, CatalogsResponse } from '@/lib/api/types';
 
-const PAGE_SIZE = 6;
+const PAGE_SIZE = 9;
 
 const MOCK_AREA_ID = {
     fintech: 'mock-area-1',
@@ -160,6 +161,88 @@ const MOCK_PROJECTS: ApiProject[] = [
         skills: [
             { skill: { id: 'sk-3', nombre: 'Python', tipo: 'backend', categoria: null } },
             { skill: { id: 'sk-4', nombre: 'TypeScript', tipo: 'frontend', categoria: null } },
+        ],
+    },
+    {
+        id: 'mock-7',
+        titulo: 'Portal de Bienestar Corporativo',
+        descripcion: 'Plataforma interna para que empleados registren hábitos saludables, accedan a recursos de salud mental y sigan retos de bienestar por equipos.',
+        usa_ia: false,
+        plazo_dias: 20,
+        fecha_publicacion: '2026-05-25T00:00:00Z',
+        fecha_cierre: null,
+        estado: { nombre: 'en_recepcion' },
+        area: { id: MOCK_AREA_ID.salud, nombre: 'Salud' },
+        empresa: { nombre_comercial: 'VidaSana Corp', tipo: 'empresa' },
+        skills: [
+            { skill: { id: 'sk-1', nombre: 'React', tipo: 'frontend', categoria: null } },
+            { skill: { id: 'sk-4', nombre: 'TypeScript', tipo: 'frontend', categoria: null } },
+            { skill: { id: 'sk-2', nombre: 'Node.js', tipo: 'backend', categoria: null } },
+        ],
+    },
+    {
+        id: 'mock-8',
+        titulo: 'Marketplace de Artesanías Locales',
+        descripcion: 'Tienda en línea para artesanos costarricenses con catálogo, carrito, pasarela de pago y panel de vendedor con métricas de ventas.',
+        usa_ia: false,
+        plazo_dias: 30,
+        fecha_publicacion: '2026-05-22T00:00:00Z',
+        fecha_cierre: null,
+        estado: { nombre: 'en_recepcion' },
+        area: { id: MOCK_AREA_ID.ecommerce, nombre: 'E-Commerce' },
+        empresa: { nombre_comercial: 'Manos CR', tipo: 'emprendedor' },
+        skills: [
+            { skill: { id: 'sk-1', nombre: 'React', tipo: 'frontend', categoria: null } },
+            { skill: { id: 'sk-5', nombre: 'PostgreSQL', tipo: 'backend', categoria: null } },
+        ],
+    },
+    {
+        id: 'mock-9',
+        titulo: 'Sistema de Inventario con IA',
+        descripcion: 'Módulo de predicción de demanda con machine learning integrado al ERP existente para optimizar niveles de stock y reducir mermas.',
+        usa_ia: true,
+        plazo_dias: 45,
+        fecha_publicacion: '2026-05-19T00:00:00Z',
+        fecha_cierre: null,
+        estado: { nombre: 'en_recepcion' },
+        area: { id: MOCK_AREA_ID.logistica, nombre: 'Logística' },
+        empresa: { nombre_comercial: 'SupplyTech CR', tipo: 'empresa' },
+        skills: [
+            { skill: { id: 'sk-3', nombre: 'Python', tipo: 'backend', categoria: null } },
+            { skill: { id: 'sk-5', nombre: 'PostgreSQL', tipo: 'backend', categoria: null } },
+            { skill: { id: 'sk-4', nombre: 'TypeScript', tipo: 'frontend', categoria: null } },
+        ],
+    },
+    {
+        id: 'mock-10',
+        titulo: 'App de Gamificación para Aulas',
+        descripcion: 'Herramienta para docentes que convierte actividades del aula en retos con puntos, insignias y tablas de clasificación por grupo.',
+        usa_ia: false,
+        plazo_dias: 18,
+        fecha_publicacion: '2026-05-15T00:00:00Z',
+        fecha_cierre: null,
+        estado: { nombre: 'en_recepcion' },
+        area: { id: MOCK_AREA_ID.edutech, nombre: 'Edutech' },
+        empresa: { nombre_comercial: 'ClassPlay CR', tipo: 'emprendedor' },
+        skills: [
+            { skill: { id: 'sk-1', nombre: 'React', tipo: 'frontend', categoria: null } },
+            { skill: { id: 'sk-6', nombre: 'React Native', tipo: 'mobile', categoria: null } },
+        ],
+    },
+    {
+        id: 'mock-11',
+        titulo: 'Panel de Análisis de Redes Sociales',
+        descripcion: 'Dashboard que agrega métricas de Instagram, TikTok y LinkedIn para agencias, con reportes automáticos y alertas de rendimiento de campañas.',
+        usa_ia: true,
+        plazo_dias: 12,
+        fecha_publicacion: '2026-05-10T00:00:00Z',
+        fecha_cierre: null,
+        estado: { nombre: 'en_recepcion' },
+        area: { id: MOCK_AREA_ID.marketing, nombre: 'Marketing' },
+        empresa: { nombre_comercial: 'Metric Studio', tipo: 'empresa' },
+        skills: [
+            { skill: { id: 'sk-1', nombre: 'React', tipo: 'frontend', categoria: null } },
+            { skill: { id: 'sk-3', nombre: 'Python', tipo: 'backend', categoria: null } },
         ],
     },
 ];
@@ -398,8 +481,6 @@ export default function MarketPlace({ initialProjects, catalogs, role = 'student
     const [sortOrder, setSortOrder] = useState<SortOrder>('sort_recent_desc');
     const [currentPage, setCurrentPage] = useState(1);
     const [savedProjectIds, setSavedProjectIds] = useState<ReadonlySet<string>>(new Set());
-    const [sheetProject, setSheetProject] = useState<ApiProject | null>(null);
-    const [selectedProject, setSelectedProject] = useState<ApiProject | null>(null);
 
     const areaOptions: FilterOption[] = activeCatalogs.areas.map((a) => ({ value: a.id, label: a.nombre }));
     const skillOptions: FilterOption[] = activeCatalogs.skills
@@ -489,33 +570,31 @@ export default function MarketPlace({ initialProjects, catalogs, role = 'student
 
     return (
         <>
-        <ProjectDetailSheet
-            project={sheetProject}
-            isOpen={!!sheetProject}
-            onClose={() => setSheetProject(null)}
-            role={role ?? null}
-            showApplyForm={role === 'student'}
-            alreadyApplied={sheetProject ? appliedProjectIds.includes(sheetProject.id) : false}
-            isProjectExpired={sheetProject ? isExpired(sheetProject.fecha_cierre) : false}
-        />
-        <div className="bg-marketplace-sky relative overflow-hidden min-h-screen text-ink font-body pb-20">
-            <MarketplaceHeroBackdrop />
+        <div className="bg-marketplace-sky relative min-h-screen text-ink font-body pb-20">
 
-            {/* Hero */}
-            <section className="relative z-10 px-6 pt-16 pb-40 md:pt-24 md:pb-52">
-                <div className="relative z-10 mx-auto max-w-3xl text-center">
-                    <h1 className="font-heading text-6xl md:text-7xl font-bold tracking-tight text-white">
+            {/* Hero — backdrop is contained here so it never stretches with the cards */}
+            <section className="relative overflow-hidden z-10 px-6 pt-10 pb-24 md:pt-14 md:pb-32">
+                <MarketplaceHeroBackdrop />
+                <div className="relative z-10 max-w-7xl mx-auto px-4 md:px-6 text-left">
+                    <HeroJourneyBadge
+                        stage="desafio"
+                        label={t('hero_journey_label')}
+                        cta={t('hero_journey_cta')}
+                        achievedCta={t('hero_journey_cta_achieved')}
+                        achieved={appliedProjectIds.length > 0}
+                    />
+                    <h1 className="mt-4 font-heading text-4xl md:text-5xl font-bold tracking-tight text-white">
                         {t('hero_title')}<span className="text-primary" aria-hidden="true">.</span>
                     </h1>
-                    <p className="mt-5 text-base md:text-lg text-white/80 leading-relaxed">
+                    <p className="mt-3 text-sm md:text-base text-white/80 leading-relaxed">
                         {t('hero_subtitle')}
                     </p>
                 </div>
             </section>
 
             {/* Search + filters */}
-            <div className="relative z-20 max-w-5xl mx-auto px-6 -mt-16 md:-mt-20">
-                <div className="flex flex-col gap-4 rounded-full border border-white/20 bg-secondary/40 px-3 py-3 shadow-elevated backdrop-blur-md md:flex-row md:items-center md:gap-2 md:py-2 md:pl-6 md:pr-2">
+            <div className="relative z-20 max-w-7xl mx-auto px-4 md:px-6 -mt-10 md:-mt-14">
+                <div className="flex flex-col gap-4 rounded-full bg-white/10 px-3 py-3 shadow-elevated backdrop-blur-md md:flex-row md:items-center md:gap-2 md:py-2 md:pl-6 md:pr-2">
                     <div className="flex flex-1 items-center gap-3">
                         <Search className="w-4 h-4 shrink-0 text-white/70" aria-hidden="true" />
                         <label htmlFor="marketplace-search" className="sr-only">{t('search_label')}</label>
@@ -570,17 +649,53 @@ export default function MarketPlace({ initialProjects, catalogs, role = 'student
                 </div>
             </div>
 
+            {/* Ambient stars scattered in the cards area */}
+            <div className="pointer-events-none absolute inset-x-0 bottom-0 z-0" style={{ top: '420px' }} aria-hidden="true">
+                {([
+                    // bordes izquierdo / derecho
+                    { t: '8%',  l: '1%',   s: 10, g: true,  sp: true,  o: 0.6,  d: '3.2s', dl: '0.3s' },
+                    { t: '22%', l: '99%',  s: 10, g: true,  sp: true,  o: 0.65, d: '3.6s', dl: '0.8s' },
+                    { t: '50%', l: '1%',   s: 10, g: false, sp: true,  o: 0.55, d: '3.1s', dl: '1.4s' },
+                    { t: '72%', l: '99%',  s: 10, g: true,  sp: true,  o: 0.7,  d: '2.9s', dl: '0.5s' },
+                    // centro — visibles cuando los cards no llenan la pantalla
+                    { t: '35%', l: '22%',  s: 4,  g: false, sp: false, o: 0.25, d: '3.0s', dl: '1.0s' },
+                    { t: '45%', l: '62%',  s: 4,  g: false, sp: false, o: 0.2,  d: '3.4s', dl: '0.6s' },
+                    { t: '60%', l: '38%',  s: 10, g: true,  sp: true,  o: 0.3,  d: '3.2s', dl: '1.2s' },
+                    { t: '75%', l: '75%',  s: 4,  g: false, sp: false, o: 0.2,  d: '2.8s', dl: '0.9s' },
+                    { t: '85%', l: '18%',  s: 4,  g: true,  sp: false, o: 0.25, d: '3.5s', dl: '0.4s' },
+                ] as const).map((s, i) => {
+                    const fill = s.g ? 'var(--highlight)' : 'var(--surface)';
+                    if (s.sp) {
+                        return (
+                            <span key={i} className="absolute" style={{ top: s.t, left: s.l, opacity: s.o }}>
+                                <svg width={s.s} height={s.s} viewBox="0 0 24 24" fill="none"
+                                    style={{ display: 'block', filter: `drop-shadow(0 0 3px ${fill})`, animation: `constellation-spark-twinkle ${s.d} ease-in-out ${s.dl} infinite` }}>
+                                    <polygon points={CONTENT_SPARKLE_POINTS} fill={fill} />
+                                </svg>
+                            </span>
+                        );
+                    }
+                    return (
+                        <span key={i} className="absolute rounded-full" style={{
+                            top: s.t, left: s.l, width: s.s, height: s.s, background: fill,
+                            ['--star-opacity' as string]: s.o,
+                            animation: `constellation-twinkle ${s.d} ease-in-out ${s.dl} infinite`,
+                        }} />
+                    );
+                })}
+            </div>
+
             {/* Results */}
-            <div className="max-w-6xl mx-auto px-6 mt-14 relative z-10">
+            <div className="max-w-7xl mx-auto px-4 md:px-6 mt-8 relative z-10">
                 <div className="flex items-center justify-between gap-4 mb-5">
-                    <p className="text-base font-bold text-ink-strong">
+                    <p className="text-sm font-semibold text-white">
                         {t('results_count', { count: totalResults })}
                     </p>
                     {hasActiveFilters && (
                         <button
                             type="button"
                             onClick={clearAllFilters}
-                            className="text-xs font-semibold text-primary hover:underline"
+                            className="text-sm font-semibold text-white hover:underline"
                         >
                             {t('clear_filters')}
                         </button>
@@ -685,13 +800,13 @@ export default function MarketPlace({ initialProjects, catalogs, role = 'student
                                             {skills.slice(0, 4).map((skill) => (
                                                 <span
                                                     key={skill.id}
-                                                    className="bg-ink-strong text-surface text-[11px] font-bold px-3 py-1 rounded-full uppercase tracking-wider"
+                                                    className="border border-primary text-primary text-[11px] font-bold px-3 py-1 rounded-full uppercase tracking-wider"
                                                 >
                                                     {skill.nombre}
                                                 </span>
                                             ))}
                                             {skills.length > 4 && (
-                                                <span className="bg-ink-strong text-surface text-[11px] font-bold px-3 py-1 rounded-full uppercase tracking-wider">
+                                                <span className="border border-primary text-primary text-[11px] font-bold px-3 py-1 rounded-full uppercase tracking-wider">
                                                     +{skills.length - 4}
                                                 </span>
                                             )}
@@ -700,44 +815,28 @@ export default function MarketPlace({ initialProjects, catalogs, role = 'student
 
                                     {/* Footer */}
                                     <div className="mt-auto flex items-center gap-2">
-                                        <button
-                                            type="button"
-                                            onClick={() => setSheetProject(project)}
+                                        <Link
+                                            href={`/${locale}/marketplace/${project.id}/proceso`}
                                             className={`flex-1 rounded-full px-5 py-2.5 text-sm font-semibold text-center transition-colors duration-[var(--duration-fast)] ease-[var(--ease-out)] ${
                                                 expired
-                                                    ? 'bg-surface-sunken text-ink-muted cursor-default'
-                                                    : 'bg-primary text-primary-foreground hover:bg-secondary'
+                                                    ? 'bg-surface-sunken text-ink-muted pointer-events-none'
+                                                    : 'bg-secondary text-white hover:bg-secondary/80'
                                             }`}
                                         >
                                             {expired ? t('badge_expired') : hasApplied ? t('view_my_offer') : t('view_project')}
-                                        </button>
-                                        <button
-                                            type="button"
-                                            onClick={() => setSelectedProject(project)}
-                                            className="flex size-10 shrink-0 items-center justify-center rounded-full border border-border bg-surface text-ink-muted hover:border-primary/30 hover:text-primary transition-colors duration-[var(--duration-fast)] ease-[var(--ease-out)]"
-                                            aria-label={t('view_project')}
-                                        >
-                                            <Sparkles className="w-4 h-4" aria-hidden="true" />
-                                        </button>
-                                        <Link
-                                            href={`/${locale}/marketplace/${project.id}`}
-                                            aria-label="Abrir página completa"
-                                            className="flex size-10 shrink-0 items-center justify-center rounded-full border border-border bg-surface text-ink-muted hover:border-primary/30 hover:text-primary transition-colors duration-[var(--duration-fast)] ease-[var(--ease-out)]"
-                                        >
-                                            <ExternalLink className="w-4 h-4" aria-hidden="true" />
                                         </Link>
                                         <button
                                             type="button"
                                             aria-label={isSaved ? t('saved_project') : t('save_project')}
                                             aria-pressed={isSaved}
                                             onClick={() => toggleSaved(project.id)}
-                                            className={`size-10 shrink-0 flex items-center justify-center rounded-full transition-colors duration-[var(--duration-fast)] ease-[var(--ease-out)] ${
+                                            className={`size-10 shrink-0 flex items-center justify-center rounded-full border transition-colors duration-[var(--duration-fast)] ease-[var(--ease-out)] bg-highlight ${
                                                 isSaved
-                                                    ? 'bg-highlight text-highlight-foreground'
-                                                    : 'bg-ink-strong text-surface hover:bg-secondary'
+                                                    ? 'border-white text-white'
+                                                    : 'border-white text-white/0'
                                             }`}
                                         >
-                                            <Bookmark className={`w-4 h-4 ${isSaved ? 'fill-current' : ''}`} />
+                                            <Bookmark className={`w-4 h-4 stroke-white ${isSaved ? 'fill-white' : 'fill-none'}`} />
                                         </button>
                                     </div>
                                 </div>
@@ -754,7 +853,7 @@ export default function MarketPlace({ initialProjects, catalogs, role = 'student
                             aria-label={t('pagination_prev')}
                             disabled={safePage === 1}
                             onClick={() => setCurrentPage((p) => Math.max(1, p - 1))}
-                            className="w-9 h-9 flex items-center justify-center rounded-lg border border-border text-ink-muted bg-surface hover:bg-surface-sunken transition-colors duration-[var(--duration-fast)] ease-[var(--ease-out)] disabled:opacity-40 disabled:pointer-events-none"
+                            className="w-9 h-9 flex items-center justify-center rounded-lg border border-white/40 text-white bg-transparent hover:bg-white/10 transition-colors duration-[var(--duration-fast)] ease-[var(--ease-out)] disabled:opacity-30 disabled:pointer-events-none"
                         >
                             <ChevronLeft className="w-4 h-4" />
                         </button>
@@ -767,8 +866,8 @@ export default function MarketPlace({ initialProjects, catalogs, role = 'student
                                 onClick={() => setCurrentPage(page)}
                                 className={`w-9 h-9 flex items-center justify-center rounded-lg text-sm font-semibold transition-colors duration-[var(--duration-fast)] ease-[var(--ease-out)] ${
                                     page === safePage
-                                        ? 'bg-primary text-primary-foreground'
-                                        : 'border border-border text-ink-muted bg-surface hover:bg-surface-sunken'
+                                        ? 'bg-white/25 text-white border border-white/40'
+                                        : 'border border-white/40 text-white/70 bg-transparent hover:bg-white/10'
                                 }`}
                             >
                                 {page}
@@ -779,7 +878,7 @@ export default function MarketPlace({ initialProjects, catalogs, role = 'student
                             aria-label={t('pagination_next')}
                             disabled={safePage === totalPages}
                             onClick={() => setCurrentPage((p) => Math.min(totalPages, p + 1))}
-                            className="w-9 h-9 flex items-center justify-center rounded-lg border border-border text-ink-muted bg-surface hover:bg-surface-sunken transition-colors duration-[var(--duration-fast)] ease-[var(--ease-out)] disabled:opacity-40 disabled:pointer-events-none"
+                            className="w-9 h-9 flex items-center justify-center rounded-lg border border-white/40 text-white bg-transparent hover:bg-white/10 transition-colors duration-[var(--duration-fast)] ease-[var(--ease-out)] disabled:opacity-30 disabled:pointer-events-none"
                         >
                             <ChevronRight className="w-4 h-4" />
                         </button>
@@ -787,9 +886,6 @@ export default function MarketPlace({ initialProjects, catalogs, role = 'student
                 )}
             </div>
 
-            {selectedProject && (
-                <ProjectDetailModal project={selectedProject} onClose={() => setSelectedProject(null)} />
-            )}
         </div>
         </>
     );

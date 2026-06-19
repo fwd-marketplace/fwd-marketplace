@@ -76,13 +76,28 @@ export async function createOferta(
   return oferta;
 }
 
+/** Lista las calificaciones recibidas por el junior autenticado. */
+export async function listMyCalificaciones(accessToken: string, userId: string) {
+  const client = supabaseForToken(accessToken);
+  const { data, error } = await client
+    .from("oferta")
+    .select(
+      "id, calificacion, comentario_calificacion, replica_calificacion, updated_at, proyecto:proyecto(id, titulo, empresa:empresario(nombre_comercial))",
+    )
+    .eq("id_usuario", userId)
+    .not("calificacion", "is", null)
+    .order("updated_at", { ascending: false });
+  if (error) throw new ApiError(500, error.message);
+  return data;
+}
+
 /** Lista las postulaciones del junior autenticado. */
 export async function listMyOfertas(accessToken: string, userId: string) {
   const client = supabaseForToken(accessToken);
   const { data, error } = await client
     .from("oferta")
     .select(
-      "id, propuesta, prototipo_url, url_repositorio, documentacion_tecnica, documentacion_url, fecha_envio, estado:estado_oferta(nombre), proyecto:proyecto(id, titulo)",
+      "id, propuesta, prototipo_url, url_repositorio, documentacion_tecnica, documentacion_url, fecha_envio, estado:estado_oferta(nombre), proyecto:proyecto(id, titulo, fecha_cierre)",
     )
     .eq("id_usuario", userId)
     .order("fecha_envio", { ascending: false });

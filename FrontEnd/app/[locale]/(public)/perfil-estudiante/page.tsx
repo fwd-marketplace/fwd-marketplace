@@ -6,12 +6,13 @@ import {
   type Activity,
   type Application,
   type ApplicationStats,
+  type MockCalificacion,
   type StudentProfile,
 } from "@/app/[locale]/(public)/perfil-estudiante/types";
-import { getCatalogs, getMyOffers } from "@/lib/api/marketplace";
+import { getCatalogs, getMyCalificaciones, getMyOffers } from "@/lib/api/marketplace";
 import { getMe } from "@/lib/api/profile";
 import { parseJsonStringArray } from "@/lib/api/safe-json";
-import type { ApiMeProfile, MyOffer, OfferState } from "@/lib/api/types";
+import type { ApiCalificacion, ApiMeProfile, MyOffer, OfferState } from "@/lib/api/types";
 
 interface Props {
   params: Promise<{ locale: string }>;
@@ -97,16 +98,31 @@ function buildStats(applications: Application[]): ApplicationStats {
   };
 }
 
+function mapCalificacion(cal: ApiCalificacion): MockCalificacion {
+  return {
+    id: cal.id,
+    ofertaId: cal.id,
+    companyName: cal.proyecto?.empresa?.nombre_comercial ?? "",
+    projectName: cal.proyecto?.titulo ?? "",
+    score: cal.calificacion,
+    comment: cal.comentario_calificacion ?? "",
+    date: cal.updated_at,
+    reply: cal.replica_calificacion,
+  };
+}
+
 export default async function EstudianteProfile({ params }: Props) {
   const { locale } = await params;
   setRequestLocale(locale);
-  const [meResult, offersResult, catalogsResult] = await Promise.all([
+  const [meResult, offersResult, calResult, catalogsResult] = await Promise.all([
     getMe(),
     getMyOffers(),
+    getMyCalificaciones(),
     getCatalogs(),
   ]);
   const profile = mapProfile(meResult.ok ? meResult.data.profile : null);
   const applications = offersResult.ok ? offersResult.data.ofertas.map(mapOffer) : [];
+  const calificaciones = calResult.ok ? calResult.data.map(mapCalificacion) : [];
   const activities: Activity[] = [];
   const knowledgeSuggestions = catalogsResult.ok
     ? catalogsResult.data.conocimientos.map((conocimiento) => conocimiento.nombre)
@@ -119,6 +135,7 @@ export default async function EstudianteProfile({ params }: Props) {
         initialProfile={profile}
         initialActivities={activities}
         initialApplications={applications}
+        initialCalificaciones={calificaciones}
         stats={buildStats(applications)}
         knowledgeSuggestions={knowledgeSuggestions}
       />

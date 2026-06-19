@@ -106,26 +106,6 @@ function StarRow({ score, size = "sm" }: { score: number; size?: "sm" | "md" }) 
   );
 }
 
-const MOCK_CALIFICACIONES: MockCalificacion[] = [
-  {
-    id: "cal-1",
-    companyName: "Global Tech Solutions S.A.",
-    projectName: "Dashboard de análisis de ventas en tiempo real",
-    score: 5,
-    comment: "Excelente trabajo. El junior entregó a tiempo, el código es limpio y documentado. Superó nuestras expectativas en cuanto a la calidad de los componentes React y la integración con la API.",
-    date: "2026-06-10T00:00:00Z",
-    reply: null,
-  },
-  {
-    id: "cal-2",
-    companyName: "LogiTech CR",
-    projectName: "App móvil de gestión de inventario",
-    score: 4,
-    comment: "Buen trabajo general. El junior fue proactivo y comunicó bien los avances. Hubo un par de detalles de UX que requirieron ajuste, pero la entrega final fue sólida.",
-    date: "2026-05-20T00:00:00Z",
-    reply: "Muchas gracias por la retroalimentación. Tomé nota de los puntos de UX para mejorarlos en proyectos futuros.",
-  },
-];
 
 function CalificacionesSection({
   t,
@@ -288,6 +268,7 @@ export interface PerfilUsuarioProps {
   initialProfile: StudentProfile;
   initialActivities: Activity[];
   initialApplications: Application[];
+  initialCalificaciones: MockCalificacion[];
   stats: ApplicationStats;
   /** Sugerencias de conocimientos no técnicos (catálogo) para autocompletar. */
   knowledgeSuggestions: string[];
@@ -434,6 +415,7 @@ export default function PerfilUsuario({
   initialProfile,
   initialActivities,
   initialApplications,
+  initialCalificaciones,
   stats,
   knowledgeSuggestions,
 }: PerfilUsuarioProps) {
@@ -1710,7 +1692,7 @@ export default function PerfilUsuario({
             )}
 
             {/* RF-53 — Calificaciones recibidas con réplica */}
-            <CalificacionesSection t={t} initialCalificaciones={MOCK_CALIFICACIONES} />
+            <CalificacionesSection t={t} initialCalificaciones={initialCalificaciones} />
           </section>
         )}
 

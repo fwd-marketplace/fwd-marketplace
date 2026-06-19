@@ -1,9 +1,11 @@
 import { ApiError, apiAuth } from "@/lib/api-client";
 import { err, ok, type Result } from "@/lib/result";
 import type {
+  ApiCalificacion,
   ApiProject,
   ApiRankedJunior,
   CalificarInput,
+  CalificacionesResponse,
   CatalogsResponse,
   CompanyProjectState,
   CreateProjectInput,
@@ -157,6 +159,13 @@ export function updateProject(
       body: JSON.stringify(input),
     });
     return res.project;
+  });
+}
+
+export function getMyCalificaciones(): Promise<Result<ApiCalificacion[]>> {
+  return asResult(async () => {
+    const res = await apiAuth<CalificacionesResponse>("/ofertas/mis-calificaciones");
+    return res.calificaciones;
   });
 }
 

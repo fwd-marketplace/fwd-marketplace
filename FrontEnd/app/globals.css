@@ -149,15 +149,17 @@
   }
 } */
 
+/* ---- Cursor pointer global para elementos interactivos ---- */
+button:not(:disabled),
+[role="button"]:not(:disabled),
+label[for],
+select {
+  cursor: pointer;
+}
+
 /* ---- Marketplace hero sky: degradado vertical con tokens FWD ---- */
 .bg-marketplace-sky {
-  background-image: linear-gradient(
-    to bottom,
-    color-mix(in oklab, var(--secondary) 72%, var(--ink-strong)) 0%,
-    var(--secondary) 45%,
-    color-mix(in oklab, var(--secondary) 45%, var(--canvas)) 72%,
-    var(--canvas) 100%
-  );
+  background-color: var(--secondary);
 }
 
 /* ---- Constelacion del logo FWD: cielo, campo de estrellas y animacion ---- */
