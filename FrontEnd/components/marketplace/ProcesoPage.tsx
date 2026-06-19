@@ -407,25 +407,25 @@ export function ProcesoPage({
     <div className="flex bg-canvas" style={{ minHeight: "calc(100vh - 4rem)" }}>
 
       {/* ── Sidebar ──────────────────────────────────────────────────────── */}
-      <aside className="sticky top-16 flex h-[calc(100vh-4rem)] w-80 flex-shrink-0 flex-col border-r border-border bg-canvas">
-        <div className="flex-shrink-0 border-b border-border px-5 py-5">
+      <aside className="sticky top-16 flex h-[calc(100vh-4rem)] w-80 flex-shrink-0 flex-col border-r border-white/10 bg-secondary">
+        <div className="flex-shrink-0 border-b border-white/10 px-5 py-5">
           <Link
             href={`/${locale}/gestion`}
-            className="mb-4 inline-flex items-center gap-1.5 font-body text-sm text-ink-muted transition-colors duration-[var(--duration-fast)] ease-[var(--ease-out)] hover:text-primary"
+            className="mb-4 inline-flex items-center gap-1.5 font-body text-sm text-white/60 transition-colors duration-[var(--duration-fast)] ease-[var(--ease-out)] hover:text-white"
           >
             <ArrowLeft className="size-4" aria-hidden="true" />
             {tp("back")}
           </Link>
           {project.area && (
-            <p className="font-body text-xs font-bold uppercase tracking-wider text-primary">
+            <p className="font-body text-xs font-bold uppercase tracking-wider text-white/50">
               {project.area.nombre}
             </p>
           )}
-          <h1 className="mt-1 font-heading text-base font-extrabold leading-snug tracking-tight text-ink-strong">
-            {project.titulo}<span className="text-primary" aria-hidden="true">.</span>
+          <h1 className="mt-1 font-heading text-base font-extrabold leading-snug tracking-tight text-white">
+            {project.titulo}<span className="text-highlight" aria-hidden="true">.</span>
           </h1>
           {project.empresa && (
-            <p className="mt-1 font-body text-xs text-ink-muted">{project.empresa.nombre_comercial}</p>
+            <p className="mt-1 font-body text-xs text-white/50">{project.empresa.nombre_comercial}</p>
           )}
         </div>
 
@@ -437,13 +437,13 @@ export function ProcesoPage({
               onClick={() => setActiveTab(key)}
               className={cn(
                 "flex items-center gap-3 rounded-xl px-4 py-3 font-body text-base font-semibold transition-colors duration-[var(--duration-fast)] ease-[var(--ease-out)]",
-                activeTab === key ? "bg-primary/10 text-primary" : "text-ink-muted hover:bg-surface-sunken hover:text-ink"
+                activeTab === key ? "bg-white/15 text-white" : "text-white/60 hover:bg-white/10 hover:text-white"
               )}
             >
               <Icon className="size-5 flex-shrink-0" aria-hidden="true" />
               {label}
               {key === "proceso" && role === "company" && localOffers.length > 0 && (
-                <span className="ml-auto rounded-full bg-primary/10 px-2 py-0.5 font-body text-xs font-bold text-primary">
+                <span className="ml-auto rounded-full bg-white/20 px-2 py-0.5 font-body text-xs font-bold text-white">
                   {localOffers.length}
                 </span>
               )}
@@ -456,15 +456,15 @@ export function ProcesoPage({
 
         {/* Stats for empresa */}
         {role === "company" && (
-          <div className="mt-auto border-t border-border p-4">
-            <p className="mb-2 font-body text-xs font-bold uppercase tracking-wider text-ink-subtle">Resumen</p>
+          <div className="mt-auto border-t border-white/10 p-4">
+            <p className="mb-2 font-body text-xs font-bold uppercase tracking-wider text-white/40">Resumen</p>
             <div className="space-y-1">
               {(["enviada", "en_revision", "adjudicada", "no_seleccionada"] as OfferState[]).map((st) => {
                 const count = localOffers.filter((o) => o.estado.nombre === st).length;
                 if (!count) return null;
                 return (
                   <div key={st} className="flex items-center justify-between">
-                    <span className="font-body text-sm text-ink-muted">{OFFER_STATE_CONFIG[st].label}</span>
+                    <span className="font-body text-sm text-white/60">{OFFER_STATE_CONFIG[st].label}</span>
                     <span className={cn("rounded-full border px-2 py-0.5 font-body text-xs font-bold", OFFER_STATE_CONFIG[st].className)}>{count}</span>
                   </div>
                 );

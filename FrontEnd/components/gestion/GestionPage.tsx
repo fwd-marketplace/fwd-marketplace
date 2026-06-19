@@ -13,9 +13,8 @@ import {
   Zap,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
-import { MOCK_OFFERS } from "@/lib/mock-data";
+import { MOCK_OFFERS, MOCK_PROJECTS } from "@/lib/mock-data";
 import { MOCK_PROJECT_OFFERS } from "@/lib/mock-proceso";
-import { MOCK_PROJECTS } from "@/lib/mock-data";
 import type { ApiRoleName, OfferState } from "@/lib/api/types";
 
 // ── State display config ─────────────────────────────────────────────────────
@@ -38,23 +37,29 @@ export function GestionPage({ role }: Props) {
   const isEmpresa = role === "company";
 
   return (
-    <div className="mx-auto max-w-5xl px-6 py-10">
-      {/* Header */}
-      <div className="mb-8">
-        <h1 className="font-heading text-4xl font-extrabold tracking-tight text-ink-strong">
-          {t("title")}<span className="text-primary" aria-hidden="true">.</span>
-        </h1>
-        <p className="mt-2 font-body text-lg text-ink-muted">
-          {isEmpresa ? t("subtitle_empresa") : t("subtitle_junior")}
-        </p>
-      </div>
+    <div className="bg-marketplace-sky min-h-screen pb-20">
 
-      {/* ── Junior view ─────────────────────────────────────────────────── */}
-      {!isEmpresa && (
-        <section>
-          <h2 className="mb-4 font-heading text-lg font-bold text-ink-strong">{t("section_junior")}</h2>
+      {/* ── Hero header ────────────────────────────────────────────────── */}
+      <section className="px-6 pb-16 pt-10 md:pt-14">
+        <div className="mx-auto max-w-7xl">
+          <p className="mb-2 font-body text-xs font-bold uppercase tracking-wider text-white/50">
+            {isEmpresa ? t("section_empresa") : t("section_junior")}
+          </p>
+          <h1 className="font-heading text-4xl font-extrabold tracking-tight text-white md:text-5xl">
+            {t("title")}<span className="text-highlight" aria-hidden="true">.</span>
+          </h1>
+          <p className="mt-3 font-body text-base leading-relaxed text-white/70">
+            {isEmpresa ? t("subtitle_empresa") : t("subtitle_junior")}
+          </p>
+        </div>
+      </section>
 
-          {MOCK_OFFERS.length === 0 ? (
+      {/* ── Cards grid ─────────────────────────────────────────────────── */}
+      <div className="mx-auto max-w-7xl px-6 -mt-6">
+
+        {/* Junior view */}
+        {!isEmpresa && (
+          MOCK_OFFERS.length === 0 ? (
             <EmptyState text={t("empty_junior")} />
           ) : (
             <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
@@ -69,7 +74,7 @@ export function GestionPage({ role }: Props) {
                   <article
                     key={oferta.id}
                     className={cn(
-                      "group relative flex flex-col rounded-2xl border bg-surface p-5 shadow-[var(--shadow-soft)] transition-all duration-[var(--duration-base)] ease-[var(--ease-out)] hover:shadow-[var(--shadow-elevated)]",
+                      "group flex flex-col rounded-2xl border bg-surface p-5 shadow-[var(--shadow-elevated)] transition-all duration-[var(--duration-base)] ease-[var(--ease-out)] hover:shadow-[var(--shadow-elevated)] hover:-translate-y-0.5",
                       isAdj ? "border-accent/30 ring-1 ring-accent/10" : "border-border hover:border-primary/20"
                     )}
                   >
@@ -97,7 +102,6 @@ export function GestionPage({ role }: Props) {
                       {oferta.propuesta}
                     </p>
 
-                    {/* CTA */}
                     {href && (
                       <Link
                         href={href}
@@ -112,30 +116,26 @@ export function GestionPage({ role }: Props) {
                 );
               })}
             </div>
-          )}
-        </section>
-      )}
+          )
+        )}
 
-      {/* ── Empresa view ────────────────────────────────────────────────── */}
-      {isEmpresa && (
-        <section>
-          <h2 className="mb-4 font-heading text-lg font-bold text-ink-strong">{t("section_empresa")}</h2>
-
-          {MOCK_PROJECTS.length === 0 ? (
+        {/* Empresa view */}
+        {isEmpresa && (
+          MOCK_PROJECTS.length === 0 ? (
             <EmptyState text={t("empty_empresa")} />
           ) : (
             <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
               {MOCK_PROJECTS.map((proyecto) => {
-                const href          = `/${locale}/marketplace/${proyecto.id}/proceso`;
-                const offerCount    = proyecto.id === "proj-1" ? MOCK_PROJECT_OFFERS.length : Math.floor(Math.random() * 4);
-                const adjudicada    = proyecto.id === "proj-1" && MOCK_PROJECT_OFFERS.some((o) => o.estado.nombre === "adjudicada");
+                const href       = `/${locale}/marketplace/${proyecto.id}/proceso`;
+                const offerCount = proyecto.id === "proj-1" ? MOCK_PROJECT_OFFERS.length : Math.floor(Math.random() * 4);
+                const adjudicada = proyecto.id === "proj-1" && MOCK_PROJECT_OFFERS.some((o) => o.estado.nombre === "adjudicada");
 
                 return (
                   <article
                     key={proyecto.id}
                     className={cn(
-                      "group flex flex-col rounded-2xl border bg-surface p-5 shadow-[var(--shadow-soft)] transition-all duration-[var(--duration-base)] ease-[var(--ease-out)] hover:border-primary/20 hover:shadow-[var(--shadow-elevated)]",
-                      adjudicada ? "border-accent/30 ring-1 ring-accent/10" : "border-border"
+                      "group flex flex-col rounded-2xl border bg-surface p-5 shadow-[var(--shadow-elevated)] transition-all duration-[var(--duration-base)] ease-[var(--ease-out)] hover:-translate-y-0.5 hover:shadow-[var(--shadow-elevated)]",
+                      adjudicada ? "border-accent/30 ring-1 ring-accent/10" : "border-border hover:border-primary/20"
                     )}
                   >
                     {/* Area + IA */}
@@ -170,7 +170,7 @@ export function GestionPage({ role }: Props) {
                     </div>
 
                     {/* Proposals count */}
-                    <p className="mb-5 flex-1 flex items-center gap-1.5 font-body text-sm font-semibold text-ink-muted">
+                    <p className="mb-5 flex flex-1 items-center gap-1.5 font-body text-sm font-semibold text-ink-muted">
                       <Building2 className="size-4" aria-hidden="true" />
                       {t("proposals_count", { count: proyecto.id === "proj-1" ? MOCK_PROJECT_OFFERS.length : offerCount })}
                       {adjudicada && (
@@ -180,7 +180,6 @@ export function GestionPage({ role }: Props) {
                       )}
                     </p>
 
-                    {/* CTA */}
                     <Link
                       href={href}
                       className="inline-flex items-center gap-2 self-start rounded-full bg-primary px-4 py-2 font-body text-sm font-semibold text-white transition-colors duration-[var(--duration-fast)] ease-[var(--ease-out)] hover:bg-secondary"
@@ -193,18 +192,18 @@ export function GestionPage({ role }: Props) {
                 );
               })}
             </div>
-          )}
-        </section>
-      )}
+          )
+        )}
+      </div>
     </div>
   );
 }
 
 function EmptyState({ text }: { text: string }) {
   return (
-    <div className="flex flex-col items-center justify-center rounded-2xl border border-border bg-surface px-8 py-16 text-center">
-      <FolderOpen className="mb-4 size-12 text-ink-subtle" aria-hidden="true" />
-      <p className="font-body text-base text-ink-muted">{text}</p>
+    <div className="flex flex-col items-center justify-center rounded-2xl border border-white/10 bg-white/5 px-8 py-16 text-center">
+      <FolderOpen className="mb-4 size-12 text-white/30" aria-hidden="true" />
+      <p className="font-body text-base text-white/60">{text}</p>
     </div>
   );
 }
