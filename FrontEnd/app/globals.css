@@ -105,6 +105,14 @@
   }
 } */
 
+/* ---- Cursor pointer global para elementos interactivos ---- */
+button:not(:disabled),
+[role="button"]:not(:disabled),
+label[for],
+select {
+  cursor: pointer;
+}
+
 /* ---- Marketplace hero sky: degradado vertical con tokens FWD ---- */
 .bg-marketplace-sky {
   background-color: var(--secondary);
