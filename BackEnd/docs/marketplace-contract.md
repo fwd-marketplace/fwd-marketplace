@@ -178,25 +178,56 @@ al formulario** (con ids resueltos contra el catálogo real).
 ```json
 { "propuesta": {
   "nombre": "Agenda de citas online",
-  "objetivo": "Permitir que los clientes reserven, vean su historial y reciban recordatorios",
+  "objetivo": "Permite que los pacientes reserven citas, vean su historial y reciban recordatorios.",
+  "funcionalidades": [
+    "los pacientes reservan citas eligiendo fecha y hora disponibles",
+    "cada paciente ve su historial de visitas",
+    "el sistema envía un correo de recordatorio 24h antes"
+  ],
+  "publico_objetivo": "pacientes de una clínica dental que reservan en línea",
+  "descripcion": "Permite que los pacientes reserven citas...\n\nFuncionalidades principales:\n- ...\n\nPúblico objetivo: ...",
   "area_negocio": "Desarrollo Web",
   "id_area_negocio": "uuid | null",
   "plazo_dias": 12,
   "habilidades": [{ "id": "uuid", "nombre": "React" }],
   "usa_ia": false,
+  "estilos_diseno": ["Minimalista y profesional: tonos sobrios y mucho espacio en blanco", "Cálido y cercano: colores suaves e ilustraciones"],
   "preguntas_pendientes": ["¿Necesitan pasarela de pagos?"]
 } }
 ```
+- **`descripcion`**: texto **natural y detallado** redactado por el asistente (2-3 párrafos, en la
+  voz de FWD: cálida y clara, no robótica), listo para precargar el `descripcion` del `POST /projects`.
+  Si el modelo no lo devuelve, el backend lo **compone como respaldo** (objetivo + funcionalidades +
+  público). `objetivo`, `funcionalidades` y `publico_objetivo` vienen también por separado por si el
+  FE quiere mostrarlos.
 - `plazo_dias`: entero **acotado a 5-15** (rango del `POST /projects`). Mapear a `plazo_dias`.
 - `habilidades`: **solo** habilidades válidas del catálogo (las inventadas se descartan). Usar los
   `id` para precargar las casillas; mapean a `skills: [uuid]` del `POST /projects`.
 - `id_area_negocio`: uuid del área o `null` si el modelo no acertó una del catálogo (que el FE
-  deje elegir). `nombre`→`titulo`, `objetivo`→`descripcion`, `usa_ia`→toggle "usa IA".
+  deje elegir). `nombre`→`titulo`, `descripcion`→`descripcion`, `usa_ia`→toggle "usa IA".
 - `preguntas_pendientes`: aspectos sin aclarar (mostrar como avisos; no bloquean el guardado).
+- `estilos_diseno`: 2-3 ideas de estilo visual (informativo, para que la empresa elija; no se persiste).
 - Si el modelo no devuelve algo usable → `502`: el FrontEnd debe **degradar al formulario manual**.
+
+> **Memoria / evolución (interno del BackEnd, no cambia el API):** al generar, el asistente se
+> apoya en ejemplos de proyectos reales ya publicados y en las propuestas anteriores de la propia
+> empresa para subir la calidad; y guarda cada propuesta generada (tabla `ai_propuesta_ejemplo`,
+> migración `0024`). Es best-effort: si la migración no está aplicada, el asistente funciona igual.
+> El FrontEnd no hace nada distinto por esto.
 
 > Flujo FE: propuesta → prellenar el modal "Nuevo proyecto" (editable) → el usuario confirma con
 > el `POST /api/projects` de siempre. El asistente nunca crea el proyecto por su cuenta.
+
+### POST /api/ai/sugerir-stack  (Bearer)
+Para el formulario **manual**: la empresa ya escribió la descripción y quiere que la IA le
+recomiende el stack. Devuelve habilidades del catálogo (no inventa) + una justificación corta.
+```json
+{ "titulo": "Agenda de citas", "descripcion": "Una web para reservar turnos...", "id_area_negocio": "uuid" }
+```
+- `descripcion`: requerido (10-5000). `titulo` e `id_area_negocio`: opcionales (dan más contexto).
+→ `200 { "sugerencia": { "habilidades": [{ "id": "uuid", "nombre": "React" }], "justificacion": "..." } }`
+- Usar los `id` para **pre-marcar las casillas** de habilidades del formulario manual. `502` si el
+  modelo falla (degradar: que el usuario elija a mano). Mismo rate limit por usuario que el resto de `/ai`.
 
 ## Pendientes para el FrontEnd
 

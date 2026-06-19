@@ -1,6 +1,13 @@
 import { ApiError, apiAuth } from "@/lib/api-client";
 import { err, ok, type Result } from "@/lib/result";
-import type { AiChatMessage, GenerateProposalResponse, ProjectProposal } from "@/lib/api/types";
+import type {
+  AiChatMessage,
+  GenerateProposalResponse,
+  ProjectProposal,
+  StackSuggestion,
+  SuggestStackInput,
+  SuggestStackResponse,
+} from "@/lib/api/types";
 
 async function asResult<T>(operation: () => Promise<T>): Promise<Result<T>> {
   try {
@@ -22,5 +29,16 @@ export function generateProposal(history: AiChatMessage[]): Promise<Result<Proje
       body: JSON.stringify({ history }),
     });
     return response.propuesta;
+  });
+}
+
+/** Sugiere habilidades del catálogo para el formulario manual (no es streaming). */
+export function suggestStack(input: SuggestStackInput): Promise<Result<StackSuggestion>> {
+  return asResult(async () => {
+    const response = await apiAuth<SuggestStackResponse>("/ai/sugerir-stack", {
+      method: "POST",
+      body: JSON.stringify(input),
+    });
+    return response.sugerencia;
   });
 }

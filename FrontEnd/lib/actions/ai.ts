@@ -1,7 +1,7 @@
 "use server";
 
-import { generateProposal } from "@/lib/api/ai";
-import type { AiChatMessage } from "@/lib/api/types";
+import { generateProposal, suggestStack } from "@/lib/api/ai";
+import type { AiChatMessage, SuggestStackInput } from "@/lib/api/types";
 
 /**
  * Genera la propuesta del asistente a partir del historial conversacional.
@@ -9,4 +9,9 @@ import type { AiChatMessage } from "@/lib/api/types";
  */
 export async function generateProposalAction(history: AiChatMessage[]) {
   return generateProposal(history);
+}
+
+/** Sugiere el stack para el formulario manual a partir de la descripción del proyecto. */
+export async function suggestStackAction(input: SuggestStackInput) {
+  return suggestStack(input);
 }

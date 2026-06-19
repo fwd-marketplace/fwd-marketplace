@@ -55,6 +55,48 @@ export type Database = {
           },
         ]
       }
+      ai_propuesta_ejemplo: {
+        Row: {
+          fecha: string
+          id: string
+          id_area_negocio: string | null
+          id_usuario: string
+          propuesta: Json
+          resumen_conversacion: string | null
+        }
+        Insert: {
+          fecha?: string
+          id?: string
+          id_area_negocio?: string | null
+          id_usuario: string
+          propuesta: Json
+          resumen_conversacion?: string | null
+        }
+        Update: {
+          fecha?: string
+          id?: string
+          id_area_negocio?: string | null
+          id_usuario?: string
+          propuesta?: Json
+          resumen_conversacion?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "ai_propuesta_ejemplo_id_area_negocio_fkey"
+            columns: ["id_area_negocio"]
+            isOneToOne: false
+            referencedRelation: "area_negocio"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "ai_propuesta_ejemplo_id_usuario_fkey"
+            columns: ["id_usuario"]
+            isOneToOne: false
+            referencedRelation: "users"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       area_negocio: {
         Row: {
           activo: boolean

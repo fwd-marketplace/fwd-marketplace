@@ -546,6 +546,7 @@
         "continue_manually": "Continue manually",
         "applied": "Proposal applied below. Review and adjust the fields before creating the project.",
         "pending_title": "Still to clarify:",
+        "design_title": "Visual style ideas:",
         "error_generic": "Couldn't reach the assistant. Try again or continue manually."
       },
       "title": "New project",
@@ -555,6 +556,10 @@
       "area_label": "Business area",
       "deadline_label": "Deadline (days)",
       "skills_label": "Required skills",
+      "suggest_stack_btn": "Suggest stack with AI",
+      "suggesting": "Suggesting...",
+      "stack_applied": "Stack suggested. Review the checked skills.",
+      "stack_need_desc": "Write a description first to suggest the stack.",
       "ai_label": "Uses artificial intelligence",
       "publish_label": "Publish immediately",
       "status_label": "Initial status",

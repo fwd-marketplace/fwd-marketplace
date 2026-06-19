@@ -565,6 +565,7 @@
         "continue_manually": "Continuar manualmente",
         "applied": "Propuesta aplicada abajo. Revisá y ajustá los campos antes de crear el proyecto.",
         "pending_title": "Quedó por aclarar:",
+        "design_title": "Ideas de estilo visual:",
         "error_generic": "No se pudo contactar al asistente. Probá de nuevo o continuá manualmente."
       },
       "title": "Nuevo proyecto",
@@ -574,6 +575,10 @@
       "area_label": "Área de negocio",
       "deadline_label": "Plazo (días)",
       "skills_label": "Habilidades requeridas",
+      "suggest_stack_btn": "Sugerir stack con IA",
+      "suggesting": "Sugiriendo...",
+      "stack_applied": "Stack sugerido. Revisá las habilidades marcadas.",
+      "stack_need_desc": "Escribí una descripción primero para sugerir el stack.",
       "ai_label": "Usa inteligencia artificial",
       "publish_label": "Publicar inmediatamente",
       "status_label": "Estado inicial",
