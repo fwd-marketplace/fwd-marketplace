@@ -99,6 +99,8 @@ export type ProjectProposal = {
 
 export type GenerateProposalResponse = {
   propuesta: ProjectProposal;
+};
+
 export type UpdateProjectInput = {
   titulo?: string;
   descripcion?: string;
@@ -363,33 +365,6 @@ export type SubmitEntregableInput = {
 
 export type EntregablesResponse = {
   entregables: Entregable[];
-};
-
-// ── IA — Asistente de proyectos ─────────────────────────────────────────────
-
-export type AiChatMessage = {
-  role: "user" | "assistant";
-  content: string;
-};
-
-export type ProposalSkill = {
-  id: string;
-  nombre: string;
-};
-
-export type ProjectProposal = {
-  nombre: string;
-  objetivo: string;
-  area_negocio: string | null;
-  id_area_negocio: string | null;
-  plazo_dias: number;
-  habilidades: ProposalSkill[];
-  usa_ia: boolean;
-  preguntas_pendientes: string[];
-};
-
-export type GenerateProposalResponse = {
-  propuesta: ProjectProposal;
 };
 
 // ── Calificaciones ───────────────────────────────────────────────────────────

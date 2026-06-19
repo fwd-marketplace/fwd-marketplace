@@ -49,6 +49,7 @@ import type {
   ProjectProposal,
   ProjectState,
   SuggestStackInput,
+  UpdateProjectInput,
 } from "@/lib/api/types";
 
 type TabType = "project" | "applications" | "entregables";
