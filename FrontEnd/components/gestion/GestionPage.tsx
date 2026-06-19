@@ -307,26 +307,38 @@ export function GestionPage({ role }: Props) {
                   </ul>
                 )
               ) : (
-                MOCK_OFFERS.length === 0 ? <SidebarEmpty text={t("empty_junior")} /> : (
+                MOCK_MARKETPLACE_PROJECTS.length === 0 ? <SidebarEmpty text={t("empty_junior")} /> : (
                   <ul className="flex flex-col gap-0.5">
-                    {MOCK_OFFERS.map((oferta) => {
-                      const cfg = OFFER_STATE_CONFIG[oferta.estado.nombre];
+                    {MOCK_MARKETPLACE_PROJECTS.map((proyecto) => {
+                      const oferta = MOCK_OFFERS.find((o) => o.proyecto?.id === proyecto.id);
+                      const cfg    = oferta ? OFFER_STATE_CONFIG[oferta.estado.nombre] : null;
                       return (
-                        <li key={oferta.id}>
+                        <li key={proyecto.id}>
                           <button
-                            onClick={() => oferta.proyecto?.id && handleSelect(oferta.proyecto.id)}
-                            disabled={!oferta.proyecto?.id}
-                            className="group flex w-full items-center gap-3 rounded-xl px-3 py-3 text-left transition-colors duration-[var(--duration-fast)] ease-[var(--ease-out)] hover:bg-white/10 disabled:opacity-50"
+                            onClick={() => handleSelect(proyecto.id)}
+                            className="group flex w-full items-center gap-3 rounded-xl px-3 py-3 text-left transition-colors duration-[var(--duration-fast)] ease-[var(--ease-out)] hover:bg-white/10"
                           >
                             <div className="min-w-0 flex-1">
                               <p className="truncate font-heading text-sm font-bold text-white">
-                                {oferta.proyecto?.titulo ?? "Proyecto eliminado"}
+                                {proyecto.titulo}
                               </p>
                               <p className="mt-0.5 flex items-center gap-1.5 font-body text-xs text-white/60">
-                                <span className={cn("size-2 shrink-0 rounded-full", cfg.dot)} aria-hidden="true" />
-                                {cfg.label}
+                                {cfg ? (
+                                  <>
+                                    <span className={cn("size-2 shrink-0 rounded-full", cfg.dot)} aria-hidden="true" />
+                                    {cfg.label}
+                                  </>
+                                ) : (
+                                  <>
+                                    <span className="size-2 shrink-0 rounded-full border border-white/40" aria-hidden="true" />
+                                    {t("junior_nueva_postulacion")}
+                                  </>
+                                )}
                               </p>
                             </div>
+                            {oferta?.estado.nombre === "adjudicada" && (
+                              <CheckCircle2 className="size-4 shrink-0 text-accent" aria-hidden="true" />
+                            )}
                             <ChevronRight className="size-4 shrink-0 text-white/30 transition-colors group-hover:text-white/60" aria-hidden="true" />
                           </button>
                         </li>
