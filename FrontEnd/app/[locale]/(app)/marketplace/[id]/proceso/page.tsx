@@ -33,13 +33,13 @@ export default async function ProcesoProjectPage({ params, searchParams }: Props
   const profile = meResult.ok ? meResult.data.profile : null;
   const authRole = profile?.role.nombre ?? null;
 
-  // ?demo=empresa / ?demo=junior override when not authenticated (mock mode only)
+  // ?demo= always overrides role (for mock preview even when authenticated)
   const demoRole: ApiRoleName | null =
-    !authRole && demo === "empresa" ? "company"
-    : !authRole && demo === "junior" ? "student"
+    demo === "empresa" ? "company"
+    : demo === "junior" ? "student"
     : null;
 
-  const role = authRole ?? demoRole;
+  const role = demoRole ?? authRole;
 
   const offer = offersResult.ok
     ? (offersResult.data.ofertas.find((o) => o.proyecto?.id === id) ?? null)

@@ -407,48 +407,52 @@ export function ProcesoPage({
     <div className="flex bg-canvas" style={{ minHeight: "calc(100vh - 4rem)" }}>
 
       {/* ── Sidebar ──────────────────────────────────────────────────────── */}
-      <aside className="sticky top-16 flex h-[calc(100vh-4rem)] w-80 flex-shrink-0 flex-col border-r border-white/10 bg-secondary">
-        <div className="flex-shrink-0 border-b border-white/10 px-5 py-5">
+      <aside className="sticky top-16 flex h-[calc(100vh-4rem)] w-72 shrink-0 flex-col bg-secondary">
+        {/* Header */}
+        <div className="shrink-0 border-b border-white/10 px-6 py-6">
           <Link
             href={`/${locale}/gestion`}
-            className="mb-4 inline-flex items-center gap-1.5 font-body text-sm text-white/60 transition-colors duration-[var(--duration-fast)] ease-[var(--ease-out)] hover:text-white"
+            className="mb-5 inline-flex items-center gap-1.5 font-body text-xs font-semibold uppercase tracking-wider text-white/50 transition-colors duration-[var(--duration-fast)] ease-[var(--ease-out)] hover:text-white"
           >
-            <ArrowLeft className="size-4" aria-hidden="true" />
+            <ArrowLeft className="size-3.5" aria-hidden="true" />
             {tp("back")}
           </Link>
           {project.area && (
-            <p className="font-body text-xs font-bold uppercase tracking-wider text-white/50">
+            <p className="mb-1 font-body text-[11px] font-bold uppercase tracking-widest text-white/40">
               {project.area.nombre}
             </p>
           )}
-          <h1 className="mt-1 font-heading text-base font-extrabold leading-snug tracking-tight text-white">
+          <h1 className="font-heading text-lg font-extrabold leading-snug tracking-tight text-white">
             {project.titulo}<span className="text-highlight" aria-hidden="true">.</span>
           </h1>
           {project.empresa && (
-            <p className="mt-1 font-body text-xs text-white/50">{project.empresa.nombre_comercial}</p>
+            <p className="mt-1.5 font-body text-sm text-white/50">{project.empresa.nombre_comercial}</p>
           )}
         </div>
 
-        <nav className="flex flex-col gap-1 p-4" aria-label="Secciones del proceso">
+        {/* Nav tabs */}
+        <nav className="flex flex-col gap-0.5 p-3" aria-label="Secciones del proceso">
           {TABS.map(({ key, label, icon: Icon }) => (
             <button
               key={key}
               type="button"
               onClick={() => setActiveTab(key)}
               className={cn(
-                "flex items-center gap-3 rounded-xl px-4 py-3 font-body text-base font-semibold transition-colors duration-[var(--duration-fast)] ease-[var(--ease-out)]",
-                activeTab === key ? "bg-white/15 text-white" : "text-white/60 hover:bg-white/10 hover:text-white"
+                "flex items-center gap-3 rounded-xl px-4 py-2.5 font-body text-sm font-semibold transition-colors duration-[var(--duration-fast)] ease-[var(--ease-out)]",
+                activeTab === key
+                  ? "bg-white/15 text-white"
+                  : "text-white/55 hover:bg-white/8 hover:text-white/90"
               )}
             >
-              <Icon className="size-5 flex-shrink-0" aria-hidden="true" />
+              <Icon className="size-4 shrink-0" aria-hidden="true" />
               {label}
               {key === "proceso" && role === "company" && localOffers.length > 0 && (
-                <span className="ml-auto rounded-full bg-white/20 px-2 py-0.5 font-body text-xs font-bold text-white">
+                <span className="ml-auto rounded-full bg-highlight/80 px-2 py-0.5 font-body text-[11px] font-bold text-ink-strong">
                   {localOffers.length}
                 </span>
               )}
               {key === "proceso" && isJunior && isApplied && (
-                <span className="ml-auto flex size-2.5 rounded-full bg-accent" aria-hidden="true" />
+                <span className="ml-auto flex size-2 rounded-full bg-accent" aria-hidden="true" />
               )}
             </button>
           ))}
@@ -456,16 +460,26 @@ export function ProcesoPage({
 
         {/* Stats for empresa */}
         {role === "company" && (
-          <div className="mt-auto border-t border-white/10 p-4">
-            <p className="mb-2 font-body text-xs font-bold uppercase tracking-wider text-white/40">Resumen</p>
-            <div className="space-y-1">
-              {(["enviada", "en_revision", "adjudicada", "no_seleccionada"] as OfferState[]).map((st) => {
+          <div className="mt-auto border-t border-white/10 px-6 py-5">
+            <p className="mb-3 font-body text-[11px] font-bold uppercase tracking-widest text-white/35">
+              Resumen
+            </p>
+            <div className="space-y-2">
+              {(["adjudicada", "en_revision", "enviada", "no_seleccionada"] as OfferState[]).map((st) => {
                 const count = localOffers.filter((o) => o.estado.nombre === st).length;
                 if (!count) return null;
+                const dot =
+                  st === "adjudicada"      ? "bg-accent"
+                  : st === "en_revision"   ? "bg-warning"
+                  : st === "enviada"       ? "bg-primary"
+                  :                          "bg-white/30";
                 return (
-                  <div key={st} className="flex items-center justify-between">
-                    <span className="font-body text-sm text-white/60">{OFFER_STATE_CONFIG[st].label}</span>
-                    <span className={cn("rounded-full border px-2 py-0.5 font-body text-xs font-bold", OFFER_STATE_CONFIG[st].className)}>{count}</span>
+                  <div key={st} className="flex items-center justify-between gap-3">
+                    <div className="flex items-center gap-2">
+                      <span className={cn("size-2 shrink-0 rounded-full", dot)} aria-hidden="true" />
+                      <span className="font-body text-sm text-white/65">{OFFER_STATE_CONFIG[st].label}</span>
+                    </div>
+                    <span className="font-body text-sm font-bold text-white">{count}</span>
                   </div>
                 );
               })}
