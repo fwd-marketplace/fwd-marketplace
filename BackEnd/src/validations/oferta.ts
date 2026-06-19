@@ -4,6 +4,7 @@ import { z } from "zod";
 export const CreateOfertaSchema = z.object({
   propuesta: z.string().min(1).max(5000),
   prototipo_url: z.union([z.string().url(), z.literal("")]).optional(),
+  url_repositorio: z.union([z.string().url(), z.literal("")]).optional().nullable(),
   documentacion_tecnica: z.string().optional().nullable(),
   documentacion_url: z.union([z.string().url(), z.literal("")]).optional().nullable(),
 });

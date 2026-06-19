@@ -22,6 +22,7 @@ import {
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { StatusPill } from "@/components/ui/status-pill";
+import { PrototipoPreview } from "@/components/marketplace/PrototipoPreview";
 import { decideOfferAction, getProjectOffersAction } from "@/lib/actions/marketplace";
 import { cn } from "@/lib/utils";
 import type { ApiProject, ProjectOffer } from "@/lib/api/types";
@@ -370,16 +371,54 @@ function OfferCard({
           {activeTab === "propuesta" && (
             <div className="space-y-3">
               <p className="font-body text-sm leading-relaxed text-ink">{offer.propuesta}</p>
-              {offer.prototipo_url && (
-                <a
-                  href={offer.prototipo_url}
-                  target="_blank"
-                  rel="noreferrer"
-                  className="inline-flex items-center gap-1 font-body text-xs font-bold text-primary hover:underline"
-                >
-                  {t("prototype_link")}
-                  <ExternalLink className="size-3.5" aria-hidden="true" />
-                </a>
+
+              {(offer.prototipo_url ||
+                offer.url_repositorio ||
+                offer.documentacion_url ||
+                offer.documentacion_tecnica) && (
+                <div className="space-y-2 rounded-xl border border-border bg-surface-sunken p-3">
+                  {offer.prototipo_url && (
+                    <div className="flex flex-wrap items-center gap-3">
+                      <PrototipoPreview url={offer.prototipo_url} title={juniorName} />
+                      <a
+                        href={offer.prototipo_url}
+                        target="_blank"
+                        rel="noreferrer"
+                        className="inline-flex items-center gap-1 font-body text-xs font-bold text-primary hover:underline"
+                      >
+                        {t("prototype_link")}
+                        <ExternalLink className="size-3.5" aria-hidden="true" />
+                      </a>
+                    </div>
+                  )}
+                  {offer.url_repositorio && (
+                    <a
+                      href={offer.url_repositorio}
+                      target="_blank"
+                      rel="noreferrer"
+                      className="inline-flex items-center gap-1 font-body text-xs font-bold text-primary hover:underline"
+                    >
+                      {t("repo_link")}
+                      <ExternalLink className="size-3.5" aria-hidden="true" />
+                    </a>
+                  )}
+                  {offer.documentacion_url && (
+                    <a
+                      href={offer.documentacion_url}
+                      target="_blank"
+                      rel="noreferrer"
+                      className="inline-flex items-center gap-1 font-body text-xs font-bold text-primary hover:underline"
+                    >
+                      {t("doc_link")}
+                      <ExternalLink className="size-3.5" aria-hidden="true" />
+                    </a>
+                  )}
+                  {offer.documentacion_tecnica && (
+                    <p className="whitespace-pre-line font-body text-xs text-ink-muted">
+                      {offer.documentacion_tecnica}
+                    </p>
+                  )}
+                </div>
               )}
               {/* Rating solo si adjudicada (RF-36) */}
               {isAdjudicada && (

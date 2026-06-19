@@ -63,6 +63,7 @@ export async function createOferta(
       id_estado: estadoId,
       propuesta: input.propuesta,
       prototipo_url: input.prototipo_url || null,
+      url_repositorio: input.url_repositorio || null,
       documentacion_tecnica: input.documentacion_tecnica ?? null,
       documentacion_url: input.documentacion_url ?? null,
     })
@@ -81,7 +82,7 @@ export async function listMyOfertas(accessToken: string, userId: string) {
   const { data, error } = await client
     .from("oferta")
     .select(
-      "id, propuesta, prototipo_url, fecha_envio, estado:estado_oferta(nombre), proyecto:proyecto(id, titulo)",
+      "id, propuesta, prototipo_url, url_repositorio, documentacion_tecnica, documentacion_url, fecha_envio, estado:estado_oferta(nombre), proyecto:proyecto(id, titulo)",
     )
     .eq("id_usuario", userId)
     .order("fecha_envio", { ascending: false });
@@ -148,7 +149,7 @@ export async function listProjectOfertas(accessToken: string, userId: string, pr
   const { data, error } = await client
     .from("oferta")
     .select(
-      "id, propuesta, prototipo_url, fecha_envio, estado:estado_oferta(nombre), junior:users(id, nombre, apellido1)",
+      "id, propuesta, prototipo_url, url_repositorio, documentacion_tecnica, documentacion_url, fecha_envio, estado:estado_oferta(nombre), junior:users(id, nombre, apellido1)",
     )
     .eq("id_proyecto", projectId)
     .order("fecha_envio", { ascending: false });
