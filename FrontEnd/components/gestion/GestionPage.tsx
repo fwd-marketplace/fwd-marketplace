@@ -588,7 +588,7 @@ function t_noop(k: string) { return k; }
 // ── Junior proceso view ───────────────────────────────────────────────────────
 
 function JuniorProcesoView({
-  offer, project, entregables, locale, t,
+  offer, project, t,
 }: {
   offer: MyOffer | null;
   project: ApiProject | null;
@@ -601,7 +601,7 @@ function JuniorProcesoView({
   );
   const [closed, setClosed] = useState(false);
 
-  // ── Helpers ─────────────────────────────────────────────────────────────
+  // ── State helpers ────────────────────────────────────────────────────────
   const patch = (i: number, p: Partial<JuniorProposal>) =>
     setProposals((prev) => prev.map((x, idx) => idx === i ? { ...x, ...p } : x));
 
@@ -615,7 +615,7 @@ function JuniorProcesoView({
     patch(i, { status: "enviada", expanded: false });
   };
 
-  const lastReviewIdx = () => {
+  const reviewIdx = (): number => {
     for (let i = proposals.length - 1; i >= 0; i--) {
       const p = proposals[i];
       if (p && (p.status === "enviada" || p.status === "revision")) return i;
@@ -624,14 +624,14 @@ function JuniorProcesoView({
   };
 
   const simRevision = () => {
-    const i = lastReviewIdx();
+    const i = reviewIdx();
     const p = i >= 0 ? proposals[i] : undefined;
     if (!p || p.status !== "enviada") return;
     patch(i, { status: "revision" });
   };
 
   const simCambios = () => {
-    const i = lastReviewIdx();
+    const i = reviewIdx();
     const p = i >= 0 ? proposals[i] : undefined;
     if (!p) return;
     const obs = project?.id ? (MOCK_OBS[project.id] ?? "") : "";
@@ -646,7 +646,7 @@ function JuniorProcesoView({
   };
 
   const simAceptar = () => {
-    const i = lastReviewIdx();
+    const i = reviewIdx();
     if (i < 0) return;
     setProposals((prev) =>
       prev
@@ -661,123 +661,123 @@ function JuniorProcesoView({
     setClosed(false);
   };
 
-  // ── Current status badge ─────────────────────────────────────────────────
+  // ── Derived values ───────────────────────────────────────────────────────
   const latest  = proposals[proposals.length - 1];
-  const hasSent = proposals.some((p) =>
-    !["nuevo", "editando"].includes(p.status),
-  );
-  const isNew = !latest || latest.status === "nuevo" || latest.status === "editando";
+  const hasSent = proposals.some((p) => !["nuevo", "editando"].includes(p.status));
+  const isNew   = !latest || latest.status === "nuevo" || latest.status === "editando";
 
-  let bannerLabel = t("proceso_badge_pendiente");
-  let bannerBadge = "bg-ink/5 text-ink-muted border-border";
-  if (!isNew) {
-    const badgeCfg: Record<string, { label: string; badge: string }> = {
-      enviada:        { label: t("proceso_badge_enviada"),   badge: "bg-primary/10 text-primary border-primary/20" },
-      revision:       { label: t("proceso_badge_revision"),  badge: "bg-warning/10 text-warning border-warning/20" },
-      cambios:        { label: t("proceso_badge_cambios"),   badge: "bg-magenta/10 text-magenta border-magenta/20" },
-      aceptada:       { label: t("proceso_badge_aceptada"),  badge: "bg-accent/10 text-accent border-accent/20" },
-      noseleccionada: { label: t("proceso_badge_nosel"),     badge: "bg-ink-muted/10 text-ink-muted border-border" },
-    };
-    const bc = latest ? badgeCfg[latest.status] : undefined;
-    if (bc) { bannerLabel = bc.label; bannerBadge = bc.badge; }
+  // Per-proposal badge meta (same shape as reference meta())
+  const propMeta = (status: ProposalStatus): { label: string; cls: string } | null => {
+    switch (status) {
+      case "enviada":        return { label: t("proceso_badge_enviada"),  cls: "bg-primary/10 text-primary border-primary/20" };
+      case "revision":       return { label: t("proceso_badge_revision"), cls: "bg-warning/10 text-warning border-warning/20" };
+      case "cambios":        return { label: t("proceso_badge_cambios"),  cls: "bg-magenta/10 text-magenta border-magenta/20" };
+      case "aceptada":       return { label: t("proceso_badge_aceptada"), cls: "bg-accent/10 text-accent border-accent/20" };
+      case "noseleccionada": return { label: t("proceso_badge_nosel"),    cls: "bg-ink-muted/10 text-ink-muted border-border" };
+      default: return null;
+    }
+  };
+
+  // Top-level status banner
+  let bannerLabel: string;
+  let bannerCls: string;
+  if (!isNew && latest) {
+    const m = propMeta(latest.status);
+    bannerLabel = m?.label ?? t("proceso_badge_pendiente");
+    bannerCls   = m?.cls  ?? "bg-ink/5 text-ink-muted border-border";
   } else if (hasSent) {
     bannerLabel = t("proceso_badge_esperando");
+    bannerCls   = "bg-ink/5 text-ink-muted border-border";
+  } else {
+    bannerLabel = t("proceso_badge_pendiente");
+    bannerCls   = "bg-ink/5 text-ink-muted border-border";
   }
 
-  const ri        = lastReviewIdx();
+  const ri        = reviewIdx();
   const reviewing = ri >= 0;
   const rp        = ri >= 0 ? proposals[ri] : undefined;
   const canReview = reviewing && rp?.status === "enviada";
 
-  // ── Placeholder caption for next version ────────────────────────────────
+  // Lock caption for ghost placeholder
   const lastReal = proposals[proposals.length - 1];
   let lockCaption = t("proceso_placeholder_nuevo");
-  if (lastReal?.status === "enviada" || lastReal?.status === "revision") {
-    lockCaption = t("proceso_placeholder_revision");
-  } else if (lastReal?.status === "cambios") {
-    lockCaption = t("proceso_placeholder_cambios");
-  }
+  if (lastReal?.status === "enviada" || lastReal?.status === "revision") lockCaption = t("proceso_placeholder_revision");
+  else if (lastReal?.status === "cambios") lockCaption = t("proceso_placeholder_cambios");
 
   return (
     <div className="mx-auto max-w-2xl px-6 py-8 md:px-8">
 
-      {/* Estado actual */}
-      <div className="mb-5 rounded-2xl border border-border bg-surface p-6">
+      {/* Card 1 — Estado actual */}
+      <div className="mb-5 rounded-2xl border border-border bg-surface px-7 py-[22px] shadow-sm">
         <p className="font-body text-xs font-bold uppercase tracking-wider text-ink-muted">
           {t("proceso_state_label")}
         </p>
         <div className="mt-3.5">
-          <span className={cn("inline-flex items-center rounded-full border px-4 py-1.5 font-body text-sm font-bold", bannerBadge)}>
+          <span className={cn("inline-flex items-center rounded-full border px-4 py-[7px] font-body text-[13px] font-bold", bannerCls)}>
             {bannerLabel}
           </span>
         </div>
       </div>
 
-      {/* Propuestas */}
-      <div className="rounded-2xl border border-border bg-surface p-7">
+      {/* Card 2 — Propuestas stepper */}
+      <div className="rounded-2xl border border-border bg-surface px-[30px] py-7 shadow-sm">
         <p className="mb-6 font-body text-xs font-bold uppercase tracking-wider text-ink-muted">
           {t("proceso_propuestas_label")}
         </p>
 
         {proposals.map((p, i) => {
-          const c    = juniorCircle(p.status);
-          const isSent = ["enviada","revision","cambios","aceptada","noseleccionada"].includes(p.status);
+          const c        = juniorCircle(p.status);
+          const isSent   = ["enviada","revision","cambios","aceptada","noseleccionada"].includes(p.status);
           const isEditing = p.status === "editando";
-          const showBadge = !!JUNIOR_BADGE[p.status];
+          const pm        = propMeta(p.status);
           const submitOk  = p.desc.trim().length > 0;
+          // Show line between proposals; last real node has line only when not closed
+          const showLine  = i < proposals.length - 1 || !closed;
 
           return (
-            <div key={p.v} className="flex gap-[18px]">
-              {/* Circle + line */}
-              <div className="flex flex-col items-center" style={{ width: 32, flexShrink: 0 }}>
+            <div key={p.v} className="flex gap-[18px] items-stretch">
+              {/* Circle + vertical line */}
+              <div className="flex flex-col items-center" style={{ width: 32, flexShrink: 0, paddingTop: 1 }}>
                 <div
-                  className={cn(
-                    "flex size-[30px] shrink-0 items-center justify-center rounded-full",
-                    c.bg,
-                  )}
+                  className={cn("flex size-[30px] shrink-0 items-center justify-center rounded-full", c.bg)}
                   aria-hidden="true"
                 >
                   {c.icon}
                 </div>
-                {(i < proposals.length - 1 || !closed) && (
-                  <div
-                    className="mt-2 w-0.5 flex-1 rounded-sm bg-border"
-                    style={{ minHeight: 20 }}
-                    aria-hidden="true"
-                  />
+                {showLine && (
+                  <div className="mt-2 w-0.5 flex-1 rounded-sm bg-border" style={{ minHeight: 20 }} aria-hidden="true" />
                 )}
               </div>
 
-              {/* Content */}
-              <div className="min-w-0 flex-1 pb-7">
-                {/* Header row */}
+              {/* Row content */}
+              <div className="min-w-0 flex-1 pb-[30px]">
+                {/* Header */}
                 <div className="flex min-h-[32px] items-center justify-between gap-3">
                   <div
                     onClick={() => { if (isSent) toggle(i); }}
-                    className={cn("flex items-center gap-2", isSent ? "cursor-pointer" : "cursor-default")}
+                    className={cn("flex items-center gap-[9px]", isSent ? "cursor-pointer" : "cursor-default")}
                   >
-                    <span className="font-heading text-base font-bold text-ink-strong">
+                    <span className="font-body text-base font-bold text-ink-strong">
                       {t("proceso_propuesta_n", { n: p.v })}
                     </span>
                     {isSent && (
-                      <ChevronDown
-                        className={cn("size-3.5 text-ink-muted transition-transform duration-[var(--duration-fast)]", p.expanded && "rotate-180")}
-                        aria-hidden="true"
-                      />
+                      <span className="text-[11px] text-ink-muted" aria-hidden="true">
+                        {p.expanded ? "▲" : "▼"}
+                      </span>
                     )}
                   </div>
-                  <div className="flex items-center gap-2.5">
+                  <div className="flex items-center gap-[10px]">
                     {p.status === "nuevo" && (
                       <button
                         onClick={() => startCreate(i)}
-                        className="rounded-[10px] border border-border bg-surface px-[18px] py-2.5 font-body text-sm font-semibold text-ink transition-colors duration-[var(--duration-fast)] hover:border-secondary hover:text-secondary"
+                        className="rounded-[10px] border border-border bg-surface px-[18px] py-[9px] font-body text-[14px] font-semibold text-ink transition-colors duration-[var(--duration-fast)] hover:border-secondary hover:text-secondary"
                       >
                         {t("proceso_crear_propuesta")}
                       </button>
                     )}
-                    {showBadge && (
-                      <span className={cn("inline-flex items-center rounded-full border px-[15px] py-1.5 font-body text-sm font-bold whitespace-nowrap", JUNIOR_BADGE[p.status])}>
-                        {bannerLabel}
+                    {pm && (
+                      <span className={cn("inline-flex items-center rounded-full border px-[15px] py-[7px] font-body text-[13px] font-bold whitespace-nowrap", pm.cls)}>
+                        {pm.label}
                       </span>
                     )}
                   </div>
@@ -786,7 +786,7 @@ function JuniorProcesoView({
                 {/* Edit form */}
                 {isEditing && (
                   <div className="mt-[18px]">
-                    <label className="mb-2 block font-body text-sm font-bold text-ink">
+                    <label className="mb-2 block font-body text-[13px] font-bold text-ink">
                       {t("description_label")}
                     </label>
                     <textarea
@@ -794,10 +794,10 @@ function JuniorProcesoView({
                       value={p.desc}
                       onChange={(e) => setField(i, "desc", e.target.value)}
                       rows={4}
-                      className="w-full resize-y rounded-xl border border-border bg-surface p-3.5 font-body text-sm text-ink placeholder:text-ink-muted/60 focus:border-secondary focus:outline-none focus:ring-2 focus:ring-secondary/20"
+                      className="w-full resize-y rounded-xl border border-border bg-surface p-[13px] font-body text-[14px] text-ink placeholder:text-ink-muted/60 focus:border-secondary focus:outline-none focus:ring-2 focus:ring-secondary/20"
                     />
 
-                    <label className="mb-2 mt-5 block font-body text-sm font-bold text-ink">
+                    <label className="mb-2 mt-5 block font-body text-[13px] font-bold text-ink">
                       {t("proceso_doc_label")}
                     </label>
                     <div className="flex gap-3">
@@ -805,10 +805,10 @@ function JuniorProcesoView({
                         placeholder={t("proceso_link_placeholder")}
                         value={p.link}
                         onChange={(e) => setField(i, "link", e.target.value)}
-                        className="min-w-0 flex-1 rounded-xl border border-border bg-surface px-3.5 py-3 font-body text-sm text-ink placeholder:text-ink-muted/60 focus:border-secondary focus:outline-none focus:ring-2 focus:ring-secondary/20"
+                        className="min-w-0 flex-1 rounded-xl border border-border bg-surface px-[15px] py-3 font-body text-[14px] text-ink placeholder:text-ink-muted/60 focus:border-secondary focus:outline-none focus:ring-2 focus:ring-secondary/20"
                       />
-                      <label className="inline-flex cursor-pointer items-center gap-2 whitespace-nowrap rounded-xl border border-border bg-surface px-[18px] py-3 font-body text-sm font-semibold text-ink transition-colors hover:border-secondary hover:text-secondary">
-                        <Upload className="size-4" aria-hidden="true" />
+                      <label className="inline-flex cursor-pointer items-center gap-2 whitespace-nowrap rounded-xl border border-border bg-surface px-[18px] py-3 font-body text-[14px] font-semibold text-ink transition-colors hover:border-secondary hover:text-secondary">
+                        <Upload className="size-[15px]" aria-hidden="true" />
                         {p.fileName || t("proceso_subir_archivo")}
                         <input
                           type="file"
@@ -821,21 +821,21 @@ function JuniorProcesoView({
                       </label>
                     </div>
 
-                    <div className="my-6 h-px bg-border" />
+                    <div className="my-[22px] h-px bg-border" />
 
-                    <p className="font-body text-sm font-bold text-ink">{t("proceso_recursos_titulo")}</p>
-                    <p className="mb-4 mt-1 font-body text-sm text-ink-muted">{t("proceso_recursos_subtitulo")}</p>
+                    <p className="font-body text-[13px] font-bold text-ink">{t("proceso_recursos_titulo")}</p>
+                    <p className="mb-4 mt-[3px] font-body text-[13px] text-ink-muted">{t("proceso_recursos_subtitulo")}</p>
 
-                    <div className="grid gap-3.5" style={{ gridTemplateColumns: "130px 1fr" }}>
-                      <label className="self-center font-body text-sm font-semibold text-ink">{t("proceso_recursos_nombre")}</label>
+                    <div className="grid gap-[14px]" style={{ gridTemplateColumns: "130px 1fr", alignItems: "center", columnGap: 16 }}>
+                      <label className="font-body text-[13px] font-semibold text-ink">{t("proceso_recursos_nombre")}</label>
                       <input value={p.previewName} onChange={(e) => setField(i, "previewName", e.target.value)}
-                        className="rounded-[10px] border border-border bg-surface px-3.5 py-2.5 font-body text-sm text-ink focus:border-secondary focus:outline-none focus:ring-2 focus:ring-secondary/20" />
-                      <label className="self-center font-body text-sm font-semibold text-ink">{t("proceso_recursos_proyecto")}</label>
+                        className="w-full rounded-[10px] border border-border bg-surface px-[14px] py-[11px] font-body text-[14px] text-ink focus:border-secondary focus:outline-none focus:ring-2 focus:ring-secondary/20" />
+                      <label className="font-body text-[13px] font-semibold text-ink">{t("proceso_recursos_proyecto")}</label>
                       <input value={p.previewProject} onChange={(e) => setField(i, "previewProject", e.target.value)}
-                        className="rounded-[10px] border border-border bg-surface px-3.5 py-2.5 font-body text-sm text-ink focus:border-secondary focus:outline-none focus:ring-2 focus:ring-secondary/20" />
-                      <label className="self-center font-body text-sm font-semibold text-ink leading-snug">{t("proceso_recursos_repo")}</label>
+                        className="w-full rounded-[10px] border border-border bg-surface px-[14px] py-[11px] font-body text-[14px] text-ink focus:border-secondary focus:outline-none focus:ring-2 focus:ring-secondary/20" />
+                      <label className="font-body text-[13px] font-semibold leading-snug text-ink">{t("proceso_recursos_repo")}</label>
                       <input value={p.repo} onChange={(e) => setField(i, "repo", e.target.value)}
-                        className="rounded-[10px] border border-border bg-surface px-3.5 py-2.5 font-body text-sm text-ink focus:border-secondary focus:outline-none focus:ring-2 focus:ring-secondary/20" />
+                        className="w-full rounded-[10px] border border-border bg-surface px-[14px] py-[11px] font-body text-[14px] text-ink focus:border-secondary focus:outline-none focus:ring-2 focus:ring-secondary/20" />
                     </div>
 
                     <div className="mt-6 flex justify-end">
@@ -843,7 +843,7 @@ function JuniorProcesoView({
                         onClick={() => submit(i)}
                         disabled={!submitOk}
                         className={cn(
-                          "rounded-xl bg-secondary px-6 py-3 font-body text-sm font-bold text-white transition-colors duration-[var(--duration-fast)]",
+                          "rounded-xl bg-secondary px-6 py-3 font-body text-[14px] font-bold text-white transition-colors duration-[var(--duration-fast)]",
                           submitOk ? "hover:bg-secondary/80" : "opacity-50 cursor-not-allowed",
                         )}
                       >
@@ -853,53 +853,69 @@ function JuniorProcesoView({
                   </div>
                 )}
 
-                {/* Sent / read-only body */}
+                {/* Read-only body when sent */}
                 {isSent && p.expanded && (
                   <div className="mt-[18px]">
-                    <label className="mb-2 block font-body text-sm font-bold text-ink">
+                    <label className="mb-2 block font-body text-[13px] font-bold text-ink">
                       {t("description_label")}
                     </label>
-                    <div className="rounded-xl border border-border bg-canvas p-4 font-body text-sm leading-relaxed text-ink">
+                    <div className="rounded-xl border border-border bg-canvas p-[14px] font-body text-[14px] leading-relaxed text-ink" style={{ background: "#FBFAFD" }}>
                       {p.desc}
                     </div>
 
-                    <label className="mb-2 mt-5 block font-body text-sm font-bold text-ink">
+                    <label className="mb-2 mt-5 block font-body text-[13px] font-bold text-ink">
                       {t("proceso_doc_label")}
                     </label>
                     <div className="flex flex-wrap items-center gap-3">
-                      <div className="min-w-[200px] flex-1 truncate rounded-xl border border-border bg-canvas px-4 py-3 font-body text-sm text-primary">
+                      <div className="min-w-[200px] flex-1 truncate rounded-xl border border-border px-[15px] py-3 font-body text-[14px] text-primary" style={{ background: "#FBFAFD" }}>
                         {p.link || t("proceso_sin_enlace")}
                       </div>
                       {p.fileName && (
-                        <div className="inline-flex items-center gap-2 rounded-xl border border-border bg-surface px-4 py-2.5 font-body text-sm font-semibold text-ink">
-                          <FileText className="size-4 text-magenta" aria-hidden="true" />
+                        <div className="inline-flex items-center gap-2 rounded-xl border border-border bg-surface px-[14px] py-[11px] font-body text-[13px] font-semibold text-ink">
+                          <FileText className="size-[14px] text-magenta" aria-hidden="true" />
                           {p.fileName}
                         </div>
                       )}
                     </div>
 
-                    <label className="mb-2 mt-5 block font-body text-sm font-bold text-ink">
+                    <label className="mb-2 mt-5 block font-body text-[13px] font-bold text-ink">
                       {t("proceso_previsualizacion_label")}
                     </label>
-                    {(p.link || p.repo) && (
-                      <LinkPreview
-                        href={p.repo || p.link}
-                        title={p.previewName}
-                        area={p.previewProject || undefined}
-                        excerpt={p.desc}
-                      />
-                    )}
+                    <div className="overflow-hidden rounded-[14px] border border-border bg-surface">
+                      <div className="flex items-center gap-[7px] border-b border-border px-[14px] py-[11px]" style={{ background: "#F4F3F7" }}>
+                        <span className="size-[11px] rounded-full" style={{ background: "#F2655A" }} aria-hidden="true" />
+                        <span className="size-[11px] rounded-full" style={{ background: "#F5BE4F" }} aria-hidden="true" />
+                        <span className="size-[11px] rounded-full" style={{ background: "#62C554" }} aria-hidden="true" />
+                        <div className="ml-[10px] flex-1 truncate rounded-[7px] border border-border bg-surface px-3 py-[6px] font-body text-[12px] text-ink-muted">
+                          {p.repo || p.link || "preview.proyecto.app"}
+                        </div>
+                        {(p.repo || p.link) && (
+                          <a href={p.repo || p.link} target="_blank" rel="noopener noreferrer"
+                            className="inline-flex shrink-0 items-center gap-1 font-body text-xs font-bold text-primary hover:underline">
+                            <ExternalLink className="size-3" aria-hidden="true" />
+                            Abrir
+                          </a>
+                        )}
+                      </div>
+                      <div className="flex min-h-[150px] flex-col gap-[10px] px-7 py-[30px]" style={{ background: "linear-gradient(180deg,#FCFBFE,#F7F6FB)" }}>
+                        <p className="font-heading text-xl font-extrabold tracking-tight text-ink-strong">
+                          {p.previewName || t("proceso_preview_sin_nombre")}
+                        </p>
+                        <span className="self-start rounded-full bg-secondary/10 px-3 py-[5px] font-body text-[12px] font-semibold text-secondary">
+                          {p.previewProject || t("proceso_preview_sin_categoria")}
+                        </span>
+                        <p className="mt-1 font-body text-[13px] leading-relaxed text-ink-muted line-clamp-3">{p.desc}</p>
+                      </div>
+                    </div>
 
-                    <label className="mb-2 mt-5 block font-body text-sm font-bold text-ink">
+                    <label className="mb-2 mt-5 block font-body text-[13px] font-bold text-ink">
                       {t("proceso_observaciones_label")}
                     </label>
                     <div
-                      className={cn(
-                        "rounded-xl border p-4 font-body text-sm leading-relaxed",
-                        p.observaciones
-                          ? "border-warning/30 bg-warning/5 text-ink"
-                          : "border-border bg-canvas text-ink-muted",
-                      )}
+                      className="min-h-[84px] rounded-xl border p-[14px] font-body text-[14px] leading-relaxed"
+                      style={p.observaciones
+                        ? { borderColor: "#F0CDBF", background: "#FFF6F2", color: "#9A3B23" }
+                        : { borderColor: "#E8E5EF", background: "#FBFAFD", color: "#B3AEC0" }}
                     >
                       {p.observaciones || t("proceso_observaciones_empty")}
                     </div>
@@ -910,77 +926,53 @@ function JuniorProcesoView({
           );
         })}
 
-        {/* Placeholder next version */}
+        {/* Ghost — next locked version (only when not closed) */}
         {!closed && (
-          <div className="flex gap-[18px] opacity-50">
-            <div style={{ width: 32, flexShrink: 0, paddingTop: 2 }}>
-              <div className="flex size-[30px] items-center justify-center rounded-full border-2 border-dashed border-border bg-transparent">
-                <Lock className="size-3.5 text-ink-muted" aria-hidden="true" />
-              </div>
+          <div className="flex gap-[18px]">
+            <div className="flex flex-col items-center" style={{ width: 32, flexShrink: 0, paddingTop: 1 }}>
+              {/* Empty dashed circle — no icon inside, matches reference exactly */}
+              <div
+                className="size-[30px] shrink-0 rounded-full bg-surface"
+                style={{ border: "2px dashed #D7D2E0" }}
+                aria-hidden="true"
+              />
+              {/* No line after ghost */}
             </div>
-            <div className="min-w-0 flex-1 py-1">
-              <p className="font-heading text-base font-bold text-ink-muted">
+            <div className="min-w-0 flex-1 py-[2px]">
+              <p className="font-body text-base font-bold" style={{ color: "#B3AEC0" }}>
                 {t("proceso_propuesta_n", { n: proposals.length + 1 })}
               </p>
-              <div className="mt-1.5 flex items-center gap-1.5 font-body text-sm text-ink-muted">
-                <Lock className="size-3 shrink-0" aria-hidden="true" />
+              <div className="mt-[5px] flex items-center gap-[7px] font-body text-[13px]" style={{ color: "#B3AEC0" }}>
+                <Lock className="size-[13px] shrink-0" aria-hidden="true" />
                 {lockCaption}
               </div>
             </div>
           </div>
         )}
 
-        {/* Closed banner */}
+        {/* Closed banner — inside the card */}
         {closed && (
-          <div className="mt-1.5 flex items-center gap-2.5 rounded-xl border border-accent/30 bg-accent/10 p-4 font-body text-sm font-semibold text-accent">
-            <CheckCircle2 className="size-[18px] shrink-0" aria-hidden="true" />
+          <div className="mt-[6px] flex items-center gap-[10px] rounded-xl border p-[14px] font-body text-[14px] font-semibold"
+            style={{ background: "#E0F3E9", borderColor: "#BFE6CF", color: "#1E7A4F" }}>
+            <Check className="size-[18px] shrink-0" aria-hidden="true" />
             {t("proceso_cerrado")}
           </div>
         )}
       </div>
 
-      {/* Entregables when aceptada */}
-      {closed && entregables.length > 0 && (
-        <div className="mt-4 rounded-2xl border border-border bg-surface p-5">
-          <p className="mb-3 font-body text-xs font-bold uppercase tracking-wider text-ink-muted">
-            {t("proceso_entregables_label")}
-          </p>
-          <ul className="flex flex-col gap-3">
-            {entregables.map((ent) => {
-              const si = ENTREGABLE_STATE[ent.estado.nombre];
-              return (
-                <li key={ent.id} className="flex items-center gap-3 rounded-xl border border-border p-3">
-                  <span className={cn("rounded-full border px-2.5 py-0.5 font-body text-xs font-bold", si.cls)}>{si.label}</span>
-                  <span className="flex-1 font-body text-sm font-semibold text-ink">
-                    {ent.tipo === "parcial" ? "Entrega parcial" : "Entrega final"} v{ent.version}
-                  </span>
-                  {ent.url && (
-                    <a href={ent.url} target="_blank" rel="noopener noreferrer"
-                      className="inline-flex items-center gap-1 font-body text-xs font-semibold text-primary hover:underline">
-                      <ExternalLink className="size-3" aria-hidden="true" />
-                      Ver
-                    </a>
-                  )}
-                </li>
-              );
-            })}
-          </ul>
-        </div>
-      )}
-
-      {/* Demo bar */}
+      {/* Demo bar — below both cards, only when not closed */}
       {!closed && (
-        <div className="mt-6 rounded-2xl border border-dashed border-border bg-surface p-[18px]">
-          <p className="font-body text-xs font-extrabold uppercase tracking-widest text-secondary/70">
+        <div className="mt-[26px] rounded-2xl border border-dashed border-border bg-canvas px-[22px] py-[18px]" style={{ background: "#FBFAFD" }}>
+          <p className="font-body text-[11px] font-extrabold uppercase tracking-widest text-secondary/70">
             {t("proceso_demo_titulo")}
           </p>
-          <p className="mt-1.5 font-body text-sm text-ink-muted">{t("proceso_demo_desc")}</p>
-          <div className="mt-3.5 flex flex-wrap gap-2.5">
+          <p className="mt-[5px] font-body text-[13px] text-ink-muted">{t("proceso_demo_desc")}</p>
+          <div className="mt-[14px] flex flex-wrap gap-[10px]">
             <button
               onClick={simRevision}
               disabled={!canReview}
               className={cn(
-                "rounded-[10px] border border-border bg-surface px-4 py-2.5 font-body text-sm font-semibold text-ink transition-colors hover:border-primary hover:text-primary",
+                "rounded-[10px] border border-border bg-surface px-4 py-[9px] font-body text-[13px] font-semibold text-ink transition-colors hover:border-primary hover:text-primary",
                 !canReview && "opacity-45 cursor-not-allowed",
               )}
             >
@@ -990,8 +982,10 @@ function JuniorProcesoView({
               onClick={simCambios}
               disabled={!reviewing}
               className={cn(
-                "rounded-[10px] border border-warning/40 bg-surface px-4 py-2.5 font-body text-sm font-semibold text-warning transition-colors hover:bg-warning/5",
-                !reviewing && "opacity-45 cursor-not-allowed",
+                "rounded-[10px] border px-4 py-[9px] font-body text-[13px] font-semibold transition-colors",
+                reviewing
+                  ? "border-warning/40 bg-surface text-warning hover:bg-warning/5"
+                  : "border-border bg-surface text-warning opacity-45 cursor-not-allowed",
               )}
             >
               {t("proceso_accion_cambios")}
@@ -1000,17 +994,18 @@ function JuniorProcesoView({
               onClick={simAceptar}
               disabled={!reviewing}
               className={cn(
-                "rounded-[10px] border border-accent/40 bg-surface px-4 py-2.5 font-body text-sm font-semibold text-accent transition-colors hover:bg-accent/5",
-                !reviewing && "opacity-45 cursor-not-allowed",
+                "rounded-[10px] border px-4 py-[9px] font-body text-[13px] font-semibold transition-colors",
+                reviewing
+                  ? "border-accent/40 bg-surface text-accent hover:bg-accent/5"
+                  : "border-border bg-surface text-accent opacity-45 cursor-not-allowed",
               )}
             >
               {t("proceso_demo_aceptar")}
             </button>
             <button
               onClick={resetDemo}
-              className="ml-auto rounded-[10px] border-none bg-transparent px-4 py-2.5 font-body text-sm font-semibold text-ink-muted transition-colors hover:text-ink"
+              className="ml-auto rounded-[10px] border-none bg-transparent px-3 py-[9px] font-body text-[13px] font-semibold text-ink-muted transition-colors hover:text-ink"
             >
-              <RotateCcw className="mr-1.5 inline size-3.5" aria-hidden="true" />
               {t("proceso_demo_reiniciar")}
             </button>
           </div>
