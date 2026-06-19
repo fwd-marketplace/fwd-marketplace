@@ -21,7 +21,6 @@ import {
     ChevronRight,
     CheckCircle2,
     Clock,
-    ExternalLink,
     Zap,
     X,
 } from 'lucide-react';
@@ -30,7 +29,6 @@ import { HeroJourneyBadge } from '@/components/ui/HeroJourneyBadge';
 import { buildSparklePoints } from '@/lib/logo-constellation';
 
 const CONTENT_SPARKLE_POINTS = buildSparklePoints(12, 12, 12);
-import { ProjectDetailSheet } from '@/components/marketplace/ProjectDetailSheet';
 import { Button } from '@/components/ui/button';
 import type { ApiProject, ApiRoleName, CatalogsResponse } from '@/lib/api/types';
 
@@ -482,7 +480,6 @@ export default function MarketPlace({ initialProjects, catalogs, role = 'student
     const [sortOrder, setSortOrder] = useState<SortOrder>('sort_recent_desc');
     const [currentPage, setCurrentPage] = useState(1);
     const [savedProjectIds, setSavedProjectIds] = useState<ReadonlySet<string>>(new Set());
-    const [sheetProject, setSheetProject] = useState<ApiProject | null>(null);
 
     const areaOptions: FilterOption[] = activeCatalogs.areas.map((a) => ({ value: a.id, label: a.nombre }));
     const skillOptions: FilterOption[] = activeCatalogs.skills
@@ -572,15 +569,6 @@ export default function MarketPlace({ initialProjects, catalogs, role = 'student
 
     return (
         <>
-        <ProjectDetailSheet
-            project={sheetProject}
-            isOpen={!!sheetProject}
-            onClose={() => setSheetProject(null)}
-            role={role ?? null}
-            showApplyForm={role === 'student'}
-            alreadyApplied={sheetProject ? appliedProjectIds.includes(sheetProject.id) : false}
-            isProjectExpired={sheetProject ? isExpired(sheetProject.fecha_cierre) : false}
-        />
         <div className="bg-marketplace-sky relative min-h-screen text-ink font-body pb-20">
 
             {/* Hero — backdrop is contained here so it never stretches with the cards */}
@@ -663,19 +651,17 @@ export default function MarketPlace({ initialProjects, catalogs, role = 'student
             {/* Ambient stars scattered in the cards area */}
             <div className="pointer-events-none absolute inset-x-0 bottom-0 z-0" style={{ top: '420px' }} aria-hidden="true">
                 {([
-                    { t: '5%',  l: '1%',   s: 10, g: true,  sp: true,  o: 0.6,  d: '3.2s', dl: '0.3s' },
-                    { t: '12%', l: '98%',  s: 4,  g: false, sp: false, o: 0.4,  d: '2.8s', dl: '1.0s' },
-                    { t: '20%', l: '99%',  s: 10, g: true,  sp: true,  o: 0.65, d: '3.6s', dl: '0.8s' },
-                    { t: '28%', l: '0.5%', s: 4,  g: false, sp: false, o: 0.45, d: '3.0s', dl: '1.5s' },
-                    { t: '38%', l: '98%',  s: 10, g: false, sp: true,  o: 0.55, d: '3.3s', dl: '0.6s' },
-                    { t: '47%', l: '1%',   s: 5,  g: true,  sp: false, o: 0.55, d: '2.7s', dl: '0.4s' },
-                    { t: '55%', l: '99%',  s: 10, g: true,  sp: true,  o: 0.65, d: '3.1s', dl: '1.2s' },
-                    { t: '63%', l: '1%',   s: 10, g: false, sp: true,  o: 0.55, d: '3.4s', dl: '0.9s' },
-                    { t: '70%', l: '98%',  s: 4,  g: false, sp: false, o: 0.4,  d: '2.9s', dl: '1.6s' },
-                    { t: '78%', l: '0.5%', s: 10, g: true,  sp: true,  o: 0.7,  d: '3.0s', dl: '0.2s' },
-                    { t: '85%', l: '99%',  s: 5,  g: false, sp: false, o: 0.45, d: '3.5s', dl: '1.1s' },
-                    { t: '92%', l: '1%',   s: 4,  g: true,  sp: false, o: 0.5,  d: '2.8s', dl: '0.7s' },
-                    { t: '96%', l: '98%',  s: 10, g: true,  sp: true,  o: 0.65, d: '3.2s', dl: '0.5s' },
+                    // bordes izquierdo / derecho
+                    { t: '8%',  l: '1%',   s: 10, g: true,  sp: true,  o: 0.6,  d: '3.2s', dl: '0.3s' },
+                    { t: '22%', l: '99%',  s: 10, g: true,  sp: true,  o: 0.65, d: '3.6s', dl: '0.8s' },
+                    { t: '50%', l: '1%',   s: 10, g: false, sp: true,  o: 0.55, d: '3.1s', dl: '1.4s' },
+                    { t: '72%', l: '99%',  s: 10, g: true,  sp: true,  o: 0.7,  d: '2.9s', dl: '0.5s' },
+                    // centro — visibles cuando los cards no llenan la pantalla
+                    { t: '35%', l: '22%',  s: 4,  g: false, sp: false, o: 0.25, d: '3.0s', dl: '1.0s' },
+                    { t: '45%', l: '62%',  s: 4,  g: false, sp: false, o: 0.2,  d: '3.4s', dl: '0.6s' },
+                    { t: '60%', l: '38%',  s: 10, g: true,  sp: true,  o: 0.3,  d: '3.2s', dl: '1.2s' },
+                    { t: '75%', l: '75%',  s: 4,  g: false, sp: false, o: 0.2,  d: '2.8s', dl: '0.9s' },
+                    { t: '85%', l: '18%',  s: 4,  g: true,  sp: false, o: 0.25, d: '3.5s', dl: '0.4s' },
                 ] as const).map((s, i) => {
                     const fill = s.g ? 'var(--highlight)' : 'var(--surface)';
                     if (s.sp) {
@@ -828,23 +814,15 @@ export default function MarketPlace({ initialProjects, catalogs, role = 'student
 
                                     {/* Footer */}
                                     <div className="mt-auto flex items-center gap-2">
-                                        <button
-                                            type="button"
-                                            onClick={() => setSheetProject(project)}
+                                        <Link
+                                            href={`/${locale}/marketplace/${project.id}/proceso`}
                                             className={`flex-1 rounded-full px-5 py-2.5 text-sm font-semibold text-center transition-colors duration-[var(--duration-fast)] ease-[var(--ease-out)] ${
                                                 expired
-                                                    ? 'bg-surface-sunken text-ink-muted cursor-default'
+                                                    ? 'bg-surface-sunken text-ink-muted pointer-events-none'
                                                     : 'bg-secondary text-white hover:bg-secondary/80'
                                             }`}
                                         >
                                             {expired ? t('badge_expired') : hasApplied ? t('view_my_offer') : t('view_project')}
-                                        </button>
-                                        <Link
-                                            href={`/${locale}/marketplace/${project.id}`}
-                                            aria-label="Abrir página completa"
-                                            className="flex size-10 shrink-0 items-center justify-center rounded-full border border-border bg-surface text-ink-muted hover:border-primary/30 hover:text-primary transition-colors duration-[var(--duration-fast)] ease-[var(--ease-out)]"
-                                        >
-                                            <ExternalLink className="w-4 h-4" aria-hidden="true" />
                                         </Link>
                                         <button
                                             type="button"

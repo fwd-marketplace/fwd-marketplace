@@ -41,7 +41,7 @@ const MOCK_STUDENT: Notification[] = [
     detail: "Plataforma de Telemedicina — te seleccionaron para este proyecto.",
     time: "hace 2 h",
     read: false,
-    href: "/mis-postulaciones",
+    href: "/gestion",
   },
   {
     id: "ns-2",
@@ -50,7 +50,7 @@ const MOCK_STUDENT: Notification[] = [
     detail: "Sistema de Gestión de Créditos — la empresa está evaluando tu carta.",
     time: "hace 1 d",
     read: false,
-    href: "/mis-postulaciones",
+    href: "/gestion",
   },
   {
     id: "ns-3",
@@ -278,7 +278,7 @@ export function NotificationPanel({ role }: Props) {
           {/* Footer */}
           <div className="border-t border-border px-4 py-2.5 flex items-center justify-between gap-3">
             <Link
-              href={`/${locale}${role === "company" ? "/postulaciones" : "/mis-postulaciones"}`}
+              href={`/${locale}/gestion`}
               onClick={() => setOpen(false)}
               className="font-body text-xs font-semibold text-primary transition-colors hover:text-secondary"
             >
