@@ -586,7 +586,7 @@ export default function MarketPlace({ initialProjects, catalogs, role = 'student
             {/* Hero — backdrop is contained here so it never stretches with the cards */}
             <section className="relative overflow-hidden z-10 px-6 pt-10 pb-24 md:pt-14 md:pb-32">
                 <MarketplaceHeroBackdrop />
-                <div className="relative z-10 max-w-6xl mx-auto px-6 text-left">
+                <div className="relative z-10 max-w-7xl mx-auto px-4 md:px-6 text-left">
                     <HeroJourneyBadge
                         stage="desafio"
                         label={t('hero_journey_label')}
@@ -604,7 +604,7 @@ export default function MarketPlace({ initialProjects, catalogs, role = 'student
             </section>
 
             {/* Search + filters */}
-            <div className="relative z-20 max-w-6xl mx-auto px-6 -mt-10 md:-mt-14">
+            <div className="relative z-20 max-w-7xl mx-auto px-4 md:px-6 -mt-10 md:-mt-14">
                 <div className="flex flex-col gap-4 rounded-full bg-white/10 px-3 py-3 shadow-elevated backdrop-blur-md md:flex-row md:items-center md:gap-2 md:py-2 md:pl-6 md:pr-2">
                     <div className="flex flex-1 items-center gap-3">
                         <Search className="w-4 h-4 shrink-0 text-white/70" aria-hidden="true" />
@@ -699,7 +699,7 @@ export default function MarketPlace({ initialProjects, catalogs, role = 'student
             </div>
 
             {/* Results */}
-            <div className="max-w-6xl mx-auto px-6 mt-8 relative z-10">
+            <div className="max-w-7xl mx-auto px-4 md:px-6 mt-8 relative z-10">
                 <div className="flex items-center justify-between gap-4 mb-5">
                     <p className="text-sm font-semibold text-white">
                         {t('results_count', { count: totalResults })}
