@@ -13,16 +13,18 @@ import type { ApiRoleName } from "@/lib/api/types";
 import { NotificationPanel } from "@/components/layout/notification-panel";
 
 const NAV_JUNIOR = [
-  { key: "nav_marketplace", href: "/marketplace" },
-  { key: "nav_my_applications", href: "/mis-postulaciones" },
-  { key: "nav_mensajes", href: "/mensajes" },
-  { key: "nav_my_profile", href: "/perfil-estudiante" },
+  { key: "nav_marketplace",       href: "/marketplace" },
+  { key: "nav_gestion",           href: "/gestion" },
+  { key: "nav_my_applications",   href: "/mis-postulaciones" },
+  { key: "nav_mensajes",          href: "/mensajes" },
+  { key: "nav_my_profile",        href: "/perfil-estudiante" },
 ] as const;
 
 const NAV_EMPRESA = [
-  { key: "nav_my_projects", href: "/dashboard" },
+  { key: "nav_my_projects",  href: "/dashboard" },
+  { key: "nav_gestion",      href: "/gestion" },
   { key: "nav_postulaciones", href: "/postulaciones" },
-  { key: "nav_my_company", href: "/perfil-empresa" },
+  { key: "nav_my_company",   href: "/perfil-empresa" },
 ] as const;
 
 const PROFILE_HREF: Record<string, string> = {

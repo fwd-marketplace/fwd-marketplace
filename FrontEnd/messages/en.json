@@ -753,7 +753,8 @@
     "nav_postulaciones": "Applications",
     "nav_my_company": "My company",
     "profile_link": "View profile",
-    "open_menu": "Open menu"
+    "open_menu": "Open menu",
+    "nav_gestion": "Projects"
   },
   "mis_postulaciones": {
     "title": "My applications",
@@ -799,7 +800,8 @@
     "withdraw_modal_desc": "Are you sure you want to withdraw your application for \"{titulo}\"? This action cannot be undone.",
     "withdraw_modal_cancel": "Cancel",
     "withdraw_modal_confirm": "Yes, withdraw",
-    "withdraw_modal_removing": "Withdrawing..."
+    "withdraw_modal_removing": "Withdrawing...",
+    "withdraw_btn": "Withdraw application"
   },
   "empresa_subnav": {
     "back": "Back",
@@ -1606,5 +1608,57 @@
     "empty": "No notifications",
     "view_all": "View all activity",
     "preferences": "Preferences"
+  },
+  "proceso_page": {
+    "back": "Back to marketplace",
+    "tab_info": "Info",
+    "tab_chat": "Assistant",
+    "tab_proceso": "Process",
+    "chat_ia_mode": "AI",
+    "chat_directo_mode": "Company",
+    "chat_directo_soon": "You'll be able to write directly to the company once your proposal is awarded.",
+    "chat_placeholder": "Ask about the project...",
+    "chat_suggested": "Common questions",
+    "chat_welcome": "Hi. I'm the FWD assistant and can answer questions about this project or guide you through the application process.",
+    "form_title": "Create application",
+    "form_subtitle": "Tell us why you're the right person for this project.",
+    "already_applied_title": "You already submitted your proposal",
+    "already_applied_desc": "You can check your process status in the Process tab.",
+    "already_applied_cta": "View my process",
+    "proceso_empty_title": "You haven't applied yet",
+    "proceso_empty_desc": "Fill out the form on the right to submit your proposal and start the process.",
+    "proceso_step_enviada": "Proposal submitted",
+    "proceso_step_revision": "Under review",
+    "proceso_step_decision": "Final decision",
+    "proceso_revision_chat": "Review chat",
+    "proceso_revision_placeholder": "Message to company...",
+    "proceso_title": "Your process",
+    "proceso_proposal_number": "Proposal",
+    "begin_proceso": "Start process",
+    "begin_proceso_applied": "View my process",
+    "empresa_proposals_title": "Received proposals",
+    "empresa_proposals_empty": "No proposals yet for this project.",
+    "empresa_filter_all": "All",
+    "empresa_move_to_review": "Move to review",
+    "empresa_adjudicate": "Award project",
+    "empresa_reject": "Reject",
+    "empresa_view_entregables": "View deliverables",
+    "empresa_entregable_approve": "Approve",
+    "empresa_entregable_changes": "Request changes",
+    "empresa_revision_title": "Revision chat",
+    "empresa_revision_input": "Write a revision comment..."
+  },
+  "gestion_page": {
+    "title": "Project management",
+    "subtitle_junior": "Track the status of your active applications",
+    "subtitle_empresa": "Manage your projects and incoming proposals",
+    "empty_junior": "You have no active applications yet",
+    "empty_empresa": "You have no published projects yet",
+    "ver_proceso": "View process",
+    "section_junior": "My applications",
+    "section_empresa": "My projects",
+    "applied_on": "Applied on",
+    "published_on": "Published on",
+    "proposals_count": "{count} proposals"
   }
 }

@@ -18,15 +18,12 @@ import {
   Trash2,
   X,
 } from "lucide-react";
-import { ProjectDetailSheet } from "@/components/marketplace/ProjectDetailSheet";
 import {
-  getProjectByIdAction,
   submitEntregableAction,
   withdrawOfferAction,
 } from "@/lib/actions/marketplace";
-import { MOCK_MARKETPLACE_BY_ID } from "@/lib/mock-data";
 import { cn } from "@/lib/utils";
-import type { ApiProject, Entregable, EntregableState, MyOffer, OfferState } from "@/lib/api/types";
+import type { Entregable, EntregableState, MyOffer, OfferState } from "@/lib/api/types";
 
 interface Props {
   ofertas: MyOffer[];
@@ -293,12 +290,10 @@ function WithdrawModal({
 function OfertaCard({
   oferta,
   entregables,
-  onVerProyecto,
   onWithdraw,
 }: {
   oferta: MyOffer;
   entregables: Entregable[];
-  onVerProyecto: (id: string) => void;
   onWithdraw: (oferta: MyOffer) => void;
 }) {
   const t = useTranslations("mis_postulaciones");
@@ -394,14 +389,13 @@ function OfertaCard({
 
           <div className="flex items-center gap-2 shrink-0">
             {oferta.proyecto && (
-              <button
-                type="button"
-                onClick={() => onVerProyecto(oferta.proyecto!.id)}
+              <Link
+                href={`/${locale}/marketplace/${oferta.proyecto.id}/proceso`}
                 className="inline-flex items-center gap-1.5 rounded-full border border-primary/30 bg-primary/5 px-3.5 py-2 font-body text-xs font-semibold text-primary transition-colors duration-[var(--duration-fast)] ease-[var(--ease-out)] hover:bg-primary hover:text-white"
               >
                 <ArrowUpRight className="size-3.5" aria-hidden="true" />
                 {t("view_project_btn")}
-              </button>
+              </Link>
             )}
 
             {canWithdraw && (
@@ -519,26 +513,8 @@ export function MisPostulaciones({ ofertas: initialOfertas, entregables }: Props
   const locale = useLocale();
 
   const [ofertas, setOfertas] = useState(initialOfertas);
-  const [sheetProject, setSheetProject] = useState<ApiProject | null>(null);
-  const [isSheetOpen, setIsSheetOpen] = useState(false);
-  const [isLoadingProject, setIsLoadingProject] = useState(false);
   const [withdrawTarget, setWithdrawTarget] = useState<MyOffer | null>(null);
   const [isWithdrawPending, startWithdrawTransition] = useTransition();
-
-  async function openProjectSheet(projectId: string) {
-    const mock = MOCK_MARKETPLACE_BY_ID.get(projectId);
-    if (mock) {
-      setSheetProject(mock);
-      setIsSheetOpen(true);
-      return;
-    }
-    setSheetProject(null);
-    setIsLoadingProject(true);
-    setIsSheetOpen(true);
-    const result = await getProjectByIdAction(projectId);
-    if (result.ok) setSheetProject(result.data);
-    setIsLoadingProject(false);
-  }
 
   function handleWithdrawConfirm(offerId: string) {
     startWithdrawTransition(async () => {
@@ -552,15 +528,6 @@ export function MisPostulaciones({ ofertas: initialOfertas, entregables }: Props
 
   return (
     <>
-      <ProjectDetailSheet
-        project={sheetProject}
-        isOpen={isSheetOpen}
-        onClose={() => setIsSheetOpen(false)}
-        role="student"
-        showApplyForm={false}
-        isLoading={isLoadingProject}
-      />
-
       {withdrawTarget && (
         <WithdrawModal
           ofertaId={withdrawTarget.id}
@@ -630,7 +597,6 @@ export function MisPostulaciones({ ofertas: initialOfertas, entregables }: Props
                     key={oferta.id}
                     oferta={oferta}
                     entregables={projectEntregables}
-                    onVerProyecto={openProjectSheet}
                     onWithdraw={setWithdrawTarget}
                   />
                 );
