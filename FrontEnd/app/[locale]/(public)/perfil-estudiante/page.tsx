@@ -101,7 +101,7 @@ function mapCalificacion(cal: ApiCalificacion): MockCalificacion {
   return {
     id: cal.id,
     ofertaId: cal.id,
-    companyName: cal.proyecto?.empresa?.razon_social ?? "",
+    companyName: cal.proyecto?.empresa?.nombre_comercial ?? "",
     projectName: cal.proyecto?.titulo ?? "",
     score: cal.calificacion,
     comment: cal.comentario_calificacion ?? "",

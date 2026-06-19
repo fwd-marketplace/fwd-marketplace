@@ -396,7 +396,7 @@ export type ApiCalificacion = {
   proyecto: {
     id: string;
     titulo: string;
-    empresa: { razon_social: string | null } | null;
+    empresa: { nombre_comercial: string | null } | null;
   } | null;
 };
 

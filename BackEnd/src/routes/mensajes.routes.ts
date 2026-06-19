@@ -39,16 +39,15 @@ async function resolveProyectoAcceso(
   if (!empresaUserId) throw new ApiError(500, "El proyecto no tiene empresa asociada");
 
   // Buscar la oferta adjudicada para encontrar al junior.
-  const { data: ofertaAdj, error: ofertaError } = await client
+  // Se traen todas las ofertas del proyecto y se filtra en memoria para evitar
+  // el error de .maybeSingle() cuando hay múltiples postulantes.
+  const { data: ofertas, error: ofertaError } = await client
     .from("oferta")
     .select("id_usuario, estado:estado_oferta(nombre)")
-    .eq("id_proyecto", projectId)
-    .maybeSingle();
+    .eq("id_proyecto", projectId);
   if (ofertaError) throw new ApiError(500, ofertaError.message);
 
-  // Filtrar por estado adjudicada en memoria (no se puede filtrar por join en supabase-js fácilmente).
-  const adjudicada =
-    ofertaAdj && ofertaAdj.estado?.nombre === "adjudicada" ? ofertaAdj : null;
+  const adjudicada = (ofertas ?? []).find((o) => o.estado?.nombre === "adjudicada") ?? null;
 
   const juniorId = adjudicada?.id_usuario ?? null;
 

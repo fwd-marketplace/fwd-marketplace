@@ -81,7 +81,7 @@ export async function listMyCalificaciones(accessToken: string, userId: string) 
   const { data, error } = await client
     .from("oferta")
     .select(
-      "id, calificacion, comentario_calificacion, replica_calificacion, updated_at, proyecto:proyecto(id, titulo, empresa:empresario(razon_social))",
+      "id, calificacion, comentario_calificacion, replica_calificacion, updated_at, proyecto:proyecto(id, titulo, empresa:empresario(nombre_comercial))",
     )
     .eq("id_usuario", userId)
     .not("calificacion", "is", null)
@@ -96,7 +96,7 @@ export async function listMyOfertas(accessToken: string, userId: string) {
   const { data, error } = await client
     .from("oferta")
     .select(
-      "id, propuesta, prototipo_url, fecha_envio, estado:estado_oferta(nombre), proyecto:proyecto(id, titulo)",
+      "id, propuesta, prototipo_url, fecha_envio, estado:estado_oferta(nombre), proyecto:proyecto(id, titulo, fecha_cierre)",
     )
     .eq("id_usuario", userId)
     .order("fecha_envio", { ascending: false });
