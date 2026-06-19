@@ -4,35 +4,50 @@ export type HeroStage = 'llamado' | 'preparacion' | 'desafio' | 'transformacion'
 
 interface StageConfig {
     Icon: LucideIcon;
-    color: string;
-    bg: string;
+    colorClass: string;
+    bgClass: string;
+    borderClass: string;
 }
 
 const STAGE_CONFIG: Record<HeroStage, StageConfig> = {
-    llamado:        { Icon: Compass,   color: 'text-primary',    bg: 'bg-primary/15'    },
-    preparacion:    { Icon: BookOpen,  color: 'text-accent',     bg: 'bg-accent/15'     },
-    desafio:        { Icon: Mountain,  color: 'text-accent',     bg: 'bg-accent/15'     },
-    transformacion: { Icon: Sparkles,  color: 'text-warning',    bg: 'bg-warning/15'    },
-    reconocimiento: { Icon: Trophy,    color: 'text-magenta',    bg: 'bg-magenta/15'    },
+    llamado:        { Icon: Compass,   colorClass: 'text-primary',  bgClass: 'bg-primary/20',  borderClass: 'border-primary/50'  },
+    preparacion:    { Icon: BookOpen,  colorClass: 'text-accent',   bgClass: 'bg-accent/20',   borderClass: 'border-accent/50'   },
+    desafio:        { Icon: Mountain,  colorClass: 'text-accent',   bgClass: 'bg-accent/20',   borderClass: 'border-accent/50'   },
+    transformacion: { Icon: Sparkles,  colorClass: 'text-warning',  bgClass: 'bg-warning/20',  borderClass: 'border-warning/50'  },
+    reconocimiento: { Icon: Trophy,    colorClass: 'text-magenta',  bgClass: 'bg-magenta/20',  borderClass: 'border-magenta/50'  },
 };
 
 interface Props {
     stage: HeroStage;
     label: string;
     cta: string;
+    achievedCta?: string;
+    achieved?: boolean;
 }
 
-export function HeroJourneyBadge({ stage, label, cta }: Props) {
-    const { Icon, color, bg } = STAGE_CONFIG[stage];
+export function HeroJourneyBadge({ stage, label, cta, achievedCta, achieved = false }: Props) {
+    const { Icon, colorClass, bgClass, borderClass } = STAGE_CONFIG[stage];
 
     return (
-        <div className="fixed top-4 right-4 z-50 flex items-start gap-3 rounded-2xl border border-white/15 bg-secondary/60 px-4 py-3 shadow-elevated backdrop-blur-md max-w-[220px]">
-            <div className={`mt-0.5 flex size-9 shrink-0 items-center justify-center rounded-xl ${bg}`}>
-                <Icon className={`w-4 h-4 ${color}`} />
+        <div className={`inline-flex items-center gap-2.5 rounded-full border px-3 py-1.5 backdrop-blur-sm transition-all duration-[var(--duration-base)] ease-[var(--ease-out)] ${
+            achieved
+                ? `${bgClass} ${borderClass}`
+                : 'border-white/20 bg-white/5'
+        }`}>
+            <div className={`flex size-7 shrink-0 items-center justify-center rounded-full border transition-all duration-[var(--duration-base)] ${
+                achieved
+                    ? `${bgClass} ${borderClass} ${colorClass}`
+                    : 'border-white/30 text-white/50'
+            }`}>
+                <Icon className="w-3.5 h-3.5" />
             </div>
             <div>
-                <p className="text-xs font-bold text-white leading-tight">{label}</p>
-                <p className="mt-0.5 text-[11px] text-white/65 leading-snug">{cta}</p>
+                <p className={`text-xs font-bold leading-none ${achieved ? colorClass : 'text-white/60'}`}>
+                    {label}
+                </p>
+                <p className="mt-0.5 text-[10px] text-white/50 leading-tight">
+                    {achieved && achievedCta ? achievedCta : cta}
+                </p>
             </div>
         </div>
     );

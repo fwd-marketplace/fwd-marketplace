@@ -2,14 +2,19 @@
   "hero_journey": {
     "llamado_label": "The Call",
     "llamado_cta": "Take your first step toward your career.",
+    "llamado_cta_achieved": "You answered the call.",
     "preparacion_label": "The Preparation",
     "preparacion_cta": "Sharpen your tools before the challenge.",
+    "preparacion_cta_achieved": "You are ready for the next step.",
     "desafio_label": "The Challenge",
     "desafio_cta": "Find your first real project.",
+    "desafio_cta_achieved": "You accepted the challenge.",
     "transformacion_label": "The Transformation",
     "transformacion_cta": "Show the world what you can do.",
+    "transformacion_cta_achieved": "Your work speaks for you.",
     "reconocimiento_label": "The Recognition",
-    "reconocimiento_cta": "Your effort speaks for itself."
+    "reconocimiento_cta": "Your effort speaks for itself.",
+    "reconocimiento_cta_achieved": "The community recognizes you."
   },
   "site": {
     "name": "FWD Marketplace",
@@ -1030,6 +1035,9 @@
     "title": "Available projects",
     "hero_title": "Marketplace",
     "hero_subtitle": "Explore real projects aligned with your skills and find opportunities to build professional experience.",
+    "hero_journey_label": "The Challenge",
+    "hero_journey_cta": "Find your first real project.",
+    "hero_journey_cta_achieved": "You accepted the challenge.",
     "search_label": "Search by name or technology",
     "search_placeholder": "Search projects, skills or companies...",
     "specialty_label": "Specialty",
