@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, type ReactNode } from "react";
+import { useState, useRef, useEffect, type ReactNode } from "react";
 import { useLocale, useTranslations } from "next-intl";
 import {
   ArrowLeft,
@@ -15,6 +15,7 @@ import {
   GitBranch,
   Lock,
   MessageSquare,
+  Send,
   Upload,
   X,
   Zap,
@@ -40,6 +41,13 @@ type ProposalStatus =
 
 type EmpresaStatus =
   | "enviada" | "revision" | "cambios" | "adjudicada" | "noseleccionada";
+
+interface ChatMessage {
+  id: string;
+  from: "empresa" | "junior";
+  text: string;
+  time: string;
+}
 
 interface JuniorProposal {
   v: number;
@@ -134,6 +142,23 @@ const EMPRESA_BADGE: Record<EmpresaStatus, string> = {
 
 const MOCK_OBS: Record<string, string> = {
   "proj-1": "La propuesta es muy sólida. Sin embargo, necesitamos más detalle en el cronograma de entregas y confirmar la compatibilidad con la API de pagos actual. Ajustá el alcance de la primera fase y reenvía una nueva versión.",
+};
+
+const MOCK_CHAT: Record<string, ChatMessage[]> = {
+  "mock-1": [
+    { id: "m1", from: "empresa", text: "Hola, revisamos tu propuesta y nos gustó mucho tu experiencia con React y dashboards. ¿Podés contarnos un poco más sobre los proyectos de BI que mencionás?", time: "10:14" },
+    { id: "m2", from: "junior", text: "¡Claro! He trabajado en dos proyectos de Business Intelligence integrando APIs REST con autenticación JWT y visualizaciones en Recharts y D3.js. El más reciente actualizaba métricas cada 30 segundos en tiempo real.", time: "10:21" },
+    { id: "m3", from: "empresa", text: "Muy bien. ¿Tenés experiencia con Power BI o alguna herramienta de reporting similar?", time: "10:35" },
+    { id: "m4", from: "junior", text: "Sí, usé Power BI para reportes ejecutivos en un proyecto anterior. También conozco Looker Studio. Para este proyecto preferiría ir con una solución custom en React para tener más control del diseño.", time: "10:42" },
+    { id: "m5", from: "empresa", text: "Nos parece perfecto. ¿Tenés disponibilidad para iniciar la semana que viene?", time: "11:03" },
+    { id: "m6", from: "junior", text: "Sí, tengo disponibilidad inmediata. ¿Cuál sería el próximo paso del proceso?", time: "11:08" },
+  ],
+  "mock-2": [
+    { id: "m1", from: "empresa", text: "Hola, vimos tu propuesta para la plataforma de telemedicina. El prototipo de Figma que adjuntaste se ve muy completo.", time: "09:30" },
+    { id: "m2", from: "junior", text: "Gracias. Me enfoqué en los flujos de agendamiento y la ficha del paciente. ¿Hay algún aspecto que quieran priorizar?", time: "09:45" },
+    { id: "m3", from: "empresa", text: "Lo más urgente es el módulo de videollamada. ¿Cómo pensás abordarlo técnicamente?", time: "10:02" },
+    { id: "m4", from: "junior", text: "Usaría WebRTC con una capa de señalización simple. Para el MVP podría integrar Daily.co que ya tiene SDK para React y maneja bien la infraestructura de video.", time: "10:15" },
+  ],
 };
 
 function blankProposal(v: number): JuniorProposal {
@@ -389,7 +414,7 @@ export function GestionPage({ role }: Props) {
               </span>
             </div>
             {section === "info"    && <InfoPanel project={selectedProject} locale={locale} t={t} />}
-            {section === "chat"    && <ChatPanel isEmpresa={isEmpresa} t={t} />}
+            {section === "chat"    && <ChatPanel isEmpresa={isEmpresa} project={selectedProject} t={t} />}
             {section === "proceso" && (
               <ProcesoPanel
                 isEmpresa={isEmpresa}
@@ -489,18 +514,128 @@ function InfoPanel({ project, locale, t }: { project: ApiProject | null; locale:
 
 // ── Chat panel ────────────────────────────────────────────────────────────────
 
-function ChatPanel({ isEmpresa, t }: { isEmpresa: boolean; t: T }) {
+function ChatPanel({
+  isEmpresa, project, t,
+}: {
+  isEmpresa: boolean;
+  project: ApiProject | null;
+  t: T;
+}) {
+  const seed    = project?.id ? (MOCK_CHAT[project.id] ?? []) : [];
+  const [msgs, setMsgs]   = useState<ChatMessage[]>(seed);
+  const [draft, setDraft] = useState("");
+  const bottomRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    bottomRef.current?.scrollIntoView({ behavior: "smooth" });
+  }, [msgs]);
+
+  const me    = isEmpresa ? "empresa" : "junior";
+  const other = isEmpresa ? "junior"  : "empresa";
+
+  const otherName    = isEmpresa
+    ? (project?.empresa ? t("chat_label_junior") : t("chat_label_junior"))
+    : (project?.empresa?.nombre_comercial ?? t("chat_label_empresa"));
+  const otherInitial = isEmpresa ? "J" : (project?.empresa?.nombre_comercial?.[0]?.toUpperCase() ?? "E");
+
+  const send = () => {
+    const text = draft.trim();
+    if (!text) return;
+    const now = new Date();
+    const time = now.toLocaleTimeString("es-CR", { hour: "2-digit", minute: "2-digit" });
+    setMsgs((prev) => [...prev, { id: `u-${Date.now()}`, from: me, text, time }]);
+    setDraft("");
+  };
+
+  const handleKey = (e: React.KeyboardEvent<HTMLTextAreaElement>) => {
+    if (e.key === "Enter" && !e.shiftKey) { e.preventDefault(); send(); }
+  };
+
   return (
-    <div className="flex h-full flex-col items-center justify-center px-6 py-20 text-center">
-      <div className="mb-4 flex size-16 items-center justify-center rounded-2xl bg-primary/10">
-        <MessageSquare className="size-8 text-primary" aria-hidden="true" />
+    <div className="flex h-full flex-col">
+      {/* Header */}
+      <div className="shrink-0 flex items-center gap-3 border-b border-border bg-surface px-6 py-4">
+        <div className="flex size-9 shrink-0 items-center justify-center rounded-full bg-secondary/15 font-heading text-sm font-bold text-secondary">
+          {otherInitial}
+        </div>
+        <div className="min-w-0">
+          <p className="truncate font-body text-sm font-bold text-ink-strong">{otherName}</p>
+          <p className="font-body text-xs text-ink-muted">
+            {project?.titulo ?? ""}
+          </p>
+        </div>
       </div>
-      <h3 className="mb-2 font-heading text-lg font-extrabold tracking-tight text-ink-strong">
-        {t("chat_coming_soon_title")}
-      </h3>
-      <p className="max-w-xs font-body text-sm leading-relaxed text-ink-muted">
-        {isEmpresa ? t("chat_coming_soon_desc_empresa") : t("chat_coming_soon_desc_junior")}
-      </p>
+
+      {/* Messages */}
+      <div className="flex-1 overflow-y-auto px-6 py-6">
+        {msgs.length === 0 ? (
+          <div className="flex h-full flex-col items-center justify-center gap-3 text-center">
+            <div className="flex size-14 items-center justify-center rounded-2xl bg-primary/10">
+              <MessageSquare className="size-7 text-primary" aria-hidden="true" />
+            </div>
+            <p className="font-body text-sm text-ink-muted">{t("chat_empty")}</p>
+          </div>
+        ) : (
+          <div className="flex flex-col gap-5">
+            {msgs.map((msg) => {
+              const isMine = msg.from === me;
+              return (
+                <div key={msg.id} className={cn("flex items-end gap-2.5", isMine ? "flex-row-reverse" : "flex-row")}>
+                  {/* Avatar — only for other */}
+                  {!isMine && (
+                    <div className="mb-1 flex size-8 shrink-0 items-center justify-center rounded-full bg-secondary/15 font-heading text-xs font-bold text-secondary">
+                      {otherInitial}
+                    </div>
+                  )}
+                  <div className={cn("flex max-w-[72%] flex-col gap-1", isMine ? "items-end" : "items-start")}>
+                    <div
+                      className={cn(
+                        "rounded-2xl px-4 py-3 font-body text-sm leading-relaxed",
+                        isMine
+                          ? "rounded-br-sm bg-secondary text-white"
+                          : "rounded-bl-sm border border-border bg-surface text-ink",
+                      )}
+                    >
+                      {msg.text}
+                    </div>
+                    <span className="px-1 font-body text-[11px] text-ink-muted">{msg.time}</span>
+                  </div>
+                </div>
+              );
+            })}
+            <div ref={bottomRef} />
+          </div>
+        )}
+      </div>
+
+      {/* Input */}
+      <div className="shrink-0 border-t border-border bg-surface px-4 py-3">
+        <div className="flex items-end gap-2">
+          <textarea
+            value={draft}
+            onChange={(e) => setDraft(e.target.value)}
+            onKeyDown={handleKey}
+            placeholder={t("chat_placeholder")}
+            rows={1}
+            className="min-h-[42px] flex-1 resize-none rounded-xl border border-border bg-canvas px-4 py-2.5 font-body text-sm text-ink placeholder:text-ink-muted/60 focus:border-secondary focus:outline-none focus:ring-2 focus:ring-secondary/20"
+            style={{ maxHeight: 120, overflowY: "auto" }}
+          />
+          <button
+            onClick={send}
+            disabled={!draft.trim()}
+            aria-label={t("chat_send")}
+            className={cn(
+              "flex size-[42px] shrink-0 items-center justify-center rounded-xl transition-colors duration-[var(--duration-fast)]",
+              draft.trim()
+                ? "bg-secondary text-white hover:bg-secondary/80"
+                : "bg-border text-ink-muted cursor-not-allowed",
+            )}
+          >
+            <Send className="size-4" aria-hidden="true" />
+          </button>
+        </div>
+        <p className="mt-1.5 px-1 font-body text-[11px] text-ink-muted">{t("chat_hint")}</p>
+      </div>
     </div>
   );
 }

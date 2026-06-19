@@ -1730,6 +1730,12 @@
     "proceso_comentarios_revision_label": "Review comments",
     "proceso_cambios_guardados": "Changes saved",
     "proceso_ver_prototipo": "Prototype",
-    "junior_nueva_postulacion": "New application"
+    "junior_nueva_postulacion": "New application",
+    "chat_label_empresa": "Company",
+    "chat_label_junior": "Junior",
+    "chat_empty": "No messages yet. Start the conversation.",
+    "chat_placeholder": "Write a message... (Enter to send)",
+    "chat_send": "Send message",
+    "chat_hint": "Enter to send · Shift+Enter for new line"
   }
 }

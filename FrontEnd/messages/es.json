@@ -1784,6 +1784,12 @@
     "proceso_comentarios_revision_label": "Comentarios de revisión",
     "proceso_cambios_guardados": "Cambios guardados",
     "proceso_ver_prototipo": "Prototipo",
-    "junior_nueva_postulacion": "Nueva postulación"
+    "junior_nueva_postulacion": "Nueva postulación",
+    "chat_label_empresa": "Empresa",
+    "chat_label_junior": "Junior",
+    "chat_empty": "Aún no hay mensajes. Iniciá la conversación.",
+    "chat_placeholder": "Escribí un mensaje... (Enter para enviar)",
+    "chat_send": "Enviar mensaje",
+    "chat_hint": "Enter para enviar · Shift+Enter para nueva línea"
   }
 }
