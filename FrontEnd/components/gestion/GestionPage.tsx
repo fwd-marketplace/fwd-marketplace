@@ -235,9 +235,9 @@ function buildEmpresaStudents(
 
 // ── Main component ────────────────────────────────────────────────────────────
 
-interface Props { role: ApiRoleName | null }
+interface Props { role: ApiRoleName | null; userId: string | null }
 
-export function GestionPage({ role }: Props) {
+export function GestionPage({ role, userId }: Props) {
   const t      = useTranslations("gestion_page");
   const locale = useLocale();
   const isEmpresa = role === "company";
@@ -530,8 +530,7 @@ function ChatPanel({
     bottomRef.current?.scrollIntoView({ behavior: "smooth" });
   }, [msgs]);
 
-  const me    = isEmpresa ? "empresa" : "junior";
-  const other = isEmpresa ? "junior"  : "empresa";
+  const me = isEmpresa ? "empresa" : "junior";
 
   const otherName    = isEmpresa
     ? (project?.empresa ? t("chat_label_junior") : t("chat_label_junior"))

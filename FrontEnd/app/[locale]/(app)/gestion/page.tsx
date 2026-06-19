@@ -22,7 +22,8 @@ export default async function GestionRoute({ params, searchParams }: Props) {
     : demo === "junior" ? "student"
     : null;
 
-  const role = demoRole ?? authRole;
+  const role   = demoRole ?? authRole;
+  const userId = profile?.id ?? null;
 
-  return <GestionPage role={role} />;
+  return <GestionPage role={role} userId={userId} />;
 }
