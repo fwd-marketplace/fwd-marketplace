@@ -1,0 +1,317 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<script src="./support.js"></script>
+</head>
+<body>
+<template id="__bundler_thumbnail" data-bg-color="#6C3AAB">
+  <svg viewBox="0 0 1200 800" xmlns="http://www.w3.org/2000/svg">
+    <rect width="1200" height="800" fill="#6C3AAB"/>
+    <circle cx="430" cy="320" r="40" fill="#DDF1EF"/>
+    <text x="430" y="333" font-family="sans-serif" font-size="30" font-weight="700" fill="#159B9B" text-anchor="middle">DR</text>
+    <rect x="500" y="300" width="230" height="20" rx="10" fill="#ffffff"/>
+    <rect x="500" y="334" width="140" height="15" rx="7" fill="#ffffff" opacity="0.5"/>
+    <rect x="770" y="298" width="150" height="44" rx="22" fill="#D7F3F0"/>
+    <circle cx="430" cy="470" r="34" fill="#ffffff" opacity="0.55"/>
+    <text x="430" y="481" font-family="sans-serif" font-size="24" font-weight="700" fill="#6C3AAB" text-anchor="middle">AL</text>
+    <rect x="500" y="455" width="190" height="18" rx="9" fill="#ffffff" opacity="0.6"/>
+    <rect x="770" y="450" width="130" height="40" rx="20" fill="#FCEFD8"/>
+  </svg>
+</template>
+<x-dc>
+<helmet>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <style>
+    *{box-sizing:border-box;}
+    html,body{margin:0;padding:0;font-family:'Plus Jakarta Sans',system-ui,sans-serif;-webkit-font-smoothing:antialiased;}
+    textarea::placeholder{color:#A9A2B8;}
+  </style>
+</helmet>
+
+<div style="display:flex; min-height:100vh; background:#fff; color:#101828;">
+
+  <aside style="width:300px; flex:none; background:#6C3AAB; color:#fff; display:flex; flex-direction:column; padding:30px 24px; position:sticky; top:0; height:100vh;">
+    <div style="display:flex; align-items:center; gap:8px; font-size:12px; font-weight:700; letter-spacing:.07em; color:rgba(255,255,255,.7); text-transform:uppercase;">
+      <span style="font-size:16px; line-height:1;">&#8592;</span> Todos los proyectos
+    </div>
+    <div style="margin-top:24px;">
+      <div style="font-size:19px; font-weight:800; line-height:1.3;">Dashboard de an&#225;lisis de ventas en tiempo real.</div>
+      <div style="font-size:12px; font-weight:700; letter-spacing:.13em; color:rgba(255,255,255,.6); margin-top:7px;">AN&#193;LISIS DE DATOS</div>
+    </div>
+    <nav style="margin-top:36px; display:flex; flex-direction:column; gap:6px;">
+      <div style="display:flex; align-items:center; gap:13px; padding:12px 15px; border-radius:12px; font-size:15px; font-weight:600; color:rgba(255,255,255,.78);">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><path d="M14 2v6h6"/></svg>
+        Informaci&#243;n
+      </div>
+      <div style="display:flex; align-items:center; gap:13px; padding:12px 15px; border-radius:12px; font-size:15px; font-weight:600; color:rgba(255,255,255,.78);">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
+        Chat
+      </div>
+      <div style="display:flex; align-items:center; gap:13px; padding:12px 15px; border-radius:12px; font-size:15px; font-weight:700; color:#fff; background:rgba(255,255,255,.17);">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="6" cy="6" r="3"/><circle cx="6" cy="18" r="3"/><circle cx="18" cy="8" r="3"/><path d="M6 9v6"/><path d="M18 11a6 6 0 0 1-6 6H9"/></svg>
+        Proceso
+      </div>
+    </nav>
+    <div style="margin-top:auto;">
+      <div style="width:46px; height:46px; border-radius:50%; background:#161618; color:#fff; display:flex; align-items:center; justify-content:center; font-weight:700; font-size:16px;">N</div>
+    </div>
+  </aside>
+
+  <main style="flex:1; overflow-y:auto; height:100vh;">
+    <div style="max-width:1180px; margin:0 auto; padding:42px 56px 90px;">
+
+      <div style="font-size:12px; font-weight:700; letter-spacing:.1em; color:#98A2B3; text-transform:uppercase;">Propuestas recibidas</div>
+      <div style="font-size:30px; font-weight:800; margin-top:6px;">{{ countLabel }}</div>
+
+      <div style="margin-top:26px; border-top:1px solid #ECECF2;">
+        <sc-for list="{{ rows }}" as="s" hint-placeholder-count="4">
+          <div style="border-bottom:1px solid #ECECF2; background:{{ s.rowBg }};">
+
+            <div onClick="{{ s.onToggle }}" style="display:flex; align-items:center; gap:16px; padding:20px 8px; cursor:pointer;">
+              <div style="width:48px; height:48px; flex:none; border-radius:50%; background:{{ s.avBg }}; color:{{ s.avFg }}; display:flex; align-items:center; justify-content:center; font-weight:700; font-size:15px;">{{ s.initials }}</div>
+              <div style="flex:1; min-width:0;">
+                <div style="display:flex; align-items:center; gap:10px;">
+                  <span style="font-size:16px; font-weight:700; color:{{ s.nameColor }};">{{ s.name }}</span>
+                  <span style="font-size:12px; font-weight:600; color:#98A2B3; background:#F1EFF6; padding:2px 9px; border-radius:999px;">{{ s.versionsLabel }}</span>
+                </div>
+                <div style="font-size:13px; color:#98A2B3; margin-top:3px;">{{ s.date }}</div>
+              </div>
+              <span style="display:inline-flex; align-items:center; padding:8px 18px; border-radius:999px; font-size:13px; font-weight:700; white-space:nowrap; background:{{ s.badgeBg }}; color:{{ s.badgeFg }};">{{ s.badgeText }}</span>
+              <sc-if value="{{ s.adjudicada }}" hint-placeholder-val="changes">
+                <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#15A0A0" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><path d="M8 12l3 3 5-6"/></svg>
+              </sc-if>
+              <span style="font-size:13px; color:#98A2B3; width:18px; text-align:center;">{{ s.chevron }}</span>
+            </div>
+
+            <sc-if value="{{ s.expanded }}" hint-placeholder-val="changes">
+              <div style="padding:4px 8px 30px 80px;">
+                <div style="font-size:12px; font-weight:700; letter-spacing:.09em; color:#98A2B3; text-transform:uppercase; margin-bottom:22px;">Propuestas del estudiante</div>
+
+                <sc-for list="{{ s.proposals }}" as="p" hint-placeholder-count="1">
+                  <div style="display:flex; gap:18px; align-items:stretch;">
+
+                    <div style="display:flex; flex-direction:column; align-items:center; width:32px; flex:none; padding-top:1px;">
+                      <div style="width:30px; height:30px; border-radius:50%; flex:none; display:flex; align-items:center; justify-content:center; font-size:14px; font-weight:800; line-height:1; color:#fff; background:{{ p.circleBg }}; border:{{ p.circleBorder }};">{{ p.circleIcon }}</div>
+                      <sc-if value="{{ p.showLine }}" hint-placeholder-val="changes">
+                        <div style="flex:1; width:2px; background:#E7E3EF; margin-top:8px; border-radius:2px; min-height:20px;"></div>
+                      </sc-if>
+                    </div>
+
+                    <div style="flex:1; padding-bottom:28px; min-width:0;">
+                      <div onClick="{{ p.onToggle }}" style="display:flex; align-items:center; justify-content:space-between; gap:12px; cursor:pointer;">
+                        <div style="display:flex; align-items:center; gap:9px;">
+                          <span style="font-size:16px; font-weight:700; color:#101828;">{{ p.title }}</span>
+                          <span style="font-size:13px; color:#98A2B3;">&#183; {{ p.date }}</span>
+                          <span style="font-size:11px; color:#98A2B3;">{{ p.chevron }}</span>
+                        </div>
+                        <span style="display:inline-flex; align-items:center; padding:7px 15px; border-radius:999px; font-size:13px; font-weight:700; white-space:nowrap; background:{{ p.badgeBg }}; color:{{ p.badgeFg }};">{{ p.badgeText }}</span>
+                      </div>
+
+                      <sc-if value="{{ p.expanded }}" hint-placeholder-val="changes">
+                        <div style="margin-top:16px; max-width:840px;">
+                          <label style="display:block; font-size:13px; font-weight:700; color:#475467; margin-bottom:8px;">Descripci&#243;n</label>
+                          <div style="border:1.5px solid #E8E5EF; border-radius:12px; padding:14px 16px; font-size:14px; color:#344054; line-height:1.65; background:#FBFAFD;">{{ p.desc }}</div>
+
+                          <label style="display:block; font-size:13px; font-weight:700; color:#475467; margin:20px 0 8px;">Ver prototipo / portafolio</label>
+                          <div style="border:1.5px solid #E8E5EF; border-radius:14px; overflow:hidden; background:#fff;">
+                            <div style="display:flex; align-items:center; gap:7px; padding:11px 14px; background:#F4F3F7; border-bottom:1px solid #ECECF2;">
+                              <span style="width:11px; height:11px; border-radius:50%; background:#F2655A;"></span>
+                              <span style="width:11px; height:11px; border-radius:50%; background:#F5BE4F;"></span>
+                              <span style="width:11px; height:11px; border-radius:50%; background:#62C554;"></span>
+                              <div style="flex:1; min-width:0; margin-left:10px; background:#fff; border:1px solid #E8E5EF; border-radius:7px; padding:6px 12px; font-size:12px; color:#98A2B3; overflow:hidden; text-overflow:ellipsis; white-space:nowrap;">{{ p.link }}</div>
+                              <a href="{{ p.link }}" target="_blank" style="display:inline-flex; align-items:center; gap:6px; flex:none; color:#4F63C9; font-weight:700; font-size:12px; text-decoration:none;">
+                                <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/><path d="M15 3h6v6"/><path d="M10 14L21 3"/></svg>
+                                Abrir
+                              </a>
+                            </div>
+                            <div style="padding:28px; min-height:150px; display:flex; flex-direction:column; gap:10px; background:linear-gradient(180deg,#FCFBFE,#F7F6FB);">
+                              <div style="font-size:20px; font-weight:800; color:#101828;">{{ p.previewName }}</div>
+                              <div style="display:inline-flex; align-self:flex-start; font-size:12px; font-weight:600; color:#6C3AAB; background:#F0E9F8; padding:5px 12px; border-radius:999px;">{{ p.previewProject }}</div>
+                              <div style="font-size:13px; color:#667085; line-height:1.6; margin-top:4px;">{{ p.desc }}</div>
+                            </div>
+                          </div>
+
+                          <label style="display:block; font-size:13px; font-weight:700; color:#475467; margin:22px 0 8px;">Comentarios de revisi&#243;n</label>
+                          <textarea placeholder="Escribe comentarios o correcciones para el estudiante&#8230;" value="{{ p.comment }}" onChange="{{ p.onComment }}" style="display:block; width:100%; min-height:96px; resize:vertical; border:1.5px solid #E4E0EC; border-radius:12px; padding:13px 15px; font-size:14px; font-family:inherit; color:#101828; outline:none; background:#fff;" style-focus="border-color:#6C3AAB;"></textarea>
+
+                          <label style="display:block; font-size:13px; font-weight:700; color:#475467; margin:20px 0 8px;">Estado de esta versi&#243;n</label>
+                          <div style="display:flex; gap:10px; flex-wrap:wrap;">
+                            <button onClick="{{ p.setEnviada }}" style="padding:9px 16px; border-radius:10px; font-weight:700; font-size:13px; cursor:pointer; font-family:inherit; background:{{ p.btnEnviadaBg }}; color:{{ p.btnEnviadaFg }}; border:1.5px solid {{ p.btnEnviadaBd }};">Enviada</button>
+                            <button onClick="{{ p.setRevision }}" style="padding:9px 16px; border-radius:10px; font-weight:700; font-size:13px; cursor:pointer; font-family:inherit; background:{{ p.btnRevisionBg }}; color:{{ p.btnRevisionFg }}; border:1.5px solid {{ p.btnRevisionBd }};">En revisi&#243;n</button>
+                            <button onClick="{{ p.setCambios }}" style="padding:9px 16px; border-radius:10px; font-weight:700; font-size:13px; cursor:pointer; font-family:inherit; background:{{ p.btnCambiosBg }}; color:{{ p.btnCambiosFg }}; border:1.5px solid {{ p.btnCambiosBd }};">Solicitar cambios</button>
+                            <button onClick="{{ p.setAdjudicada }}" style="padding:9px 16px; border-radius:10px; font-weight:700; font-size:13px; cursor:pointer; font-family:inherit; background:{{ p.btnAdjBg }}; color:{{ p.btnAdjFg }}; border:1.5px solid {{ p.btnAdjBd }};">Adjudicar</button>
+                            <button onClick="{{ p.setNoSel }}" style="padding:9px 16px; border-radius:10px; font-weight:700; font-size:13px; cursor:pointer; font-family:inherit; background:{{ p.btnNoBg }}; color:{{ p.btnNoFg }}; border:1.5px solid {{ p.btnNoBd }};">No seleccionar</button>
+                          </div>
+
+                          <sc-if value="{{ p.savedNote }}" hint-placeholder-val="changes">
+                            <div style="display:inline-flex; align-items:center; gap:8px; margin-top:16px; font-size:13px; font-weight:600; color:#1E9460;">
+                              <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6L9 17l-5-5"/></svg>
+                              {{ p.savedNote }}
+                            </div>
+                          </sc-if>
+                        </div>
+                      </sc-if>
+                    </div>
+                  </div>
+                </sc-for>
+              </div>
+            </sc-if>
+
+          </div>
+        </sc-for>
+      </div>
+
+    </div>
+  </main>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props="{
+  &quot;$preview&quot;: { &quot;width&quot;: 1280, &quot;height&quot;: 860 }
+}">
+class Component extends DCLogic {
+  state = {
+    students: [
+      { id:1, name:'Diego Ram\u00edrez', initials:'DR', date:'12 de junio', expanded:true,
+        proposals: [
+          { v:1, status:'cambios', date:'9 de junio', expanded:false,
+            desc:'Propongo entregar el m\u00f3dulo con React y TypeScript en una sola fase de cuatro semanas, integrando los KPIs y las alertas autom\u00e1ticas.',
+            link:'https://portafolio.diego.dev/v1', previewName:'Dashboard de Ventas (v1)', previewProject:'An\u00e1lisis de datos',
+            comment:'Buen perfil, pero necesitamos dividir la entrega en fases y confirmar la integraci\u00f3n con la API de pagos. Reenv\u00eda una nueva versi\u00f3n.' },
+          { v:2, status:'adjudicada', date:'12 de junio', expanded:true,
+            desc:'Tengo 2 a\u00f1os de experiencia en React y TypeScript, y he construido dashboards financieros con integraci\u00f3n de APIs REST y visualizaciones din\u00e1micas. Entrego el m\u00f3dulo en dos fases: primero los KPIs cr\u00edticos con filtros b\u00e1sicos, luego las alertas autom\u00e1ticas y el panel de roles. Trabajo con metodolog\u00eda \u00e1gil y entrego actualizaciones cada 3 d\u00edas.',
+            link:'https://portafolio.diego.dev/v2', previewName:'Dashboard de Ventas en Tiempo Real', previewProject:'An\u00e1lisis de datos',
+            comment:'Excelente alcance y experiencia comprobable. Aprobamos la propuesta.' }
+        ] },
+      { id:2, name:'Ana L\u00f3pez', initials:'AL', date:'13 de junio', expanded:false,
+        proposals: [
+          { v:1, status:'cambios', date:'10 de junio', expanded:false,
+            desc:'Enfoque con D3.js y backend en Node. Incluye pruebas unitarias desde la primera entrega.',
+            link:'https://ana-lopez.design/v1', previewName:'Visualizador de Reportes (v1)', previewProject:'An\u00e1lisis de datos',
+            comment:'Falta detalle del cronograma y del manejo de estados de carga. Ajusta y reenv\u00eda.' },
+          { v:2, status:'revision', date:'13 de junio', expanded:false,
+            desc:'Versi\u00f3n ajustada: cronograma de 5 semanas con entregas parciales, manejo de estados de carga y documentaci\u00f3n t\u00e9cnica del componente de reportes.',
+            link:'https://ana-lopez.design/v2', previewName:'Visualizador de Reportes D3', previewProject:'An\u00e1lisis de datos',
+            comment:'' }
+        ] },
+      { id:3, name:'Carlos Mart\u00ednez', initials:'CM', date:'15 de junio', expanded:false,
+        proposals: [
+          { v:1, status:'enviada', date:'15 de junio', expanded:false,
+            desc:'Construcci\u00f3n del dashboard completo con Next.js y Tailwind, priorizando rendimiento y accesibilidad. Integro el sistema de autenticaci\u00f3n existente y entrego en cuatro semanas.',
+            link:'https://carlos.codes', previewName:'Dashboard Next.js + Tailwind', previewProject:'An\u00e1lisis de datos',
+            comment:'' }
+        ] },
+      { id:4, name:'Sofia Vargas', initials:'SV', date:'11 de junio', expanded:false,
+        proposals: [
+          { v:1, status:'noseleccionada', date:'11 de junio', expanded:false,
+            desc:'Soluci\u00f3n basada en Vue y Chart.js, con foco en la experiencia m\u00f3vil. Incluye una fase de descubrimiento de una semana antes del desarrollo.',
+            link:'https://sofiavargas.io', previewName:'App de Reportes M\u00f3viles', previewProject:'An\u00e1lisis de datos',
+            comment:'Gracias por participar. En esta ocasi\u00f3n elegimos otra propuesta.' }
+        ] }
+    ],
+    saved: null
+  };
+
+  toggleStudent(id) {
+    this.setState(s => ({ students: s.students.map(x => x.id === id ? { ...x, expanded: !x.expanded } : x) }));
+  }
+  toggleProposal(id, v) {
+    this.setState(s => ({ students: s.students.map(x => x.id !== id ? x : { ...x, proposals: x.proposals.map(p => p.v === v ? { ...p, expanded: !p.expanded } : p) }) }));
+  }
+  setStatus(id, v, status) {
+    this.setState(s => ({ students: s.students.map(x => x.id !== id ? x : { ...x, proposals: x.proposals.map(p => p.v === v ? { ...p, status } : p) }), saved: id + '-' + v }));
+  }
+  setComment(id, v, val) {
+    this.setState(s => ({ students: s.students.map(x => x.id !== id ? x : { ...x, proposals: x.proposals.map(p => p.v === v ? { ...p, comment: val } : p) }), saved: id + '-' + v }));
+  }
+
+  meta(st) {
+    return {
+      enviada:        { text:'Enviada',             bg:'#EAEEFF', fg:'#4F63C9' },
+      revision:       { text:'En revisi\u00f3n',     bg:'#FCEFD8', fg:'#C2871A' },
+      cambios:        { text:'Cambios solicitados', bg:'#FCE4DD', fg:'#C7492B' },
+      adjudicada:     { text:'Adjudicada',          bg:'#D7F3F0', fg:'#159B9B' },
+      noseleccionada: { text:'No seleccionada',     bg:'#FBE3EE', fg:'#C2659C' }
+    }[st];
+  }
+
+  overall(props) {
+    if (props.some(p => p.status === 'adjudicada')) return 'adjudicada';
+    return props[props.length - 1].status;
+  }
+
+  circle(st) {
+    if (st === 'enviada' || st === 'revision') return { bg:'#15B4B4', border:'none', icon:'\u2713' };
+    if (st === 'cambios') return { bg:'#E0962A', border:'none', icon:'!' };
+    if (st === 'adjudicada') return { bg:'#1E9460', border:'none', icon:'\u2713' };
+    if (st === 'noseleccionada') return { bg:'#B9B2C6', border:'none', icon:'\u2715' };
+    return { bg:'#fff', border:'2px solid #C9C2D6', icon:'' };
+  }
+
+  selBtn(active, p) {
+    return active ? { bg:p.bg, fg:p.fg, bd:p.bg } : { bg:'#fff', fg:'#667085', bd:'#E0DCE8' };
+  }
+
+  renderVals() {
+    const list = this.state.students;
+    const saved = this.state.saved;
+
+    const rows = list.map(s => {
+      const ov = this.overall(s.proposals);
+      const m = this.meta(ov);
+      const dim = ov === 'noseleccionada';
+      const n = s.proposals.length;
+
+      const proposals = s.proposals.map((p, idx) => {
+        const pm = this.meta(p.status);
+        const c = this.circle(p.status);
+        const be = this.selBtn(p.status==='enviada',        {bg:'#EAEEFF',fg:'#4F63C9'});
+        const br = this.selBtn(p.status==='revision',       {bg:'#FCEFD8',fg:'#C2871A'});
+        const bc = this.selBtn(p.status==='cambios',        {bg:'#FCE4DD',fg:'#C7492B'});
+        const ba = this.selBtn(p.status==='adjudicada',     {bg:'#D7F3F0',fg:'#159B9B'});
+        const bn = this.selBtn(p.status==='noseleccionada', {bg:'#FBE3EE',fg:'#C2659C'});
+        return {
+          ...p,
+          title: 'Propuesta ' + p.v,
+          chevron: p.expanded ? '\u25B2' : '\u25BC',
+          badgeText: pm.text, badgeBg: pm.bg, badgeFg: pm.fg,
+          circleBg: c.bg, circleBorder: c.border, circleIcon: c.icon,
+          showLine: idx < n - 1,
+          savedNote: saved === (s.id + '-' + p.v) ? 'Cambios guardados' : '',
+          onToggle: () => this.toggleProposal(s.id, p.v),
+          onComment: (e) => this.setComment(s.id, p.v, e.target.value),
+          setEnviada: () => this.setStatus(s.id, p.v, 'enviada'),
+          setRevision: () => this.setStatus(s.id, p.v, 'revision'),
+          setCambios: () => this.setStatus(s.id, p.v, 'cambios'),
+          setAdjudicada: () => this.setStatus(s.id, p.v, 'adjudicada'),
+          setNoSel: () => this.setStatus(s.id, p.v, 'noseleccionada'),
+          btnEnviadaBg:be.bg, btnEnviadaFg:be.fg, btnEnviadaBd:be.bd,
+          btnRevisionBg:br.bg, btnRevisionFg:br.fg, btnRevisionBd:br.bd,
+          btnCambiosBg:bc.bg, btnCambiosFg:bc.fg, btnCambiosBd:bc.bd,
+          btnAdjBg:ba.bg, btnAdjFg:ba.fg, btnAdjBd:ba.bd,
+          btnNoBg:bn.bg, btnNoFg:bn.fg, btnNoBd:bn.bd
+        };
+      });
+
+      return {
+        ...s, proposals,
+        versionsLabel: n + (n === 1 ? ' versi\u00f3n' : ' versiones'),
+        badgeText: m.text, badgeBg: m.bg, badgeFg: m.fg,
+        adjudicada: ov === 'adjudicada',
+        chevron: s.expanded ? '\u25B2' : '\u25BC',
+        rowBg: s.expanded ? '#FAFAFC' : '#fff',
+        nameColor: dim ? '#98A2B3' : '#101828',
+        avBg: dim ? '#EEF0F4' : '#DDF1EF',
+        avFg: dim ? '#98A2B3' : '#159B9B',
+        onToggle: () => this.toggleStudent(s.id)
+      };
+    });
+
+    return { rows, countLabel: list.length + ' propuestas' };
+  }
+}
+</script>
+</body>
+</html>
