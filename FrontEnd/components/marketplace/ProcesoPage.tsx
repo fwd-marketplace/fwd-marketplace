@@ -665,246 +665,227 @@ export function ProcesoPage({
 
           /* ── EMPRESA VIEW ─────────────────────────────────────────────── */
           role === "company" ? (
-            <div className="px-8 py-8">
-              {/* Header */}
-              <div className="mb-8">
-                <h2 className="font-heading text-2xl font-extrabold tracking-tight text-ink-strong">
-                  {tp("empresa_proposals_title")}<span className="text-primary" aria-hidden="true">.</span>
-                </h2>
-                <p className="mt-1 font-body text-sm text-ink-muted">{localOffers.length} propuestas recibidas</p>
+            <div className="divide-y divide-border">
+              {/* ── Header strip ── */}
+              <div className="flex items-center justify-between px-8 py-5">
+                <div>
+                  <h2 className="font-heading text-xl font-extrabold tracking-tight text-ink-strong">
+                    {tp("empresa_proposals_title")}<span className="text-primary" aria-hidden="true">.</span>
+                  </h2>
+                  <p className="mt-0.5 font-body text-sm text-ink-muted">{localOffers.length} propuestas recibidas</p>
+                </div>
               </div>
 
+              {/* ── Junior rows ── */}
               {localOffers.length === 0 ? (
-                <p className="font-body text-base text-ink-muted">{tp("empresa_proposals_empty")}</p>
+                <div className="px-8 py-12">
+                  <p className="font-body text-base text-ink-muted">{tp("empresa_proposals_empty")}</p>
+                </div>
               ) : (() => {
-                // Sort: adjudicada → en_revision → enviada → no_seleccionada
                 const STATE_ORDER: Record<OfferState, number> = { adjudicada: 0, en_revision: 1, enviada: 2, no_seleccionada: 3 };
                 const sorted = [...localOffers].sort((a, b) => STATE_ORDER[a.estado.nombre] - STATE_ORDER[b.estado.nombre]);
-                const hasAdjudicada = sorted.some((o) => o.estado.nombre === "adjudicada");
 
-                return (
-                  <div className="relative">
-                    {/* Continuous vertical line */}
-                    <div className="absolute left-5 top-5 bottom-5 w-0.5 bg-border" aria-hidden="true" />
+                return sorted.map((oferta) => {
+                  const isExpanded = expandedOfferId === oferta.id;
+                  const isAdj      = oferta.estado.nombre === "adjudicada";
+                  const isRejected = oferta.estado.nombre === "no_seleccionada";
+                  const cfg        = OFFER_STATE_CONFIG[oferta.estado.nombre];
+                  const initials   = getInitials(oferta.junior.nombre, oferta.junior.apellido1);
 
-                    <div>
-                      {sorted.map((oferta, index) => {
-                        const isSelected = expandedOfferId === oferta.id;
-                        const isAdj      = oferta.estado.nombre === "adjudicada";
-                        const isRevision = oferta.estado.nombre === "en_revision";
-                        const isRejected = oferta.estado.nombre === "no_seleccionada";
-                        const cfg        = OFFER_STATE_CONFIG[oferta.estado.nombre];
+                  return (
+                    <div
+                      key={oferta.id}
+                      className={cn(
+                        "transition-opacity duration-[var(--duration-base)]",
+                        isRejected && !isExpanded && "opacity-50"
+                      )}
+                    >
+                      {/* ── Row header (always visible) ── */}
+                      <button
+                        type="button"
+                        onClick={() => setExpandedOfferId(isExpanded ? null : oferta.id)}
+                        className={cn(
+                          "flex w-full items-center gap-4 px-8 py-4 text-left transition-colors duration-[var(--duration-fast)]",
+                          isAdj ? "bg-accent/5 hover:bg-accent/8" : "hover:bg-surface-sunken"
+                        )}
+                      >
+                        {/* Avatar */}
+                        <div className={cn(
+                          "flex size-10 shrink-0 items-center justify-center rounded-full font-heading text-sm font-extrabold",
+                          isAdj    ? "bg-accent/20 text-accent"
+                          : isRejected ? "bg-surface-sunken text-ink-muted"
+                          : "bg-primary/10 text-primary"
+                        )}>
+                          {initials}
+                        </div>
 
-                        // Circle visual
-                        const circleClass = isAdj
-                          ? "bg-accent text-white shadow-[0_0_0_3px_var(--accent)]"
-                          : isRevision
-                            ? "border-2 border-warning bg-warning/10 text-warning"
-                            : isRejected
-                              ? "border border-border bg-canvas text-ink-subtle"
-                              : "border-2 border-primary/40 bg-primary/5 text-primary";
-
-                        // Items after adjudicada are grayed (the "passed" ones)
-                        const isGrayed = !isAdj && hasAdjudicada && !isRevision;
-
-                        return (
-                          <div key={oferta.id} className={cn("transition-opacity duration-[var(--duration-base)]", isGrayed && "opacity-45")}>
-                            {/* Step row */}
-                            <button
-                              type="button"
-                              onClick={() => setExpandedOfferId(isSelected ? null : oferta.id)}
-                              className="relative flex w-full items-center gap-4 py-3 text-left"
-                            >
-                              {/* Circle node */}
-                              <div className={cn(
-                                "relative z-10 flex size-10 shrink-0 items-center justify-center rounded-full transition-all duration-[var(--duration-base)] ease-[var(--ease-out)]",
-                                circleClass,
-                                isSelected && !isAdj && "scale-110"
-                              )}>
-                                {isAdj     ? <CheckCircle2 className="size-5" aria-hidden="true" />
-                                : isRevision ? <Clock className="size-4" aria-hidden="true" />
-                                : isRejected ? <X className="size-4" aria-hidden="true" />
-                                : <Circle className="size-4" aria-hidden="true" />}
-                              </div>
-
-                              {/* Label */}
-                              <div className="min-w-0 flex-1">
-                                <div className="flex flex-wrap items-center gap-2">
-                                  <span className={cn(
-                                    "font-heading text-base font-bold leading-tight",
-                                    isAdj ? "text-ink-strong" : isRejected ? "text-ink-muted" : "text-ink-strong"
-                                  )}>
-                                    {oferta.junior.nombre} {oferta.junior.apellido1}
-                                  </span>
-                                  <span className={cn("rounded-full border px-2.5 py-0.5 font-body text-xs font-bold", cfg.className)}>
-                                    {cfg.label}
-                                  </span>
-                                </div>
-                                {!isSelected && (
-                                  <p className="mt-0.5 font-body text-sm text-ink-muted line-clamp-1">
-                                    {oferta.propuesta.slice(0, 90)}…
-                                  </p>
-                                )}
-                              </div>
-
-                              {/* Expand arrow */}
-                              <ChevronDown className={cn(
-                                "size-4 shrink-0 text-ink-subtle transition-transform duration-[var(--duration-fast)]",
-                                isSelected && "rotate-180"
-                              )} aria-hidden="true" />
-                            </button>
-
-                            {/* Expanded inline content */}
-                            {isSelected && (
-                              <div className="mb-4 ml-14 space-y-4 rounded-2xl border border-border bg-surface p-5 shadow-[var(--shadow-soft)]">
-                                {/* Date */}
-                                <p className="font-body text-xs text-ink-subtle">
-                                  {new Date(oferta.fecha_envio).toLocaleDateString(locale, { day: "numeric", month: "long", year: "numeric" })}
-                                </p>
-
-                                {/* Full proposal */}
-                                <p className="whitespace-pre-line font-body text-base leading-relaxed text-ink">
-                                  {oferta.propuesta}
-                                </p>
-
-                                {oferta.prototipo_url && (
-                                  <a href={oferta.prototipo_url} target="_blank" rel="noopener noreferrer"
-                                    className="inline-flex items-center gap-1.5 font-body text-sm font-semibold text-primary hover:underline">
-                                    Ver prototipo <ExternalLink className="size-3.5" aria-hidden="true" />
-                                  </a>
-                                )}
-
-                                {/* Action buttons */}
-                                {!isRejected && !isAdj && (
-                                  <div className="flex flex-wrap gap-3 border-t border-border pt-4">
-                                    {oferta.estado.nombre === "enviada" && (
-                                      <>
-                                        <button type="button"
-                                          onClick={() => decideOffer(oferta.id, "revision")}
-                                          className="rounded-full bg-primary px-5 py-2.5 font-body text-sm font-semibold text-white hover:bg-secondary transition-colors">
-                                          {tp("empresa_move_to_review")}
-                                        </button>
-                                        <button type="button"
-                                          onClick={() => decideOffer(oferta.id, "rechazar")}
-                                          className="rounded-full border border-magenta/30 px-5 py-2.5 font-body text-sm font-semibold text-magenta hover:bg-magenta/5 transition-colors">
-                                          {tp("empresa_reject")}
-                                        </button>
-                                      </>
-                                    )}
-                                    {oferta.estado.nombre === "en_revision" && (
-                                      <>
-                                        <button type="button"
-                                          onClick={() => decideOffer(oferta.id, "adjudicar")}
-                                          className="rounded-full bg-accent px-5 py-2.5 font-body text-sm font-semibold text-white hover:bg-accent/80 transition-colors">
-                                          {tp("empresa_adjudicate")}
-                                        </button>
-                                        <button type="button"
-                                          onClick={() => decideOffer(oferta.id, "rechazar")}
-                                          className="rounded-full border border-magenta/30 px-5 py-2.5 font-body text-sm font-semibold text-magenta hover:bg-magenta/5 transition-colors">
-                                          {tp("empresa_reject")}
-                                        </button>
-                                      </>
-                                    )}
-                                  </div>
-                                )}
-
-                                {/* Entregables + chat (solo adjudicada) */}
-                                {isAdj && (
-                                  <div className="space-y-4 border-t border-border pt-4">
-                                    <h4 className="flex items-center gap-2 font-heading text-sm font-bold uppercase tracking-wider text-ink-muted">
-                                      <PackageCheck className="size-4" aria-hidden="true" />
-                                      {tm("entregable_label")}
-                                    </h4>
-
-                                    {localEntregablesE.length === 0 && (
-                                      <p className="font-body text-sm text-ink-subtle">El junior todavía no ha enviado entregables.</p>
-                                    )}
-
-                                    <div className="space-y-2">
-                                      {[...localEntregablesE].sort((a, b) => b.version - a.version).map((ent) => {
-                                        const entCfg = ENTREGABLE_STATE_CONFIG[ent.estado.nombre];
-                                        return (
-                                          <div key={ent.id}
-                                            className="flex flex-wrap items-center justify-between gap-3 rounded-xl border border-border bg-surface-sunken px-5 py-3">
-                                            <div className="flex flex-wrap items-center gap-3">
-                                              <span className="font-body text-sm font-bold text-ink-muted">v{ent.version} · {tm(`entregable_tipo_${ent.tipo}`)}</span>
-                                              <span className={cn("rounded-full px-3 py-0.5 font-body text-sm font-semibold", entCfg.className)}>{entCfg.label}</span>
-                                            </div>
-                                            <div className="flex items-center gap-2">
-                                              {ent.url && (
-                                                <a href={ent.url} target="_blank" rel="noopener noreferrer"
-                                                  className="inline-flex items-center gap-1 font-body text-sm font-semibold text-primary hover:underline">
-                                                  Ver <ExternalLink className="size-3" aria-hidden="true" />
-                                                </a>
-                                              )}
-                                              {(ent.estado.nombre === "enviado" || ent.estado.nombre === "en_revision") && (
-                                                <>
-                                                  <button type="button"
-                                                    onClick={() => decideEntregableEmpresa(ent.id, "aprobar")}
-                                                    className="rounded-full bg-accent px-3 py-1 font-body text-xs font-semibold text-white hover:bg-accent/80">
-                                                    {tp("empresa_entregable_approve")}
-                                                  </button>
-                                                  <button type="button"
-                                                    onClick={() => decideEntregableEmpresa(ent.id, "cambios")}
-                                                    className="rounded-full border border-warning/30 px-3 py-1 font-body text-xs font-semibold text-warning hover:bg-warning/5">
-                                                    {tp("empresa_entregable_changes")}
-                                                  </button>
-                                                </>
-                                              )}
-                                            </div>
-                                          </div>
-                                        );
-                                      })}
-                                    </div>
-
-                                    {/* Revision chat */}
-                                    <div>
-                                      <h4 className="mb-3 flex items-center gap-2 font-heading text-sm font-bold uppercase tracking-wider text-ink-muted">
-                                        <MessageCircle className="size-4" aria-hidden="true" />
-                                        {tp("empresa_revision_title")}
-                                      </h4>
-                                      <div className="mb-3 max-h-48 space-y-3 overflow-y-auto rounded-xl bg-surface-sunken p-4">
-                                        {revisionMessages.map((m) => (
-                                          <div key={m.id} className={cn("flex gap-2", m.from === "empresa" && "flex-row-reverse")}>
-                                            <div className={cn(
-                                              "flex size-7 shrink-0 items-center justify-center rounded-full font-body text-xs font-bold",
-                                              m.from === "empresa" ? "bg-primary/10 text-primary" : "bg-secondary/10 text-secondary"
-                                            )}>
-                                              {m.from === "empresa" ? <Building2 className="size-4" /> : <User className="size-4" />}
-                                            </div>
-                                            <div className={cn(
-                                              "max-w-[75%] rounded-xl px-3 py-2 font-body text-sm leading-relaxed",
-                                              m.from === "empresa" ? "bg-primary text-white" : "border border-border bg-surface text-ink"
-                                            )}>
-                                              {m.text}
-                                            </div>
-                                          </div>
-                                        ))}
-                                      </div>
-                                      <div className="flex gap-2">
-                                        <input
-                                          value={revisionInput}
-                                          onChange={(e) => setRevisionInput(e.target.value)}
-                                          onKeyDown={(e) => { if (e.key === "Enter" && !e.shiftKey) { e.preventDefault(); sendRevision(); } }}
-                                          placeholder={tp("empresa_revision_input")}
-                                          className="flex-1 rounded-full border border-border bg-surface-sunken px-4 py-2.5 font-body text-base text-ink outline-none focus:ring-2 focus:ring-primary/30"
-                                        />
-                                        <button type="button" onClick={sendRevision} aria-label="Enviar"
-                                          className="flex size-10 shrink-0 items-center justify-center rounded-full bg-primary text-white hover:bg-secondary transition-colors">
-                                          <Send className="size-4" aria-hidden="true" />
-                                        </button>
-                                      </div>
-                                    </div>
-                                  </div>
-                                )}
-                              </div>
-                            )}
+                        {/* Name + state */}
+                        <div className="min-w-0 flex-1">
+                          <div className="flex flex-wrap items-center gap-2">
+                            <span className="font-heading text-base font-bold text-ink-strong">
+                              {oferta.junior.nombre} {oferta.junior.apellido1}
+                            </span>
+                            <span className={cn("rounded-full border px-2.5 py-0.5 font-body text-xs font-bold", cfg.className)}>
+                              {cfg.label}
+                            </span>
+                            {isAdj && <CheckCircle2 className="size-4 text-accent" aria-hidden="true" />}
                           </div>
-                        );
-                      })}
+                          <p className="mt-0.5 font-body text-xs text-ink-subtle">
+                            {new Date(oferta.fecha_envio).toLocaleDateString(locale, { day: "numeric", month: "long", year: "numeric" })}
+                          </p>
+                        </div>
+
+                        {/* Chevron */}
+                        <ChevronDown className={cn(
+                          "size-4 shrink-0 text-ink-subtle transition-transform duration-[var(--duration-fast)]",
+                          isExpanded && "rotate-180"
+                        )} aria-hidden="true" />
+                      </button>
+
+                      {/* ── Expanded detail ── */}
+                      {isExpanded && (
+                        <div className="border-t border-border bg-canvas px-8 py-6 space-y-6">
+
+                          {/* Propuesta */}
+                          <section>
+                            <h3 className="mb-3 font-body text-xs font-bold uppercase tracking-widest text-ink-subtle">
+                              Propuesta
+                            </h3>
+                            <p className="whitespace-pre-line font-body text-sm leading-relaxed text-ink">
+                              {oferta.propuesta}
+                            </p>
+                            {oferta.prototipo_url && (
+                              <a href={oferta.prototipo_url} target="_blank" rel="noopener noreferrer"
+                                className="mt-3 inline-flex items-center gap-1.5 font-body text-sm font-semibold text-primary hover:underline">
+                                Ver prototipo <ExternalLink className="size-3.5" aria-hidden="true" />
+                              </a>
+                            )}
+                          </section>
+
+                          {/* Acciones */}
+                          {!isRejected && !isAdj && (
+                            <section className="flex flex-wrap gap-3 border-t border-border pt-5">
+                              {oferta.estado.nombre === "enviada" && (
+                                <>
+                                  <button type="button" onClick={() => decideOffer(oferta.id, "revision")}
+                                    className="rounded-full bg-primary px-5 py-2.5 font-body text-sm font-semibold text-white transition-colors hover:bg-secondary">
+                                    {tp("empresa_move_to_review")}
+                                  </button>
+                                  <button type="button" onClick={() => decideOffer(oferta.id, "rechazar")}
+                                    className="rounded-full border border-magenta/30 px-5 py-2.5 font-body text-sm font-semibold text-magenta transition-colors hover:bg-magenta/5">
+                                    {tp("empresa_reject")}
+                                  </button>
+                                </>
+                              )}
+                              {oferta.estado.nombre === "en_revision" && (
+                                <>
+                                  <button type="button" onClick={() => decideOffer(oferta.id, "adjudicar")}
+                                    className="rounded-full bg-accent px-5 py-2.5 font-body text-sm font-semibold text-white transition-colors hover:bg-accent/80">
+                                    {tp("empresa_adjudicate")}
+                                  </button>
+                                  <button type="button" onClick={() => decideOffer(oferta.id, "rechazar")}
+                                    className="rounded-full border border-magenta/30 px-5 py-2.5 font-body text-sm font-semibold text-magenta transition-colors hover:bg-magenta/5">
+                                    {tp("empresa_reject")}
+                                  </button>
+                                </>
+                              )}
+                            </section>
+                          )}
+
+                          {/* Entregables + chat (solo adjudicada) */}
+                          {isAdj && (
+                            <>
+                              <section className="border-t border-border pt-5">
+                                <h3 className="mb-3 font-body text-xs font-bold uppercase tracking-widest text-ink-subtle">
+                                  Entregables
+                                </h3>
+                                {localEntregablesE.length === 0 ? (
+                                  <p className="font-body text-sm text-ink-subtle">Sin entregables aún.</p>
+                                ) : (
+                                  <div className="space-y-2">
+                                    {[...localEntregablesE].sort((a, b) => b.version - a.version).map((ent) => {
+                                      const entCfg = ENTREGABLE_STATE_CONFIG[ent.estado.nombre];
+                                      return (
+                                        <div key={ent.id}
+                                          className="flex flex-wrap items-center justify-between gap-3 rounded-xl border border-border bg-surface px-5 py-3">
+                                          <div className="flex items-center gap-3">
+                                            <span className="font-body text-sm font-bold text-ink-muted">
+                                              v{ent.version} · {tm(`entregable_tipo_${ent.tipo}`)}
+                                            </span>
+                                            <span className={cn("rounded-full px-3 py-0.5 font-body text-xs font-semibold", entCfg.className)}>
+                                              {entCfg.label}
+                                            </span>
+                                          </div>
+                                          <div className="flex items-center gap-2">
+                                            {ent.url && (
+                                              <a href={ent.url} target="_blank" rel="noopener noreferrer"
+                                                className="inline-flex items-center gap-1 font-body text-sm font-semibold text-primary hover:underline">
+                                                Ver <ExternalLink className="size-3" aria-hidden="true" />
+                                              </a>
+                                            )}
+                                            {(ent.estado.nombre === "enviado" || ent.estado.nombre === "en_revision") && (
+                                              <div className="flex gap-2">
+                                                <button type="button" onClick={() => decideEntregableEmpresa(ent.id, "aprobar")}
+                                                  className="rounded-full bg-accent px-3 py-1.5 font-body text-xs font-semibold text-white hover:bg-accent/80">
+                                                  {tp("empresa_entregable_approve")}
+                                                </button>
+                                                <button type="button" onClick={() => decideEntregableEmpresa(ent.id, "cambios")}
+                                                  className="rounded-full border border-warning/30 px-3 py-1.5 font-body text-xs font-semibold text-warning hover:bg-warning/5">
+                                                  {tp("empresa_entregable_changes")}
+                                                </button>
+                                              </div>
+                                            )}
+                                          </div>
+                                        </div>
+                                      );
+                                    })}
+                                  </div>
+                                )}
+                              </section>
+
+                              <section className="border-t border-border pt-5">
+                                <h3 className="mb-3 font-body text-xs font-bold uppercase tracking-widest text-ink-subtle">
+                                  Chat de revisión
+                                </h3>
+                                <div className="mb-3 max-h-52 space-y-3 overflow-y-auto rounded-xl bg-surface p-4 border border-border">
+                                  {revisionMessages.map((m) => (
+                                    <div key={m.id} className={cn("flex gap-2", m.from === "empresa" && "flex-row-reverse")}>
+                                      <div className={cn(
+                                        "flex size-7 shrink-0 items-center justify-center rounded-full",
+                                        m.from === "empresa" ? "bg-primary/10 text-primary" : "bg-secondary/10 text-secondary"
+                                      )}>
+                                        {m.from === "empresa" ? <Building2 className="size-3.5" /> : <User className="size-3.5" />}
+                                      </div>
+                                      <div className={cn(
+                                        "max-w-[75%] rounded-xl px-3 py-2 font-body text-sm leading-relaxed",
+                                        m.from === "empresa" ? "bg-primary text-white" : "border border-border bg-surface text-ink"
+                                      )}>
+                                        {m.text}
+                                      </div>
+                                    </div>
+                                  ))}
+                                </div>
+                                <div className="flex gap-2">
+                                  <input
+                                    value={revisionInput}
+                                    onChange={(e) => setRevisionInput(e.target.value)}
+                                    onKeyDown={(e) => { if (e.key === "Enter" && !e.shiftKey) { e.preventDefault(); sendRevision(); } }}
+                                    placeholder={tp("empresa_revision_input")}
+                                    className="flex-1 rounded-full border border-border bg-surface-sunken px-4 py-2.5 font-body text-sm text-ink outline-none focus:ring-2 focus:ring-primary/30"
+                                  />
+                                  <button type="button" onClick={sendRevision} aria-label="Enviar"
+                                    className="flex size-10 shrink-0 items-center justify-center rounded-full bg-primary text-white hover:bg-secondary transition-colors">
+                                    <Send className="size-4" aria-hidden="true" />
+                                  </button>
+                                </div>
+                              </section>
+                            </>
+                          )}
+                        </div>
+                      )}
                     </div>
-                  </div>
-                );
+                  );
+                });
               })()}
             </div>
 
