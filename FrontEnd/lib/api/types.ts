@@ -129,6 +129,9 @@ export type ProjectOffer = {
   id: string;
   propuesta: string;
   prototipo_url: string | null;
+  url_repositorio?: string | null;
+  documentacion_tecnica?: string | null;
+  documentacion_url?: string | null;
   fecha_envio: string;
   estado: { nombre: OfferState };
   junior: {
@@ -146,6 +149,7 @@ export type MyOffer = {
   id: string;
   propuesta: string;
   prototipo_url: string | null;
+  url_repositorio?: string | null;
   documentacion_tecnica?: string | null;
   documentacion_url?: string | null;
   fecha_envio: string;
@@ -338,6 +342,7 @@ export type ProjectDetailResponse = {
 export type SubmitOfferInput = {
   propuesta: string;
   prototipo_url?: string;
+  url_repositorio?: string;
   documentacion_tecnica?: string;
   documentacion_url?: string;
 };

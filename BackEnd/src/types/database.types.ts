@@ -740,6 +740,7 @@ export type Database = {
           prototipo_url: string | null
           replica_calificacion: string | null
           updated_at: string
+          url_repositorio: string | null
         }
         Insert: {
           calificacion?: number | null
@@ -755,6 +756,7 @@ export type Database = {
           prototipo_url?: string | null
           replica_calificacion?: string | null
           updated_at?: string
+          url_repositorio?: string | null
         }
         Update: {
           calificacion?: number | null
@@ -770,6 +772,7 @@ export type Database = {
           prototipo_url?: string | null
           replica_calificacion?: string | null
           updated_at?: string
+          url_repositorio?: string | null
         }
         Relationships: [
           {

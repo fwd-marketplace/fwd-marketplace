@@ -18,11 +18,16 @@ import {
 import { Button } from "@/components/ui/button";
 import { submitOfferAction } from "@/lib/actions/marketplace";
 import { cn } from "@/lib/utils";
-import type { ApiProject, ApiRoleName, ProjectState } from "@/lib/api/types";
+import type { ApiProject, ApiRoleName, ProjectState, SubmitOfferInput } from "@/lib/api/types";
+
+const optionalUrl = z.union([z.string().url(), z.literal(""), z.undefined()]);
 
 const offerSchema = z.object({
   propuesta: z.string().min(50).max(5000),
-  prototipo_url: z.union([z.string().url(), z.literal(""), z.undefined()]),
+  prototipo_url: optionalUrl,
+  url_repositorio: optionalUrl,
+  documentacion_url: optionalUrl,
+  documentacion_tecnica: z.string().max(2000).optional(),
 });
 
 type OfferFormValues = z.infer<typeof offerSchema>;
@@ -63,11 +68,12 @@ function ApplyForm({ project }: { project: ApiProject }) {
 
   const onSubmit = async (data: OfferFormValues) => {
     setSubmitError("");
-    const input = { propuesta: data.propuesta };
-    const result = await submitOfferAction(
-      project.id,
-      data.prototipo_url ? { ...input, prototipo_url: data.prototipo_url } : input,
-    );
+    const input: SubmitOfferInput = { propuesta: data.propuesta };
+    if (data.prototipo_url) input.prototipo_url = data.prototipo_url;
+    if (data.url_repositorio) input.url_repositorio = data.url_repositorio;
+    if (data.documentacion_url) input.documentacion_url = data.documentacion_url;
+    if (data.documentacion_tecnica) input.documentacion_tecnica = data.documentacion_tecnica;
+    const result = await submitOfferAction(project.id, input);
     if (result.ok) {
       setSubmitted(true);
     } else {
@@ -144,6 +150,53 @@ function ApplyForm({ project }: { project: ApiProject }) {
           {errors.prototipo_url && (
             <p className="font-body text-xs text-magenta">{t("offer_prototipo_invalid")}</p>
           )}
+        </div>
+
+        <div className="flex flex-col gap-1.5">
+          <label htmlFor="url_repositorio" className="font-body text-xs font-semibold text-ink-muted">
+            {t("offer_repo_label")}
+          </label>
+          <input
+            id="url_repositorio"
+            type="url"
+            placeholder={t("offer_repo_placeholder")}
+            {...register("url_repositorio")}
+            aria-invalid={!!errors.url_repositorio}
+            className="w-full rounded-2xl bg-surface-sunken px-4 py-3 font-body text-sm text-ink-strong placeholder:text-ink-subtle outline-none focus:ring-2 focus:ring-primary/40"
+          />
+          {errors.url_repositorio && (
+            <p className="font-body text-xs text-magenta">{t("offer_url_invalid")}</p>
+          )}
+        </div>
+
+        <div className="flex flex-col gap-1.5">
+          <label htmlFor="documentacion_url" className="font-body text-xs font-semibold text-ink-muted">
+            {t("offer_doc_url_label")}
+          </label>
+          <input
+            id="documentacion_url"
+            type="url"
+            placeholder={t("offer_doc_url_placeholder")}
+            {...register("documentacion_url")}
+            aria-invalid={!!errors.documentacion_url}
+            className="w-full rounded-2xl bg-surface-sunken px-4 py-3 font-body text-sm text-ink-strong placeholder:text-ink-subtle outline-none focus:ring-2 focus:ring-primary/40"
+          />
+          {errors.documentacion_url && (
+            <p className="font-body text-xs text-magenta">{t("offer_url_invalid")}</p>
+          )}
+        </div>
+
+        <div className="flex flex-col gap-1.5">
+          <label htmlFor="documentacion_tecnica" className="font-body text-xs font-semibold text-ink-muted">
+            {t("offer_doc_notes_label")}
+          </label>
+          <textarea
+            id="documentacion_tecnica"
+            rows={3}
+            placeholder={t("offer_doc_notes_placeholder")}
+            {...register("documentacion_tecnica")}
+            className="w-full resize-none rounded-2xl bg-surface-sunken px-4 py-3 font-body text-sm text-ink-strong placeholder:text-ink-subtle outline-none focus:ring-2 focus:ring-primary/40"
+          />
         </div>
 
         {submitError && (
