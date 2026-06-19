@@ -1659,6 +1659,25 @@
     "section_empresa": "My projects",
     "applied_on": "Applied on",
     "published_on": "Published on",
-    "proposals_count": "{count} proposals"
+    "proposals_count": "{count} proposals",
+    "all_projects": "All projects",
+    "select_project_prompt": "Select a project to get started",
+    "section_info": "Information",
+    "section_chat": "Chat",
+    "section_proceso": "Process",
+    "description_label": "Description",
+    "skills_label": "Required technologies",
+    "days": "days",
+    "chat_coming_soon_title": "Direct chat",
+    "chat_coming_soon_desc_junior": "You will be able to write directly to the company once your proposal is awarded.",
+    "chat_coming_soon_desc_empresa": "You will be able to chat with the awarded junior once the project is in development.",
+    "proceso_state_label": "Current status",
+    "proceso_tracker_label": "Process tracker",
+    "proceso_tu_propuesta": "Your proposal",
+    "proceso_entregables_label": "Deliverables",
+    "proceso_entregables_empty": "No deliverables submitted yet for this project.",
+    "proceso_no_offer": "You have no active proposal for this project.",
+    "empresa_proposals_label": "Received proposals",
+    "empresa_proposals_empty": "No proposals yet for this project."
   }
 }

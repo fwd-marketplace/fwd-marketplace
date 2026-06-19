@@ -1713,6 +1713,25 @@
     "section_empresa": "Mis proyectos",
     "applied_on": "Postulado el",
     "published_on": "Publicado el",
-    "proposals_count": "{count} propuestas"
+    "proposals_count": "{count} propuestas",
+    "all_projects": "Todos los proyectos",
+    "select_project_prompt": "Seleccioná un proyecto para comenzar",
+    "section_info": "Información",
+    "section_chat": "Chat",
+    "section_proceso": "Proceso",
+    "description_label": "Descripción",
+    "skills_label": "Tecnologías requeridas",
+    "days": "días",
+    "chat_coming_soon_title": "Chat directo",
+    "chat_coming_soon_desc_junior": "Podrás escribir directamente al empresario una vez que tu propuesta sea adjudicada.",
+    "chat_coming_soon_desc_empresa": "Podrás chatear con el junior adjudicado una vez que el proyecto esté en desarrollo.",
+    "proceso_state_label": "Estado actual",
+    "proceso_tracker_label": "Seguimiento del proceso",
+    "proceso_tu_propuesta": "Tu propuesta",
+    "proceso_entregables_label": "Entregables",
+    "proceso_entregables_empty": "Aún no hay entregables enviados para este proyecto.",
+    "proceso_no_offer": "No tenés una propuesta activa para este proyecto.",
+    "empresa_proposals_label": "Propuestas recibidas",
+    "empresa_proposals_empty": "Aún no hay propuestas para este proyecto."
   }
 }
