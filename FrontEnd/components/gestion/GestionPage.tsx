@@ -3,12 +3,10 @@
 import { useState, type ReactNode } from "react";
 import { useLocale, useTranslations } from "next-intl";
 import {
-  AlertCircle,
   ArrowLeft,
   Calendar,
   Check,
   CheckCircle2,
-  ChevronDown,
   ChevronRight,
   Clock,
   ExternalLink,
@@ -17,22 +15,19 @@ import {
   GitBranch,
   Lock,
   MessageSquare,
-  RotateCcw,
   Upload,
   X,
   Zap,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { MOCK_OFFERS, MOCK_PROJECTS, MOCK_MARKETPLACE_PROJECTS } from "@/lib/mock-data";
-import { MOCK_PROJECT_OFFERS, MOCK_PROCESO_ENTREGABLES } from "@/lib/mock-proceso";
+import { MOCK_PROJECT_OFFERS } from "@/lib/mock-proceso";
 import type {
   ApiRoleName,
   ApiProject,
   MyOffer,
   ProjectOffer,
-  Entregable,
   OfferState,
-  EntregableState,
 } from "@/lib/api/types";
 
 // ── Types ─────────────────────────────────────────────────────────────────────
@@ -92,13 +87,6 @@ const OFFER_STATE_CONFIG: Record<
   no_seleccionada: { label: "No seleccionada", dot: "bg-magenta",  badge: "bg-magenta/10 text-magenta border-magenta/20",   step: 2 },
 };
 
-const ENTREGABLE_STATE: Record<EntregableState, { label: string; cls: string }> = {
-  pendiente:   { label: "Pendiente",   cls: "bg-ink/5 text-ink-muted border-border" },
-  enviado:     { label: "Enviado",     cls: "bg-primary/10 text-primary border-primary/20" },
-  en_revision: { label: "En revisión", cls: "bg-warning/10 text-warning border-warning/20" },
-  aprobado:    { label: "Aprobado",    cls: "bg-accent/10 text-accent border-accent/20" },
-};
-
 // Junior circle style per status
 function juniorCircle(status: ProposalStatus): { bg: string; icon: ReactNode } {
   switch (status) {
@@ -132,15 +120,6 @@ function empresaCircle(status: EmpresaStatus): { bg: string; icon: ReactNode } {
       return { bg: "bg-border", icon: <X className="size-3.5 text-ink-muted" aria-hidden="true" /> };
   }
 }
-
-// Junior proposal version badge per status
-const JUNIOR_BADGE: Partial<Record<ProposalStatus, string>> = {
-  enviada:        "bg-primary/10 text-primary border-primary/20",
-  revision:       "bg-warning/10 text-warning border-warning/20",
-  cambios:        "bg-magenta/10 text-magenta border-magenta/20",
-  aceptada:       "bg-accent/10 text-accent border-accent/20",
-  noseleccionada: "bg-ink-muted/10 text-ink-muted border-border",
-};
 
 // Empresa student/proposal badge per status
 const EMPRESA_BADGE: Record<EmpresaStatus, string> = {
@@ -250,10 +229,6 @@ export function GestionPage({ role }: Props) {
 
   const projectOffers: ProjectOffer[] =
     isEmpresa && selectedId === "proj-1" ? MOCK_PROJECT_OFFERS : [];
-
-  const selectedEntregables: Entregable[] = selectedId
-    ? MOCK_PROCESO_ENTREGABLES.filter((e) => e.id_proyecto === selectedId)
-    : [];
 
   const handleSelect = (id: string) => { setSelectedId(id); setSection("info"); };
   const handleBack   = () => setSelectedId(null);
@@ -419,7 +394,6 @@ export function GestionPage({ role }: Props) {
               <ProcesoPanel
                 isEmpresa={isEmpresa}
                 offer={selectedOffer}
-                entregables={selectedEntregables}
                 projectOffers={projectOffers}
                 project={selectedProject}
                 locale={locale}
@@ -461,7 +435,7 @@ function InfoPanel({ project, locale, t }: { project: ApiProject | null; locale:
   if (!project) return null;
   const skills = project.skills.filter((s) => s.skill != null);
   return (
-    <div className="mx-auto max-w-2xl px-6 py-8 md:px-8">
+    <div className="mx-auto max-w-[880px] px-6 py-12 md:px-14">
       <div className="mb-6">
         {project.area && (
           <p className="mb-1 font-body text-xs font-bold uppercase tracking-wider text-primary">
@@ -534,18 +508,17 @@ function ChatPanel({ isEmpresa, t }: { isEmpresa: boolean; t: T }) {
 // ── Proceso panel router ──────────────────────────────────────────────────────
 
 function ProcesoPanel({
-  isEmpresa, offer, entregables, projectOffers, project, locale, t,
+  isEmpresa, offer, projectOffers, project, locale, t,
 }: {
   isEmpresa: boolean;
   offer: MyOffer | null;
-  entregables: Entregable[];
   projectOffers: ProjectOffer[];
   project: ApiProject | null;
   locale: string;
   t: T;
 }) {
   if (isEmpresa) return <EmpresaProcesoView offers={projectOffers} project={project} locale={locale} t={t} />;
-  return <JuniorProcesoView offer={offer} project={project} entregables={entregables} locale={locale} t={t} />;
+  return <JuniorProcesoView offer={offer} project={project} locale={locale} t={t} />;
 }
 
 // ── Browser mockup ────────────────────────────────────────────────────────────
@@ -603,7 +576,6 @@ function JuniorProcesoView({
 }: {
   offer: MyOffer | null;
   project: ApiProject | null;
-  entregables: Entregable[];
   locale: string;
   t: T;
 }) {
@@ -624,52 +596,6 @@ function JuniorProcesoView({
     const p = proposals[i];
     if (!p?.desc.trim()) return;
     patch(i, { status: "enviada", expanded: false });
-  };
-
-  const reviewIdx = (): number => {
-    for (let i = proposals.length - 1; i >= 0; i--) {
-      const p = proposals[i];
-      if (p && (p.status === "enviada" || p.status === "revision")) return i;
-    }
-    return -1;
-  };
-
-  const simRevision = () => {
-    const i = reviewIdx();
-    const p = i >= 0 ? proposals[i] : undefined;
-    if (!p || p.status !== "enviada") return;
-    patch(i, { status: "revision" });
-  };
-
-  const simCambios = () => {
-    const i = reviewIdx();
-    const p = i >= 0 ? proposals[i] : undefined;
-    if (!p) return;
-    const obs = project?.id ? (MOCK_OBS[project.id] ?? "") : "";
-    const next = blankProposal(p.v + 1);
-    setProposals((prev) => {
-      const arr = prev.map((x, idx) =>
-        idx === i ? { ...x, status: "cambios" as ProposalStatus, expanded: true, observaciones: obs } : x,
-      );
-      if (i === arr.length - 1) arr.push(next);
-      return arr;
-    });
-  };
-
-  const simAceptar = () => {
-    const i = reviewIdx();
-    if (i < 0) return;
-    setProposals((prev) =>
-      prev
-        .map((x, idx) => idx === i ? { ...x, status: "aceptada" as ProposalStatus } : x)
-        .filter((x, idx) => idx <= i || x.status !== "nuevo"),
-    );
-    setClosed(true);
-  };
-
-  const resetDemo = () => {
-    setProposals(initJuniorProposals(offer, project));
-    setClosed(false);
   };
 
   // ── Derived values ───────────────────────────────────────────────────────
@@ -704,11 +630,6 @@ function JuniorProcesoView({
     bannerCls   = "bg-ink/5 text-ink-muted border-border";
   }
 
-  const ri        = reviewIdx();
-  const reviewing = ri >= 0;
-  const rp        = ri >= 0 ? proposals[ri] : undefined;
-  const canReview = reviewing && rp?.status === "enviada";
-
   // Lock caption for ghost placeholder
   const lastReal = proposals[proposals.length - 1];
   let lockCaption = t("proceso_placeholder_nuevo");
@@ -716,7 +637,7 @@ function JuniorProcesoView({
   else if (lastReal?.status === "cambios") lockCaption = t("proceso_placeholder_cambios");
 
   return (
-    <div className="mx-auto max-w-2xl px-6 py-8 md:px-8">
+    <div className="mx-auto max-w-[880px] px-6 py-12 md:px-14">
 
       {/* Card 1 — Estado actual */}
       <div className="mb-5 rounded-2xl border border-border bg-surface px-7 py-[22px] shadow-sm">
@@ -971,57 +892,6 @@ function JuniorProcesoView({
         )}
       </div>
 
-      {/* Demo bar — below both cards, only when not closed */}
-      {!closed && (
-        <div className="mt-[26px] rounded-2xl border border-dashed border-border bg-canvas px-[22px] py-[18px]" style={{ background: "#FBFAFD" }}>
-          <p className="font-body text-[11px] font-extrabold uppercase tracking-widest text-secondary/70">
-            {t("proceso_demo_titulo")}
-          </p>
-          <p className="mt-[5px] font-body text-[13px] text-ink-muted">{t("proceso_demo_desc")}</p>
-          <div className="mt-[14px] flex flex-wrap gap-[10px]">
-            <button
-              onClick={simRevision}
-              disabled={!canReview}
-              className={cn(
-                "rounded-[10px] border border-border bg-surface px-4 py-[9px] font-body text-[13px] font-semibold text-ink transition-colors hover:border-primary hover:text-primary",
-                !canReview && "opacity-45 cursor-not-allowed",
-              )}
-            >
-              {t("proceso_accion_revision")}
-            </button>
-            <button
-              onClick={simCambios}
-              disabled={!reviewing}
-              className={cn(
-                "rounded-[10px] border px-4 py-[9px] font-body text-[13px] font-semibold transition-colors",
-                reviewing
-                  ? "border-warning/40 bg-surface text-warning hover:bg-warning/5"
-                  : "border-border bg-surface text-warning opacity-45 cursor-not-allowed",
-              )}
-            >
-              {t("proceso_accion_cambios")}
-            </button>
-            <button
-              onClick={simAceptar}
-              disabled={!reviewing}
-              className={cn(
-                "rounded-[10px] border px-4 py-[9px] font-body text-[13px] font-semibold transition-colors",
-                reviewing
-                  ? "border-accent/40 bg-surface text-accent hover:bg-accent/5"
-                  : "border-border bg-surface text-accent opacity-45 cursor-not-allowed",
-              )}
-            >
-              {t("proceso_demo_aceptar")}
-            </button>
-            <button
-              onClick={resetDemo}
-              className="ml-auto rounded-[10px] border-none bg-transparent px-3 py-[9px] font-body text-[13px] font-semibold text-ink-muted transition-colors hover:text-ink"
-            >
-              {t("proceso_demo_reiniciar")}
-            </button>
-          </div>
-        </div>
-      )}
     </div>
   );
 }
