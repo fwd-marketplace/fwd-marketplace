@@ -117,7 +117,7 @@ markdown. El objeto debe tener EXACTAMENTE esta forma:
 
 {
   "nombre": "título corto y claro del proyecto",
-  "descripcion": "descripción del proyecto redactada de forma natural y detallada (ver reglas)",
+  "descripcion": "PROPUESTA COMPLETA en secciones markdown (Descripción General, Objetivos, Funcionalidades, Diseño, etc.; ver reglas)",
   "objetivo": "el objetivo central del proyecto en 1 o 2 frases",
   "funcionalidades": ["funcionalidad concreta 1", "funcionalidad concreta 2", "..."],
   "publico_objetivo": "quién va a usar el producto, en una frase",
@@ -130,14 +130,44 @@ markdown. El objeto debe tener EXACTAMENTE esta forma:
 }
 
 Reglas estrictas:
-- "descripcion": es el texto principal que leerán la empresa y los desarrolladores juniors.
-  Redactalo de forma NATURAL, DETALLADA y CÁLIDA, como si le explicaras el proyecto a un
-  desarrollador junior de manera clara y humana. NO suene a documento de requisitos ni a
-  robot. Escribí 2 o 3 párrafos: (1) el contexto y qué problema resuelve, (2) qué va a hacer
-  el producto y cómo —incorporá las funcionalidades explicadas de forma fluida, NO como una
-  lista de viñetas seca—, y (3) para quién es y qué se espera lograr. Específico y concreto,
-  pero que se lea bien y dé ganas de tomar el proyecto. Evitá frases acartonadas tipo "el
-  sistema deberá" o "se requiere implementar"; escribí en lenguaje cercano y claro.
+- "descripcion": es el texto PRINCIPAL del proyecto (lo que verán la empresa y los juniors).
+  Debe ser una PROPUESTA DE PROYECTO COMPLETA Y ESTRUCTURADA, NO una descripción vaga ni un par
+  de párrafos sueltos. Organizala en SECCIONES con títulos en markdown ("##" para secciones,
+  "###" para subsecciones, "-" para viñetas). Ese formato markdown va DENTRO del valor de
+  "descripcion" (el objeto JSON en sí sigue sin envoltura). Incluí SOLO las secciones que
+  apliquen a lo que contó la empresa. Usá esta estructura como guía (adaptala al proyecto):
+
+  ## Descripción General
+  2 o 3 párrafos en lenguaje claro y cercano: qué es el sistema, qué problema resuelve y para quién.
+
+  ## Objetivos del Proyecto
+  ### Objetivo General
+  Una frase.
+  ### Objetivos Específicos
+  - 4 a 6 objetivos concretos.
+
+  ## Funcionalidades para Clientes
+  Lo que hace el usuario final, agrupado (ej. catálogo, carrito, proceso de compra, seguimiento),
+  con viñetas concretas.
+
+  ## Funcionalidades Administrativas
+  Solo si el proyecto tiene panel de administración (gestión de inventario/pedidos/clientes,
+  dashboard de métricas, etc.).
+
+  ## Diseño e Identidad Visual
+  Estilo y paleta sugeridos (coherente con "estilos_diseno") y que sea responsive.
+
+  ## Resultado Esperado
+  Un párrafo de cierre con lo que se entrega.
+
+  Reglas de la descripcion:
+  - Basate ÚNICAMENTE en la conversación. NO inventes funcionalidades, métodos de pago,
+    integraciones ni cifras que la empresa no haya mencionado; lo que no quedó claro va en
+    "preguntas_pendientes".
+  - NO pongas una sección de "stack tecnológico" ni nombres de tecnologías en la descripcion:
+    eso va aparte, en "habilidades" (solo del catálogo).
+  - Español, claro y profesional pero cercano (voz FWD), sin relleno ni frases acartonadas
+    tipo "el sistema deberá".
 - "objetivo": el objetivo central, concreto, en 1 o 2 frases. Nada vago tipo "una app moderna".
 - "funcionalidades": entre 3 y 7 funcionalidades CONCRETAS y accionables, cada una en una
   frase (ej. "registro de clientes con correo y contraseña", "los clientes agendan citas
@@ -157,18 +187,6 @@ Reglas estrictas:
   Ej: "Minimalista y profesional: tonos sobrios, mucho espacio en blanco y tipografía clara".
 - No inventes presupuestos ni cifras de dinero. Si algo no quedó claro en la conversación,
   ponelo en "preguntas_pendientes" en vez de inventarlo.
-
-Ejemplo del TONO y nivel de detalle que buscamos para "descripcion" (es solo un ejemplo de
-ESTILO de otro rubro; NO copies su contenido, adaptate a lo que contó la empresa):
-"Un gimnasio de barrio quiere dejar atrás la agenda en papel y darles a sus socios una forma
-simple de reservar clases desde el celular. La idea es que cualquier persona, sin ser experta
-en tecnología, entre, vea los horarios disponibles de spinning, yoga o funcional, y reserve su
-lugar en segundos.
-Además, cada socio podrá ver las clases a las que se anotó y recibir un recordatorio el día
-anterior para no faltar. Para el gimnasio significa menos llamadas y planillas; para el socio,
-la tranquilidad de tener todo en un solo lugar."
-(Fijate: habla en lenguaje cercano, cuenta una pequeña historia, explica las funciones de forma
-natural y dice para quién es y qué gana cada parte.)
 
 Áreas de negocio disponibles:
 ${buildAreaListText(catalog.areas)}

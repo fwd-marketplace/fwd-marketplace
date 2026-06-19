@@ -90,7 +90,8 @@ async function loadProjectCatalog(accessToken: string): Promise<ProjectCatalog> 
   const client = supabaseForToken(accessToken);
 
   const [skillsResult, areasResult] = await Promise.all([
-    client.from("skills").select("id, nombre, tipo, categoria").order("nombre"),
+    // Solo tecnologías: las habilidades blandas no aplican al stack de un proyecto.
+    client.from("skills").select("id, nombre, tipo, categoria").eq("tipo", "tecnologia").order("nombre"),
     client.from("area_negocio").select("id, nombre, descripcion").eq("activo", true).order("nombre"),
   ]);
 

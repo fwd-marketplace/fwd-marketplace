@@ -28,7 +28,7 @@ Listado visible (publicados + los propios de la empresa). Query opcional:
 ```json
 { "projects": [{
   "id": "uuid", "titulo": "...", "descripcion": "...", "usa_ia": false,
-  "plazo_dias": 10, "fecha_publicacion": "...", "fecha_cierre": "...",
+  "plazo_dias": 10, "tecnologias_extra": ["Rust"], "fecha_publicacion": "...", "fecha_cierre": "...",
   "estado": { "id": "uuid", "nombre": "en_recepcion" },
   "area":   { "id": "uuid", "nombre": "..." },
   "empresa":{ "id": "uuid", "nombre_comercial": "...", "tipo": "empresa" },
@@ -47,11 +47,14 @@ Misma forma de item que `GET /projects`. → `{ "projects": [ ... ] }`
 ### POST /api/projects  (Bearer — empresa con cuenta activa)
 ```json
 { "titulo": "Landing", "descripcion": "...", "id_area_negocio": "uuid",
-  "plazo_dias": 10, "usa_ia": false, "skills": ["uuid"], "publicar": true }
+  "plazo_dias": 10, "usa_ia": false, "skills": ["uuid"],
+  "tecnologias_extra": ["Rust", "GraphQL"], "publicar": true }
 ```
 - `titulo`: 1-255 caracteres. `descripcion`: mínimo 1.
 - `plazo_dias`: entero **entre 5 y 15** (fuera de rango → `400`).
 - `id_area_negocio`: uuid del catálogo. `skills`: lista de uuids del catálogo (opcional).
+- `tecnologias_extra`: tecnologías "Otros" escritas a mano que NO están en el catálogo de skills
+  (opcional, hasta 20, cada una 1-50 caracteres). Se guardan por-proyecto, no en el catálogo global.
 - `publicar: true` → estado `en_recepcion` (visible) y calcula `fecha_cierre`.
 - `publicar: false`/omitido → queda en `borrador`.
 → `201 { "project": { "id": "uuid", "titulo": "...", "estado": { "nombre": "en_recepcion" } } }`

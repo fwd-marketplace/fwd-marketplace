@@ -879,6 +879,7 @@ export type Database = {
           id_empresario: string
           id_estado: string
           plazo_dias: number
+          tecnologias_extra: string[]
           titulo: string
           usa_ia: boolean
         }
@@ -891,6 +892,7 @@ export type Database = {
           id_empresario: string
           id_estado: string
           plazo_dias: number
+          tecnologias_extra?: string[]
           titulo: string
           usa_ia?: boolean
         }
@@ -903,6 +905,7 @@ export type Database = {
           id_empresario?: string
           id_estado?: string
           plazo_dias?: number
+          tecnologias_extra?: string[]
           titulo?: string
           usa_ia?: boolean
         }
