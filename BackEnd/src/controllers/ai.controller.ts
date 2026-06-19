@@ -2,10 +2,11 @@ import type { Request, Response } from "express";
 import { ApiError } from "../utils/ApiError";
 import { logger } from "../utils/logger";
 import { parseBody } from "../utils/parseBody";
-import { AsistenteRequestSchema } from "../validations/ai";
+import { AsistenteRequestSchema, SugerirStackRequestSchema } from "../validations/ai";
 import {
   streamAsistente,
   generarPropuesta as generarPropuestaService,
+  sugerirStack as sugerirStackService,
 } from "../services/ai/asistente.service";
 
 /** Escribe un evento SSE (`event:` + `data:` JSON) en la respuesta. */
@@ -93,4 +94,27 @@ export async function generarPropuesta(req: Request, res: Response): Promise<voi
   });
 
   res.status(200).json({ propuesta });
+}
+
+/**
+ * POST /api/ai/sugerir-stack
+ *
+ * Para el formulario manual: a partir de la descripción del proyecto, recomienda
+ * habilidades del catálogo (con una justificación corta para un usuario no técnico).
+ */
+export async function sugerirStack(req: Request, res: Response): Promise<void> {
+  if (!req.user || !req.accessToken) {
+    throw new ApiError(401, "No autenticado");
+  }
+  const input = parseBody(SugerirStackRequestSchema, req.body);
+
+  const sugerencia = await sugerirStackService({
+    titulo: input.titulo,
+    descripcion: input.descripcion,
+    areaId: input.id_area_negocio,
+    userId: req.user.id,
+    accessToken: req.accessToken,
+  });
+
+  res.status(200).json({ sugerencia });
 }

@@ -20,6 +20,18 @@
     "name": "FWD Marketplace",
     "description": "Marketplace de proyectos freelance para juniors egresados de Fundación Forward Costa Rica."
   },
+  "site_footer": {
+    "brand_name": "FWD Talent Marketplace",
+    "logo_alt": "Logotipo de Fundación Forward Costa Rica",
+    "description": "Conectamos talento junior egresado de Fundación Forward con empresas que buscan desarrollar proyectos reales.",
+    "links_title": "Recursos",
+    "terms": "Términos de uso",
+    "privacy": "Políticas de privacidad",
+    "copyright": "© 2026 Fundación Forward Costa Rica",
+    "rights": "FWD Talent Marketplace • Todos los derechos reservados",
+    "facebook": "Seguir a Fundación Forward en Facebook",
+    "linkedin": "Seguir a Fundación Forward en LinkedIn"
+  },
   "nav": {
     "marketplace": "Marketplace",
     "metodologia": "Metodología",
@@ -226,6 +238,8 @@
       "terms_link": "Términos de Servicio",
       "terms_connector": "y la",
       "privacy_link": "Política de Privacidad",
+      "login_link": "Iniciar sesión",
+      "back_home": "Volver al inicio",
       "amcham_badge": "Avalado por AmCham Costa Rica"
     },
     "junior": {
@@ -485,9 +499,16 @@
     "offer_propuesta_placeholder": "Describí tu experiencia, tu enfoque para este proyecto y por qué sos la persona indicada...",
     "offer_propuesta_min": "Mínimo 50 caracteres",
     "offer_propuesta_required": "La propuesta es requerida",
-    "offer_prototipo_label": "URL de prototipo (opcional)",
-    "offer_prototipo_placeholder": "https://figma.com/...",
+    "offer_prototipo_label": "URL de prototipo desplegado (opcional)",
+    "offer_prototipo_placeholder": "https://tu-demo.netlify.app",
     "offer_prototipo_invalid": "Ingresá una URL válida",
+    "offer_repo_label": "Repositorio (opcional)",
+    "offer_repo_placeholder": "https://github.com/usuario/proyecto",
+    "offer_doc_url_label": "Documentación o archivo (opcional)",
+    "offer_doc_url_placeholder": "https://drive.google.com/...",
+    "offer_doc_notes_label": "Notas técnicas (opcional)",
+    "offer_doc_notes_placeholder": "Detalles del stack, decisiones técnicas, cómo correr el demo...",
+    "offer_url_invalid": "Ingresá una URL válida",
     "offer_submit": "Enviar postulación",
     "offer_submitting": "Enviando...",
     "offer_success": "Postulación enviada. Te avisaremos cuando la empresa revise tu propuesta.",
@@ -582,6 +603,7 @@
         "continue_manually": "Continuar manualmente",
         "applied": "Propuesta aplicada abajo. Revisá y ajustá los campos antes de crear el proyecto.",
         "pending_title": "Quedó por aclarar:",
+        "design_title": "Ideas de estilo visual:",
         "error_generic": "No se pudo contactar al asistente. Probá de nuevo o continuá manualmente."
       },
       "title": "Nuevo proyecto",
@@ -591,6 +613,13 @@
       "area_label": "Área de negocio",
       "deadline_label": "Plazo (días)",
       "skills_label": "Habilidades requeridas",
+      "suggest_stack_btn": "Sugerir stack con IA",
+      "suggesting": "Sugiriendo...",
+      "stack_applied": "Stack sugerido. Revisá las habilidades marcadas.",
+      "stack_need_desc": "Escribí una descripción primero para sugerir el stack.",
+      "otros_placeholder": "Otra tecnología (ej. Rust, GraphQL)",
+      "otros_add": "Agregar",
+      "otros_remove": "Quitar tecnología",
       "ai_label": "Usa inteligencia artificial",
       "publish_label": "Publicar inmediatamente",
       "status_label": "Estado inicial",
@@ -764,6 +793,7 @@
     "notifications": "Notificaciones",
     "user_menu": "Menú de usuario",
     "logout": "Cerrar sesión",
+    "nav_home": "Inicio",
     "nav_marketplace": "Marketplace",
     "nav_my_applications": "Mis postulaciones",
     "nav_mensajes": "Mensajes",
@@ -771,9 +801,18 @@
     "nav_my_projects": "Mis proyectos",
     "nav_postulaciones": "Postulaciones",
     "nav_my_company": "Mi empresa",
+    "nav_terms": "Términos y condiciones",
+    "nav_privacy": "Políticas",
+    "settings": "Configuración",
+    "learning_map": "Mapa de aprendizaje",
+    "logo_alt": "Logotipo FWD Talent",
     "profile_link": "Ver perfil",
     "open_menu": "Abrir menú",
-    "nav_gestion": "Gestión"
+    "nav_gestion": "Gestión",
+    "language": "Idioma",
+    "lang_es": "Español",
+    "lang_en": "English",
+    "dark_mode": "Modo oscuro"
   },
   "mis_postulaciones": {
     "title": "Mis postulaciones",
@@ -784,6 +823,7 @@
     "sent_on": "Enviado el",
     "proposal_label": "Tu propuesta",
     "prototype_link": "Ver prototipo",
+    "repo_link": "Ver repositorio",
     "project_removed": "Proyecto no disponible",
     "state_enviada": "Enviada",
     "state_en_revision": "En revisión",
@@ -911,6 +951,17 @@
       "empty": "No hay tecnologías agregadas aún.",
       "catalog_hint": "Solo se guardan las tecnologías reconocidas en nuestro catálogo."
     },
+    "knowledge": {
+      "title": "Conocimientos adicionales",
+      "description": "Saberes más allá de lo técnico (contabilidad, RRHH, marketing...) que amplían tu perfil y mejoran tus matches.",
+      "add": "Agregar",
+      "placeholder": "Ej. Contabilidad, Recursos Humanos, Marketing...",
+      "add_btn": "Añadir",
+      "cancel_btn": "Cancelar",
+      "remove": "Quitar {name}",
+      "empty": "Aún no agregaste conocimientos adicionales.",
+      "hint": "Elegí de las sugerencias o escribí el tuyo: todo se guarda y cuenta para el match."
+    },
     "links": {
       "title": "Enlaces del Talento",
       "github": "GitHub",
@@ -930,7 +981,9 @@
       "just_now": "Hace un momento",
       "updated_personal": "Actualizó su información personal de contacto",
       "removed_skill": "Eliminó la habilidad '{skill}' de su stack",
-      "added_skill": "Agregó la habilidad '{skill}' a su stack"
+      "added_skill": "Agregó la habilidad '{skill}' a su stack",
+      "removed_knowledge": "Eliminó el conocimiento '{name}' de su perfil",
+      "added_knowledge": "Agregó el conocimiento '{name}' a su perfil"
     },
     "applications_sidebar": {
       "title": "Postulaciones",
@@ -1238,6 +1291,13 @@
     "toast_cleared": "Se han limpiado los filtros de búsqueda.",
     "toast_profile_edit": "Funcionalidad de edición de perfil en desarrollo (Fase 3)."
   },
+  "prototipo_preview": {
+    "button": "Vista previa",
+    "modal_title": "Vista previa del prototipo",
+    "open_in_new_tab": "Abrir en pestaña nueva",
+    "close": "Cerrar",
+    "iframe_error": "No se pudo mostrar la vista previa embebida. Abrí el prototipo en una pestaña nueva."
+  },
   "postulaciones_empresa": {
     "title": "POSTULACIONES",
     "subtitle": "Revisión de candidatos.",
@@ -1275,6 +1335,8 @@
     "empty_applications": "Aún no hay postulaciones para este proyecto.",
     "no_project": "Seleccioná un proyecto para ver las postulaciones.",
     "prototype_link": "Ver prototipo",
+    "repo_link": "Ver repositorio",
+    "doc_link": "Ver documentación",
     "offer_states": {
       "en_revision": "En revisión",
       "adjudicada": "Aceptada",
@@ -1791,5 +1853,41 @@
     "chat_placeholder": "Escribí un mensaje... (Enter para enviar)",
     "chat_send": "Enviar mensaje",
     "chat_hint": "Enter para enviar · Shift+Enter para nueva línea"
+  },
+  "cosmos_profesional": {
+    "screen_label": "Constelación de puntos importantes",
+    "controls": {
+      "style_aria": "Estilo de estrella",
+      "style_diamante": "◆ Diamante",
+      "style_circulo": "● Círculo",
+      "style_punta4": "✦ 4 puntas",
+      "style_punta6": "✶ 6 puntas",
+      "style_destello": "✧ Destello",
+      "style_anillo": "◌ Anillo",
+      "toggle_aria": "Mostrar u ocultar trazos",
+      "trazos": "Trazos"
+    },
+    "stars": {
+      "0": {
+        "title": "Proyectos reales",
+        "desc": "Trabajá en retos de empresas, no en ejercicios de práctica."
+      },
+      "1": {
+        "title": "Las empresas publican",
+        "desc": "Suben proyectos y briefs pensados para talento junior."
+      },
+      "2": {
+        "title": "Match con tus skills",
+        "desc": "Te mostramos oportunidades según lo que sabés hacer."
+      },
+      "3": {
+        "title": "Notificaciones",
+        "desc": "Enterate apenas se abre un proyecto que encaja con vos."
+      },
+      "4": {
+        "title": "Publicate",
+        "desc": "Hacete visible como una estrella del cielo."
+      }
+    }
   }
 }

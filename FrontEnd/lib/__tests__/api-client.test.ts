@@ -3,11 +3,11 @@ import { apiFetch, apiAuth, ApiError, SESSION_COOKIE, REFRESH_COOKIE } from "../
 
 // Mock next/headers
 vi.mock("next/headers", () => {
-  const store = new Map<string, any>();
+  const store = new Map<string, { value: string; [key: string]: unknown }>();
   return {
     cookies: vi.fn(() => ({
       get: (name: string) => store.get(name),
-      set: (name: string, value: string, opts: any) => store.set(name, { value, ...opts }),
+      set: (name: string, value: string, opts: Record<string, unknown>) => store.set(name, { value, ...opts }),
       delete: (name: string) => store.delete(name),
     })),
   };

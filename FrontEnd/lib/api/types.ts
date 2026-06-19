@@ -34,10 +34,18 @@ export type CatalogProjectState = {
   orden: number;
 };
 
+/** Sugerencias de conocimientos no técnicos (contabilidad, RRHH, etc.). */
+export type CatalogKnowledge = {
+  id: string;
+  nombre: string;
+  categoria: string | null;
+};
+
 export type CatalogsResponse = {
   areas: CatalogArea[];
   skills: CatalogSkill[];
   projectStates: CatalogProjectState[];
+  conocimientos: CatalogKnowledge[];
 };
 
 export type ApiProject = {
@@ -46,6 +54,7 @@ export type ApiProject = {
   descripcion: string;
   usa_ia: boolean;
   plazo_dias: number;
+  tecnologias_extra?: string[];
   fecha_publicacion: string | null;
   fecha_cierre: string | null;
   estado: { id?: string; nombre: ProjectState };
@@ -65,7 +74,41 @@ export type CreateProjectInput = {
   plazo_dias: number;
   usa_ia: boolean;
   skills: string[];
+  tecnologias_extra?: string[];
   publicar: boolean;
+};
+
+// ── Asistente de IA para crear proyectos ──────────────────────────────────────
+
+export type AiChatMessage = {
+  role: "user" | "assistant";
+  content: string;
+};
+
+export type ProposalSkill = {
+  id: string;
+  nombre: string;
+};
+
+/** Propuesta estructurada que devuelve el asistente, ya mapeada al formulario. */
+export type ProjectProposal = {
+  nombre: string;
+  objetivo: string;
+  funcionalidades: string[];
+  publico_objetivo: string | null;
+  /** Descripción rica (objetivo + funcionalidades + público), lista para el textarea. */
+  descripcion: string;
+  area_negocio: string | null;
+  id_area_negocio: string | null;
+  plazo_dias: number;
+  habilidades: ProposalSkill[];
+  usa_ia: boolean;
+  estilos_diseno: string[];
+  preguntas_pendientes: string[];
+};
+
+export type GenerateProposalResponse = {
+  propuesta: ProjectProposal;
 };
 
 export type UpdateProjectInput = {
@@ -77,10 +120,28 @@ export type UpdateProjectInput = {
   skills?: string[];
 };
 
+export type SuggestStackInput = {
+  titulo?: string;
+  descripcion: string;
+  id_area_negocio?: string;
+};
+
+export type StackSuggestion = {
+  habilidades: ProposalSkill[];
+  justificacion: string;
+};
+
+export type SuggestStackResponse = {
+  sugerencia: StackSuggestion;
+};
+
 export type ProjectOffer = {
   id: string;
   propuesta: string;
   prototipo_url: string | null;
+  url_repositorio?: string | null;
+  documentacion_tecnica?: string | null;
+  documentacion_url?: string | null;
   fecha_envio: string;
   estado: { nombre: OfferState };
   junior: {
@@ -98,6 +159,7 @@ export type MyOffer = {
   id: string;
   propuesta: string;
   prototipo_url: string | null;
+  url_repositorio?: string | null;
   documentacion_tecnica?: string | null;
   documentacion_url?: string | null;
   fecha_envio: string;
@@ -121,6 +183,7 @@ export type ApiEstudianteDetail = {
   url_linkedin: string | null;
   url_portfolio: string | null;
   skills: string[];
+  conocimientos: string[];
 };
 
 export type StudentSpecialty = "frontend" | "backend" | "fullstack" | "ia";
@@ -136,6 +199,7 @@ export type StudentProfileUpdate = {
   disponibilidad?: StudentAvailability;
   modalidad?: string[];
   skills?: string[];
+  conocimientos?: string[];
   link_github?: string;
   link_linkedin?: string;
   link_portfolio?: string;
@@ -153,6 +217,7 @@ export type StudentPerfilResponse = {
   url_linkedin: string | null;
   url_portfolio: string | null;
   skills?: string[];
+  conocimientos?: string[];
 };
 
 export type ApiEmpresarioDetail = {
@@ -290,6 +355,7 @@ export type ProjectDetailResponse = {
 export type SubmitOfferInput = {
   propuesta: string;
   prototipo_url?: string;
+  url_repositorio?: string;
   documentacion_tecnica?: string;
   documentacion_url?: string;
 };
@@ -317,33 +383,6 @@ export type SubmitEntregableInput = {
 
 export type EntregablesResponse = {
   entregables: Entregable[];
-};
-
-// ── IA — Asistente de proyectos ─────────────────────────────────────────────
-
-export type AiChatMessage = {
-  role: "user" | "assistant";
-  content: string;
-};
-
-export type ProposalSkill = {
-  id: string;
-  nombre: string;
-};
-
-export type ProjectProposal = {
-  nombre: string;
-  objetivo: string;
-  area_negocio: string | null;
-  id_area_negocio: string | null;
-  plazo_dias: number;
-  habilidades: ProposalSkill[];
-  usa_ia: boolean;
-  preguntas_pendientes: string[];
-};
-
-export type GenerateProposalResponse = {
-  propuesta: ProjectProposal;
 };
 
 // ── Calificaciones ───────────────────────────────────────────────────────────

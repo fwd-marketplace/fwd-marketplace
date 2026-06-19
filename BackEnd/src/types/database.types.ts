@@ -55,6 +55,48 @@ export type Database = {
           },
         ]
       }
+      ai_propuesta_ejemplo: {
+        Row: {
+          fecha: string
+          id: string
+          id_area_negocio: string | null
+          id_usuario: string
+          propuesta: Json
+          resumen_conversacion: string | null
+        }
+        Insert: {
+          fecha?: string
+          id?: string
+          id_area_negocio?: string | null
+          id_usuario: string
+          propuesta: Json
+          resumen_conversacion?: string | null
+        }
+        Update: {
+          fecha?: string
+          id?: string
+          id_area_negocio?: string | null
+          id_usuario?: string
+          propuesta?: Json
+          resumen_conversacion?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "ai_propuesta_ejemplo_id_area_negocio_fkey"
+            columns: ["id_area_negocio"]
+            isOneToOne: false
+            referencedRelation: "area_negocio"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "ai_propuesta_ejemplo_id_usuario_fkey"
+            columns: ["id_usuario"]
+            isOneToOne: false
+            referencedRelation: "users"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       area_negocio: {
         Row: {
           activo: boolean
@@ -698,6 +740,7 @@ export type Database = {
           prototipo_url: string | null
           replica_calificacion: string | null
           updated_at: string
+          url_repositorio: string | null
         }
         Insert: {
           calificacion?: number | null
@@ -713,6 +756,7 @@ export type Database = {
           prototipo_url?: string | null
           replica_calificacion?: string | null
           updated_at?: string
+          url_repositorio?: string | null
         }
         Update: {
           calificacion?: number | null
@@ -728,6 +772,7 @@ export type Database = {
           prototipo_url?: string | null
           replica_calificacion?: string | null
           updated_at?: string
+          url_repositorio?: string | null
         }
         Relationships: [
           {
@@ -837,6 +882,7 @@ export type Database = {
           id_empresario: string
           id_estado: string
           plazo_dias: number
+          tecnologias_extra: string[]
           titulo: string
           usa_ia: boolean
         }
@@ -849,6 +895,7 @@ export type Database = {
           id_empresario: string
           id_estado: string
           plazo_dias: number
+          tecnologias_extra?: string[]
           titulo: string
           usa_ia?: boolean
         }
@@ -861,6 +908,7 @@ export type Database = {
           id_empresario?: string
           id_estado?: string
           plazo_dias?: number
+          tecnologias_extra?: string[]
           titulo?: string
           usa_ia?: boolean
         }
@@ -931,6 +979,47 @@ export type Database = {
             columns: ["id_rol"]
             isOneToOne: false
             referencedRelation: "roles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      conocimiento: {
+        Row: {
+          categoria: string | null
+          id: string
+          nombre: string
+        }
+        Insert: {
+          categoria?: string | null
+          id?: string
+          nombre: string
+        }
+        Update: {
+          categoria?: string | null
+          id?: string
+          nombre?: string
+        }
+        Relationships: []
+      }
+      estudiante_conocimiento: {
+        Row: {
+          id_estudiante: string
+          nombre: string
+        }
+        Insert: {
+          id_estudiante: string
+          nombre: string
+        }
+        Update: {
+          id_estudiante?: string
+          nombre?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "estudiante_conocimiento_id_estudiante_fkey"
+            columns: ["id_estudiante"]
+            isOneToOne: false
+            referencedRelation: "estudiante"
             referencedColumns: ["id"]
           },
         ]

@@ -1,7 +1,6 @@
 import { setRequestLocale } from "next-intl/server";
 import PerfilUsuario from "@/components/comp-perfil-estudiante/PerfilUsuario";
 import { AppHeader } from "@/components/layout/app-header";
-import { JuniorSubnav } from "@/components/layout/junior-subnav";
 import {
   fullName,
   type Activity,
@@ -10,7 +9,7 @@ import {
   type MockCalificacion,
   type StudentProfile,
 } from "@/app/[locale]/(public)/perfil-estudiante/types";
-import { getMyCalificaciones, getMyOffers } from "@/lib/api/marketplace";
+import { getCatalogs, getMyCalificaciones, getMyOffers } from "@/lib/api/marketplace";
 import { getMe } from "@/lib/api/profile";
 import { parseJsonStringArray } from "@/lib/api/safe-json";
 import type { ApiCalificacion, ApiMeProfile, MyOffer, OfferState } from "@/lib/api/types";
@@ -30,6 +29,7 @@ const EMPTY_PROFILE: StudentProfile = {
   bio: "",
   badges: [],
   skills: [],
+  conocimientos: [],
   avatarUrl: "",
   links: {},
   reputacion: null,
@@ -72,6 +72,7 @@ function mapProfile(profile: ApiMeProfile | null): StudentProfile {
     bio: estudiante?.descripcion ?? "",
     badges: modalidades,
     skills: estudiante?.skills ?? [],
+    conocimientos: estudiante?.conocimientos ?? [],
     avatarUrl: estudiante?.url_avatar ?? "",
     links,
     reputacion: estudiante?.reputacion ?? null,
@@ -113,26 +114,30 @@ function mapCalificacion(cal: ApiCalificacion): MockCalificacion {
 export default async function EstudianteProfile({ params }: Props) {
   const { locale } = await params;
   setRequestLocale(locale);
-  const [meResult, offersResult, calResult] = await Promise.all([
+  const [meResult, offersResult, calResult, catalogsResult] = await Promise.all([
     getMe(),
     getMyOffers(),
     getMyCalificaciones(),
+    getCatalogs(),
   ]);
   const profile = mapProfile(meResult.ok ? meResult.data.profile : null);
   const applications = offersResult.ok ? offersResult.data.ofertas.map(mapOffer) : [];
   const calificaciones = calResult.ok ? calResult.data.map(mapCalificacion) : [];
   const activities: Activity[] = [];
+  const knowledgeSuggestions = catalogsResult.ok
+    ? catalogsResult.data.conocimientos.map((conocimiento) => conocimiento.nombre)
+    : [];
 
   return (
     <div className="flex min-h-[100dvh] flex-col bg-canvas">
-      <AppHeader userName={fullName(profile)} avatarUrl={profile.avatarUrl} role="student" />
-      <JuniorSubnav />
+      <AppHeader userName={fullName(profile)} avatarUrl={profile.avatarUrl} role="student" tone="public" />
       <PerfilUsuario
         initialProfile={profile}
         initialActivities={activities}
         initialApplications={applications}
         initialCalificaciones={calificaciones}
         stats={buildStats(applications)}
+        knowledgeSuggestions={knowledgeSuggestions}
       />
     </div>
   );

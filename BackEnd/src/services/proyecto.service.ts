@@ -28,6 +28,7 @@ const PROJECT_SELECT = `
   descripcion,
   usa_ia,
   plazo_dias,
+  tecnologias_extra,
   fecha_publicacion,
   fecha_cierre,
   estado:estado_proyecto(id, nombre),
@@ -198,6 +199,7 @@ export async function createProject(
       descripcion: input.descripcion,
       usa_ia: input.usa_ia ?? false,
       plazo_dias: input.plazo_dias,
+      tecnologias_extra: input.tecnologias_extra ?? [],
       fecha_publicacion: fechaPublicacion,
       fecha_cierre: fechaCierre,
     })

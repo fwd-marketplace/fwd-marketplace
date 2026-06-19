@@ -61,6 +61,7 @@ const MOCK_CATALOGS: CatalogsResponse = {
         { id: 'sk-6', nombre: 'React Native', tipo: 'mobile', categoria: null },
     ],
     projectStates: [],
+    conocimientos: [],
 };
 
 const MOCK_PROJECTS: ApiProject[] = [

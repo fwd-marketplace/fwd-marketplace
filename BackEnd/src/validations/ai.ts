@@ -26,14 +26,37 @@ export type AsistenteRequestInput = z.infer<typeof AsistenteRequestSchema>;
  */
 export const ProposalRawSchema = z.object({
   nombre: z.string().optional(),
+  // Descripción redactada por el modelo (texto natural y detallado para el formulario).
+  descripcion: z.string().optional(),
   objetivo: z.string().optional(),
+  // Funcionalidades concretas del proyecto (respaldo estructurado).
+  funcionalidades: z.array(z.string()).optional(),
+  publico_objetivo: z.string().optional(),
   area_negocio: z.string().optional(),
   // El modelo a veces devuelve el plazo como número y a veces como texto ("10 días").
   plazo_dias: z.union([z.number(), z.string()]).optional(),
   // A veces strings ("React"), a veces objetos ({ nombre: "React" }).
   habilidades: z.array(z.union([z.string(), z.object({ nombre: z.string() })])).optional(),
   usa_ia: z.boolean().optional(),
+  estilos_diseno: z.array(z.string()).optional(),
   preguntas_pendientes: z.array(z.string()).optional(),
 });
 
 export type ProposalRaw = z.infer<typeof ProposalRawSchema>;
+
+/** Cuerpo de `POST /ai/sugerir-stack` (flujo manual: ya hay una descripción del proyecto). */
+export const SugerirStackRequestSchema = z.object({
+  titulo: z.string().max(255).optional(),
+  descripcion: z.string().min(10).max(5000),
+  id_area_negocio: z.string().uuid().optional(),
+});
+
+export type SugerirStackInput = z.infer<typeof SugerirStackRequestSchema>;
+
+/** Validación del JSON que devuelve el modelo para la sugerencia de stack. */
+export const StackRawSchema = z.object({
+  habilidades: z.array(z.union([z.string(), z.object({ nombre: z.string() })])).optional(),
+  justificacion: z.string().optional(),
+});
+
+export type StackRaw = z.infer<typeof StackRawSchema>;

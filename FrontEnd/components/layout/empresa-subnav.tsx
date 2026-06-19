@@ -19,7 +19,7 @@ export function EmpresaSubnav({ actionSlot }: { actionSlot?: React.ReactNode }) 
   const t = useTranslations("empresa_subnav");
 
   return (
-    <nav className="sticky top-14 z-40 border-b border-border bg-surface/80 backdrop-blur-sm">
+    <nav className="sticky top-16 z-40 border-b border-border bg-surface/80 backdrop-blur-sm">
       <div className="mx-auto flex h-10 max-w-7xl items-center gap-1 overflow-x-auto px-4 md:px-6">
         {NAV_HREFS.map((item) => {
           const isActive = pathname.includes(item.href);

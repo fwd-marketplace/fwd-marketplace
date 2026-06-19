@@ -270,6 +270,8 @@ export interface PerfilUsuarioProps {
   initialApplications: Application[];
   initialCalificaciones: MockCalificacion[];
   stats: ApplicationStats;
+  /** Sugerencias de conocimientos no técnicos (catálogo) para autocompletar. */
+  knowledgeSuggestions: string[];
 }
 
   function ProjectCard({
@@ -415,6 +417,7 @@ export default function PerfilUsuario({
   initialApplications,
   initialCalificaciones,
   stats,
+  knowledgeSuggestions,
 }: PerfilUsuarioProps) {
   const t = useTranslations("perfil_junior");
 
@@ -488,6 +491,10 @@ export default function PerfilUsuario({
   const [newSkill, setNewSkill] = useState("");
   const [isAddingSkill, setIsAddingSkill] = useState(false);
   const [skillError, setSkillError] = useState("");
+
+  const [newConocimiento, setNewConocimiento] = useState("");
+  const [isAddingConocimiento, setIsAddingConocimiento] = useState(false);
+  const [conocimientoError, setConocimientoError] = useState("");
 
   const avatarInputRef = useRef<HTMLInputElement>(null);
   const [isUploadingAvatar, setIsUploadingAvatar] = useState(false);
@@ -585,6 +592,9 @@ export default function PerfilUsuario({
         ...prev,
         ...optimistic,
         ...(result.data.skills !== undefined ? { skills: result.data.skills } : {}),
+        ...(result.data.conocimientos !== undefined
+          ? { conocimientos: result.data.conocimientos }
+          : {}),
       }));
       onSuccess?.();
     });
@@ -717,6 +727,31 @@ export default function PerfilUsuario({
     const next = profile.skills.filter((skill) => skill !== skillToRemove);
     persistProfile({ skills: next }, {}, setSkillError, () => {
       addActivity(t("activity.removed_skill", { skill: skillToRemove }));
+    });
+  }
+
+  function addConocimiento(e: React.FormEvent<HTMLFormElement>) {
+    e.preventDefault();
+    const trimmed = newConocimiento.trim().replace(/\s+/g, " ");
+    if (!trimmed) return;
+    // Sin distinguir mayúsculas, para no permitir el mismo conocimiento repetido.
+    if (profile.conocimientos.some((item) => item.toLowerCase() === trimmed.toLowerCase())) {
+      setNewConocimiento("");
+      setIsAddingConocimiento(false);
+      return;
+    }
+    const next = [...profile.conocimientos, trimmed];
+    persistProfile({ conocimientos: next }, {}, setConocimientoError, () => {
+      addActivity(t("activity.added_knowledge", { name: trimmed }));
+      setNewConocimiento("");
+      setIsAddingConocimiento(false);
+    });
+  }
+
+  function removeConocimiento(toRemove: string) {
+    const next = profile.conocimientos.filter((item) => item !== toRemove);
+    persistProfile({ conocimientos: next }, {}, setConocimientoError, () => {
+      addActivity(t("activity.removed_knowledge", { name: toRemove }));
     });
   }
 
@@ -1279,6 +1314,95 @@ export default function PerfilUsuario({
                   </p>
                 )}
                 <p className="text-xs text-ink-muted">{t("stack.catalog_hint")}</p>
+              </section>
+
+              {/* Conocimientos adicionales (no técnicos) */}
+              <section className="bg-surface rounded-2xl border border-border shadow-soft p-6 md:p-8 space-y-6">
+                <div className="flex justify-between items-center gap-4">
+                  <div>
+                    <h2 className="text-xl font-bold text-ink-strong">{t("knowledge.title")}</h2>
+                    <p className="text-sm text-ink-muted mt-1">{t("knowledge.description")}</p>
+                  </div>
+                  {!isAddingConocimiento && (
+                    <button
+                      type="button"
+                      onClick={() => setIsAddingConocimiento(true)}
+                      className="text-accent hover:text-accent/80 transition-colors flex items-center gap-1 text-sm font-semibold cursor-pointer shrink-0"
+                    >
+                      <Plus className="w-4 h-4" /> {t("knowledge.add")}
+                    </button>
+                  )}
+                </div>
+
+                {isAddingConocimiento && (
+                  <form onSubmit={addConocimiento} className="flex gap-2 max-w-md">
+                    <label htmlFor="new-knowledge" className="sr-only">
+                      {t("knowledge.add")}
+                    </label>
+                    <input
+                      id="new-knowledge"
+                      type="text"
+                      list="knowledge-suggestions"
+                      placeholder={t("knowledge.placeholder")}
+                      value={newConocimiento}
+                      onChange={(e) => setNewConocimiento(e.target.value)}
+                      className="flex-grow bg-surface-sunken border border-border text-ink rounded-lg px-3 py-2 text-sm focus:outline-accent"
+                      autoFocus
+                      required
+                    />
+                    <datalist id="knowledge-suggestions">
+                      {knowledgeSuggestions.map((suggestion) => (
+                        <option key={suggestion} value={suggestion} />
+                      ))}
+                    </datalist>
+                    <button
+                      type="submit"
+                      disabled={isPending}
+                      className="bg-accent hover:opacity-95 text-white text-sm font-semibold px-4 rounded-xl cursor-pointer disabled:opacity-60 disabled:cursor-not-allowed"
+                    >
+                      {isPending ? <Loader2 className="w-4 h-4 animate-spin" /> : t("knowledge.add_btn")}
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => { setNewConocimiento(""); setIsAddingConocimiento(false); setConocimientoError(""); }}
+                      className="bg-surface-sunken hover:bg-border/30 text-ink text-sm font-semibold px-3 rounded-xl cursor-pointer"
+                      aria-label={t("knowledge.cancel_btn")}
+                    >
+                      <X className="w-4 h-4" />
+                    </button>
+                  </form>
+                )}
+
+                <div className="flex flex-wrap gap-2.5">
+                  {profile.conocimientos.length > 0 ? (
+                    profile.conocimientos.map((conocimiento) => (
+                      <div
+                        key={conocimiento}
+                        className="flex items-center gap-1.5 px-3 py-1.5 text-sm rounded-lg bg-accent/10 border border-accent/30 text-ink hover:border-accent/60 transition-all"
+                      >
+                        <span>{conocimiento}</span>
+                        <button
+                          type="button"
+                          onClick={() => removeConocimiento(conocimiento)}
+                          disabled={isPending}
+                          className="text-ink-subtle hover:text-magenta transition-colors focus:outline-none cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed"
+                          aria-label={t("knowledge.remove", { name: conocimiento })}
+                        >
+                          <X className="w-3.5 h-3.5" />
+                        </button>
+                      </div>
+                    ))
+                  ) : (
+                    <p className="text-sm text-ink-muted italic">{t("knowledge.empty")}</p>
+                  )}
+                </div>
+
+                {conocimientoError && (
+                  <p className="flex items-center gap-1.5 text-xs font-medium text-magenta">
+                    <AlertCircle className="size-3.5 shrink-0" /> {conocimientoError}
+                  </p>
+                )}
+                <p className="text-xs text-ink-muted">{t("knowledge.hint")}</p>
               </section>
 
               {/* Links */}
@@ -1888,8 +2012,8 @@ function AddProjectModal({ onClose, onCreate }: { onClose: () => void; onCreate:
                   <button
                     type="button"
                     key={s.name}
-                    onClick={() => toggleTech(s as any)}
-                    style={active ? { backgroundColor: `var(${(s as any).colorVar})`, color: 'white' } : undefined}
+                    onClick={() => toggleTech(s)}
+                    style={active ? { backgroundColor: `var(${s.colorVar})`, color: 'white' } : undefined}
                     className={`${active ? '' : 'bg-surface-sunken text-ink'} px-3 py-1.5 rounded-full text-sm border border-border/50`}
                   >
                     {s.name}

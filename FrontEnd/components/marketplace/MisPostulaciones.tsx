@@ -23,6 +23,7 @@ import {
   withdrawOfferAction,
 } from "@/lib/actions/marketplace";
 import { cn } from "@/lib/utils";
+import { PrototipoPreview } from "@/components/marketplace/PrototipoPreview";
 import type { Entregable, EntregableState, MyOffer, OfferState } from "@/lib/api/types";
 
 interface Props {
@@ -472,7 +473,10 @@ function OfertaCard({
         )}
 
         {/* ── Links ── */}
-        <div className="flex flex-wrap gap-3 mb-1">
+        <div className="flex flex-wrap items-center gap-3 mb-1">
+          {oferta.prototipo_url && (
+            <PrototipoPreview url={oferta.prototipo_url} title={oferta.proyecto?.titulo ?? ""} />
+          )}
           {oferta.prototipo_url && (
             <a
               href={oferta.prototipo_url}
@@ -481,6 +485,17 @@ function OfertaCard({
               className="inline-flex items-center gap-1 font-body text-xs font-semibold text-primary hover:underline"
             >
               {t("prototype_link")}
+              <ArrowUpRight className="size-3.5" aria-hidden="true" />
+            </a>
+          )}
+          {oferta.url_repositorio && (
+            <a
+              href={oferta.url_repositorio}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="inline-flex items-center gap-1 font-body text-xs font-semibold text-primary hover:underline"
+            >
+              {t("repo_link")}
               <ArrowUpRight className="size-3.5" aria-hidden="true" />
             </a>
           )}
