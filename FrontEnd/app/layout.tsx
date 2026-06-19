@@ -1,6 +1,11 @@
 import type { Metadata } from "next";
 import { Archivo_Narrow, Figtree } from "next/font/google";
 import "./globals.css";
+import { ThemeProvider } from "@/lib/theme/theme-provider";
+import { DarkModeStarfield } from "@/components/layout/dark-mode-starfield";
+
+// Aplica la clase `dark` antes del primer paint para que no haya parpadeo claro->oscuro.
+const THEME_INIT_SCRIPT = `try{if(localStorage.getItem('fwd-theme')==='dark'){document.documentElement.classList.add('dark')}}catch(e){}`;
 
 const figtree = Figtree({
   subsets: ["latin"],
@@ -31,7 +36,13 @@ export default function RootLayout({
       lang="es"
       className={`${figtree.variable} ${archivoNarrow.variable} h-full antialiased`}
     >
-      <body className="min-h-full">{children}</body>
+      <body className="min-h-full">
+        <script dangerouslySetInnerHTML={{ __html: THEME_INIT_SCRIPT }} />
+        <ThemeProvider>
+          <DarkModeStarfield />
+          {children}
+        </ThemeProvider>
+      </body>
     </html>
   );
 }

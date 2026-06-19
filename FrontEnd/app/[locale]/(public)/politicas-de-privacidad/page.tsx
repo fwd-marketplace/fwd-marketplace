@@ -11,7 +11,7 @@ export default async function PoliticasDePrivacidadPage() {
 
   return (
     <div className="flex min-h-[100dvh] flex-col bg-canvas">
-      <AppHeader userName={userName} avatarUrl={avatarUrl} {...(role ? { role } : {})} />
+      <AppHeader userName={userName} avatarUrl={avatarUrl} tone="public" {...(role ? { role } : {})} />
       <main className="flex-1">
         <PoliticasDePrivacidad />
       </main>

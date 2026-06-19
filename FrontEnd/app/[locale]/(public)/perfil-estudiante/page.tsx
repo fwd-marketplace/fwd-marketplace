@@ -1,7 +1,6 @@
 import { setRequestLocale } from "next-intl/server";
 import PerfilUsuario from "@/components/comp-perfil-estudiante/PerfilUsuario";
 import { AppHeader } from "@/components/layout/app-header";
-import { JuniorSubnav } from "@/components/layout/junior-subnav";
 import {
   fullName,
   type Activity,
@@ -106,8 +105,7 @@ export default async function EstudianteProfile({ params }: Props) {
 
   return (
     <div className="flex min-h-[100dvh] flex-col bg-canvas">
-      <AppHeader userName={fullName(profile)} avatarUrl={profile.avatarUrl} role="student" />
-      <JuniorSubnav />
+      <AppHeader userName={fullName(profile)} avatarUrl={profile.avatarUrl} role="student" tone="public" />
       <PerfilUsuario
         initialProfile={profile}
         initialActivities={activities}

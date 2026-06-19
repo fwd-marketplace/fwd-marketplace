@@ -756,7 +756,9 @@
     "learning_map": "Learning map",
     "logo_alt": "FWD Talent logo",
     "profile_link": "View profile",
-    "open_menu": "Open menu"
+    "open_menu": "Open menu",
+    "language": "Language",
+    "dark_mode": "Dark mode"
   },
   "mis_postulaciones": {
     "title": "My applications",

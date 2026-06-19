@@ -775,7 +775,9 @@
     "learning_map": "Mapa de aprendizaje",
     "logo_alt": "Logotipo FWD Talent",
     "profile_link": "Ver perfil",
-    "open_menu": "Abrir menú"
+    "open_menu": "Abrir menú",
+    "language": "Idioma",
+    "dark_mode": "Modo oscuro"
   },
   "mis_postulaciones": {
     "title": "Mis postulaciones",

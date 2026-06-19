@@ -129,6 +129,7 @@ interface Props {
   open?: boolean;
   onOpenChange?: (open: boolean) => void;
   showTrigger?: boolean;
+  dark?: boolean;
 }
 
 export function NotificationPanel({
@@ -136,6 +137,7 @@ export function NotificationPanel({
   open: controlledOpen,
   onOpenChange,
   showTrigger = true,
+  dark = false,
 }: Props) {
   const locale = useLocale();
   const t = useTranslations("notification_panel");
@@ -174,13 +176,21 @@ export function NotificationPanel({
           aria-label={t("aria_open")}
           aria-expanded={open}
           onClick={() => setOpen(!open)}
-          className="relative inline-flex size-9 items-center justify-center rounded-full text-ink-muted transition-colors duration-[var(--duration-fast)] ease-[var(--ease-out)] hover:bg-surface-sunken"
+          className={cn(
+            "relative inline-flex size-9 items-center justify-center rounded-full transition-colors duration-[var(--duration-fast)] ease-[var(--ease-out)]",
+            dark
+              ? "text-white/80 hover:bg-white/15 hover:text-white"
+              : "text-ink-muted hover:bg-surface-sunken",
+          )}
         >
           <Bell className="size-5" aria-hidden="true" />
           {unread > 0 && (
             <span
               aria-hidden="true"
-              className="absolute right-1.5 top-1.5 flex size-4 items-center justify-center rounded-full bg-primary text-[9px] font-bold text-white"
+              className={cn(
+                "absolute right-1.5 top-1.5 flex size-4 items-center justify-center rounded-full text-[9px] font-bold",
+                dark ? "bg-highlight text-ink-strong" : "bg-primary text-white",
+              )}
             >
               {unread > 9 ? "9+" : unread}
             </span>

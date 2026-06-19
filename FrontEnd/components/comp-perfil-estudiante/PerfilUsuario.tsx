@@ -1906,8 +1906,8 @@ function AddProjectModal({ onClose, onCreate }: { onClose: () => void; onCreate:
                   <button
                     type="button"
                     key={s.name}
-                    onClick={() => toggleTech(s as any)}
-                    style={active ? { backgroundColor: `var(${(s as any).colorVar})`, color: 'white' } : undefined}
+                    onClick={() => toggleTech(s)}
+                    style={active ? { backgroundColor: `var(${s.colorVar})`, color: 'white' } : undefined}
                     className={`${active ? '' : 'bg-surface-sunken text-ink'} px-3 py-1.5 rounded-full text-sm border border-border/50`}
                   >
                     {s.name}
