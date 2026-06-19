@@ -23,12 +23,23 @@ import {
 import { cn } from "@/lib/utils";
 import { MOCK_OFFERS, MOCK_PROJECTS, MOCK_MARKETPLACE_PROJECTS } from "@/lib/mock-data";
 import { MOCK_PROJECT_OFFERS } from "@/lib/mock-proceso";
+import {
+  getProjectByIdAction,
+  getProjectOffersAction,
+  submitOfferAction,
+  decideOfferAction,
+  getMyProjectsAction,
+  getProjectsAction,
+  getMyOffersAction,
+} from "@/lib/actions/marketplace";
+import { getProjectMensajesAction, sendMensajeAction } from "@/lib/actions/mensajes";
 import type {
-  ApiRoleName,
+  ApiMensaje,
   ApiProject,
+  ApiRoleName,
   MyOffer,
-  ProjectOffer,
   OfferState,
+  ProjectOffer,
 } from "@/lib/api/types";
 
 // ── Types ─────────────────────────────────────────────────────────────────────
@@ -76,6 +87,7 @@ interface EmpresaProposal {
 
 interface EmpresaStudent {
   id: number;
+  offerId: string;
   name: string;
   initials: string;
   date: string;
@@ -95,7 +107,6 @@ const OFFER_STATE_CONFIG: Record<
   no_seleccionada: { label: "No seleccionada", dot: "bg-magenta",  badge: "bg-magenta/10 text-magenta border-magenta/20",   step: 2 },
 };
 
-// Junior circle style per status
 function juniorCircle(status: ProposalStatus): { bg: string; icon: ReactNode } {
   switch (status) {
     case "nuevo":
@@ -114,7 +125,6 @@ function juniorCircle(status: ProposalStatus): { bg: string; icon: ReactNode } {
   }
 }
 
-// Empresa circle style per status
 function empresaCircle(status: EmpresaStatus): { bg: string; icon: ReactNode } {
   switch (status) {
     case "enviada":
@@ -129,7 +139,6 @@ function empresaCircle(status: EmpresaStatus): { bg: string; icon: ReactNode } {
   }
 }
 
-// Empresa student/proposal badge per status
 const EMPRESA_BADGE: Record<EmpresaStatus, string> = {
   enviada:        "bg-primary/10 text-primary border-primary/20",
   revision:       "bg-warning/10 text-warning border-warning/20",
@@ -225,6 +234,7 @@ function buildEmpresaStudents(
 
     return {
       id: idx + 1,
+      offerId: offer.id,
       name: `${offer.junior.nombre} ${offer.junior.apellido1 ?? ""}`.trim(),
       initials, date: dateStr,
       expanded: estado === "adjudicada",
@@ -242,21 +252,78 @@ export function GestionPage({ role, userId }: Props) {
   const locale = useLocale();
   const isEmpresa = role === "company";
 
-  const [selectedId, setSelectedId] = useState<string | null>(null);
-  const [section, setSection]       = useState<Section>("info");
+  // Sidebar data — starts with mock, replaced by real data from API
+  const [sidebarProjects, setSidebarProjects] = useState<ApiProject[]>(
+    () => isEmpresa ? MOCK_PROJECTS : MOCK_MARKETPLACE_PROJECTS,
+  );
+  const [myOffers, setMyOffers] = useState<MyOffer[]>(MOCK_OFFERS);
 
-  const selectedProject: ApiProject | null = isEmpresa
-    ? (MOCK_PROJECTS.find((p) => p.id === selectedId) ?? null)
-    : (MOCK_MARKETPLACE_PROJECTS.find((p) => p.id === selectedId) ?? null);
+  // Selection state
+  const [selectedId, setSelectedId]         = useState<string | null>(null);
+  const [selectedProject, setSelectedProject] = useState<ApiProject | null>(null);
+  const [selectedOffer, setSelectedOffer]     = useState<MyOffer | null>(null);
+  const [projectOffers, setProjectOffers]     = useState<ProjectOffer[]>([]);
+  const [section, setSection]               = useState<Section>("info");
 
-  // Junior always starts fresh in demo — offer lookup only for sidebar status badges
-  const selectedOffer: MyOffer | null = null;
+  // ── Load sidebar on mount ───────────────────────────────────────────────────
+  useEffect(() => {
+    let active = true;
+    (async () => {
+      if (isEmpresa) {
+        const r = await getMyProjectsAction();
+        if (active && r.ok) setSidebarProjects(r.data.projects);
+      } else {
+        const [pr, or] = await Promise.all([getProjectsAction(), getMyOffersAction()]);
+        if (active) {
+          if (pr.ok) setSidebarProjects(pr.data.projects);
+          if (or.ok) setMyOffers(or.data.ofertas);
+        }
+      }
+    })();
+    return () => { active = false; };
+  }, [isEmpresa]);
 
-  const projectOffers: ProjectOffer[] =
-    isEmpresa && selectedId === "proj-1" ? MOCK_PROJECT_OFFERS : [];
+  // ── Load project detail when selectedId changes ─────────────────────────────
+  useEffect(() => {
+    if (!selectedId) return;
+    let active = true;
+    (async () => {
+      const r = await getProjectByIdAction(selectedId);
+      if (active && r.ok) setSelectedProject(r.data);
+    })();
+    return () => { active = false; };
+  }, [selectedId]);
 
-  const handleSelect = (id: string) => { setSelectedId(id); setSection("info"); };
-  const handleBack   = () => setSelectedId(null);
+  // ── Load section-specific data when selectedId or myOffers change ───────────
+  useEffect(() => {
+    if (!selectedId) return;
+    let active = true;
+    (async () => {
+      if (isEmpresa) {
+        const r = await getProjectOffersAction(selectedId);
+        if (active && r.ok) setProjectOffers(r.data.ofertas);
+      } else {
+        const offer = myOffers.find((o) => o.proyecto?.id === selectedId) ?? null;
+        if (active) setSelectedOffer(offer);
+      }
+    })();
+    return () => { active = false; };
+  }, [selectedId, isEmpresa, myOffers]);
+
+  const handleSelect = (id: string) => {
+    setSelectedId(id);
+    setSection("info");
+    // Set immediate data from sidebar (may be mock or real)
+    const proj = sidebarProjects.find((p) => p.id === id) ?? null;
+    setSelectedProject(proj);
+    if (isEmpresa) {
+      setProjectOffers(id === "proj-1" ? MOCK_PROJECT_OFFERS : []);
+    } else {
+      setSelectedOffer(myOffers.find((o) => o.proyecto?.id === id) ?? null);
+    }
+  };
+
+  const handleBack = () => setSelectedId(null);
 
   return (
     <div className="flex h-[calc(100vh-4rem)] overflow-hidden">
@@ -282,9 +349,9 @@ export function GestionPage({ role, userId }: Props) {
             </div>
             <div className="flex-1 overflow-y-auto p-3">
               {isEmpresa ? (
-                MOCK_PROJECTS.length === 0 ? <SidebarEmpty text={t("empty_empresa")} /> : (
+                sidebarProjects.length === 0 ? <SidebarEmpty text={t("empty_empresa")} /> : (
                   <ul className="flex flex-col gap-0.5">
-                    {MOCK_PROJECTS.map((proyecto) => {
+                    {sidebarProjects.map((proyecto) => {
                       const count  = proyecto.id === "proj-1" ? MOCK_PROJECT_OFFERS.length : 0;
                       const hasAdj = proyecto.id === "proj-1" && MOCK_PROJECT_OFFERS.some((o) => o.estado.nombre === "adjudicada");
                       return (
@@ -306,10 +373,10 @@ export function GestionPage({ role, userId }: Props) {
                   </ul>
                 )
               ) : (
-                MOCK_MARKETPLACE_PROJECTS.length === 0 ? <SidebarEmpty text={t("empty_junior")} /> : (
+                sidebarProjects.length === 0 ? <SidebarEmpty text={t("empty_junior")} /> : (
                   <ul className="flex flex-col gap-0.5">
-                    {MOCK_MARKETPLACE_PROJECTS.map((proyecto) => {
-                      const oferta = MOCK_OFFERS.find((o) => o.proyecto?.id === proyecto.id);
+                    {sidebarProjects.map((proyecto) => {
+                      const oferta = myOffers.find((o) => o.proyecto?.id === proyecto.id);
                       const cfg    = oferta ? OFFER_STATE_CONFIG[oferta.estado.nombre] : null;
                       return (
                         <li key={proyecto.id}>
@@ -413,16 +480,27 @@ export function GestionPage({ role, userId }: Props) {
                 {selectedProject?.titulo}
               </span>
             </div>
-            {section === "info"    && <InfoPanel project={selectedProject} locale={locale} t={t} />}
-            {section === "chat"    && <ChatPanel isEmpresa={isEmpresa} project={selectedProject} t={t} />}
+            {section === "info" && (
+              <InfoPanel project={selectedProject} locale={locale} t={t} />
+            )}
+            {section === "chat" && (
+              <ChatPanel
+                isEmpresa={isEmpresa}
+                project={selectedProject}
+                t={t}
+                userId={userId}
+              />
+            )}
             {section === "proceso" && (
               <ProcesoPanel
+                key={`proceso-${selectedId}-${selectedOffer?.id ?? "none"}-${projectOffers.length}`}
                 isEmpresa={isEmpresa}
                 offer={selectedOffer}
                 projectOffers={projectOffers}
                 project={selectedProject}
                 locale={locale}
                 t={t}
+                userId={userId}
               />
             )}
           </>
@@ -515,39 +593,88 @@ function InfoPanel({ project, locale, t }: { project: ApiProject | null; locale:
 // ── Chat panel ────────────────────────────────────────────────────────────────
 
 function ChatPanel({
-  isEmpresa, project, t,
+  isEmpresa, project, t, userId,
 }: {
   isEmpresa: boolean;
   project: ApiProject | null;
   t: T;
+  userId: string | null;
 }) {
-  const seed    = project?.id ? (MOCK_CHAT[project.id] ?? []) : [];
-  const [msgs, setMsgs]   = useState<ChatMessage[]>(seed);
-  const [draft, setDraft] = useState("");
+  const me = isEmpresa ? "empresa" : "junior";
+
+  const [msgs, setMsgs]     = useState<ChatMessage[]>(() => project?.id ? (MOCK_CHAT[project.id] ?? []) : []);
+  const [draft, setDraft]   = useState("");
+  const [sending, setSending] = useState(false);
   const bottomRef = useRef<HTMLDivElement>(null);
+
+  // Load messages from backend and poll every 4 s (only when authenticated)
+  useEffect(() => {
+    if (!project?.id || !userId) return;
+
+    let active = true;
+
+    const mapMsg = (m: ApiMensaje): ChatMessage => ({
+      id: m.id,
+      from: m.remitente?.id === userId
+        ? (isEmpresa ? "empresa" : "junior")
+        : (isEmpresa ? "junior"  : "empresa"),
+      text: m.contenido,
+      time: new Date(m.fecha_envio).toLocaleTimeString("es-CR", { hour: "2-digit", minute: "2-digit" }),
+    });
+
+    // Reset to mock seed, then load real messages
+    setMsgs(MOCK_CHAT[project.id] ?? []);
+
+    const load = async () => {
+      const r = await getProjectMensajesAction(project.id);
+      if (!active) return;
+      if (r.ok) setMsgs(r.data.map(mapMsg));
+    };
+
+    void load();
+    const timer = setInterval(() => { void load(); }, 4000);
+
+    return () => { active = false; clearInterval(timer); };
+  }, [project?.id, userId, isEmpresa]);
 
   useEffect(() => {
     bottomRef.current?.scrollIntoView({ behavior: "smooth" });
   }, [msgs]);
 
-  const me = isEmpresa ? "empresa" : "junior";
-
   const otherName    = isEmpresa
-    ? (project?.empresa ? t("chat_label_junior") : t("chat_label_junior"))
+    ? t("chat_label_junior")
     : (project?.empresa?.nombre_comercial ?? t("chat_label_empresa"));
-  const otherInitial = isEmpresa ? "J" : (project?.empresa?.nombre_comercial?.[0]?.toUpperCase() ?? "E");
+  const otherInitial = isEmpresa
+    ? "J"
+    : (project?.empresa?.nombre_comercial?.[0]?.toUpperCase() ?? "E");
 
-  const send = () => {
+  const send = async () => {
     const text = draft.trim();
-    if (!text) return;
-    const now = new Date();
-    const time = now.toLocaleTimeString("es-CR", { hour: "2-digit", minute: "2-digit" });
-    setMsgs((prev) => [...prev, { id: `u-${Date.now()}`, from: me, text, time }]);
+    if (!text || sending) return;
+
     setDraft("");
+
+    if (!project?.id || !userId) {
+      // Demo mode: local only
+      const time = new Date().toLocaleTimeString("es-CR", { hour: "2-digit", minute: "2-digit" });
+      setMsgs((prev) => [...prev, { id: `demo-${Date.now()}`, from: me, text, time }]);
+      return;
+    }
+
+    setSending(true);
+
+    // Optimistic update
+    const time   = new Date().toLocaleTimeString("es-CR", { hour: "2-digit", minute: "2-digit" });
+    const tempId = `temp-${Date.now()}`;
+    setMsgs((prev) => [...prev, { id: tempId, from: me, text, time }]);
+
+    await sendMensajeAction(project.id, text);
+
+    setSending(false);
   };
 
   const handleKey = (e: React.KeyboardEvent<HTMLTextAreaElement>) => {
-    if (e.key === "Enter" && !e.shiftKey) { e.preventDefault(); send(); }
+    if (e.key === "Enter" && !e.shiftKey) { e.preventDefault(); void send(); }
   };
 
   return (
@@ -580,7 +707,6 @@ function ChatPanel({
               const isMine = msg.from === me;
               return (
                 <div key={msg.id} className={cn("flex items-end gap-2.5", isMine ? "flex-row-reverse" : "flex-row")}>
-                  {/* Avatar — only for other */}
                   {!isMine && (
                     <div className="mb-1 flex size-8 shrink-0 items-center justify-center rounded-full bg-secondary/15 font-heading text-xs font-bold text-secondary">
                       {otherInitial}
@@ -620,12 +746,12 @@ function ChatPanel({
             style={{ maxHeight: 120, overflowY: "auto" }}
           />
           <button
-            onClick={send}
-            disabled={!draft.trim()}
+            onClick={() => { void send(); }}
+            disabled={!draft.trim() || sending}
             aria-label={t("chat_send")}
             className={cn(
               "flex size-[42px] shrink-0 items-center justify-center rounded-xl transition-colors duration-[var(--duration-fast)]",
-              draft.trim()
+              draft.trim() && !sending
                 ? "bg-secondary text-white hover:bg-secondary/80"
                 : "bg-border text-ink-muted cursor-not-allowed",
             )}
@@ -642,7 +768,7 @@ function ChatPanel({
 // ── Proceso panel router ──────────────────────────────────────────────────────
 
 function ProcesoPanel({
-  isEmpresa, offer, projectOffers, project, locale, t,
+  isEmpresa, offer, projectOffers, project, locale, t, userId,
 }: {
   isEmpresa: boolean;
   offer: MyOffer | null;
@@ -650,9 +776,12 @@ function ProcesoPanel({
   project: ApiProject | null;
   locale: string;
   t: T;
+  userId: string | null;
 }) {
-  if (isEmpresa) return <EmpresaProcesoView offers={projectOffers} project={project} locale={locale} t={t} />;
-  return <JuniorProcesoView offer={offer} project={project} locale={locale} t={t} />;
+  if (isEmpresa) {
+    return <EmpresaProcesoView offers={projectOffers} project={project} locale={locale} t={t} userId={userId} />;
+  }
+  return <JuniorProcesoView offer={offer} project={project} locale={locale} t={t} userId={userId} />;
 }
 
 // ── Browser mockup ────────────────────────────────────────────────────────────
@@ -706,17 +835,24 @@ function t_noop(k: string) { return k; }
 // ── Junior proceso view ───────────────────────────────────────────────────────
 
 function JuniorProcesoView({
-  offer, project, t,
+  offer, project, t, userId,
 }: {
   offer: MyOffer | null;
   project: ApiProject | null;
   locale: string;
   t: T;
+  userId: string | null;
 }) {
   const [proposals, setProposals] = useState<JuniorProposal[]>(
     () => initJuniorProposals(offer, project),
   );
   const closed = false;
+
+  // Reset proposals when the offer changes (real data loaded from API)
+  useEffect(() => {
+    setProposals(initJuniorProposals(offer, project));
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [offer?.id]);
 
   // ── State helpers ────────────────────────────────────────────────────────
   const patch = (i: number, p: Partial<JuniorProposal>) =>
@@ -726,9 +862,17 @@ function JuniorProcesoView({
   const toggle      = (i: number) => { const c = proposals[i]; if (c) patch(i, { expanded: !c.expanded }); };
   const setField    = (i: number, k: keyof JuniorProposal, v: string) => patch(i, { [k]: v } as Partial<JuniorProposal>);
 
-  const submit = (i: number) => {
+  const submit = async (i: number) => {
     const p = proposals[i];
     if (!p?.desc.trim()) return;
+
+    if (project && userId) {
+      await submitOfferAction(project.id, {
+        propuesta: p.desc,
+        ...(p.link ? { prototipo_url: p.link } : {}),
+      });
+    }
+
     patch(i, { status: "enviada", expanded: false });
   };
 
@@ -737,7 +881,6 @@ function JuniorProcesoView({
   const hasSent = proposals.some((p) => !["nuevo", "editando"].includes(p.status));
   const isNew   = !latest || latest.status === "nuevo" || latest.status === "editando";
 
-  // Per-proposal badge meta (same shape as reference meta())
   const propMeta = (status: ProposalStatus): { label: string; cls: string } | null => {
     switch (status) {
       case "enviada":        return { label: t("proceso_badge_enviada"),  cls: "bg-primary/10 text-primary border-primary/20" };
@@ -749,7 +892,6 @@ function JuniorProcesoView({
     }
   };
 
-  // Top-level status banner
   let bannerLabel: string;
   let bannerCls: string;
   if (!isNew && latest) {
@@ -764,7 +906,6 @@ function JuniorProcesoView({
     bannerCls   = "bg-ink/5 text-ink-muted border-border";
   }
 
-  // Lock caption for ghost placeholder
   const lastReal = proposals[proposals.length - 1];
   let lockCaption = t("proceso_placeholder_nuevo");
   if (lastReal?.status === "enviada" || lastReal?.status === "revision") lockCaption = t("proceso_placeholder_revision");
@@ -797,7 +938,6 @@ function JuniorProcesoView({
           const isEditing = p.status === "editando";
           const pm        = propMeta(p.status);
           const submitOk  = p.desc.trim().length > 0;
-          // Show line between proposals; last real node has line only when not closed
           const showLine  = i < proposals.length - 1 || !closed;
 
           return (
@@ -906,7 +1046,7 @@ function JuniorProcesoView({
 
                     <div className="mt-6 flex justify-end">
                       <button
-                        onClick={() => submit(i)}
+                        onClick={() => { void submit(i); }}
                         disabled={!submitOk}
                         className={cn(
                           "rounded-xl bg-secondary px-6 py-3 font-body text-[14px] font-bold text-white transition-colors duration-[var(--duration-fast)]",
@@ -992,17 +1132,15 @@ function JuniorProcesoView({
           );
         })}
 
-        {/* Ghost — next locked version (only when not closed) */}
+        {/* Ghost — next locked version */}
         {!closed && (
           <div className="flex gap-[18px]">
             <div className="flex flex-col items-center" style={{ width: 32, flexShrink: 0, paddingTop: 1 }}>
-              {/* Empty dashed circle — no icon inside, matches reference exactly */}
               <div
                 className="size-[30px] shrink-0 rounded-full bg-surface"
                 style={{ border: "2px dashed #D7D2E0" }}
                 aria-hidden="true"
               />
-              {/* No line after ghost */}
             </div>
             <div className="min-w-0 flex-1 py-[2px]">
               <p className="font-body text-base font-bold" style={{ color: "#B3AEC0" }}>
@@ -1016,7 +1154,7 @@ function JuniorProcesoView({
           </div>
         )}
 
-        {/* Closed banner — inside the card */}
+        {/* Closed banner */}
         {closed && (
           <div className="mt-[6px] flex items-center gap-[10px] rounded-xl border p-[14px] font-body text-[14px] font-semibold"
             style={{ background: "#E0F3E9", borderColor: "#BFE6CF", color: "#1E7A4F" }}>
@@ -1033,17 +1171,24 @@ function JuniorProcesoView({
 // ── Empresa proceso view ──────────────────────────────────────────────────────
 
 function EmpresaProcesoView({
-  offers, project, locale, t,
+  offers, project, locale, t, userId,
 }: {
   offers: ProjectOffer[];
   project: ApiProject | null;
   locale: string;
   t: T;
+  userId: string | null;
 }) {
   const [students, setStudents] = useState<EmpresaStudent[]>(
     () => buildEmpresaStudents(offers, project, locale),
   );
   const [saved, setSaved] = useState<string | null>(null);
+
+  // Reset students when offers prop changes (real data loaded from API)
+  useEffect(() => {
+    setStudents(buildEmpresaStudents(offers, project, locale));
+    setSaved(null);
+  }, [offers, project, locale]);
 
   const toggleStudent = (id: number) =>
     setStudents((prev) =>
@@ -1084,7 +1229,17 @@ function EmpresaProcesoView({
     setSaved(`${sid}-${v}`);
   };
 
-  // Overall status per student (adjudicada > rest)
+  // Call backend for adjudicar / rechazar; other status changes remain local
+  const handleDecide = async (sid: number, v: number, accion: "aceptar" | "rechazar") => {
+    const student = students.find((s) => s.id === sid);
+    if (!student) return;
+    const nextStatus: EmpresaStatus = accion === "aceptar" ? "adjudicada" : "noseleccionada";
+    setStatus(sid, v, nextStatus);
+    if (student.offerId && userId) {
+      await decideOfferAction(student.offerId, accion);
+    }
+  };
+
   const overall = (props: EmpresaProposal[]): EmpresaStatus => {
     if (props.some((p) => p.status === "adjudicada")) return "adjudicada";
     return props[props.length - 1]?.status ?? "enviada";
@@ -1224,7 +1379,6 @@ function EmpresaProcesoView({
                             {/* Version detail */}
                             {p.expanded && (
                               <div className="mt-4 max-w-[840px]">
-                                {/* Description */}
                                 <label className="mb-2 block font-body text-sm font-bold text-ink">
                                   {t("description_label")}
                                 </label>
@@ -1232,7 +1386,6 @@ function EmpresaProcesoView({
                                   {p.desc}
                                 </div>
 
-                                {/* Link preview */}
                                 {p.link && (
                                   <>
                                     <label className="mb-2 mt-5 block font-body text-sm font-bold text-ink">
@@ -1247,7 +1400,6 @@ function EmpresaProcesoView({
                                   </>
                                 )}
 
-                                {/* Review comments */}
                                 <label className="mb-2 mt-5 block font-body text-sm font-bold text-ink">
                                   {t("proceso_comentarios_revision_label")}
                                 </label>
@@ -1259,16 +1411,15 @@ function EmpresaProcesoView({
                                   className="block w-full resize-y rounded-xl border border-border bg-surface p-3.5 font-body text-sm text-ink placeholder:text-ink-muted/60 focus:border-secondary focus:outline-none focus:ring-2 focus:ring-secondary/20"
                                 />
 
-                                {/* Status buttons */}
                                 <label className="mb-2 mt-5 block font-body text-sm font-bold text-ink">
                                   {t("proceso_estado_version")}
                                 </label>
                                 <div className="flex flex-wrap gap-2.5">
-                                  <button onClick={() => setStatus(s.id, p.v, "enviada")}        className={btnCls("enviada")}>        {t("proceso_badge_enviada")}</button>
-                                  <button onClick={() => setStatus(s.id, p.v, "revision")}       className={btnCls("revision")}>       {t("proceso_badge_revision")}</button>
-                                  <button onClick={() => setStatus(s.id, p.v, "cambios")}        className={btnCls("cambios")}>        {t("proceso_accion_cambios")}</button>
-                                  <button onClick={() => setStatus(s.id, p.v, "adjudicada")}     className={btnCls("adjudicada")}>     {t("proceso_accion_adjudicar")}</button>
-                                  <button onClick={() => setStatus(s.id, p.v, "noseleccionada")} className={btnCls("noseleccionada")}> {t("proceso_accion_rechazar")}</button>
+                                  <button onClick={() => setStatus(s.id, p.v, "enviada")}   className={btnCls("enviada")}>  {t("proceso_badge_enviada")}</button>
+                                  <button onClick={() => setStatus(s.id, p.v, "revision")}  className={btnCls("revision")}> {t("proceso_badge_revision")}</button>
+                                  <button onClick={() => setStatus(s.id, p.v, "cambios")}   className={btnCls("cambios")}>  {t("proceso_accion_cambios")}</button>
+                                  <button onClick={() => { void handleDecide(s.id, p.v, "aceptar"); }}     className={btnCls("adjudicada")}>    {t("proceso_accion_adjudicar")}</button>
+                                  <button onClick={() => { void handleDecide(s.id, p.v, "rechazar"); }}    className={btnCls("noseleccionada")}>{t("proceso_accion_rechazar")}</button>
                                 </div>
 
                                 {isSavedHere && (
