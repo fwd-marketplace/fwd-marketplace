@@ -1,4 +1,16 @@
 {
+  "hero_journey": {
+    "llamado_label": "The Call",
+    "llamado_cta": "Take your first step toward your career.",
+    "preparacion_label": "The Preparation",
+    "preparacion_cta": "Sharpen your tools before the challenge.",
+    "desafio_label": "The Challenge",
+    "desafio_cta": "Find your first real project.",
+    "transformacion_label": "The Transformation",
+    "transformacion_cta": "Show the world what you can do.",
+    "reconocimiento_label": "The Recognition",
+    "reconocimiento_cta": "Your effort speaks for itself."
+  },
   "site": {
     "name": "FWD Marketplace",
     "description": "Freelance project marketplace for junior graduates of Fundación Forward Costa Rica."
