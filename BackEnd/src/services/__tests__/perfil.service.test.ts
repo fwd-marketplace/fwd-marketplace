@@ -114,6 +114,22 @@ describe("updateMyPerfil", () => {
     expect(perfil).toMatchObject({ id: "est-1", skills: ["React"] });
   });
 
+  it("guarda los conocimientos tal cual (incluye libres), normaliza y deduplica", async () => {
+    responses["users"] = { data: { role: { nombre: "student" } }, error: null };
+    responses["estudiante"] = { data: { id: "est-1", descripcion: null }, error: null };
+    responses["estudiante_conocimiento"] = { data: null, error: null };
+
+    // "Contabilidad" repetida (dedup sin mayúsculas) y un valor libre con espacios
+    // de más (se normaliza). A diferencia de skills, NO se filtra por catálogo.
+    const perfil = await updateMyPerfil(TOKEN, USER, {
+      conocimientos: ["Contabilidad", "  recursos   humanos  ", "contabilidad"],
+    });
+    expect(perfil).toMatchObject({
+      id: "est-1",
+      conocimientos: ["Contabilidad", "recursos humanos"],
+    });
+  });
+
   it("actualiza el perfil de la empresa con los campos enviados", async () => {
     responses["users"] = { data: { role: { nombre: "company" } }, error: null };
     responses["empresario"] = {

@@ -892,6 +892,17 @@
       "empty": "No hay tecnologías agregadas aún.",
       "catalog_hint": "Solo se guardan las tecnologías reconocidas en nuestro catálogo."
     },
+    "knowledge": {
+      "title": "Conocimientos adicionales",
+      "description": "Saberes más allá de lo técnico (contabilidad, RRHH, marketing...) que amplían tu perfil y mejoran tus matches.",
+      "add": "Agregar",
+      "placeholder": "Ej. Contabilidad, Recursos Humanos, Marketing...",
+      "add_btn": "Añadir",
+      "cancel_btn": "Cancelar",
+      "remove": "Quitar {name}",
+      "empty": "Aún no agregaste conocimientos adicionales.",
+      "hint": "Elegí de las sugerencias o escribí el tuyo: todo se guarda y cuenta para el match."
+    },
     "links": {
       "title": "Enlaces del Talento",
       "github": "GitHub",
@@ -911,7 +922,9 @@
       "just_now": "Hace un momento",
       "updated_personal": "Actualizó su información personal de contacto",
       "removed_skill": "Eliminó la habilidad '{skill}' de su stack",
-      "added_skill": "Agregó la habilidad '{skill}' a su stack"
+      "added_skill": "Agregó la habilidad '{skill}' a su stack",
+      "removed_knowledge": "Eliminó el conocimiento '{name}' de su perfil",
+      "added_knowledge": "Agregó el conocimiento '{name}' a su perfil"
     },
     "applications_sidebar": {
       "title": "Postulaciones",

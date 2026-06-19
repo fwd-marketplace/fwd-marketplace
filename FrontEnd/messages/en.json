@@ -873,6 +873,17 @@
       "empty": "No technologies added yet.",
       "catalog_hint": "Only technologies recognized in our catalog are saved."
     },
+    "knowledge": {
+      "title": "Additional knowledge",
+      "description": "Skills beyond the technical (accounting, HR, marketing...) that broaden your profile and improve your matches.",
+      "add": "Add",
+      "placeholder": "e.g. Accounting, Human Resources, Marketing...",
+      "add_btn": "Add",
+      "cancel_btn": "Cancel",
+      "remove": "Remove {name}",
+      "empty": "You haven't added any additional knowledge yet.",
+      "hint": "Pick from the suggestions or type your own: everything is saved and counts toward matching."
+    },
     "links": {
       "title": "Talent Links",
       "github": "GitHub",
@@ -892,7 +903,9 @@
       "just_now": "Just now",
       "updated_personal": "Updated personal contact information",
       "removed_skill": "Removed skill '{skill}' from their stack",
-      "added_skill": "Added skill '{skill}' to their stack"
+      "added_skill": "Added skill '{skill}' to their stack",
+      "removed_knowledge": "Removed knowledge '{name}' from their profile",
+      "added_knowledge": "Added knowledge '{name}' to their profile"
     },
     "applications_sidebar": {
       "title": "Applications",

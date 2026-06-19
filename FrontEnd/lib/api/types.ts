@@ -34,10 +34,18 @@ export type CatalogProjectState = {
   orden: number;
 };
 
+/** Sugerencias de conocimientos no técnicos (contabilidad, RRHH, etc.). */
+export type CatalogKnowledge = {
+  id: string;
+  nombre: string;
+  categoria: string | null;
+};
+
 export type CatalogsResponse = {
   areas: CatalogArea[];
   skills: CatalogSkill[];
   projectStates: CatalogProjectState[];
+  conocimientos: CatalogKnowledge[];
 };
 
 export type ApiProject = {
@@ -121,6 +129,7 @@ export type ApiEstudianteDetail = {
   url_linkedin: string | null;
   url_portfolio: string | null;
   skills: string[];
+  conocimientos: string[];
 };
 
 export type StudentSpecialty = "frontend" | "backend" | "fullstack" | "ia";
@@ -136,6 +145,7 @@ export type StudentProfileUpdate = {
   disponibilidad?: StudentAvailability;
   modalidad?: string[];
   skills?: string[];
+  conocimientos?: string[];
   link_github?: string;
   link_linkedin?: string;
   link_portfolio?: string;
@@ -153,6 +163,7 @@ export type StudentPerfilResponse = {
   url_linkedin: string | null;
   url_portfolio: string | null;
   skills?: string[];
+  conocimientos?: string[];
 };
 
 export type ApiEmpresarioDetail = {

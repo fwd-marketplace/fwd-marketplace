@@ -83,6 +83,41 @@ async function syncStudentSkills(
   return [...matched.values()];
 }
 
+/**
+ * Sincroniza los conocimientos adicionales (no técnicos) del estudiante. A
+ * diferencia de las skills, NO se filtra contra un catálogo: se guarda el nombre
+ * tal cual (normalizado) para que las entradas libres ("otro") también persistan
+ * y cuenten para el match. Se normaliza (trim + espacios colapsados) y se
+ * deduplica sin distinguir mayúsculas para evitar repetidos.
+ */
+async function syncStudentConocimientos(
+  client: Client,
+  estudianteId: string,
+  names: string[],
+): Promise<string[]> {
+  const byKey = new Map<string, string>();
+  for (const raw of names) {
+    const nombre = raw.trim().replace(/\s+/g, " ");
+    if (!nombre) continue;
+    const key = nombre.toLowerCase();
+    if (!byKey.has(key)) byKey.set(key, nombre);
+  }
+
+  const { error: deleteError } = await client
+    .from("estudiante_conocimiento")
+    .delete()
+    .eq("id_estudiante", estudianteId);
+  if (deleteError) throw new ApiError(400, deleteError.message);
+
+  if (byKey.size > 0) {
+    const rows = [...byKey.values()].map((nombre) => ({ id_estudiante: estudianteId, nombre }));
+    const { error: insertError } = await client.from("estudiante_conocimiento").insert(rows);
+    if (insertError) throw new ApiError(400, insertError.message);
+  }
+
+  return [...byKey.values()];
+}
+
 async function updateEstudiante(client: Client, userId: string, body: unknown) {
   const input = parseBody(PerfilEstudianteSchema, body);
 
@@ -110,12 +145,17 @@ async function updateEstudiante(client: Client, userId: string, body: unknown) {
   const estudiante = result.data;
   if (!estudiante) throw new ApiError(404, "No tenés un perfil de estudiante");
 
+  let enriched: Record<string, unknown> = estudiante;
   if (input.skills !== undefined) {
     const skills = await syncStudentSkills(client, estudiante.id, input.skills);
-    return { ...estudiante, skills };
+    enriched = { ...enriched, skills };
+  }
+  if (input.conocimientos !== undefined) {
+    const conocimientos = await syncStudentConocimientos(client, estudiante.id, input.conocimientos);
+    enriched = { ...enriched, conocimientos };
   }
 
-  return estudiante;
+  return enriched;
 }
 
 /** Traduce los nombres FE de empresa/emprendedor a columnas de `empresario`. */
