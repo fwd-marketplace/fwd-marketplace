@@ -292,25 +292,25 @@
         "selected_count": "{count} seleccionadas"
       },
       "step6": {
-      "perfil_junior": {
-        "work": {
-          "add_modal_title": "Agregar nuevo proyecto",
-          "fields": {
-            "name": "Nombre del proyecto",
-            "url": "URL / Enlace",
-            "description": "Descripción breve",
-            "techs": "Tecnologías (separadas por comas)",
-            "techs_placeholder": "Ej. React, Node.js"
-          },
-          "create": "Crear proyecto",
-          "cancel": "Cancelar",
-          "preview_btn": "Vista previa",
-          "errors": {
-            "name_required": "El nombre del proyecto es obligatorio.",
-            "url_required": "La URL del proyecto es obligatoria."
+        "perfil_junior": {
+          "work": {
+            "add_modal_title": "Agregar nuevo proyecto",
+            "fields": {
+              "name": "Nombre del proyecto",
+              "url": "URL / Enlace",
+              "description": "Descripción breve",
+              "techs": "Tecnologías (separadas por comas)",
+              "techs_placeholder": "Ej. React, Node.js"
+            },
+            "create": "Crear proyecto",
+            "cancel": "Cancelar",
+            "preview_btn": "Vista previa",
+            "errors": {
+              "name_required": "El nombre del proyecto es obligatorio.",
+              "url_required": "La URL del proyecto es obligatoria."
+            }
           }
-        }
-      },
+        },
         "eyebrow": "Opcional",
         "title": "¿Tienes portafolio o proyectos?",
         "description": "Agrega enlaces para mostrar tu trabajo. Puedes completar esto después.",
@@ -996,18 +996,16 @@
       },
       "create": "Crear proyecto",
       "cancel": "Cancelar",
-        "errors": {
+      "errors": {
         "name_required": "El nombre del PORTAFOLIO es obligatorio.",
         "url_required": "La URL del PORTAFOLIO es obligatoria."
-      }
-      ,
+      },
       "confirm_delete": {
         "title": "Eliminar proyecto",
         "message": "¿Estás seguro que querés eliminar este proyecto?",
         "cancel": "Cancelar",
         "confirm": "Eliminar"
-      }
-      ,
+      },
       "work": {
         "add_modal_title": "Agregar nuevo PORTAFOLIO",
         "fields": {
@@ -1704,5 +1702,41 @@
     "empty": "Sin notificaciones",
     "view_all": "Ver toda la actividad",
     "preferences": "Preferencias"
+  },
+  "cosmos_profesional": {
+    "screen_label": "Constelación de puntos importantes",
+    "controls": {
+      "style_aria": "Estilo de estrella",
+      "style_diamante": "◆ Diamante",
+      "style_circulo": "● Círculo",
+      "style_punta4": "✦ 4 puntas",
+      "style_punta6": "✶ 6 puntas",
+      "style_destello": "✧ Destello",
+      "style_anillo": "◌ Anillo",
+      "toggle_aria": "Mostrar u ocultar trazos",
+      "trazos": "Trazos"
+    },
+    "stars": {
+      "0": {
+        "title": "Proyectos reales",
+        "desc": "Trabajá en retos de empresas, no en ejercicios de práctica."
+      },
+      "1": {
+        "title": "Las empresas publican",
+        "desc": "Suben proyectos y briefs pensados para talento junior."
+      },
+      "2": {
+        "title": "Match con tus skills",
+        "desc": "Te mostramos oportunidades según lo que sabés hacer."
+      },
+      "3": {
+        "title": "Notificaciones",
+        "desc": "Enterate apenas se abre un proyecto que encaja con vos."
+      },
+      "4": {
+        "title": "Publicate",
+        "desc": "Hacete visible como una estrella del cielo."
+      }
+    }
   }
 }
