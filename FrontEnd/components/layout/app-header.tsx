@@ -15,7 +15,6 @@ import { NotificationPanel } from "@/components/layout/notification-panel";
 const NAV_JUNIOR = [
   { key: "nav_marketplace", href: "/marketplace" },
   { key: "nav_gestion",     href: "/gestion" },
-  { key: "nav_mensajes",    href: "/mensajes" },
   { key: "nav_my_profile",  href: "/perfil-estudiante" },
 ] as const;
 

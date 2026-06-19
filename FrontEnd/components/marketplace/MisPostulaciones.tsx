@@ -343,7 +343,7 @@ function OfertaCard({
           </div>
           {oferta.proyecto && (
             <Link
-              href={`/${locale}/mensajes?proyecto=${oferta.proyecto.id}`}
+              href={`/${locale}/marketplace/${oferta.proyecto.id}/proceso`}
               className="inline-flex items-center gap-1 rounded-full bg-accent/20 px-3 py-1 font-body text-[11px] font-bold text-accent transition-colors hover:bg-accent hover:text-white"
             >
               <ArrowUpRight className="size-3" aria-hidden="true" />
