@@ -56,9 +56,12 @@ export function NotificationPanel({
   const [notifs, setNotifs] = useState<ApiNotificacion[]>([]);
   const [internalOpen, setInternalOpen] = useState(false);
 
+  const isControlled = controlledOpen !== undefined;
+  const open = isControlled ? controlledOpen : internalOpen;
+
   // Trae las notificaciones reales del usuario autenticado (server action: lee la cookie httpOnly).
   useEffect(() => {
-    if (!role) return;
+    if (!role || !open) return;
     let active = true;
     void getNotificacionesAction().then((res) => {
       if (active && res.ok) setNotifs(res.data);
@@ -66,10 +69,7 @@ export function NotificationPanel({
     return () => {
       active = false;
     };
-  }, [role]);
-
-  const isControlled = controlledOpen !== undefined;
-  const open = isControlled ? controlledOpen : internalOpen;
+  }, [role, open]);
 
   function setOpen(next: boolean) {
     if (!isControlled) {
@@ -127,14 +127,14 @@ export function NotificationPanel({
           type="button"
           aria-hidden="true"
           tabIndex={-1}
-          className="fixed inset-0 z-30 cursor-default"
+          className="fixed inset-0 z-[55] cursor-default"
           onClick={() => setOpen(false)}
         />
       )}
 
       {/* ── Panel dropdown ── */}
       {open && (
-        <div className="absolute right-0 top-full z-40 mt-2 w-80 overflow-hidden rounded-2xl border border-border bg-surface shadow-[var(--shadow-elevated)]">
+        <div className="absolute right-0 top-full z-[60] mt-2 w-80 overflow-hidden rounded-2xl border border-border bg-surface shadow-[var(--shadow-elevated)]">
           {/* Header del panel */}
           <div className="flex items-center justify-between border-b border-border px-4 py-3">
             <h2 className="font-heading text-sm font-bold text-ink-strong">
