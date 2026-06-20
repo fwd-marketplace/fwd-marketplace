@@ -431,6 +431,20 @@ export async function calificarOferta(
     .select("id, calificacion, comentario_calificacion, replica_calificacion, estado:estado_oferta(nombre)")
     .single();
   if (error) throw new ApiError(400, error.message);
+
+  // Cerrar el proyecto automáticamente al calificar (fin del ciclo de vida).
+  const { data: estadoCerrado } = await client
+    .from("estado_proyecto")
+    .select("id")
+    .eq("nombre", "cerrado")
+    .maybeSingle();
+  if (estadoCerrado) {
+    await client
+      .from("proyecto")
+      .update({ id_estado: estadoCerrado.id })
+      .eq("id", oferta.id_proyecto);
+  }
+
   return data;
 }
 

@@ -84,7 +84,8 @@ export async function listProjects(accessToken: string, filters: ProjectFilters)
   if (error) {
     throw new ApiError(500, error.message);
   }
-  return data;
+  // Solo exponer proyectos en recepción en el marketplace; cerrado/cancelado/borrador no aparecen.
+  return (data ?? []).filter((p) => p.estado?.nombre === "en_recepcion");
 }
 
 /**

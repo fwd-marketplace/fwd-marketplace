@@ -92,6 +92,8 @@ interface JuniorProposal {
   previewProject: string;
   repo: string;
   observaciones: string;
+  calificacion: number | null;
+  comentario_calificacion: string | null;
 }
 
 interface EmpresaProposal {
@@ -175,7 +177,7 @@ const EMPRESA_BADGE: Record<EmpresaStatus, string> = {
 
 
 function blankProposal(v: number): JuniorProposal {
-  return { v, status: "nuevo", expanded: false, desc: "", link: "", fileName: "", docUrl: "", previewName: "", previewProject: "", repo: "", observaciones: "" };
+  return { v, status: "nuevo", expanded: false, desc: "", link: "", fileName: "", docUrl: "", previewName: "", previewProject: "", repo: "", observaciones: "", calificacion: null, comentario_calificacion: null };
 }
 
 function initJuniorProposals(offers: MyOffer[], project: ApiProject | null): JuniorProposal[] {
@@ -197,6 +199,8 @@ function initJuniorProposals(offers: MyOffer[], project: ApiProject | null): Jun
     previewProject: project?.area?.nombre ?? "",
     repo: offer.url_repositorio ?? "",
     observaciones: offer.comentario_revision ?? "",
+    calificacion: offer.calificacion ?? null,
+    comentario_calificacion: offer.comentario_calificacion ?? null,
   }));
   const latest = offers[offers.length - 1];
   if (latest?.estado.nombre === "solicitar_cambios") {
@@ -1129,7 +1133,7 @@ function JuniorProcesoView({
     () => initJuniorProposals(offers, project),
   );
   const [submitError, setSubmitError] = useState("");
-  const closed = false;
+  const closed = proposals.some((p) => p.status === "aceptada" && p.calificacion != null);
 
   // Reset proposals when offers change (real data loaded from API)
   const latestOfferId = offers[offers.length - 1]?.id;
@@ -1463,14 +1467,45 @@ function JuniorProcesoView({
                     <label className="mb-2 mt-5 block font-body text-[13px] font-bold text-ink">
                       {t("proceso_observaciones_label")}
                     </label>
-                    <div
-                      className="min-h-[84px] rounded-xl border p-[14px] font-body text-[14px] leading-relaxed"
-                      style={p.observaciones
-                        ? { borderColor: "#F0CDBF", background: "#FFF6F2", color: "#9A3B23" }
-                        : { borderColor: "#E8E5EF", background: "#FBFAFD", color: "#B3AEC0" }}
-                    >
-                      {p.observaciones || t("proceso_observaciones_empty")}
-                    </div>
+                    {p.status === "aceptada" ? (
+                      <div className="rounded-xl border border-accent/30 bg-accent/5 p-[14px] font-body text-[14px] leading-relaxed text-ink">
+                        {p.observaciones || t("proceso_revision_empty")}
+                      </div>
+                    ) : (
+                      <div
+                        className="min-h-[84px] rounded-xl border p-[14px] font-body text-[14px] leading-relaxed"
+                        style={p.observaciones
+                          ? { borderColor: "#F0CDBF", background: "#FFF6F2", color: "#9A3B23" }
+                          : { borderColor: "#E8E5EF", background: "#FBFAFD", color: "#B3AEC0" }}
+                      >
+                        {p.observaciones || t("proceso_observaciones_empty")}
+                      </div>
+                    )}
+
+                    {p.status === "aceptada" && p.calificacion != null && (
+                      <div className="mt-4 rounded-xl border border-highlight/30 bg-highlight/5 p-[14px]">
+                        <p className="mb-2 font-body text-[10px] font-bold uppercase tracking-wider text-ink-muted">
+                          {t("proceso_calificacion_empresa")}
+                        </p>
+                        <div className="flex items-center gap-1">
+                          {Array.from({ length: 5 }).map((_, i) => (
+                            <Star
+                              key={i}
+                              className={cn("size-5", i < p.calificacion! ? "fill-highlight text-highlight" : "text-border")}
+                              aria-hidden="true"
+                            />
+                          ))}
+                          <span className="ml-2 font-heading text-base font-bold text-ink-strong">
+                            {p.calificacion}/5
+                          </span>
+                        </div>
+                        {p.comentario_calificacion && (
+                          <p className="mt-2 font-body text-sm leading-relaxed text-ink">
+                            {p.comentario_calificacion}
+                          </p>
+                        )}
+                      </div>
+                    )}
                   </div>
                 )}
               </div>
@@ -1478,8 +1513,8 @@ function JuniorProcesoView({
           );
         })}
 
-        {/* Ghost — next locked version */}
-        {!closed && (
+        {/* Ghost — next locked version (hidden when final state reached) */}
+        {!closed && latest?.status !== "aceptada" && latest?.status !== "noseleccionada" && (
           <div className="flex gap-[18px]">
             <div className="flex flex-col items-center" style={{ width: 32, flexShrink: 0, paddingTop: 1 }}>
               <div
