@@ -729,6 +729,7 @@ export type Database = {
         Row: {
           calificacion: number | null
           comentario_calificacion: string | null
+          comentario_revision: string | null
           documentacion_tecnica: string | null
           documentacion_url: string | null
           fecha_envio: string
@@ -745,6 +746,7 @@ export type Database = {
         Insert: {
           calificacion?: number | null
           comentario_calificacion?: string | null
+          comentario_revision?: string | null
           documentacion_tecnica?: string | null
           documentacion_url?: string | null
           fecha_envio?: string
@@ -761,6 +763,7 @@ export type Database = {
         Update: {
           calificacion?: number | null
           comentario_calificacion?: string | null
+          comentario_revision?: string | null
           documentacion_tecnica?: string | null
           documentacion_url?: string | null
           fecha_envio?: string

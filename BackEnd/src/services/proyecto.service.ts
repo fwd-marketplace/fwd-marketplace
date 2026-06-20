@@ -83,6 +83,15 @@ const PROJECT_SELECT = `
 export async function listProjects(accessToken: string, filters: ProjectFilters) {
   const client = supabaseForToken(accessToken);
 
+  // Resolver el id del estado "en_recepcion" para filtrar en DB (no en JS).
+  const { data: estadoRec, error: estadoError } = await client
+    .from("estado_proyecto")
+    .select("id")
+    .eq("nombre", "en_recepcion")
+    .maybeSingle();
+  if (estadoError) throw new ApiError(500, estadoError.message);
+  if (!estadoRec) return []; // seeds no aplicados — no hay proyectos posibles
+
   // Filtro por skill: primero obtenemos los proyectos que la incluyen.
   let projectIdsConSkill: string[] | null = null;
   if (filters.skill) {
@@ -100,9 +109,15 @@ export async function listProjects(accessToken: string, filters: ProjectFilters)
     }
   }
 
+  const now = new Date().toISOString();
+
   let query = client
     .from("proyecto")
     .select(PROJECT_SELECT)
+    // Solo proyectos activamente en recepción (estado exacto en DB)
+    .eq("id_estado", estadoRec.id)
+    // Excluir proyectos cuyo plazo ya venció (fecha_cierre en el pasado)
+    .or(`fecha_cierre.is.null,fecha_cierre.gt.${now}`)
     .order("fecha_publicacion", { ascending: false, nullsFirst: false });
 
   if (filters.area) {
@@ -122,7 +137,7 @@ export async function listProjects(accessToken: string, filters: ProjectFilters)
   if (error) {
     throw new ApiError(500, error.message);
   }
-  return data;
+  return data ?? [];
 }
 
 /**
@@ -149,7 +164,21 @@ export async function listMyProjects(accessToken: string, userId: string) {
     .eq("id_empresario", empresario.id)
     .order("fecha_publicacion", { ascending: false, nullsFirst: false });
   if (error) throw new ApiError(500, error.message);
-  return data;
+
+  // 3. Contar ofertas por proyecto en una sola consulta.
+  const projectIds = (data ?? []).map((p) => p.id);
+  const countMap = new Map<string, number>();
+  if (projectIds.length > 0) {
+    const { data: ofertaRows } = await client
+      .from("oferta")
+      .select("id_proyecto")
+      .in("id_proyecto", projectIds);
+    for (const row of ofertaRows ?? []) {
+      countMap.set(row.id_proyecto, (countMap.get(row.id_proyecto) ?? 0) + 1);
+    }
+  }
+
+  return (data ?? []).map((p) => ({ ...p, n_ofertas: countMap.get(p.id) ?? 0 }));
 }
 
 /** Devuelve un proyecto por id, o 404 si no existe / no es visible para el usuario. */
@@ -345,6 +374,7 @@ export async function updateProject(
   if (input.id_area_negocio !== undefined) updatePayload.id_area_negocio = input.id_area_negocio;
   if (input.plazo_dias !== undefined) updatePayload.plazo_dias = input.plazo_dias;
   if (input.usa_ia !== undefined) updatePayload.usa_ia = input.usa_ia;
+  if (input.tecnologias_extra !== undefined) updatePayload.tecnologias_extra = input.tecnologias_extra;
 
   if (Object.keys(updatePayload).length > 0) {
     const { error: updateError } = await client

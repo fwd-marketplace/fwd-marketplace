@@ -1,7 +1,7 @@
-import { supabaseForToken } from "../config/supabase";
+import { supabaseForToken, supabaseAdmin } from "../config/supabase";
 import { ApiError } from "../utils/ApiError";
 import { crearNotificacion, MENSAJES_NOTIFICACION } from "./notificacion.service";
-import type { CreateOfertaInput, DecideOfertaInput, CalificarOfertaInput, ReplicarCalificacionInput } from "../validations/oferta";
+import type { CreateOfertaInput, DecideOfertaInput, ReviewOfertaInput, CalificarOfertaInput, ReplicarCalificacionInput, EditOfertaInput } from "../validations/oferta";
 
 type Client = ReturnType<typeof supabaseForToken>;
 
@@ -102,6 +102,23 @@ export async function createOferta(
     throw new ApiError(409, "Este proyecto no está recibiendo postulaciones");
   }
 
+  // Check for existing offers from this user for this project.
+  // A new version is only allowed when the latest offer is in 'solicitar_cambios'.
+  const { data: existingOfertas, error: existError } = await client
+    .from("oferta")
+    .select("id, estado:estado_oferta(nombre), fecha_envio")
+    .eq("id_proyecto", projectId)
+    .eq("id_usuario", userId)
+    .order("fecha_envio", { ascending: false });
+  if (existError) throw new ApiError(500, existError.message);
+  if (existingOfertas && existingOfertas.length > 0) {
+    const latest = existingOfertas[0]!;
+    const latestState = (latest.estado as { nombre: string } | null)?.nombre;
+    if (latestState !== "solicitar_cambios") {
+      throw new ApiError(409, "Ya postulaste a este proyecto. Solo podés enviar una nueva versión cuando la empresa solicite cambios.");
+    }
+  }
+
   const estadoId = await getEstadoOfertaId(client, "enviada");
   const { data: oferta, error } = await client
     .from("oferta")
@@ -117,10 +134,7 @@ export async function createOferta(
     })
     .select("id, fecha_envio")
     .single();
-  if (error) {
-    if (error.code === "23505") throw new ApiError(409, "Ya postulaste a este proyecto");
-    throw new ApiError(400, error.message);
-  }
+  if (error) throw new ApiError(400, error.message);
   return oferta;
 }
 
@@ -145,7 +159,7 @@ export async function listMyOfertas(accessToken: string, userId: string) {
   const { data, error } = await client
     .from("oferta")
     .select(
-      "id, propuesta, prototipo_url, url_repositorio, documentacion_tecnica, documentacion_url, fecha_envio, estado:estado_oferta(nombre), proyecto:proyecto(id, titulo, fecha_cierre)",
+      "id, propuesta, prototipo_url, url_repositorio, documentacion_tecnica, documentacion_url, fecha_envio, comentario_revision, calificacion, comentario_calificacion, estado:estado_oferta(nombre), proyecto:proyecto(id, titulo, fecha_cierre)",
     )
     .eq("id_usuario", userId)
     .order("fecha_envio", { ascending: false });
@@ -212,7 +226,7 @@ export async function listProjectOfertas(accessToken: string, userId: string, pr
   const { data, error } = await client
     .from("oferta")
     .select(
-      "id, propuesta, prototipo_url, url_repositorio, documentacion_tecnica, documentacion_url, fecha_envio, estado:estado_oferta(nombre), junior:users(id, nombre, apellido1)",
+      "id, propuesta, prototipo_url, url_repositorio, documentacion_tecnica, documentacion_url, fecha_envio, comentario_revision, calificacion, comentario_calificacion, estado:estado_oferta(nombre), junior:users(id, nombre, apellido1)",
     )
     .eq("id_proyecto", projectId)
     .order("fecha_envio", { ascending: false });
@@ -293,6 +307,110 @@ export async function decideOferta(
 }
 
 /**
+ * La empresa revisa una postulación: puede ponerla en revisión, solicitar
+ * cambios, adjudicarla o rechazarla, y dejar un comentario opcional.
+ * Reemplaza el flujo antiguo que solo aceptaba "aceptar"/"rechazar".
+ */
+export async function reviewOferta(
+  accessToken: string,
+  userId: string,
+  ofertaId: string,
+  input: ReviewOfertaInput,
+) {
+  const client = supabaseForToken(accessToken);
+
+  const { data: oferta, error: ofertaError } = await client
+    .from("oferta")
+    .select("id, id_proyecto, id_usuario")
+    .eq("id", ofertaId)
+    .maybeSingle();
+  if (ofertaError) throw new ApiError(500, ofertaError.message);
+  if (!oferta) throw new ApiError(404, "Postulación no encontrada");
+
+  const { data: proyecto, error: projError } = await client
+    .from("proyecto")
+    .select("empresa:empresario(id_usuario)")
+    .eq("id", oferta.id_proyecto)
+    .maybeSingle();
+  if (projError) throw new ApiError(500, projError.message);
+  if (proyecto?.empresa?.id_usuario !== userId) {
+    throw new ApiError(403, "No podés revisar esta postulación");
+  }
+
+  if (input.accion === "aceptar" && (await tieneProyectoActivo(client, oferta.id_usuario))) {
+    throw new ApiError(
+      409,
+      "Este estudiante ya tiene un proyecto activo y no está disponible por el momento.",
+    );
+  }
+
+  const estadoMap: Record<ReviewOfertaInput["accion"], string> = {
+    en_revision:       "en_revision",
+    solicitar_cambios: "solicitar_cambios",
+    aceptar:           "adjudicada",
+    rechazar:          "no_seleccionada",
+  };
+  const estadoId = await getEstadoOfertaId(client, estadoMap[input.accion]);
+
+  const { data, error } = await client
+    .from("oferta")
+    .update({
+      id_estado: estadoId,
+      ...(input.comentario !== undefined ? { comentario_revision: input.comentario } : {}),
+      updated_at: new Date().toISOString(),
+    })
+    .eq("id", ofertaId)
+    .select("id, comentario_revision, estado:estado_oferta(nombre)")
+    .single();
+  if (error) throw new ApiError(400, error.message);
+  return data;
+}
+
+/**
+ * El junior edita su propia propuesta. Solo si está en "enviada" (aún no
+ * revisada por la empresa). Permite actualizar carta, enlace y documentación.
+ */
+export async function editOferta(
+  accessToken: string,
+  userId: string,
+  ofertaId: string,
+  input: EditOfertaInput,
+) {
+  const client = supabaseForToken(accessToken);
+
+  const { data: oferta, error: ofertaError } = await client
+    .from("oferta")
+    .select("id, id_usuario, estado:estado_oferta(nombre)")
+    .eq("id", ofertaId)
+    .maybeSingle();
+  if (ofertaError) throw new ApiError(500, ofertaError.message);
+  if (!oferta) throw new ApiError(404, "Postulación no encontrada");
+  if (oferta.id_usuario !== userId) throw new ApiError(403, "No podés editar esta postulación");
+
+  const estadoActual = oferta.estado?.nombre;
+  if (estadoActual !== "enviada") {
+    throw new ApiError(409, "Solo podés editar una propuesta que aún no fue revisada");
+  }
+
+  const { data, error } = await client
+    .from("oferta")
+    .update({
+      ...(input.propuesta !== undefined      ? { propuesta: input.propuesta }                         : {}),
+      ...(input.prototipo_url !== undefined  ? { prototipo_url: input.prototipo_url ?? null }         : {}),
+      ...(input.url_repositorio !== undefined ? { url_repositorio: input.url_repositorio ?? null }    : {}),
+      ...(input.documentacion_tecnica !== undefined ? { documentacion_tecnica: input.documentacion_tecnica ?? null } : {}),
+      ...(input.documentacion_url !== undefined ? { documentacion_url: input.documentacion_url ?? null } : {}),
+      updated_at: new Date().toISOString(),
+    })
+    .eq("id", ofertaId)
+    .eq("id_usuario", userId)
+    .select("id, propuesta, prototipo_url, url_repositorio, documentacion_tecnica, documentacion_url")
+    .single();
+  if (error) throw new ApiError(400, error.message);
+  return data;
+}
+
+/**
  * El junior retira su propia postulación. Solo se puede retirar si está en
  * "enviada" o "en_revision"; no se puede retirar una oferta adjudicada.
  */
@@ -356,9 +474,6 @@ export async function calificarOferta(
   if (proyecto?.empresa?.id_usuario !== userId) {
     throw new ApiError(403, "No podés calificar esta postulación");
   }
-  if (proyecto?.estado?.nombre !== "cerrado") {
-    throw new ApiError(409, "Solo podés calificar postulaciones de proyectos cerrados");
-  }
 
   const { data, error } = await client
     .from("oferta")
@@ -371,6 +486,25 @@ export async function calificarOferta(
     .select("id, calificacion, comentario_calificacion, replica_calificacion, estado:estado_oferta(nombre)")
     .single();
   if (error) throw new ApiError(400, error.message);
+
+  // Cerrar el proyecto automáticamente al calificar (fin del ciclo de vida).
+  // Usa el cliente admin (service_role) para bypassar RLS: es una operación de
+  // sistema, no una acción directa del usuario.
+  const admin = supabaseAdmin();
+  const { data: estadoCerrado, error: estadoCerradoError } = await admin
+    .from("estado_proyecto")
+    .select("id")
+    .eq("nombre", "cerrado")
+    .maybeSingle();
+  if (estadoCerradoError) throw new ApiError(500, estadoCerradoError.message);
+  if (!estadoCerrado) throw new ApiError(500, "Falta el estado 'cerrado' (seeds no aplicados)");
+
+  const { error: closeError } = await admin
+    .from("proyecto")
+    .update({ id_estado: estadoCerrado.id })
+    .eq("id", oferta.id_proyecto);
+  if (closeError) throw new ApiError(500, `No se pudo cerrar el proyecto: ${closeError.message}`);
+
   return data;
 }
 

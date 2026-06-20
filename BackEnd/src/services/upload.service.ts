@@ -2,6 +2,25 @@ import { getCloudinary } from "../config/cloudinary";
 import { ApiError } from "../utils/ApiError";
 import { logger } from "../utils/logger";
 
+export function uploadDocument(buffer: Buffer, folder: string, originalName: string): Promise<string> {
+  const cloudinary = getCloudinary();
+  const publicId = `${folder}/${Date.now()}-${originalName.replace(/[^a-zA-Z0-9._-]/g, "_")}`;
+
+  return new Promise<string>((resolve, reject) => {
+    const stream = cloudinary.uploader.upload_stream(
+      { folder, resource_type: "raw", public_id: publicId },
+      (error, result) => {
+        if (error || !result) {
+          reject(new ApiError(502, error?.message ?? "No se pudo subir el documento"));
+          return;
+        }
+        resolve(result.secure_url);
+      },
+    );
+    stream.end(buffer);
+  });
+}
+
 export function uploadImage(buffer: Buffer, folder: string): Promise<string> {
   const cloudinary = getCloudinary();
 

@@ -9,6 +9,7 @@ import type {
   CatalogsResponse,
   CompanyProjectState,
   CreateProjectInput,
+  EditOfferInput,
   Entregable,
   EntregablesResponse,
   MyOffersResponse,
@@ -18,6 +19,7 @@ import type {
   ProjectsResponse,
   RankingResponse,
   ReplicaInput,
+  ReviewOfferInput,
   SubmitEntregableInput,
   SubmitOfferInput,
   UpdateProjectInput,
@@ -169,11 +171,30 @@ export function getMyCalificaciones(): Promise<Result<ApiCalificacion[]>> {
   });
 }
 
+export function reviewOffer(offerId: string, input: ReviewOfferInput): Promise<Result<void>> {
+  return asResult(async () => {
+    await apiAuth(`/ofertas/${offerId}/revisar`, {
+      method: "PATCH",
+      body: JSON.stringify(input),
+    });
+  });
+}
+
 export function withdrawOffer(offerId: string): Promise<Result<void>> {
   return asResult(async () => {
     await apiAuth(`/ofertas/${offerId}/retirar`, { method: "DELETE" });
   });
 }
+
+export function editOffer(offerId: string, input: EditOfferInput): Promise<Result<void>> {
+  return asResult(async () => {
+    await apiAuth(`/ofertas/${offerId}/editar`, {
+      method: "PATCH",
+      body: JSON.stringify(input),
+    });
+  });
+}
+
 
 export function submitOffer(projectId: string, input: SubmitOfferInput): Promise<Result<ProjectOffer>> {
   return asResult(async () => {

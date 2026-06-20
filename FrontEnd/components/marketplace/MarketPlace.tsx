@@ -1,4 +1,4 @@
-'use client';
+﻿'use client';
 
 import { useMemo, useState, type ReactNode } from 'react';
 import Link from 'next/link';
@@ -34,218 +34,6 @@ import type { ApiProject, ApiRoleName, CatalogsResponse } from '@/lib/api/types'
 
 const PAGE_SIZE = 9;
 
-const MOCK_AREA_ID = {
-    fintech: 'mock-area-1',
-    salud: 'mock-area-2',
-    ecommerce: 'mock-area-3',
-    logistica: 'mock-area-4',
-    edutech: 'mock-area-5',
-    marketing: 'mock-area-6',
-} as const;
-
-const MOCK_CATALOGS: CatalogsResponse = {
-    areas: [
-        { id: MOCK_AREA_ID.fintech, nombre: 'Fintech' },
-        { id: MOCK_AREA_ID.salud, nombre: 'Salud' },
-        { id: MOCK_AREA_ID.ecommerce, nombre: 'E-Commerce' },
-        { id: MOCK_AREA_ID.logistica, nombre: 'Logística' },
-        { id: MOCK_AREA_ID.edutech, nombre: 'Edutech' },
-        { id: MOCK_AREA_ID.marketing, nombre: 'Marketing' },
-    ],
-    skills: [
-        { id: 'sk-1', nombre: 'React', tipo: 'frontend', categoria: null },
-        { id: 'sk-2', nombre: 'Node.js', tipo: 'backend', categoria: null },
-        { id: 'sk-3', nombre: 'Python', tipo: 'backend', categoria: null },
-        { id: 'sk-4', nombre: 'TypeScript', tipo: 'frontend', categoria: null },
-        { id: 'sk-5', nombre: 'PostgreSQL', tipo: 'backend', categoria: null },
-        { id: 'sk-6', nombre: 'React Native', tipo: 'mobile', categoria: null },
-    ],
-    projectStates: [],
-    conocimientos: [],
-};
-
-const MOCK_PROJECTS: ApiProject[] = [
-    {
-        id: 'mock-1',
-        titulo: 'Sistema de Gestión de Créditos',
-        descripcion: 'Rediseño integral de la plataforma B2B para optimizar flujos de aprobación y visualización de KPIs financieros en tiempo real.',
-        usa_ia: true,
-        plazo_dias: 15,
-        fecha_publicacion: '2026-06-10T00:00:00Z',
-        fecha_cierre: null,
-        estado: { nombre: 'en_recepcion' },
-        area: { id: MOCK_AREA_ID.fintech, nombre: 'Fintech' },
-        empresa: { nombre_comercial: 'BancaCR Digital', tipo: 'empresa' },
-        skills: [
-            { skill: { id: 'sk-1', nombre: 'React', tipo: 'frontend', categoria: null } },
-            { skill: { id: 'sk-3', nombre: 'Python', tipo: 'backend', categoria: null } },
-            { skill: { id: 'sk-5', nombre: 'PostgreSQL', tipo: 'backend', categoria: null } },
-        ],
-    },
-    {
-        id: 'mock-2',
-        titulo: 'Plataforma de Telemedicina',
-        descripcion: 'Módulo de citas virtuales con videollamada integrada, historial clínico y recordatorios automáticos para pacientes y médicos.',
-        usa_ia: false,
-        plazo_dias: 12,
-        fecha_publicacion: '2026-06-08T00:00:00Z',
-        fecha_cierre: null,
-        estado: { nombre: 'en_recepcion' },
-        area: { id: MOCK_AREA_ID.salud, nombre: 'Salud' },
-        empresa: { nombre_comercial: 'MediConnect CR', tipo: 'empresa' },
-        skills: [
-            { skill: { id: 'sk-2', nombre: 'Node.js', tipo: 'backend', categoria: null } },
-            { skill: { id: 'sk-4', nombre: 'TypeScript', tipo: 'frontend', categoria: null } },
-        ],
-    },
-    {
-        id: 'mock-3',
-        titulo: 'App de Seguimiento de Pedidos',
-        descripcion: 'Aplicación móvil para que clientes rastreen sus pedidos en tiempo real con notificaciones push y mapa de ruta del repartidor.',
-        usa_ia: false,
-        plazo_dias: 10,
-        fecha_publicacion: '2026-06-05T00:00:00Z',
-        fecha_cierre: null,
-        estado: { nombre: 'en_recepcion' },
-        area: { id: MOCK_AREA_ID.ecommerce, nombre: 'E-Commerce' },
-        empresa: { nombre_comercial: 'ShopRápido', tipo: 'emprendedor' },
-        skills: [
-            { skill: { id: 'sk-6', nombre: 'React Native', tipo: 'mobile', categoria: null } },
-            { skill: { id: 'sk-2', nombre: 'Node.js', tipo: 'backend', categoria: null } },
-        ],
-    },
-    {
-        id: 'mock-4',
-        titulo: 'Dashboard de Métricas de Distribución',
-        descripcion: 'Panel interactivo para supervisores de flota con métricas de entregas, rutas óptimas y alertas de desviación en tiempo real.',
-        usa_ia: true,
-        plazo_dias: 14,
-        fecha_publicacion: '2026-06-03T00:00:00Z',
-        fecha_cierre: null,
-        estado: { nombre: 'en_recepcion' },
-        area: { id: MOCK_AREA_ID.logistica, nombre: 'Logística' },
-        empresa: { nombre_comercial: 'FleetOps Latam', tipo: 'empresa' },
-        skills: [
-            { skill: { id: 'sk-1', nombre: 'React', tipo: 'frontend', categoria: null } },
-            { skill: { id: 'sk-4', nombre: 'TypeScript', tipo: 'frontend', categoria: null } },
-            { skill: { id: 'sk-3', nombre: 'Python', tipo: 'backend', categoria: null } },
-        ],
-    },
-    {
-        id: 'mock-5',
-        titulo: 'Plataforma de Cursos en Vivo',
-        descripcion: 'Aulas virtuales con video en tiempo real, pizarra colaborativa y seguimiento de progreso por estudiante y módulo.',
-        usa_ia: false,
-        plazo_dias: 15,
-        fecha_publicacion: '2026-06-01T00:00:00Z',
-        fecha_cierre: null,
-        estado: { nombre: 'en_recepcion' },
-        area: { id: MOCK_AREA_ID.edutech, nombre: 'Edutech' },
-        empresa: { nombre_comercial: 'AprenderCR', tipo: 'emprendedor' },
-        skills: [
-            { skill: { id: 'sk-1', nombre: 'React', tipo: 'frontend', categoria: null } },
-            { skill: { id: 'sk-2', nombre: 'Node.js', tipo: 'backend', categoria: null } },
-        ],
-    },
-    {
-        id: 'mock-6',
-        titulo: 'Automatización de Reportes de Campaña',
-        descripcion: 'Herramienta que conecta con Google Ads y Meta Ads para generar reportes automáticos con visualizaciones y exportación a PDF.',
-        usa_ia: true,
-        plazo_dias: 8,
-        fecha_publicacion: '2026-05-28T00:00:00Z',
-        fecha_cierre: null,
-        estado: { nombre: 'en_recepcion' },
-        area: { id: MOCK_AREA_ID.marketing, nombre: 'Marketing' },
-        empresa: { nombre_comercial: 'GrowthLab CR', tipo: 'empresa' },
-        skills: [
-            { skill: { id: 'sk-3', nombre: 'Python', tipo: 'backend', categoria: null } },
-            { skill: { id: 'sk-4', nombre: 'TypeScript', tipo: 'frontend', categoria: null } },
-        ],
-    },
-    {
-        id: 'mock-7',
-        titulo: 'Portal de Bienestar Corporativo',
-        descripcion: 'Plataforma interna para que empleados registren hábitos saludables, accedan a recursos de salud mental y sigan retos de bienestar por equipos.',
-        usa_ia: false,
-        plazo_dias: 20,
-        fecha_publicacion: '2026-05-25T00:00:00Z',
-        fecha_cierre: null,
-        estado: { nombre: 'en_recepcion' },
-        area: { id: MOCK_AREA_ID.salud, nombre: 'Salud' },
-        empresa: { nombre_comercial: 'VidaSana Corp', tipo: 'empresa' },
-        skills: [
-            { skill: { id: 'sk-1', nombre: 'React', tipo: 'frontend', categoria: null } },
-            { skill: { id: 'sk-4', nombre: 'TypeScript', tipo: 'frontend', categoria: null } },
-            { skill: { id: 'sk-2', nombre: 'Node.js', tipo: 'backend', categoria: null } },
-        ],
-    },
-    {
-        id: 'mock-8',
-        titulo: 'Marketplace de Artesanías Locales',
-        descripcion: 'Tienda en línea para artesanos costarricenses con catálogo, carrito, pasarela de pago y panel de vendedor con métricas de ventas.',
-        usa_ia: false,
-        plazo_dias: 30,
-        fecha_publicacion: '2026-05-22T00:00:00Z',
-        fecha_cierre: null,
-        estado: { nombre: 'en_recepcion' },
-        area: { id: MOCK_AREA_ID.ecommerce, nombre: 'E-Commerce' },
-        empresa: { nombre_comercial: 'Manos CR', tipo: 'emprendedor' },
-        skills: [
-            { skill: { id: 'sk-1', nombre: 'React', tipo: 'frontend', categoria: null } },
-            { skill: { id: 'sk-5', nombre: 'PostgreSQL', tipo: 'backend', categoria: null } },
-        ],
-    },
-    {
-        id: 'mock-9',
-        titulo: 'Sistema de Inventario con IA',
-        descripcion: 'Módulo de predicción de demanda con machine learning integrado al ERP existente para optimizar niveles de stock y reducir mermas.',
-        usa_ia: true,
-        plazo_dias: 45,
-        fecha_publicacion: '2026-05-19T00:00:00Z',
-        fecha_cierre: null,
-        estado: { nombre: 'en_recepcion' },
-        area: { id: MOCK_AREA_ID.logistica, nombre: 'Logística' },
-        empresa: { nombre_comercial: 'SupplyTech CR', tipo: 'empresa' },
-        skills: [
-            { skill: { id: 'sk-3', nombre: 'Python', tipo: 'backend', categoria: null } },
-            { skill: { id: 'sk-5', nombre: 'PostgreSQL', tipo: 'backend', categoria: null } },
-            { skill: { id: 'sk-4', nombre: 'TypeScript', tipo: 'frontend', categoria: null } },
-        ],
-    },
-    {
-        id: 'mock-10',
-        titulo: 'App de Gamificación para Aulas',
-        descripcion: 'Herramienta para docentes que convierte actividades del aula en retos con puntos, insignias y tablas de clasificación por grupo.',
-        usa_ia: false,
-        plazo_dias: 18,
-        fecha_publicacion: '2026-05-15T00:00:00Z',
-        fecha_cierre: null,
-        estado: { nombre: 'en_recepcion' },
-        area: { id: MOCK_AREA_ID.edutech, nombre: 'Edutech' },
-        empresa: { nombre_comercial: 'ClassPlay CR', tipo: 'emprendedor' },
-        skills: [
-            { skill: { id: 'sk-1', nombre: 'React', tipo: 'frontend', categoria: null } },
-            { skill: { id: 'sk-6', nombre: 'React Native', tipo: 'mobile', categoria: null } },
-        ],
-    },
-    {
-        id: 'mock-11',
-        titulo: 'Panel de Análisis de Redes Sociales',
-        descripcion: 'Dashboard que agrega métricas de Instagram, TikTok y LinkedIn para agencias, con reportes automáticos y alertas de rendimiento de campañas.',
-        usa_ia: true,
-        plazo_dias: 12,
-        fecha_publicacion: '2026-05-10T00:00:00Z',
-        fecha_cierre: null,
-        estado: { nombre: 'en_recepcion' },
-        area: { id: MOCK_AREA_ID.marketing, nombre: 'Marketing' },
-        empresa: { nombre_comercial: 'Metric Studio', tipo: 'empresa' },
-        skills: [
-            { skill: { id: 'sk-1', nombre: 'React', tipo: 'frontend', categoria: null } },
-            { skill: { id: 'sk-3', nombre: 'Python', tipo: 'backend', categoria: null } },
-        ],
-    },
-];
 
 const DURATION_RANGES = {
     short: { min: 0, max: 30 },
@@ -374,104 +162,12 @@ function FilterDropdown({
     );
 }
 
-/** Modal showing the full detail of a project when "Ver proyecto" is pressed (pull branch). */
-function ProjectDetailModal({ project, onClose }: { project: ApiProject; onClose: () => void }) {
-    const t = useTranslations('marketplace_page');
-
-    return (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
-            <button
-                type="button"
-                aria-label={t('close')}
-                onClick={onClose}
-                className="absolute inset-0 bg-ink-strong/50 backdrop-blur-sm"
-            />
-            <div
-                role="dialog"
-                aria-modal="true"
-                aria-labelledby="project-modal-title"
-                className="relative z-10 w-full max-w-lg max-h-[85vh] overflow-y-auto rounded-2xl border border-border bg-surface p-6 shadow-elevated"
-            >
-                <div className="flex items-start justify-between gap-4">
-                    <div className="flex items-center gap-3">
-                        <div className="w-11 h-11 rounded-xl bg-canvas flex items-center justify-center border border-border shrink-0">
-                            {project.area ? getAreaIcon(project.area.id, MOCK_CATALOGS.areas, getAreaColor(project.area.id, MOCK_CATALOGS.areas)) : <Briefcase className="w-6 h-6 text-primary" />}
-                        </div>
-                        <span className={`text-[11px] font-bold uppercase tracking-wider ${project.area ? getAreaColor(project.area.id, MOCK_CATALOGS.areas) : 'text-primary'}`}>
-                            {project.area?.nombre ?? '—'}
-                        </span>
-                    </div>
-                    <button
-                        type="button"
-                        aria-label={t('close')}
-                        onClick={onClose}
-                        className="w-8 h-8 shrink-0 flex items-center justify-center rounded-full text-ink-muted hover:bg-surface-sunken transition-colors duration-[var(--duration-fast)] ease-[var(--ease-out)]"
-                    >
-                        <X className="w-4 h-4" />
-                    </button>
-                </div>
-
-                <h2 id="project-modal-title" className="font-heading text-2xl font-bold text-ink-strong mt-4 leading-tight">
-                    {project.titulo}
-                </h2>
-
-                {project.empresa && (
-                    <p className="text-xs text-ink-muted mt-1">{project.empresa.nombre_comercial}</p>
-                )}
-
-                <p className="text-ink-muted text-sm leading-relaxed mt-4">{project.descripcion}</p>
-
-                <div className="grid grid-cols-2 gap-4 mt-5">
-                    <div>
-                        <p className="text-[10px] font-bold text-ink-subtle uppercase tracking-wider mb-1">
-                            {t('business_area_label')}
-                        </p>
-                        <p className="text-sm font-semibold text-ink-strong">{project.area?.nombre ?? '—'}</p>
-                    </div>
-                    <div>
-                        <p className="text-[10px] font-bold text-ink-subtle uppercase tracking-wider mb-1">{t('duration')}</p>
-                        <p className="text-sm font-semibold text-ink-strong">{project.plazo_dias} días</p>
-                    </div>
-                </div>
-
-                {project.skills.length > 0 && (
-                    <div className="flex flex-wrap gap-2 mt-5">
-                        {project.skills.flatMap((s) => s.skill ? [s.skill] : []).map((skill) => (
-                            <span
-                                key={skill.id}
-                                className="bg-ink-strong text-surface text-[11px] font-bold px-3 py-1 rounded-full uppercase tracking-wider"
-                            >
-                                {skill.nombre}
-                            </span>
-                        ))}
-                    </div>
-                )}
-
-                {project.usa_ia && (
-                    <div className="rounded-xl border border-secondary/15 bg-secondary/5 p-4 mt-5">
-                        <p className="text-[10px] font-bold text-secondary uppercase tracking-wider mb-1.5">
-                            {t('ai_usage_label')}
-                        </p>
-                        <p className="text-xs text-ink-muted leading-relaxed">{t('ai_usage_label')}</p>
-                    </div>
-                )}
-
-                <div className="mt-6 flex justify-end">
-                    <Button variant="default" className="rounded-full px-6" onClick={onClose}>
-                        {t('close')}
-                    </Button>
-                </div>
-            </div>
-        </div>
-    );
-}
-
 export default function MarketPlace({ initialProjects, catalogs, role = 'student', appliedProjectIds = [] }: Props) {
     const t = useTranslations('marketplace_page');
     const locale = useLocale();
 
-    const projects = initialProjects.length > 0 ? initialProjects : MOCK_PROJECTS;
-    const activeCatalogs = catalogs.areas.length > 0 ? catalogs : MOCK_CATALOGS;
+    const projects = initialProjects;
+    const activeCatalogs = catalogs;
 
     const [searchQuery, setSearchQuery] = useState('');
     const [activeArea, setActiveArea] = useState<string | null>(null);
@@ -816,7 +512,7 @@ export default function MarketPlace({ initialProjects, catalogs, role = 'student
                                     {/* Footer */}
                                     <div className="mt-auto flex items-center gap-2">
                                         <Link
-                                            href={`/${locale}/marketplace/${project.id}/proceso`}
+                                            href={`/${locale}/gestion?proyecto=${project.id}`}
                                             className={`flex-1 rounded-full px-5 py-2.5 text-sm font-semibold text-center transition-colors duration-[var(--duration-fast)] ease-[var(--ease-out)] ${
                                                 expired
                                                     ? 'bg-surface-sunken text-ink-muted pointer-events-none'
@@ -890,3 +586,4 @@ export default function MarketPlace({ initialProjects, catalogs, role = 'student
         </>
     );
 }
+

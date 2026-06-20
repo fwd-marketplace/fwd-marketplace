@@ -45,6 +45,7 @@ export const UpdateProjectSchema = z.object({
   plazo_dias: z.number().int().min(5).max(15).optional(),
   usa_ia: z.boolean().optional(),
   skills: z.array(z.string().uuid()).optional(),
+  tecnologias_extra: z.array(z.string().trim().min(1).max(50)).max(20).optional(),
 });
 
 export type UpdateProjectInput = z.infer<typeof UpdateProjectSchema>;

@@ -95,9 +95,14 @@ describe("createOferta", () => {
     await expect(createOferta(TOKEN, USER, PROJECT, input)).rejects.toMatchObject({ statusCode: 409 });
   });
 
-  it("mapea la violación de unicidad (23505) a 409 'ya postulaste'", async () => {
+  it("rechaza (409) si ya postuló y la última no está en 'solicitar_cambios'", async () => {
     happyPath();
-    responses["oferta"] = { data: null, error: { code: "23505", message: "duplicate key" } };
+    // Ya existe una postulación en 'enviada': solo se permite reenviar cuando la
+    // empresa solicitó cambios, así que vuelve a postular debe dar 409.
+    responses["oferta"] = {
+      data: [{ id: "oferta-prev", estado: { nombre: "enviada" }, fecha_envio: "2026-06-10T00:00:00Z" }],
+      error: null,
+    };
     await expect(createOferta(TOKEN, USER, PROJECT, input)).rejects.toMatchObject({ statusCode: 409 });
   });
 

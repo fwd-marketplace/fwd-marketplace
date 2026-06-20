@@ -11,6 +11,7 @@ import rankingRoutes from "./ranking.routes";
 import mensajesRoutes from "./mensajes.routes";
 import notificacionRoutes from "./notificacion.routes";
 import aiRoutes from "./ai.routes";
+import uploadRoutes from "./upload.routes";
 import { asyncHandler } from "../utils/asyncHandler";
 import { isDatabaseReachable } from "../services/health.service";
 
@@ -40,5 +41,6 @@ router.use("/ranking", rankingRoutes);
 router.use("/mensajes", mensajesRoutes);
 router.use("/notificaciones", notificacionRoutes);
 router.use("/ai", aiRoutes);
+router.use("/upload", uploadRoutes);
 
 export default router;
