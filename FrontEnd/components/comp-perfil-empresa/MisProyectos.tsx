@@ -6,6 +6,7 @@ import {
   AlertCircle,
   ArrowLeft,
   ArrowRight,
+  Ban,
   CheckCircle2,
   Download,
   Edit2,
@@ -17,6 +18,7 @@ import {
   Search,
   Send,
   Sparkles,
+  Trash2,
   Users,
   Wand2,
   X,
@@ -25,9 +27,11 @@ import { Button } from "@/components/ui/button";
 import { StatusPill } from "@/components/ui/status-pill";
 import {
   calificarOfertaAction,
+  cancelProjectAction,
   changeProjectStateAction,
   createProjectAction,
   decideOfferAction,
+  deleteProjectAction,
   getProjectEntregablesAction,
   getProjectOffersAction,
   reviewEntregableAction,
@@ -466,6 +470,10 @@ export function MisProyectos({
   const [ratingComment, setRatingComment] = useState("");
   const [isRatingPending, startRatingTransition] = useTransition();
 
+  // Confirmacion de cancelar (soft) / eliminar (hard) el proyecto.
+  const [confirmTarget, setConfirmTarget] = useState<{ kind: "cancel" | "delete" } | null>(null);
+  const [isProjectActionPending, startProjectActionTransition] = useTransition();
+
   const selectedProject = projects.find((p) => p.id === selectedProjectId) ?? null;
   const selectedOffers = selectedProjectId ? (offersByProject[selectedProjectId] ?? []) : [];
 
@@ -607,6 +615,42 @@ export function MisProyectos({
       triggerToast(
         accion === "aceptar" ? t("notifications.accepted") : t("notifications.rejected"),
       );
+    });
+  }
+
+  function handleCancelProject() {
+    if (!selectedProject) return;
+    const projectId = selectedProject.id;
+    startProjectActionTransition(async () => {
+      const result = await cancelProjectAction(projectId);
+      if (!result.ok) {
+        triggerToast(result.error);
+        return;
+      }
+      setProjects((prev) =>
+        prev.map((p) =>
+          p.id === projectId ? { ...p, estado: { ...p.estado, nombre: "cancelado" } } : p,
+        ),
+      );
+      setConfirmTarget(null);
+      triggerToast(t("cancel_project.toast_done"));
+    });
+  }
+
+  function handleDeleteProject() {
+    if (!selectedProject) return;
+    const projectId = selectedProject.id;
+    startProjectActionTransition(async () => {
+      const result = await deleteProjectAction(projectId);
+      if (!result.ok) {
+        triggerToast(result.error);
+        return;
+      }
+      setProjects((prev) => prev.filter((p) => p.id !== projectId));
+      setConfirmTarget(null);
+      setSelectedProjectId(null);
+      setView("list");
+      triggerToast(t("delete_project.toast_done"));
     });
   }
 
@@ -819,6 +863,36 @@ export function MisProyectos({
                 </Button>
               );
             })()}
+
+            {/* Cancelar (soft) — solo en proyectos publicados activos */}
+            {selectedProject.estado.nombre !== "borrador" &&
+              selectedProject.estado.nombre !== "cerrado" &&
+              selectedProject.estado.nombre !== "cancelado" && (
+                <Button
+                  size="sm"
+                  variant="outline"
+                  disabled={isProjectActionPending}
+                  onClick={() => setConfirmTarget({ kind: "cancel" })}
+                  className="gap-1.5 rounded-full"
+                >
+                  <Ban className="size-3.5" />
+                  {t("cancel_project.btn")}
+                </Button>
+              )}
+
+            {/* Eliminar (hard) — no permitido en proyectos cerrados */}
+            {selectedProject.estado.nombre !== "cerrado" && (
+              <Button
+                size="sm"
+                variant="outline"
+                disabled={isProjectActionPending}
+                onClick={() => setConfirmTarget({ kind: "delete" })}
+                className="gap-1.5 rounded-full border-magenta/40 text-magenta hover:bg-magenta/10 hover:text-magenta"
+              >
+                <Trash2 className="size-3.5" />
+                {t("delete_project.btn")}
+              </Button>
+            )}
 
             <label
               htmlFor="detail-state"
@@ -1229,6 +1303,71 @@ export function MisProyectos({
                 {isRequestingChanges
                   ? t("entregables.request_changes_sending")
                   : t("entregables.request_changes_confirm")}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Modal de confirmacion: cancelar (soft) / eliminar (hard) el proyecto */}
+      {confirmTarget && selectedProject && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-ink-strong/50 p-4 backdrop-blur-sm">
+          <div className="w-full max-w-md rounded-2xl border border-border bg-surface p-6 shadow-[var(--shadow-elevated)]">
+            <div className="flex items-start justify-between gap-3 mb-4">
+              <div
+                className={`flex size-10 shrink-0 items-center justify-center rounded-full ${
+                  confirmTarget.kind === "delete" ? "bg-magenta/10" : "bg-warning/10"
+                }`}
+              >
+                {confirmTarget.kind === "delete" ? (
+                  <Trash2 className="size-5 text-magenta" aria-hidden="true" />
+                ) : (
+                  <Ban className="size-5 text-warning" aria-hidden="true" />
+                )}
+              </div>
+              <button
+                type="button"
+                onClick={() => setConfirmTarget(null)}
+                className="rounded-full p-1 text-ink-muted hover:bg-surface-sunken"
+                aria-label={t("confirm_action.cancel")}
+              >
+                <X className="size-4" />
+              </button>
+            </div>
+            <h3 className="font-heading text-lg font-bold text-ink-strong mb-1">
+              {confirmTarget.kind === "delete"
+                ? t("delete_project.title")
+                : t("cancel_project.title")}
+            </h3>
+            <p className="font-body text-sm text-ink-muted mb-5">
+              {confirmTarget.kind === "delete"
+                ? t("delete_project.desc", { titulo: selectedProject.titulo })
+                : t("cancel_project.desc", { titulo: selectedProject.titulo })}
+            </p>
+            <div className="flex justify-end gap-3">
+              <button
+                type="button"
+                onClick={() => setConfirmTarget(null)}
+                className="rounded-full border border-border px-4 py-2 font-body text-sm font-semibold text-ink-muted hover:bg-surface-sunken"
+              >
+                {t("confirm_action.cancel")}
+              </button>
+              <button
+                type="button"
+                disabled={isProjectActionPending}
+                onClick={
+                  confirmTarget.kind === "delete" ? handleDeleteProject : handleCancelProject
+                }
+                className={`inline-flex items-center gap-2 rounded-full px-4 py-2 font-body text-sm font-semibold text-white transition-colors disabled:opacity-50 ${
+                  confirmTarget.kind === "delete"
+                    ? "bg-magenta hover:bg-magenta/90"
+                    : "bg-warning hover:bg-warning/90"
+                }`}
+              >
+                {isProjectActionPending && <Loader2 className="size-4 animate-spin" />}
+                {confirmTarget.kind === "delete"
+                  ? t("delete_project.confirm")
+                  : t("cancel_project.confirm")}
               </button>
             </div>
           </div>

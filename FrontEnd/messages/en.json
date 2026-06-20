@@ -637,6 +637,23 @@
     "toast_close": "Close"
   },
   "mis_proyectos": {
+    "cancel_project": {
+      "btn": "Cancel",
+      "title": "Cancel project",
+      "desc": "The project \"{titulo}\" will be set to cancelled and removed from the marketplace. You can revert it. Applicants will be notified.",
+      "confirm": "Yes, cancel",
+      "toast_done": "Project cancelled"
+    },
+    "delete_project": {
+      "btn": "Delete",
+      "title": "Delete project",
+      "desc": "You are about to permanently delete \"{titulo}\" and all its applications. This action cannot be undone.",
+      "confirm": "Yes, delete",
+      "toast_done": "Project deleted"
+    },
+    "confirm_action": {
+      "cancel": "Back"
+    },
     "page_title": "My Projects",
     "create_btn": "Create project",
     "back_btn": "Back",
@@ -1247,6 +1264,9 @@
     "iframe_error": "The embedded preview could not be shown. Open the prototype in a new tab."
   },
   "postulaciones_empresa": {
+    "select_for_award": "Select this proposal to award",
+    "award_selected": "Award selected ({count})",
+    "toast_accepted_multiple": "{count} proposal(s) awarded",
     "title": "APPLICATIONS",
     "subtitle": "Candidate review.",
     "actions_header": "AVAILABLE ACTIONS",
