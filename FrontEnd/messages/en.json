@@ -1252,6 +1252,8 @@
     "info_btn": "Request Info",
     "accept_btn": "Accept",
     "reject_btn": "Reject",
+    "busy_badge": "Busy",
+    "busy_message": "This student is currently working on a project, but you can reach out if you're interested in their work for future projects.",
     "view_full_profile": "View full profile",
     "match_analysis": "MATCH ANALYSIS",
     "personal_info": "Personal Information",

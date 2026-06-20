@@ -1306,6 +1306,8 @@
     "info_btn": "Solicitar Info",
     "accept_btn": "Aceptar",
     "reject_btn": "Rechazar",
+    "busy_badge": "Ocupado",
+    "busy_message": "El estudiante se encuentra en un proyecto por el momento, pero podés contactarlo si te interesa su trabajo para futuros proyectos.",
     "view_full_profile": "Ver perfil completo",
     "match_analysis": "ANÁLISIS DE MATCH",
     "personal_info": "Información Personal",
