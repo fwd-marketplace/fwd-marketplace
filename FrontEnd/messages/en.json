@@ -1768,6 +1768,7 @@
     "proceso_badge_nosel": "Not selected",
     "proceso_badge_adjudicada": "Awarded",
     "proceso_crear_propuesta": "Create proposal",
+    "proceso_busy_message": "You already have an active project. You can't apply to another one until that project is closed.",
     "proceso_desc_placeholder": "Describe your approach, relevant experience and how you'll tackle the project...",
     "proceso_doc_label": "Prototype / Documentation",
     "proceso_link_placeholder": "https://my-prototype.vercel.app",

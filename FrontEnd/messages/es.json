@@ -1822,6 +1822,7 @@
     "proceso_badge_nosel": "No seleccionada",
     "proceso_badge_adjudicada": "Adjudicada",
     "proceso_crear_propuesta": "Crear propuesta",
+    "proceso_busy_message": "Ya tenés un proyecto activo. No podés postular a otro hasta que ese proyecto se cierre.",
     "proceso_desc_placeholder": "Describí tu enfoque, experiencia relevante y cómo vas a encarar el proyecto...",
     "proceso_doc_label": "Prototipo / Documentación",
     "proceso_link_placeholder": "https://mi-prototipo.vercel.app",
