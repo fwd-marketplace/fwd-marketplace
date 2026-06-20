@@ -1,5 +1,7 @@
 import { supabaseForToken } from "../config/supabase";
 import { ApiError } from "../utils/ApiError";
+import { logger } from "../utils/logger";
+import { crearNotificaciones, MENSAJES_NOTIFICACION } from "./notificacion.service";
 import type { Database } from "../types/database.types";
 import type {
   CreateProjectInput,
@@ -7,7 +9,43 @@ import type {
   UpdateProjectInput,
 } from "../validations/project";
 
+type Client = ReturnType<typeof supabaseForToken>;
 type ProyectoUpdate = Database["public"]["Tables"]["proyecto"]["Update"];
+
+/** Resuelve el id de un estado de proyecto por nombre. */
+async function getEstadoProyectoId(client: Client, nombre: string): Promise<string> {
+  const { data, error } = await client
+    .from("estado_proyecto")
+    .select("id")
+    .eq("nombre", nombre)
+    .maybeSingle();
+  if (error) throw new ApiError(500, error.message);
+  if (!data) throw new ApiError(500, `Falta el estado '${nombre}' (seeds no aplicados)`);
+  return data.id;
+}
+
+/**
+ * Ids de usuario de las ofertas de un proyecto en los estados dados. Best-effort:
+ * devuelve [] y loguea ante error (se usa para notificar, nunca debe romper la accion).
+ */
+async function getOfertaRecipients(
+  client: Client,
+  projectId: string,
+  estados: string[],
+): Promise<string[]> {
+  const { data, error } = await client
+    .from("oferta")
+    .select("id_usuario, estado:estado_oferta(nombre)")
+    .eq("id_proyecto", projectId);
+  if (error) {
+    logger.warn("No se pudieron leer destinatarios de notificacion", { error: error.message });
+    return [];
+  }
+  const ids = (data ?? [])
+    .filter((oferta) => estados.includes(oferta.estado?.nombre ?? ""))
+    .map((oferta) => oferta.id_usuario);
+  return [...new Set(ids)];
+}
 
 /** Filtros opcionales del listado de proyectos. */
 export type ProjectFilters = {
@@ -267,7 +305,7 @@ export async function changeProjectState(
   // 1. El proyecto debe existir y pertenecer al usuario.
   const { data: proyecto, error: projError } = await client
     .from("proyecto")
-    .select("id, empresa:empresario(id_usuario)")
+    .select("id, titulo, empresa:empresario(id_usuario)")
     .eq("id", projectId)
     .maybeSingle();
   if (projError) throw new ApiError(500, projError.message);
@@ -276,23 +314,26 @@ export async function changeProjectState(
     throw new ApiError(403, "Este proyecto no es tuyo");
   }
 
-  // 2. Resolver el id del estado destino.
-  const { data: estado, error: estadoError } = await client
-    .from("estado_proyecto")
-    .select("id")
-    .eq("nombre", input.estado)
-    .maybeSingle();
-  if (estadoError) throw new ApiError(500, estadoError.message);
-  if (!estado) throw new ApiError(500, `Falta el estado '${input.estado}' (seeds no aplicados)`);
-
-  // 3. Actualizar el estado del proyecto.
+  // 2. Resolver el id del estado destino y actualizar.
+  const estadoId = await getEstadoProyectoId(client, input.estado);
   const { data, error } = await client
     .from("proyecto")
-    .update({ id_estado: estado.id })
+    .update({ id_estado: estadoId })
     .eq("id", projectId)
     .select("id, estado:estado_proyecto(nombre)")
     .single();
   if (error) throw new ApiError(400, error.message);
+
+  // 3. Al cerrar el proyecto, se agradece a los junior(s) adjudicado(s) (best-effort).
+  if (input.estado === "cerrado") {
+    const adjudicados = await getOfertaRecipients(client, projectId, ["adjudicada"]);
+    await crearNotificaciones(
+      accessToken,
+      adjudicados,
+      MENSAJES_NOTIFICACION.proyectoCerrado(proyecto.titulo),
+    );
+  }
+
   return data;
 }
 
@@ -372,19 +413,16 @@ export async function updateProject(
 }
 
 /**
- * Elimina un proyecto. Solo el dueño puede hacerlo y el proyecto debe estar
- * en borrador (sin postulantes ni actividad real).
+ * La empresa cancela/oculta su proyecto (soft): lo pasa a 'cancelado'. Se conserva
+ * el historial y se libera a los estudiantes adjudicados (los estados inactivos los
+ * desocupan). Notifica a adjudicados y postulantes pendientes (best-effort).
  */
-export async function deleteProject(
-  accessToken: string,
-  userId: string,
-  projectId: string,
-) {
+export async function cancelMyProject(accessToken: string, userId: string, projectId: string) {
   const client = supabaseForToken(accessToken);
 
   const { data: proyecto, error: projError } = await client
     .from("proyecto")
-    .select("id, empresa:empresario(id_usuario), estado:estado_proyecto(nombre)")
+    .select("id, titulo, estado:estado_proyecto(nombre), empresa:empresario(id_usuario)")
     .eq("id", projectId)
     .maybeSingle();
   if (projError) throw new ApiError(500, projError.message);
@@ -393,27 +431,74 @@ export async function deleteProject(
     throw new ApiError(403, "Este proyecto no es tuyo");
   }
   const estadoActual = proyecto.estado?.nombre;
-  if (estadoActual !== "borrador") {
-    if (estadoActual !== "en_recepcion") {
-      throw new ApiError(409, "Solo podés eliminar proyectos en borrador o sin propuestas recibidas");
-    }
-    // En recepción: solo permitir si no hay propuestas
-    const { count, error: countError } = await client
-      .from("oferta")
-      .select("id", { count: "exact", head: true })
-      .eq("id_proyecto", projectId);
-    if (countError) throw new ApiError(500, countError.message);
-    if ((count ?? 0) > 0) {
-      throw new ApiError(409, "No podés eliminar un proyecto que ya recibió propuestas");
-    }
+  if (estadoActual === "cerrado" || estadoActual === "cancelado") {
+    throw new ApiError(409, "Este proyecto ya está cerrado o cancelado");
   }
 
-  const { error, count } = await client
+  const estadoId = await getEstadoProyectoId(client, "cancelado");
+  const { data, error } = await client
     .from("proyecto")
-    .delete({ count: "exact" })
-    .eq("id", projectId);
+    .update({ id_estado: estadoId })
+    .eq("id", projectId)
+    .select("id, estado:estado_proyecto(nombre)")
+    .single();
   if (error) throw new ApiError(400, error.message);
-  if (!count || count === 0) {
-    throw new ApiError(403, "No se pudo eliminar el proyecto (permiso denegado)");
+
+  const destinatarios = await getOfertaRecipients(client, projectId, [
+    "adjudicada",
+    "enviada",
+    "en_revision",
+  ]);
+  await crearNotificaciones(
+    accessToken,
+    destinatarios,
+    MENSAJES_NOTIFICACION.proyectoEliminado(proyecto.titulo),
+  );
+
+  return data;
+}
+
+/**
+ * La empresa elimina DEFINITIVAMENTE su proyecto (hard delete). Protege los
+ * proyectos 'cerrado' (registro historico del junior). Notifica a adjudicados y
+ * postulantes ANTES de borrar (luego las ofertas ya no existen) y borra todo via la
+ * RPC `eliminar_proyecto` (SECURITY DEFINER, migracion 0032).
+ */
+export async function deleteMyProject(
+  accessToken: string,
+  userId: string,
+  projectId: string,
+): Promise<{ ok: true }> {
+  const client = supabaseForToken(accessToken);
+
+  const { data: proyecto, error: projError } = await client
+    .from("proyecto")
+    .select("id, titulo, estado:estado_proyecto(nombre), empresa:empresario(id_usuario)")
+    .eq("id", projectId)
+    .maybeSingle();
+  if (projError) throw new ApiError(500, projError.message);
+  if (!proyecto) throw new ApiError(404, "Proyecto no encontrado");
+  if (proyecto.empresa?.id_usuario !== userId) {
+    throw new ApiError(403, "Este proyecto no es tuyo");
   }
+  if (proyecto.estado?.nombre === "cerrado") {
+    throw new ApiError(409, "No se puede eliminar un proyecto cerrado");
+  }
+
+  // Notificar ANTES de borrar (despues las ofertas ya no existen). Best-effort.
+  const destinatarios = await getOfertaRecipients(client, projectId, [
+    "adjudicada",
+    "enviada",
+    "en_revision",
+  ]);
+  await crearNotificaciones(
+    accessToken,
+    destinatarios,
+    MENSAJES_NOTIFICACION.proyectoEliminado(proyecto.titulo),
+  );
+
+  const { error } = await client.rpc("eliminar_proyecto", { p_id: projectId });
+  if (error) throw new ApiError(400, error.message);
+
+  return { ok: true };
 }

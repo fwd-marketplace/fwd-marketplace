@@ -92,16 +92,6 @@ export async function update(req: Request, res: Response) {
   res.status(200).json({ project });
 }
 
-/** DELETE /api/projects/:id (ruta protegida — empresa dueña, solo borrador) */
-export async function remove(req: Request, res: Response) {
-  if (!req.user) throw new ApiError(401, "No autenticado");
-  const idParsed = idParamSchema.safeParse(req.params.id);
-  if (!idParsed.success) throw new ApiError(400, "El id del proyecto no es válido");
-
-  await projectService.deleteProject(readToken(req), req.user.id, idParsed.data);
-  res.status(204).send();
-}
-
 /** PATCH /api/projects/:id/estado (ruta protegida — empresa dueña) */
 export async function changeState(req: Request, res: Response) {
   if (!req.user) {
@@ -123,4 +113,30 @@ export async function changeState(req: Request, res: Response) {
     bodyParsed.data,
   );
   res.status(200).json({ project });
+}
+
+/** PATCH /api/projects/:id/cancelar (ruta protegida — empresa cancela/oculta su proyecto, soft) */
+export async function cancel(req: Request, res: Response) {
+  if (!req.user) {
+    throw new ApiError(401, "No autenticado");
+  }
+  const parsed = idParamSchema.safeParse(req.params.id);
+  if (!parsed.success) {
+    throw new ApiError(400, "El id del proyecto no es válido");
+  }
+  const project = await projectService.cancelMyProject(readToken(req), req.user.id, parsed.data);
+  res.status(200).json({ project });
+}
+
+/** DELETE /api/projects/:id (ruta protegida — empresa elimina definitivamente su proyecto, hard) */
+export async function remove(req: Request, res: Response) {
+  if (!req.user) {
+    throw new ApiError(401, "No autenticado");
+  }
+  const parsed = idParamSchema.safeParse(req.params.id);
+  if (!parsed.success) {
+    throw new ApiError(400, "El id del proyecto no es válido");
+  }
+  const result = await projectService.deleteMyProject(readToken(req), req.user.id, parsed.data);
+  res.status(200).json(result);
 }

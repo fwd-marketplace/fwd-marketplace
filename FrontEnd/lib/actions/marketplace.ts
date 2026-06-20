@@ -6,6 +6,7 @@ import { BASE_URL, SESSION_COOKIE } from "@/lib/api-client";
 import type { Result } from "@/lib/result";
 import {
   calificarOferta,
+  cancelProject,
   changeProjectState,
   createProject,
   decideOffer,
@@ -60,6 +61,22 @@ export async function updateProjectAction(projectId: string, input: UpdateProjec
 
 export async function changeProjectStateAction(projectId: string, estado: CompanyProjectState) {
   const result = await changeProjectState(projectId, estado);
+  if (result.ok) {
+    revalidatePath("/");
+  }
+  return result;
+}
+
+export async function cancelProjectAction(projectId: string) {
+  const result = await cancelProject(projectId);
+  if (result.ok) {
+    revalidatePath("/");
+  }
+  return result;
+}
+
+export async function deleteProjectAction(projectId: string) {
+  const result = await deleteProject(projectId);
   if (result.ok) {
     revalidatePath("/");
   }
@@ -144,14 +161,6 @@ export async function calificarOfertaAction(ofertaId: string, input: CalificarIn
 
 export async function replicarCalificacionAction(ofertaId: string, input: ReplicaInput) {
   const result = await replicarCalificacion(ofertaId, input);
-  if (result.ok) {
-    revalidatePath("/");
-  }
-  return result;
-}
-
-export async function deleteProjectAction(projectId: string) {
-  const result = await deleteProject(projectId);
   if (result.ok) {
     revalidatePath("/");
   }

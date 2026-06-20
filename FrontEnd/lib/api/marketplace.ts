@@ -164,12 +164,6 @@ export function updateProject(
   });
 }
 
-export function deleteProject(projectId: string): Promise<Result<void>> {
-  return asResult(async () => {
-    await apiAuth(`/projects/${projectId}`, { method: "DELETE" });
-  });
-}
-
 export function getMyCalificaciones(): Promise<Result<ApiCalificacion[]>> {
   return asResult(async () => {
     const res = await apiAuth<CalificacionesResponse>("/ofertas/mis-calificaciones");
@@ -209,5 +203,19 @@ export function submitOffer(projectId: string, input: SubmitOfferInput): Promise
       body: JSON.stringify(input),
     });
     return res.oferta;
+  });
+}
+
+/** Cancela/oculta (soft) el proyecto propio: pasa a estado 'cancelado', reversible. */
+export function cancelProject(projectId: string): Promise<Result<void>> {
+  return asResult(async () => {
+    await apiAuth(`/projects/${projectId}/cancelar`, { method: "PATCH" });
+  });
+}
+
+/** Elimina definitivamente (hard) el proyecto propio. No se puede deshacer. */
+export function deleteProject(projectId: string): Promise<Result<void>> {
+  return asResult(async () => {
+    await apiAuth(`/projects/${projectId}`, { method: "DELETE" });
   });
 }

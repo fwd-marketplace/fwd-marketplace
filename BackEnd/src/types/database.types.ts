@@ -1136,6 +1136,20 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
+      crear_notificacion: {
+        Args: {
+          p_id_usuario: string
+          p_tipo: string
+          p_mensaje: string
+        }
+        Returns: string | null
+      }
+      eliminar_proyecto: {
+        Args: {
+          p_id: string
+        }
+        Returns: undefined
+      }
       crear_pending_login: {
         Args: {
           p_id_usuario: string
