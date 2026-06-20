@@ -2,6 +2,7 @@
 
 import React, { useEffect, useRef, useState, useCallback } from 'react';
 import { useTranslations } from 'next-intl';
+import { CosmosBackground } from '@/components/ui/cosmos-background';
 
 export default function CosmosProfesional() {
   const t = useTranslations('cosmos_profesional');
@@ -127,9 +128,7 @@ export default function CosmosProfesional() {
 
   return (
     <section ref={sectionRef} className={`relative flex min-h-screen w-full items-center justify-center overflow-hidden bg-secondary py-[5vh] px-[4vw] text-white ${formed ? 'formed' : ''}`} aria-label={t('screen_label')}>
-      <div className="absolute inset-0 z-0 bg-[radial-gradient(130%_100%_at_50%_16%,_#7a3aa8_0%,_#662d91_46%,_#57267f_100%)]" />
-      <SpaceStars />
-      <Meteors />
+      <CosmosBackground showMoon={false} />
 
       {/* Controls */}
       <div className="fixed top-[18px] right-[18px] z-40 flex items-center gap-2">
@@ -270,125 +269,10 @@ export default function CosmosProfesional() {
       </div>
 
       <style>{`
-        @keyframes bgtwinkle { 0%, 100% { opacity: var(--o, 0.8); } 50% { opacity: 0.05; } }
         @keyframes ringPulse { 0% { transform: scale(0.45); opacity: 0.65; } 70% { opacity: 0.12; } 100% { transform: scale(2.5); opacity: 0; } }
-        @keyframes meteorFall { 0% { transform: translate(0, 0); opacity: 0; } 8% { opacity: 1; } 100% { transform: translate(-1500px, 700px); opacity: 0; } }
       `}</style>
     </section>
   );
 }
 
-function SpaceStars() {
-  const [stars, setStars] = useState<{ id: number, left: string, top: string, size: string, o: string, delay: string, dur: string }[]>([]);
 
-  useEffect(() => {
-    let seed = 7;
-    const rnd = () => { seed = (seed * 9301 + 49297) % 233280; return seed / 233280; };
-    const arr = [];
-    for (let i = 0; i < 800; i++) {
-      const sz = 0.8 + rnd() * 2.5;
-      const o = (0.5 + rnd() * 0.5).toFixed(2);
-      const dur = (1.5 + rnd() * 3.5).toFixed(2) + 's';
-      arr.push({
-        id: i,
-        left: `${rnd() * 100}%`,
-        top: `${rnd() * 100}%`,
-        size: `${sz}px`,
-        o,
-        delay: `${rnd() * 5000}ms`,
-        dur
-      });
-    }
-    setStars(arr);
-  }, []);
-
-  return (
-    <div className="pointer-events-none fixed inset-0 z-[-1]" aria-hidden="true">
-      {stars.map((s) => (
-        <i
-          key={s.id}
-          className="absolute rounded-full bg-white"
-          style={{
-            left: s.left,
-            top: s.top,
-            width: s.size,
-            height: s.size,
-            '--o': s.o,
-            '--dur': s.dur,
-            opacity: s.o,
-            animation: 'bgtwinkle var(--dur) ease-in-out infinite',
-            animationDelay: s.delay
-          } as React.CSSProperties}
-        />
-      ))}
-    </div>
-  );
-}
-
-function Meteors() {
-  const [meteors, setMeteors] = useState<{ id: number, top: string, left: string, dur: string, len: string }[]>([]);
-  const idCounter = useRef(0);
-
-  useEffect(() => {
-    const isReduced = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
-    if (isReduced) return;
-
-    let timeout1: NodeJS.Timeout;
-    let timeout2: NodeJS.Timeout;
-
-    const spawn = () => {
-      const id = idCounter.current++;
-      const top = `${Math.random() * 60 - 12}%`;
-      const left = `${Math.random() * 75 + 35}%`;
-      const durNum = 0.7 + Math.random() * 0.8;
-      const dur = `${durNum.toFixed(2)}s`;
-      const len = `${(90 + Math.random() * 130).toFixed(0)}px`;
-
-      setMeteors(prev => [...prev, { id, top, left, dur, len }]);
-
-      setTimeout(() => {
-        setMeteors(prev => prev.filter(m => m.id !== id));
-      }, durNum * 1000 + 120);
-    };
-
-    const loop = () => {
-      spawn();
-      if (Math.random() < 0.6) {
-        timeout1 = setTimeout(spawn, 100 + Math.random() * 100);
-      }
-      timeout2 = setTimeout(loop, 400 + Math.random() * 800);
-    };
-
-    const initTimeout = setTimeout(loop, 600);
-
-    return () => {
-      clearTimeout(initTimeout);
-      clearTimeout(timeout1);
-      clearTimeout(timeout2);
-    };
-  }, []);
-
-  return (
-    <div className="pointer-events-none fixed inset-0 z-0 overflow-hidden" aria-hidden="true">
-      {meteors.map((m) => (
-        <div
-          key={m.id}
-          className="absolute"
-          style={{
-            top: m.top,
-            left: m.left,
-            animation: `meteorFall ${m.dur} linear forwards`,
-            willChange: 'transform, opacity'
-          }}
-        >
-          <span
-            className="block origin-left rounded-sm bg-[linear-gradient(90deg,rgba(255,255,255,0),rgba(255,255,255,0.95))]"
-            style={{ width: m.len, height: '2px', transform: 'rotate(155deg)' }}
-          >
-            <span className="absolute right-[-1px] top-1/2 h-1 w-1 -translate-y-1/2 rounded-full bg-white shadow-[0_0_8px_2px_rgba(255,255,255,0.85),0_0_16px_4px_rgba(255,255,255,0.4)]" />
-          </span>
-        </div>
-      ))}
-    </div>
-  );
-}
