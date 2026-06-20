@@ -13,9 +13,27 @@ function required(name: string): string {
   return value;
 }
 
+/**
+ * Valor para `app.set("trust proxy", ...)`. Por defecto `false` (no confiar en
+ * `X-Forwarded-For`). En producción, detrás de un proxy/balanceador DE CONFIANZA,
+ * poné `TRUST_PROXY=1` (número de saltos) para que el rate limiting use la IP real
+ * del cliente. Solo activarlo si el proxy es de confianza: si no, se podría falsear
+ * `X-Forwarded-For` y evadir los límites.
+ */
+function parseTrustProxy(raw?: string): boolean | number | string {
+  if (!raw) return false;
+  const value = raw.trim();
+  if (value === "true") return true;
+  if (value === "false") return false;
+  if (/^\d+$/.test(value)) return Number(value);
+  return value; // subred o keyword de Express (p. ej. "loopback", "10.0.0.0/8")
+}
+
 export const env = {
   port: Number(process.env.PORT) || 3001,
   frontendUrl: process.env.FRONTEND_URL ?? "http://localhost:3000",
+  // Confianza en el proxy para resolver la IP real del cliente (rate limiting).
+  trustProxy: parseTrustProxy(process.env.TRUST_PROXY),
 
   supabaseUrl: required("SUPABASE_URL"),
   // Clave anon/publishable: el BackEnd actúa en nombre del usuario vía Supabase Auth.

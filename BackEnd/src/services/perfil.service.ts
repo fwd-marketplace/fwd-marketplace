@@ -1,7 +1,7 @@
 import { supabaseForToken } from "../config/supabase";
 import { ApiError } from "../utils/ApiError";
 import { parseBody } from "../utils/parseBody";
-import { uploadImage } from "./upload.service";
+import { uploadImage, destroyImageByUrl } from "./upload.service";
 import type { Database } from "../types/database.types";
 import {
   PerfilEstudianteSchema,
@@ -291,8 +291,19 @@ export async function uploadMyLogo(
   if (empError) throw new ApiError(500, empError.message);
   if (!empresario) throw new ApiError(404, "No tenés un perfil de empresa");
 
-  // Eliminar logo anterior si existe
-  await client.from("files").delete().eq("id_empresario", empresario.id).eq("tipo", "logo");
+  // Logo(s) anterior(es): se leen antes de borrar para liberar su asset en Cloudinary.
+  const { data: logosPrevios } = await client
+    .from("files")
+    .select("storage_path")
+    .eq("id_empresario", empresario.id)
+    .eq("tipo", "logo");
+
+  const { error: deleteError } = await client
+    .from("files")
+    .delete()
+    .eq("id_empresario", empresario.id)
+    .eq("tipo", "logo");
+  if (deleteError) throw new ApiError(400, deleteError.message);
 
   const { error: insertError } = await client.from("files").insert({
     id_empresario: empresario.id,
@@ -301,6 +312,9 @@ export async function uploadMyLogo(
     storage_path: url,
   });
   if (insertError) throw new ApiError(400, insertError.message);
+
+  // Best-effort: liberar los assets viejos de Cloudinary (no bloquea la respuesta).
+  for (const previo of logosPrevios ?? []) destroyImageByUrl(previo.storage_path);
 
   return { url_logo: url };
 }
@@ -316,12 +330,22 @@ export async function deleteMyLogo(accessToken: string, userId: string): Promise
   if (empError) throw new ApiError(500, empError.message);
   if (!empresario) throw new ApiError(404, "No tenés un perfil de empresa");
 
+  // Logo(s) a borrar: se leen antes para liberar su asset en Cloudinary.
+  const { data: logosPrevios } = await client
+    .from("files")
+    .select("storage_path")
+    .eq("id_empresario", empresario.id)
+    .eq("tipo", "logo");
+
   const { error } = await client
     .from("files")
     .delete()
     .eq("id_empresario", empresario.id)
     .eq("tipo", "logo");
   if (error) throw new ApiError(400, error.message);
+
+  // Best-effort: liberar los assets viejos de Cloudinary.
+  for (const previo of logosPrevios ?? []) destroyImageByUrl(previo.storage_path);
 }
 
 /**
@@ -357,6 +381,14 @@ export async function updateMyAvatar(
   const url = await uploadImage(fileBuffer, AVATAR_FOLDER);
 
   const client = supabaseForToken(accessToken);
+
+  // Avatar anterior: para liberar su asset en Cloudinary tras reemplazarlo.
+  const { data: previo } = await client
+    .from("estudiante")
+    .select("url_avatar")
+    .eq("id_usuario", userId)
+    .maybeSingle();
+
   const { data, error } = await client
     .from("estudiante")
     .update({ url_avatar: url })
@@ -365,6 +397,9 @@ export async function updateMyAvatar(
     .maybeSingle();
   if (error) throw new ApiError(400, error.message);
   if (!data) throw new ApiError(404, "No tenés un perfil de estudiante");
+
+  // Best-effort: liberar el avatar viejo de Cloudinary (no bloquea la respuesta).
+  if (previo?.url_avatar && previo.url_avatar !== url) destroyImageByUrl(previo.url_avatar);
 
   return { url_avatar: data.url_avatar ?? url };
 }
