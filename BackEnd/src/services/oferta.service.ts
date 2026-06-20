@@ -1,5 +1,6 @@
 import { supabaseForToken } from "../config/supabase";
 import { ApiError } from "../utils/ApiError";
+import { crearNotificacion, MENSAJES_NOTIFICACION } from "./notificacion.service";
 import type { CreateOfertaInput, DecideOfertaInput, CalificarOfertaInput, ReplicarCalificacionInput } from "../validations/oferta";
 
 type Client = ReturnType<typeof supabaseForToken>;
@@ -252,11 +253,11 @@ export async function decideOferta(
 
   const { data: proyecto, error: projError } = await client
     .from("proyecto")
-    .select("empresa:empresario(id_usuario)")
+    .select("titulo, empresa:empresario(id_usuario)")
     .eq("id", oferta.id_proyecto)
     .maybeSingle();
   if (projError) throw new ApiError(500, projError.message);
-  if (proyecto?.empresa?.id_usuario !== userId) {
+  if (!proyecto || proyecto.empresa?.id_usuario !== userId) {
     throw new ApiError(403, "No podés decidir sobre esta postulación");
   }
 
@@ -278,6 +279,16 @@ export async function decideOferta(
     .select("id, estado:estado_oferta(nombre)")
     .single();
   if (error) throw new ApiError(400, error.message);
+
+  // Al rechazar una postulacion, se agradece al junior con una notificacion (best-effort).
+  if (input.accion === "rechazar") {
+    await crearNotificacion(
+      accessToken,
+      oferta.id_usuario,
+      MENSAJES_NOTIFICACION.postulacionRechazada(proyecto.titulo),
+    );
+  }
+
   return data;
 }
 

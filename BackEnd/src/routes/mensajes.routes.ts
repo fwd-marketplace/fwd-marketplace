@@ -11,6 +11,8 @@ const router = Router();
 const idParamSchema = z.string().uuid();
 const enviarMensajeSchema = z.object({
   contenido: z.string().min(1).max(5000),
+  // Opcional: si el proyecto tiene varios adjudicados, la empresa indica a cual escribirle.
+  id_destinatario: z.string().uuid().optional(),
 });
 
 /**
@@ -25,7 +27,7 @@ async function resolveProyectoAcceso(
   client: ReturnType<typeof supabaseForToken>,
   userId: string,
   projectId: string,
-): Promise<{ juniorId: string; empresaUserId: string }> {
+): Promise<{ juniorIds: string[]; empresaUserId: string }> {
   // Obtener el proyecto con el dueño (empresario) y la oferta adjudicada.
   const { data: proyecto, error: projError } = await client
     .from("proyecto")
@@ -47,20 +49,25 @@ async function resolveProyectoAcceso(
     .eq("id_proyecto", projectId);
   if (ofertaError) throw new ApiError(500, ofertaError.message);
 
-  const adjudicada = (ofertas ?? []).find((o) => o.estado?.nombre === "adjudicada") ?? null;
+  // Puede haber MAS de un junior adjudicado (la empresa eligio varias propuestas).
+  const juniorIds = [
+    ...new Set(
+      (ofertas ?? [])
+        .filter((oferta) => oferta.estado?.nombre === "adjudicada")
+        .map((oferta) => oferta.id_usuario),
+    ),
+  ];
 
-  const juniorId = adjudicada?.id_usuario ?? null;
-
-  // Verificar acceso: debe ser el dueño del proyecto o el junior adjudicado.
-  if (userId !== empresaUserId && userId !== juniorId) {
+  // Verificar acceso: el dueño del proyecto o CUALQUIER junior adjudicado.
+  if (userId !== empresaUserId && !juniorIds.includes(userId)) {
     throw new ApiError(403, "No tenés acceso a los mensajes de este proyecto");
   }
 
-  if (!juniorId) {
+  if (juniorIds.length === 0) {
     throw new ApiError(409, "Este proyecto aún no tiene un junior adjudicado");
   }
 
-  return { juniorId, empresaUserId };
+  return { juniorIds, empresaUserId };
 }
 
 /** GET /api/mensajes/proyecto/:id — Mensajes de un proyecto. */
@@ -102,14 +109,28 @@ async function enviarMensaje(req: Request, res: Response) {
   const client = supabaseForToken(req.accessToken);
   const userId = req.user.id;
 
-  const { juniorId, empresaUserId } = await resolveProyectoAcceso(
+  const { juniorIds, empresaUserId } = await resolveProyectoAcceso(
     client,
     userId,
     idParsed.data,
   );
 
-  // Determinar destinatario: si es el junior, el destinatario es el empresario y viceversa.
-  const idDestinatario = userId === juniorId ? empresaUserId : juniorId;
+  // Destinatario: un junior siempre le escribe a la empresa. La empresa, si hay varios
+  // adjudicados, indica a cual (id_destinatario); con uno solo, se resuelve por defecto.
+  let idDestinatario: string;
+  if (userId === empresaUserId) {
+    const elegido =
+      bodyParsed.data.id_destinatario ?? (juniorIds.length === 1 ? juniorIds[0] : undefined);
+    if (!elegido) {
+      throw new ApiError(400, "Indicá a qué junior adjudicado querés escribirle");
+    }
+    if (!juniorIds.includes(elegido)) {
+      throw new ApiError(400, "El destinatario no es un junior adjudicado de este proyecto");
+    }
+    idDestinatario = elegido;
+  } else {
+    idDestinatario = empresaUserId;
+  }
 
   const { data, error } = await client
     .from("mensaje")
