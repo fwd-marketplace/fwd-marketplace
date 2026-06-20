@@ -177,15 +177,15 @@ function blankProposal(v: number): JuniorProposal {
   return { v, status: "nuevo", expanded: false, desc: "", link: "", fileName: "", docUrl: "", previewName: "", previewProject: "", repo: "", observaciones: "" };
 }
 
-function initJuniorProposals(offer: MyOffer | null, project: ApiProject | null): JuniorProposal[] {
-  if (!offer) return [blankProposal(1)];
+function initJuniorProposals(offers: MyOffer[], project: ApiProject | null): JuniorProposal[] {
+  if (offers.length === 0) return [blankProposal(1)];
   const statusMap: Record<OfferState, ProposalStatus> = {
     enviada: "enviada", en_revision: "revision",
     solicitar_cambios: "cambios",
     adjudicada: "aceptada", no_seleccionada: "noseleccionada",
   };
-  const first: JuniorProposal = {
-    v: 1,
+  const result: JuniorProposal[] = offers.map((offer, idx) => ({
+    v: idx + 1,
     status: statusMap[offer.estado.nombre],
     expanded: false,
     desc: offer.propuesta,
@@ -196,12 +196,12 @@ function initJuniorProposals(offer: MyOffer | null, project: ApiProject | null):
     previewProject: project?.area?.nombre ?? "",
     repo: offer.url_repositorio ?? "",
     observaciones: offer.comentario_revision ?? "",
-  };
-  // When the empresa requests changes, unlock a fresh slot for the next version
-  if (offer.estado.nombre === "solicitar_cambios") {
-    return [first, blankProposal(2)];
+  }));
+  const latest = offers[offers.length - 1];
+  if (latest?.estado.nombre === "solicitar_cambios") {
+    result.push(blankProposal(result.length + 1));
   }
-  return [first];
+  return result;
 }
 
 function buildEmpresaStudents(
@@ -288,7 +288,7 @@ export function GestionPage({ role, userId, initialProjectId, disponible = true 
   // Selection state
   const [selectedId, setSelectedId]         = useState<string | null>(initialProjectId ?? null);
   const [selectedProject, setSelectedProject] = useState<ApiProject | null>(null);
-  const [selectedOffer, setSelectedOffer]     = useState<MyOffer | null>(null);
+  const [selectedOffers, setSelectedOffers]   = useState<MyOffer[]>([]);
   const [projectOffers, setProjectOffers]     = useState<ProjectOffer[]>([]);
   const [section, setSection]               = useState<Section>("info");
 
@@ -311,11 +311,8 @@ export function GestionPage({ role, userId, initialProjectId, disponible = true 
           if (cr.ok) setCatalogs({ areas: cr.data.areas, skills: cr.data.skills });
         }
       } else {
-        const [pr, or] = await Promise.all([getProjectsAction(), getMyOffersAction()]);
-        if (active) {
-          if (pr.ok) setSidebarProjects(pr.data.projects);
-          if (or.ok) setMyOffers(or.data.ofertas);
-        }
+        const or = await getMyOffersAction();
+        if (active && or.ok) setMyOffers(or.data.ofertas);
       }
     })();
     return () => { active = false; };
@@ -341,8 +338,10 @@ export function GestionPage({ role, userId, initialProjectId, disponible = true 
         const r = await getProjectOffersAction(selectedId);
         if (active && r.ok) setProjectOffers(r.data.ofertas);
       } else {
-        const offer = myOffers.find((o) => o.proyecto?.id === selectedId) ?? null;
-        if (active) setSelectedOffer(offer);
+        const offers = myOffers
+          .filter((o) => o.proyecto?.id === selectedId)
+          .sort((a, b) => new Date(a.fecha_envio).getTime() - new Date(b.fecha_envio).getTime());
+        if (active) setSelectedOffers(offers);
       }
     })();
     return () => { active = false; };
@@ -397,7 +396,11 @@ export function GestionPage({ role, userId, initialProjectId, disponible = true 
     const proj = sidebarProjects.find((p) => p.id === id) ?? null;
     setSelectedProject(proj);
     if (isEmpresa) setProjectOffers([]);
-    else setSelectedOffer(myOffers.find((o) => o.proyecto?.id === id) ?? null);
+    else setSelectedOffers(
+      myOffers
+        .filter((o) => o.proyecto?.id === id)
+        .sort((a, b) => new Date(a.fecha_envio).getTime() - new Date(b.fecha_envio).getTime()),
+    );
   };
 
   const handleSelect = (id: string) => {
@@ -495,45 +498,52 @@ export function GestionPage({ role, userId, initialProjectId, disponible = true 
                   </ul>
                 )
               ) : (
-                sidebarProjects.length === 0 ? <SidebarEmpty text={t("empty_junior")} /> : (
-                  <ul className="flex flex-col gap-0.5">
-                    {sidebarProjects.map((proyecto) => {
-                      const oferta = myOffers.find((o) => o.proyecto?.id === proyecto.id);
-                      const cfg    = oferta ? OFFER_STATE_CONFIG[oferta.estado.nombre] : null;
-                      return (
-                        <li key={proyecto.id}>
-                          <button
-                            onClick={() => handleSelect(proyecto.id)}
-                            className="group flex w-full items-center gap-3 rounded-xl px-3 py-3 text-left transition-colors duration-[var(--duration-fast)] ease-[var(--ease-out)] hover:bg-white/10"
-                          >
-                            <div className="min-w-0 flex-1">
-                              <p className="truncate font-heading text-sm font-bold text-white">
-                                {proyecto.titulo}
-                              </p>
-                              <p className="mt-0.5 flex items-center gap-1.5 font-body text-xs text-white/60">
-                                {cfg ? (
-                                  <>
-                                    <span className={cn("size-2 shrink-0 rounded-full", cfg.dot)} aria-hidden="true" />
-                                    {cfg.label}
-                                  </>
-                                ) : (
-                                  <>
-                                    <span className="size-2 shrink-0 rounded-full border border-white/40" aria-hidden="true" />
-                                    {t("junior_nueva_postulacion")}
-                                  </>
-                                )}
-                              </p>
-                            </div>
-                            {oferta?.estado.nombre === "adjudicada" && (
-                              <CheckCircle2 className="size-4 shrink-0 text-accent" aria-hidden="true" />
-                            )}
-                            <ChevronRight className="size-4 shrink-0 text-white/30 transition-colors group-hover:text-white/60" aria-hidden="true" />
-                          </button>
-                        </li>
-                      );
-                    })}
-                  </ul>
-                )
+                myOffers.length === 0 ? <SidebarEmpty text={t("empty_junior")} /> : (() => {
+                  // Unique projects from offers (keep latest state per project — myOffers is DESC)
+                  const seen = new Set<string>();
+                  const juniorProjects = myOffers
+                    .filter((o) => o.proyecto && !seen.has(o.proyecto.id) && !!seen.add(o.proyecto.id))
+                    .map((o) => o.proyecto!);
+                  return (
+                    <ul className="flex flex-col gap-0.5">
+                      {juniorProjects.map((proyecto) => {
+                        const latestOferta = myOffers.find((o) => o.proyecto?.id === proyecto.id);
+                        const cfg = latestOferta ? OFFER_STATE_CONFIG[latestOferta.estado.nombre] : null;
+                        return (
+                          <li key={proyecto.id}>
+                            <button
+                              onClick={() => handleSelect(proyecto.id)}
+                              className="group flex w-full items-center gap-3 rounded-xl px-3 py-3 text-left transition-colors duration-[var(--duration-fast)] ease-[var(--ease-out)] hover:bg-white/10"
+                            >
+                              <div className="min-w-0 flex-1">
+                                <p className="truncate font-heading text-sm font-bold text-white">
+                                  {proyecto.titulo}
+                                </p>
+                                <p className="mt-0.5 flex items-center gap-1.5 font-body text-xs text-white/60">
+                                  {cfg ? (
+                                    <>
+                                      <span className={cn("size-2 shrink-0 rounded-full", cfg.dot)} aria-hidden="true" />
+                                      {cfg.label}
+                                    </>
+                                  ) : (
+                                    <>
+                                      <span className="size-2 shrink-0 rounded-full border border-white/40" aria-hidden="true" />
+                                      {t("junior_nueva_postulacion")}
+                                    </>
+                                  )}
+                                </p>
+                              </div>
+                              {latestOferta?.estado.nombre === "adjudicada" && (
+                                <CheckCircle2 className="size-4 shrink-0 text-accent" aria-hidden="true" />
+                              )}
+                              <ChevronRight className="size-4 shrink-0 text-white/30 transition-colors group-hover:text-white/60" aria-hidden="true" />
+                            </button>
+                          </li>
+                        );
+                      })}
+                    </ul>
+                  );
+                })()
               )}
             </div>
           </>
@@ -637,9 +647,9 @@ export function GestionPage({ role, userId, initialProjectId, disponible = true 
             )}
             {section === "proceso" && (
               <ProcesoPanel
-                key={`proceso-${selectedId}-${selectedOffer?.id ?? "none"}-${projectOffers.length}`}
+                key={`proceso-${selectedId}-${selectedOffers.length}-${projectOffers.length}`}
                 isEmpresa={isEmpresa}
-                offer={selectedOffer}
+                offers={selectedOffers}
                 projectOffers={projectOffers}
                 project={selectedProject}
                 locale={locale}
@@ -1015,10 +1025,10 @@ function ChatPanel({
 // ── Proceso panel router ──────────────────────────────────────────────────────
 
 function ProcesoPanel({
-  isEmpresa, offer, projectOffers, project, locale, t, userId, disponible,
+  isEmpresa, offers, projectOffers, project, locale, t, userId, disponible,
 }: {
   isEmpresa: boolean;
-  offer: MyOffer | null;
+  offers: MyOffer[];
   projectOffers: ProjectOffer[];
   project: ApiProject | null;
   locale: string;
@@ -1029,7 +1039,7 @@ function ProcesoPanel({
   if (isEmpresa) {
     return <EmpresaProcesoView offers={projectOffers} project={project} locale={locale} t={t} />;
   }
-  return <JuniorProcesoView offer={offer} project={project} locale={locale} t={t} userId={userId} disponible={disponible} />;
+  return <JuniorProcesoView offers={offers} project={project} locale={locale} t={t} userId={userId} disponible={disponible} />;
 }
 
 // ── Browser mockup ────────────────────────────────────────────────────────────
@@ -1083,9 +1093,9 @@ function t_noop(k: string) { return k; }
 // ── Junior proceso view ───────────────────────────────────────────────────────
 
 function JuniorProcesoView({
-  offer, project, t, userId, disponible,
+  offers, project, t, userId, disponible,
 }: {
-  offer: MyOffer | null;
+  offers: MyOffer[];
   project: ApiProject | null;
   locale: string;
   t: T;
@@ -1093,16 +1103,17 @@ function JuniorProcesoView({
   disponible: boolean;
 }) {
   const [proposals, setProposals] = useState<JuniorProposal[]>(
-    () => initJuniorProposals(offer, project),
+    () => initJuniorProposals(offers, project),
   );
   const [submitError, setSubmitError] = useState("");
   const closed = false;
 
-  // Reset proposals when the offer changes (real data loaded from API)
+  // Reset proposals when offers change (real data loaded from API)
+  const latestOfferId = offers[offers.length - 1]?.id;
   useEffect(() => {
-    setProposals(initJuniorProposals(offer, project));
+    setProposals(initJuniorProposals(offers, project));
   // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [offer?.id]);
+  }, [offers.length, latestOfferId]);
 
   // ── State helpers ────────────────────────────────────────────────────────
   const patch = (i: number, p: Partial<JuniorProposal>) =>
