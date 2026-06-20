@@ -88,6 +88,8 @@ interface Props {
   offer: MyOffer | null;
   entregables: Entregable[];
   projectOffers?: ProjectOffer[];
+  /** false si el estudiante ya tiene un proyecto activo (no puede postular). */
+  disponible?: boolean;
 }
 
 // ── Constants ─────────────────────────────────────────────────────────────────
@@ -168,6 +170,7 @@ export function ProcesoPage({
   offer,
   entregables: initialEntregables,
   projectOffers,
+  disponible = true,
 }: Props) {
   const t  = useTranslations("project_detail");
   const tp = useTranslations("proceso_page");
@@ -904,8 +907,19 @@ export function ProcesoPage({
                 </div>
               )}
 
+              {/* ── OCUPADO: ya tiene un proyecto activo ──────────────────── */}
+              {!isApplied && !isExpired && !disponible && (
+                <div className="rounded-2xl border border-warning/30 bg-warning/5 p-6">
+                  <p className="flex items-center gap-2 font-body text-base font-semibold text-warning">
+                    <Clock className="size-5 shrink-0" aria-hidden="true" />
+                    {t("offer_busy_title")}
+                  </p>
+                  <p className="mt-2 font-body text-sm text-ink-muted">{t("offer_busy_message")}</p>
+                </div>
+              )}
+
               {/* ── FORMULARIO ──────────────────────────────────────────── */}
-              {!isApplied && !isExpired && (
+              {!isApplied && !isExpired && disponible && (
                 <div className="rounded-2xl border border-border bg-surface p-7 shadow-[var(--shadow-soft)]">
                   <h2 className="mb-2 font-heading text-2xl font-extrabold tracking-tight text-ink-strong">
                     {tp("form_title")}<span className="text-primary" aria-hidden="true">.</span>

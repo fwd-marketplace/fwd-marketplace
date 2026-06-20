@@ -24,6 +24,8 @@ export default async function GestionRoute({ params, searchParams }: Props) {
 
   const role   = demoRole ?? authRole;
   const userId = profile?.id ?? null;
+  // El estudiante con un proyecto activo no puede postular (lo fuerza el BackEnd).
+  const disponible = profile?.estudiante?.disponible ?? true;
 
-  return <GestionPage role={role} userId={userId} initialProjectId={proyecto ?? null} />;
+  return <GestionPage role={role} userId={userId} initialProjectId={proyecto ?? null} disponible={disponible} />;
 }

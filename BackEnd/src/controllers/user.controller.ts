@@ -2,6 +2,9 @@ import type { Request, Response } from "express";
 import * as userService from "../services/user.service";
 import { ApiError } from "../utils/ApiError";
 
+/** Largo mínimo de contraseña, unificado entre registro y recuperación. */
+const MIN_PASSWORD_LENGTH = 8;
+
 /** Comprueba que email y password vengan como strings no vacíos. */
 function readCredentials(body: unknown): { email: string; password: string; name?: string } {
   const { email, password, name } = (body ?? {}) as Record<string, unknown>;
@@ -62,8 +65,8 @@ function readConfirmResetInput(body: unknown): {
     unknown
   >;
 
-  if (typeof password !== "string" || password.length < 8) {
-    throw new ApiError(400, "La contraseña debe tener al menos 8 caracteres");
+  if (typeof password !== "string" || password.length < MIN_PASSWORD_LENGTH) {
+    throw new ApiError(400, `La contraseña debe tener al menos ${MIN_PASSWORD_LENGTH} caracteres`);
   }
   if (typeof token_hash === "string" && token_hash.trim()) {
     return { tokenHash: token_hash, password };
@@ -93,6 +96,9 @@ function readRefreshToken(body: unknown): string {
 /** POST /api/users/register */
 export async function register(req: Request, res: Response) {
   const credentials = readCredentials(req.body);
+  if (credentials.password.length < MIN_PASSWORD_LENGTH) {
+    throw new ApiError(400, `La contraseña debe tener al menos ${MIN_PASSWORD_LENGTH} caracteres`);
+  }
   const result = await userService.registerUser(credentials);
   res.status(201).json(result);
 }

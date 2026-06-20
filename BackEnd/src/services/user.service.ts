@@ -7,6 +7,7 @@ import {
 import { env } from "../config/env";
 import { ApiError } from "../utils/ApiError";
 import { startEmailMfa, verifyEmailMfa } from "./mfa.service";
+import { tieneProyectoActivo } from "./oferta.service";
 
 type RegisterInput = { email: string; password: string; name?: string };
 type LoginInput = { email: string; password: string };
@@ -281,9 +282,10 @@ export async function getMyProfile(accessToken: string, userId: string) {
     if (estudianteError) throw new ApiError(500, estudianteError.message);
     if (!estudiante) return { ...user, estudiante: null };
 
-    const [skills, conocimientos] = await Promise.all([
+    const [skills, conocimientos, ocupado] = await Promise.all([
       getEstudianteSkills(client, estudiante.id),
       getEstudianteConocimientos(client, estudiante.id),
+      tieneProyectoActivo(client, userId),
     ]);
     return {
       ...user,
@@ -301,6 +303,8 @@ export async function getMyProfile(accessToken: string, userId: string) {
         url_portfolio: estudiante.url_portfolio,
         skills,
         conocimientos,
+        // Disponibilidad para tomar proyectos: false si ya tiene uno activo.
+        disponible: !ocupado,
       },
     };
   }
