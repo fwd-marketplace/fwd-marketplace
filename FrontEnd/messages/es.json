@@ -656,6 +656,23 @@
     "toast_close": "Cerrar"
   },
   "mis_proyectos": {
+    "cancel_project": {
+      "btn": "Cancelar",
+      "title": "Cancelar proyecto",
+      "desc": "El proyecto \"{titulo}\" pasará a cancelado y dejará de aparecer en el marketplace. Podés revertirlo. Se avisará a los postulantes.",
+      "confirm": "Sí, cancelar",
+      "toast_done": "Proyecto cancelado"
+    },
+    "delete_project": {
+      "btn": "Eliminar",
+      "title": "Eliminar proyecto",
+      "desc": "Vas a eliminar definitivamente \"{titulo}\" y todas sus postulaciones. Esta acción no se puede deshacer.",
+      "confirm": "Sí, eliminar",
+      "toast_done": "Proyecto eliminado"
+    },
+    "confirm_action": {
+      "cancel": "Volver"
+    },
     "page_title": "Mis proyectos",
     "create_btn": "Crear proyecto",
     "back_btn": "Volver",
@@ -1301,6 +1318,9 @@
     "iframe_error": "No se pudo mostrar la vista previa embebida. Abrí el prototipo en una pestaña nueva."
   },
   "postulaciones_empresa": {
+    "select_for_award": "Seleccionar esta propuesta para adjudicar",
+    "award_selected": "Adjudicar seleccionadas ({count})",
+    "toast_accepted_multiple": "{count} propuesta(s) adjudicada(s)",
     "title": "POSTULACIONES",
     "subtitle": "Revisión de candidatos.",
     "actions_header": "ACCIONES DISPONIBLES",

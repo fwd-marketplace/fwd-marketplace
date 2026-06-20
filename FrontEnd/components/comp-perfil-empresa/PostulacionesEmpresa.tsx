@@ -247,11 +247,15 @@ function OfferCard({
   onAccept,
   onReject,
   isActionPending,
+  isSelected,
+  onToggleSelect,
 }: {
   offer: ProjectOffer;
   onAccept: (id: string) => void;
   onReject: (offer: ProjectOffer) => void;
   isActionPending: boolean;
+  isSelected: boolean;
+  onToggleSelect: (id: string) => void;
 }) {
   const t = useTranslations("postulaciones_empresa");
   const [expanded, setExpanded] = useState(false);
@@ -286,6 +290,17 @@ function OfferCard({
     >
       {/* ── Encabezado ── */}
       <div className="flex items-center gap-4 p-4">
+        {/* Checkbox para adjudicar varias propuestas a la vez (solo si es adjudicable) */}
+        {canAccept && !ocupado && (
+          <input
+            type="checkbox"
+            checked={isSelected}
+            onChange={() => onToggleSelect(offer.id)}
+            disabled={isActionPending}
+            aria-label={t("select_for_award")}
+            className="size-4 shrink-0 cursor-pointer accent-accent"
+          />
+        )}
         {/* Avatar con iniciales */}
         <div className="flex size-11 shrink-0 items-center justify-center rounded-full bg-secondary/10 font-heading text-sm font-bold text-secondary">
           {initials}
@@ -599,6 +614,7 @@ export function PostulacionesEmpresa({ initialProjects }: { initialProjects: Api
   const [offersByProject, setOffersByProject] = useState<Record<string, ProjectOffer[]>>({});
   const [toastMessage, setToastMessage] = useState<string | null>(null);
   const [rejectTarget, setRejectTarget] = useState<ProjectOffer | null>(null);
+  const [selectedOfferIds, setSelectedOfferIds] = useState<Set<string>>(new Set());
   const [isPending, startTransition] = useTransition();
 
   const selectedProject = initialProjects.find((p) => p.id === selectedProjectId) ?? null;
@@ -622,9 +638,22 @@ export function PostulacionesEmpresa({ initialProjects }: { initialProjects: Api
 
   function selectProject(projectId: string) {
     setSelectedProjectId(projectId);
+    setSelectedOfferIds(new Set());
     if (!offersByProject[projectId]) {
       loadOffers(projectId);
     }
+  }
+
+  function toggleOfferSelection(offerId: string) {
+    setSelectedOfferIds((prev) => {
+      const next = new Set(prev);
+      if (next.has(offerId)) {
+        next.delete(offerId);
+      } else {
+        next.add(offerId);
+      }
+      return next;
+    });
   }
 
   function handleAccept(offerId: string) {
@@ -649,6 +678,31 @@ export function PostulacionesEmpresa({ initialProjects }: { initialProjects: Api
         triggerToast(t("toast_rejected_short"));
       }
       setRejectTarget(null);
+    });
+  }
+
+  // Adjudica varias propuestas a la vez (la empresa puede elegir una o mas).
+  function handleAcceptSelected() {
+    const ids = [...selectedOfferIds];
+    if (ids.length === 0) return;
+    startTransition(async () => {
+      let okCount = 0;
+      let firstError: string | null = null;
+      for (const id of ids) {
+        const result = await decideOfferAction(id, "aceptar");
+        if (result.ok) {
+          okCount += 1;
+        } else if (!firstError) {
+          firstError = result.error;
+        }
+      }
+      if (selectedProjectId) loadOffers(selectedProjectId);
+      setSelectedOfferIds(new Set());
+      if (okCount > 0) {
+        triggerToast(t("toast_accepted_multiple", { count: okCount }));
+      } else if (firstError) {
+        triggerToast(firstError);
+      }
     });
   }
 
@@ -744,20 +798,32 @@ export function PostulacionesEmpresa({ initialProjects }: { initialProjects: Api
                   {selectedProject && <span className="text-primary" aria-hidden="true">.</span>}
                 </h2>
               </div>
-              {selectedProject && !offersByProject[selectedProject.id] && (
-                <Button
-                  variant="outline"
-                  onClick={() => loadOffers(selectedProject.id)}
-                  disabled={isPending}
-                >
-                  {isPending ? (
-                    <Loader2 className="size-4 animate-spin" />
-                  ) : (
-                    <Send className="size-4" />
-                  )}
-                  {t("load_applications")}
-                </Button>
-              )}
+              <div className="flex items-center gap-2">
+                {selectedOfferIds.size > 0 && (
+                  <Button variant="accent" onClick={handleAcceptSelected} disabled={isPending}>
+                    {isPending ? (
+                      <Loader2 className="size-4 animate-spin" />
+                    ) : (
+                      <UserCheck className="size-4" />
+                    )}
+                    {t("award_selected", { count: selectedOfferIds.size })}
+                  </Button>
+                )}
+                {selectedProject && !offersByProject[selectedProject.id] && (
+                  <Button
+                    variant="outline"
+                    onClick={() => loadOffers(selectedProject.id)}
+                    disabled={isPending}
+                  >
+                    {isPending ? (
+                      <Loader2 className="size-4 animate-spin" />
+                    ) : (
+                      <Send className="size-4" />
+                    )}
+                    {t("load_applications")}
+                  </Button>
+                )}
+              </div>
             </div>
 
             <div className="space-y-3 pt-4">
@@ -769,6 +835,8 @@ export function PostulacionesEmpresa({ initialProjects }: { initialProjects: Api
                     onAccept={handleAccept}
                     onReject={setRejectTarget}
                     isActionPending={isPending}
+                    isSelected={selectedOfferIds.has(offer.id)}
+                    onToggleSelect={toggleOfferSelection}
                   />
                 ))
               ) : (
