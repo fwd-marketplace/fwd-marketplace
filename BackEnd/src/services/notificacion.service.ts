@@ -28,7 +28,7 @@ export const MENSAJES_NOTIFICACION = {
 /**
  * Crea una notificacion para otro usuario (best-effort). La empresa no puede
  * insertar en `notificacion` directamente (RLS sin politica de INSERT), asi que se
- * usa la RPC `crear_notificacion` (SECURITY DEFINER, migracion 0029), que valida el
+ * usa la RPC `crear_notificacion` (SECURITY DEFINER, migracion 0032), que valida el
  * permiso y respeta las preferencias del destinatario. Si falla, se registra y se
  * sigue: una notificacion nunca debe romper la operacion que la dispara.
  */
