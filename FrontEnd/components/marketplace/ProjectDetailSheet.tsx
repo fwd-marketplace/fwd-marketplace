@@ -230,7 +230,7 @@ export function ProjectDetailSheet({
                         : "bg-primary text-white hover:bg-secondary"
                     )}
                   >
-                    <Link href={`/${locale}/marketplace/${project.id}/proceso`}>
+                    <Link href={`/${locale}/gestion?proyecto=${project.id}`}>
                       {alreadyApplied ? tp("begin_proceso_applied") : tp("begin_proceso")}
                       <ChevronRight className="ml-1 size-4" aria-hidden="true" />
                     </Link>

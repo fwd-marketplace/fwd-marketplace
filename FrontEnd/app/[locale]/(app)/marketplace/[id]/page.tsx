@@ -6,5 +6,5 @@ interface Props {
 
 export default async function ProjectDetailRedirect({ params }: Props) {
   const { locale, id } = await params;
-  redirect(`/${locale}/marketplace/${id}/proceso`);
+  redirect(`/${locale}/gestion?proyecto=${id}`);
 }

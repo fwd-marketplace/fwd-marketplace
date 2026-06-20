@@ -245,9 +245,9 @@ function buildEmpresaStudents(
 
 // ── Main component ────────────────────────────────────────────────────────────
 
-interface Props { role: ApiRoleName | null; userId: string | null }
+interface Props { role: ApiRoleName | null; userId: string | null; initialProjectId?: string | null }
 
-export function GestionPage({ role, userId }: Props) {
+export function GestionPage({ role, userId, initialProjectId }: Props) {
   const t      = useTranslations("gestion_page");
   const locale = useLocale();
   const isEmpresa = role === "company";
@@ -259,7 +259,7 @@ export function GestionPage({ role, userId }: Props) {
   const [myOffers, setMyOffers] = useState<MyOffer[]>(MOCK_OFFERS);
 
   // Selection state
-  const [selectedId, setSelectedId]         = useState<string | null>(null);
+  const [selectedId, setSelectedId]         = useState<string | null>(initialProjectId ?? null);
   const [selectedProject, setSelectedProject] = useState<ApiProject | null>(null);
   const [selectedOffer, setSelectedOffer]     = useState<MyOffer | null>(null);
   const [projectOffers, setProjectOffers]     = useState<ProjectOffer[]>([]);

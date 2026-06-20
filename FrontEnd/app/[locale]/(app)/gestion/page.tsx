@@ -5,12 +5,12 @@ import type { ApiRoleName } from "@/lib/api/types";
 
 interface Props {
   params: Promise<{ locale: string }>;
-  searchParams: Promise<{ demo?: string }>;
+  searchParams: Promise<{ demo?: string; proyecto?: string }>;
 }
 
 export default async function GestionRoute({ params, searchParams }: Props) {
   const { locale } = await params;
-  const { demo }   = await searchParams;
+  const { demo, proyecto } = await searchParams;
   setRequestLocale(locale);
 
   const meResult = await getMe();
@@ -25,5 +25,5 @@ export default async function GestionRoute({ params, searchParams }: Props) {
   const role   = demoRole ?? authRole;
   const userId = profile?.id ?? null;
 
-  return <GestionPage role={role} userId={userId} />;
+  return <GestionPage role={role} userId={userId} initialProjectId={proyecto ?? null} />;
 }
