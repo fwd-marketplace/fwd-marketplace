@@ -144,7 +144,7 @@ export async function listMyOfertas(accessToken: string, userId: string) {
   const { data, error } = await client
     .from("oferta")
     .select(
-      "id, propuesta, prototipo_url, url_repositorio, documentacion_tecnica, documentacion_url, fecha_envio, calificacion, comentario_calificacion, estado:estado_oferta(nombre), proyecto:proyecto(id, titulo, fecha_cierre)",
+      "id, propuesta, prototipo_url, url_repositorio, documentacion_tecnica, documentacion_url, fecha_envio, comentario_revision, calificacion, comentario_calificacion, estado:estado_oferta(nombre), proyecto:proyecto(id, titulo, fecha_cierre)",
     )
     .eq("id_usuario", userId)
     .order("fecha_envio", { ascending: false });

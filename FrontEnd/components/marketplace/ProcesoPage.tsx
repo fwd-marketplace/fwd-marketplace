@@ -242,8 +242,9 @@ export function ProcesoPage({
   const isApplied    = !!offer || submitted;
   const offerState   = offer?.estado.nombre ?? (submitted ? "enviada" as OfferState : null);
   const canWithdraw  = offerState === "enviada" || offerState === "en_revision";
-  const isAdjudicada = offerState === "adjudicada";
-  const isJunior     = role !== "company";
+  const isAdjudicada      = offerState === "adjudicada";
+  const isSolicitaCambios = offerState === "solicitar_cambios";
+  const isJunior          = role !== "company";
 
   const sortedEntregables   = [...localEntregables].sort((a, b) => b.version - a.version);
   const latestEntregable    = sortedEntregables[0];
@@ -922,12 +923,14 @@ export function ProcesoPage({
               )}
 
               {/* ── FORMULARIO ──────────────────────────────────────────── */}
-              {!isApplied && !isExpired && disponible && (
+              {(!isApplied || isSolicitaCambios) && !isExpired && disponible && (
                 <div className="rounded-2xl border border-border bg-surface p-7 shadow-[var(--shadow-soft)]">
                   <h2 className="mb-2 font-heading text-2xl font-extrabold tracking-tight text-ink-strong">
-                    {tp("form_title")}<span className="text-primary" aria-hidden="true">.</span>
+                    {isSolicitaCambios ? tp("form_title_nueva_version") : tp("form_title")}<span className="text-primary" aria-hidden="true">.</span>
                   </h2>
-                  <p className="mb-6 font-body text-base text-ink-muted">{tp("form_subtitle")}</p>
+                  <p className="mb-6 font-body text-base text-ink-muted">
+                    {isSolicitaCambios ? tp("form_subtitle_nueva_version") : tp("form_subtitle")}
+                  </p>
 
                   <form onSubmit={handleSubmit(onSubmitOffer)} className="flex flex-col gap-6">
                     <div className="flex flex-col gap-2">
@@ -1157,22 +1160,33 @@ export function ProcesoPage({
                     </div>
                   )}
 
-                  {/* 4. CHAT DE REVISIONES */}
+                  {/* 4. OBSERVACIONES DE LA EMPRESA */}
                   <div className="rounded-2xl border border-border bg-surface p-6 shadow-[var(--shadow-soft)]">
                     <h3 className="mb-2 flex items-center gap-2 font-heading text-lg font-bold text-ink-strong">
                       <MessageCircle className="size-5" />{tp("proceso_revision_chat")}
                     </h3>
-                    <p className="mb-5 font-body text-base text-ink-muted">
-                      El empresario dejará comentarios aquí al revisar tu propuesta y entregables.
-                    </p>
-                    <div className="flex gap-3 opacity-50">
-                      <input disabled placeholder={tp("proceso_revision_placeholder")}
-                        className="flex-1 rounded-full border border-border bg-surface-sunken px-5 py-3 font-body text-base text-ink placeholder:text-ink-subtle outline-none" />
-                      <button disabled aria-label="Enviar"
-                        className="flex size-12 flex-shrink-0 items-center justify-center rounded-full bg-primary text-white">
-                        <Send className="size-5" />
-                      </button>
-                    </div>
+                    {offer?.comentario_revision ? (
+                      <div className={cn(
+                        "rounded-xl border p-4",
+                        isSolicitaCambios
+                          ? "border-magenta/30 bg-magenta/5"
+                          : "border-warning/30 bg-warning/5",
+                      )}>
+                        <p className={cn(
+                          "mb-1 font-body text-[10px] font-bold uppercase tracking-wider",
+                          isSolicitaCambios ? "text-magenta" : "text-warning",
+                        )}>
+                          {tp("proceso_observacion_empresa")}
+                        </p>
+                        <p className="font-body text-sm leading-relaxed text-ink">
+                          {offer.comentario_revision}
+                        </p>
+                      </div>
+                    ) : (
+                      <p className="font-body text-base text-ink-muted">
+                        {tp("proceso_revision_empty")}
+                      </p>
+                    )}
                   </div>
                 </>
               )}

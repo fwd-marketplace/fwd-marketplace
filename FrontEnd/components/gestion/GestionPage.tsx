@@ -184,7 +184,7 @@ function initJuniorProposals(offer: MyOffer | null, project: ApiProject | null):
     solicitar_cambios: "cambios",
     adjudicada: "aceptada", no_seleccionada: "noseleccionada",
   };
-  return [{
+  const first: JuniorProposal = {
     v: 1,
     status: statusMap[offer.estado.nombre],
     expanded: false,
@@ -195,8 +195,13 @@ function initJuniorProposals(offer: MyOffer | null, project: ApiProject | null):
     previewName: project?.titulo ?? "",
     previewProject: project?.area?.nombre ?? "",
     repo: offer.url_repositorio ?? "",
-    observaciones: "",
-  }];
+    observaciones: offer.comentario_revision ?? "",
+  };
+  // When the empresa requests changes, unlock a fresh slot for the next version
+  if (offer.estado.nombre === "solicitar_cambios") {
+    return [first, blankProposal(2)];
+  }
+  return [first];
 }
 
 function buildEmpresaStudents(

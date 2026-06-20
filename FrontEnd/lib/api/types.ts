@@ -170,6 +170,7 @@ export type MyOffer = {
   documentacion_tecnica?: string | null;
   documentacion_url?: string | null;
   fecha_envio: string;
+  comentario_revision?: string | null;
   calificacion?: number | null;
   comentario_calificacion?: string | null;
   estado: { nombre: OfferState };
