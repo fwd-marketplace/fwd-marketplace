@@ -40,12 +40,6 @@ import {
   withdrawOfferAction,
 } from "@/lib/actions/marketplace";
 import { cn } from "@/lib/utils";
-import {
-  MOCK_PROJECT_OFFERS,
-  MOCK_PROCESO_ENTREGABLES,
-  MOCK_REVISION_MESSAGES,
-  type RevisionMessage,
-} from "@/lib/mock-proceso";
 import type {
   ApiProject,
   ApiRoleName,
@@ -60,6 +54,13 @@ import type {
 
 type Tab = "info" | "chat" | "proceso";
 type ChatMode = "directo" | "ia";
+
+interface RevisionMessage {
+  id: string;
+  from: "empresa" | "junior";
+  text: string;
+  fecha: string;
+}
 
 interface Attachment {
   name: string;
@@ -225,11 +226,11 @@ export function ProcesoPage({
 
   // ── Empresa flow state ─────────────────────────────────────────────────────
 
-  const [localOffers,     setLocalOffers]     = useState<ProjectOffer[]>(projectOffers ?? MOCK_PROJECT_OFFERS);
-  const [expandedOfferId, setExpandedOfferId] = useState<string | null>("po-adjudicada");
+  const [localOffers,     setLocalOffers]     = useState<ProjectOffer[]>(projectOffers ?? []);
+  const [expandedOfferId, setExpandedOfferId] = useState<string | null>(null);
 
-  const [localEntregablesE, setLocalEntregablesE] = useState<Entregable[]>(MOCK_PROCESO_ENTREGABLES);
-  const [revisionMessages,  setRevisionMessages]  = useState<RevisionMessage[]>(MOCK_REVISION_MESSAGES);
+  const [localEntregablesE, setLocalEntregablesE] = useState<Entregable[]>(initialEntregables);
+  const [revisionMessages,  setRevisionMessages]  = useState<RevisionMessage[]>([]);
   const [revisionInput,     setRevisionInput]     = useState("");
 
   // ── Derived values ─────────────────────────────────────────────────────────
