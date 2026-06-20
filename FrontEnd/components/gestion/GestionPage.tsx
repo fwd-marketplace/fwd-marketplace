@@ -39,6 +39,8 @@ import {
   submitOfferAction,
   reviewOfferAction,
   calificarOfertaAction,
+  withdrawOfferAction,
+  editOfferAction,
   getMyProjectsAction,
   getMyOffersAction,
   uploadDocumentoAction,
@@ -82,6 +84,7 @@ interface ChatMessage {
 
 interface JuniorProposal {
   v: number;
+  offerId: string | null;
   status: ProposalStatus;
   expanded: boolean;
   desc: string;
@@ -177,7 +180,7 @@ const EMPRESA_BADGE: Record<EmpresaStatus, string> = {
 
 
 function blankProposal(v: number): JuniorProposal {
-  return { v, status: "nuevo", expanded: false, desc: "", link: "", fileName: "", docUrl: "", previewName: "", previewProject: "", repo: "", observaciones: "", calificacion: null, comentario_calificacion: null };
+  return { v, offerId: null, status: "nuevo", expanded: false, desc: "", link: "", fileName: "", docUrl: "", previewName: "", previewProject: "", repo: "", observaciones: "", calificacion: null, comentario_calificacion: null };
 }
 
 function initJuniorProposals(offers: MyOffer[], project: ApiProject | null): JuniorProposal[] {
@@ -189,6 +192,7 @@ function initJuniorProposals(offers: MyOffer[], project: ApiProject | null): Jun
   };
   const result: JuniorProposal[] = offers.map((offer, idx) => ({
     v: idx + 1,
+    offerId: offer.id,
     status: statusMap[offer.estado.nombre],
     expanded: false,
     desc: offer.propuesta,
@@ -1171,6 +1175,31 @@ function JuniorProcesoView({
     e.target.value = "";
   };
 
+  const [withdrawingIdx, setWithdrawingIdx] = useState<number | null>(null);
+
+  const handleWithdraw = async (i: number) => {
+    const p = proposals[i];
+    if (!p?.offerId || !project) return;
+    setWithdrawingIdx(i);
+    const result = await withdrawOfferAction(p.offerId);
+    setWithdrawingIdx(null);
+    if (result.ok) {
+      const fresh = await getMyOffersAction();
+      if (fresh.ok) {
+        const projectOffers = fresh.data.ofertas.filter((o) => o.proyecto?.id === project.id);
+        setProposals(initJuniorProposals(projectOffers, project));
+      } else {
+        setProposals([blankProposal(1)]);
+      }
+    } else {
+      setSubmitError(result.error);
+    }
+  };
+
+  const startEdit = (i: number) => {
+    patch(i, { status: "editando", expanded: true });
+  };
+
   const submit = async (i: number) => {
     const p = proposals[i];
     if (!p?.desc.trim()) return;
@@ -1189,6 +1218,24 @@ function JuniorProcesoView({
     }
 
     setSubmitError("");
+
+    // Editar propuesta existente (status era "enviada", pasó a "editando")
+    if (p.offerId) {
+      const result = await editOfferAction(p.offerId, {
+        propuesta: p.desc,
+        prototipo_url: p.link || null,
+        documentacion_url: p.docUrl || null,
+        url_repositorio: p.repo || null,
+      });
+      if (result.ok) {
+        patch(i, { status: "enviada", expanded: false });
+      } else {
+        setSubmitError(result.error);
+      }
+      return;
+    }
+
+    // Nueva propuesta
     const result = await submitOfferAction(project.id, {
       propuesta: p.desc,
       ...(p.link ? { prototipo_url: p.link } : {}),
@@ -1316,6 +1363,26 @@ function JuniorProcesoView({
                       >
                         {t("proceso_crear_propuesta")}
                       </button>
+                    )}
+                    {/* Editar y Retirar — solo cuando la empresa aún no revisó */}
+                    {p.status === "enviada" && p.offerId && (
+                      <>
+                        <button
+                          onClick={() => startEdit(i)}
+                          className="inline-flex items-center gap-1.5 rounded-[10px] border border-border bg-surface px-[14px] py-[7px] font-body text-[13px] font-semibold text-ink transition-colors duration-[var(--duration-fast)] hover:border-secondary hover:text-secondary"
+                        >
+                          <Pencil className="size-[13px]" aria-hidden="true" />
+                          {t("proceso_editar")}
+                        </button>
+                        <button
+                          onClick={() => { void handleWithdraw(i); }}
+                          disabled={withdrawingIdx === i}
+                          className="inline-flex items-center gap-1.5 rounded-[10px] border border-magenta/30 bg-surface px-[14px] py-[7px] font-body text-[13px] font-semibold text-magenta transition-colors duration-[var(--duration-fast)] hover:bg-magenta/5 disabled:opacity-50"
+                        >
+                          <Trash2 className="size-[13px]" aria-hidden="true" />
+                          {withdrawingIdx === i ? t("proceso_retirando") : t("proceso_retirar")}
+                        </button>
+                      </>
                     )}
                     {pm && (
                       <span className={cn("inline-flex items-center rounded-full border px-[15px] py-[7px] font-body text-[13px] font-bold whitespace-nowrap", pm.cls)}>

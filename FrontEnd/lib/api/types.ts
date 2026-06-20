@@ -377,6 +377,14 @@ export type ReviewOfferInput = {
   comentario?: string;
 };
 
+export type EditOfferInput = {
+  propuesta?: string;
+  prototipo_url?: string | null;
+  url_repositorio?: string | null;
+  documentacion_tecnica?: string | null;
+  documentacion_url?: string | null;
+};
+
 export type EntregableState = "pendiente" | "enviado" | "en_revision" | "aprobado";
 export type EntregableTipo = "parcial" | "final";
 

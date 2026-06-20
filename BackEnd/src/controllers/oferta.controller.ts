@@ -7,6 +7,7 @@ import {
   ReviewOfertaSchema,
   CalificarOfertaSchema,
   ReplicarCalificacionSchema,
+  EditOfertaSchema,
 } from "../validations/oferta";
 import {
   createOferta,
@@ -16,6 +17,7 @@ import {
   getOfertaContacto,
   decideOferta,
   reviewOferta,
+  editOferta,
   withdrawOferta,
   calificarOferta,
   replicarCalificacion,
@@ -102,6 +104,18 @@ export async function review(req: Request, res: Response) {
     throw new ApiError(400, parsed.error.issues[0]?.message ?? "Acción inválida");
   }
   const oferta = await reviewOferta(token, userId, ofertaId, parsed.data);
+  res.status(200).json({ oferta });
+}
+
+/** PATCH /api/ofertas/:id/editar (junior edita su propuesta si aún está en "enviada") */
+export async function edit(req: Request, res: Response) {
+  const { token, userId } = readAuth(req);
+  const ofertaId = readUuidParam(req.params.id, "de la postulación");
+  const parsed = EditOfertaSchema.safeParse(req.body);
+  if (!parsed.success) {
+    throw new ApiError(400, parsed.error.issues[0]?.message ?? "Datos inválidos");
+  }
+  const oferta = await editOferta(token, userId, ofertaId, parsed.data);
   res.status(200).json({ oferta });
 }
 

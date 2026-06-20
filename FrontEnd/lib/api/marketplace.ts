@@ -9,6 +9,7 @@ import type {
   CatalogsResponse,
   CompanyProjectState,
   CreateProjectInput,
+  EditOfferInput,
   Entregable,
   EntregablesResponse,
   MyOffersResponse,
@@ -188,6 +189,15 @@ export function reviewOffer(offerId: string, input: ReviewOfferInput): Promise<R
 export function withdrawOffer(offerId: string): Promise<Result<void>> {
   return asResult(async () => {
     await apiAuth(`/ofertas/${offerId}/retirar`, { method: "DELETE" });
+  });
+}
+
+export function editOffer(offerId: string, input: EditOfferInput): Promise<Result<void>> {
+  return asResult(async () => {
+    await apiAuth(`/ofertas/${offerId}/editar`, {
+      method: "PATCH",
+      body: JSON.stringify(input),
+    });
   });
 }
 

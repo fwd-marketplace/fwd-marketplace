@@ -10,6 +10,7 @@ import {
   createProject,
   decideOffer,
   deleteProject,
+  editOffer,
   getCatalogs,
   getMyOffers,
   getMyProjects,
@@ -29,6 +30,7 @@ import type {
   CalificarInput,
   CompanyProjectState,
   CreateProjectInput,
+  EditOfferInput,
   ReplicaInput,
   ReviewOfferInput,
   SubmitEntregableInput,
@@ -118,6 +120,14 @@ export async function reviewEntregableAction(
 
 export async function withdrawOfferAction(offerId: string) {
   const result = await withdrawOffer(offerId);
+  if (result.ok) {
+    revalidatePath("/");
+  }
+  return result;
+}
+
+export async function editOfferAction(offerId: string, input: EditOfferInput) {
+  const result = await editOffer(offerId, input);
   if (result.ok) {
     revalidatePath("/");
   }

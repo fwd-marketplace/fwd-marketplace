@@ -1,7 +1,7 @@
 import { Router } from "express";
 import { authenticate } from "../middlewares/auth.middleware";
 import { asyncHandler } from "../utils/asyncHandler";
-import { listMine, listMisCalificaciones, getOne, decide, review, withdraw, calificar, replica } from "../controllers/oferta.controller";
+import { listMine, listMisCalificaciones, getOne, decide, review, edit, withdraw, calificar, replica } from "../controllers/oferta.controller";
 
 const router = Router();
 
@@ -12,6 +12,7 @@ router.get("/mis-calificaciones", authenticate, asyncHandler(listMisCalificacion
 router.get("/:id", authenticate, asyncHandler(getOne));
 router.patch("/:id", authenticate, asyncHandler(decide));
 router.patch("/:id/revisar", authenticate, asyncHandler(review));
+router.patch("/:id/editar", authenticate, asyncHandler(edit));
 router.delete("/:id/retirar", authenticate, asyncHandler(withdraw));
 router.post("/:id/calificar", authenticate, asyncHandler(calificar));
 router.post("/:id/replica", authenticate, asyncHandler(replica));

@@ -34,8 +34,18 @@ export const ReplicarCalificacionSchema = z.object({
   replica: z.string().min(1).max(1000),
 });
 
+/** El junior edita su propia propuesta (solo si aún está en "enviada"). */
+export const EditOfertaSchema = z.object({
+  propuesta: z.string().min(1).max(5000).optional(),
+  prototipo_url: z.union([z.string().url(), z.literal("")]).optional().nullable(),
+  url_repositorio: z.union([z.string().url(), z.literal("")]).optional().nullable(),
+  documentacion_tecnica: z.string().optional().nullable(),
+  documentacion_url: z.union([z.string().url(), z.literal("")]).optional().nullable(),
+});
+
 export type CreateOfertaInput = z.infer<typeof CreateOfertaSchema>;
 export type DecideOfertaInput = z.infer<typeof DecideOfertaSchema>;
 export type ReviewOfertaInput = z.infer<typeof ReviewOfertaSchema>;
 export type CalificarOfertaInput = z.infer<typeof CalificarOfertaSchema>;
 export type ReplicarCalificacionInput = z.infer<typeof ReplicarCalificacionSchema>;
+export type EditOfertaInput = z.infer<typeof EditOfertaSchema>;

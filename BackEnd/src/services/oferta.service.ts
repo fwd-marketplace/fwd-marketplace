@@ -1,6 +1,6 @@
 import { supabaseForToken, supabaseAdmin } from "../config/supabase";
 import { ApiError } from "../utils/ApiError";
-import type { CreateOfertaInput, DecideOfertaInput, ReviewOfertaInput, CalificarOfertaInput, ReplicarCalificacionInput } from "../validations/oferta";
+import type { CreateOfertaInput, DecideOfertaInput, ReviewOfertaInput, CalificarOfertaInput, ReplicarCalificacionInput, EditOfertaInput } from "../validations/oferta";
 
 type Client = ReturnType<typeof supabaseForToken>;
 
@@ -350,6 +350,50 @@ export async function reviewOferta(
     })
     .eq("id", ofertaId)
     .select("id, comentario_revision, estado:estado_oferta(nombre)")
+    .single();
+  if (error) throw new ApiError(400, error.message);
+  return data;
+}
+
+/**
+ * El junior edita su propia propuesta. Solo si está en "enviada" (aún no
+ * revisada por la empresa). Permite actualizar carta, enlace y documentación.
+ */
+export async function editOferta(
+  accessToken: string,
+  userId: string,
+  ofertaId: string,
+  input: EditOfertaInput,
+) {
+  const client = supabaseForToken(accessToken);
+
+  const { data: oferta, error: ofertaError } = await client
+    .from("oferta")
+    .select("id, id_usuario, estado:estado_oferta(nombre)")
+    .eq("id", ofertaId)
+    .maybeSingle();
+  if (ofertaError) throw new ApiError(500, ofertaError.message);
+  if (!oferta) throw new ApiError(404, "Postulación no encontrada");
+  if (oferta.id_usuario !== userId) throw new ApiError(403, "No podés editar esta postulación");
+
+  const estadoActual = oferta.estado?.nombre;
+  if (estadoActual !== "enviada") {
+    throw new ApiError(409, "Solo podés editar una propuesta que aún no fue revisada");
+  }
+
+  const { data, error } = await client
+    .from("oferta")
+    .update({
+      ...(input.propuesta !== undefined      ? { propuesta: input.propuesta }                         : {}),
+      ...(input.prototipo_url !== undefined  ? { prototipo_url: input.prototipo_url ?? null }         : {}),
+      ...(input.url_repositorio !== undefined ? { url_repositorio: input.url_repositorio ?? null }    : {}),
+      ...(input.documentacion_tecnica !== undefined ? { documentacion_tecnica: input.documentacion_tecnica ?? null } : {}),
+      ...(input.documentacion_url !== undefined ? { documentacion_url: input.documentacion_url ?? null } : {}),
+      updated_at: new Date().toISOString(),
+    })
+    .eq("id", ofertaId)
+    .eq("id_usuario", userId)
+    .select("id, propuesta, prototipo_url, url_repositorio, documentacion_tecnica, documentacion_url")
     .single();
   if (error) throw new ApiError(400, error.message);
   return data;
