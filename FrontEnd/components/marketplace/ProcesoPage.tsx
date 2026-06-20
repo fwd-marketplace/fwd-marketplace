@@ -96,10 +96,11 @@ interface Props {
 // ── Constants ─────────────────────────────────────────────────────────────────
 
 const OFFER_STATE_CONFIG: Record<OfferState, { label: string; className: string }> = {
-  enviada:         { label: "Enviada",          className: "bg-primary/10 text-primary border-primary/20" },
-  en_revision:     { label: "En revisión",      className: "bg-warning/10 text-warning border-warning/20" },
-  adjudicada:      { label: "Adjudicada",       className: "bg-accent/10 text-accent border-accent/20" },
-  no_seleccionada: { label: "No seleccionada",  className: "bg-magenta/10 text-magenta border-magenta/20" },
+  enviada:           { label: "Enviada",             className: "bg-primary/10 text-primary border-primary/20" },
+  en_revision:       { label: "En revisión",         className: "bg-warning/10 text-warning border-warning/20" },
+  solicitar_cambios: { label: "Cambios solicitados", className: "bg-magenta/10 text-magenta border-magenta/20" },
+  adjudicada:        { label: "Adjudicada",          className: "bg-accent/10 text-accent border-accent/20" },
+  no_seleccionada:   { label: "No seleccionada",     className: "bg-magenta/10 text-magenta border-magenta/20" },
 };
 
 const ENTREGABLE_STATE_CONFIG: Record<EntregableState, { label: string; className: string }> = {
@@ -146,10 +147,11 @@ function getTrackerSteps(state: OfferState | null) {
   ];
   if (!state) return base.map((s) => ({ ...s, done: false, rejected: false }));
   const map: Record<OfferState, [boolean, boolean, boolean]> = {
-    enviada:         [true,  false, false],
-    en_revision:     [true,  true,  false],
-    adjudicada:      [true,  true,  true],
-    no_seleccionada: [true,  true,  false],
+    enviada:           [true,  false, false],
+    en_revision:       [true,  true,  false],
+    solicitar_cambios: [true,  true,  false],
+    adjudicada:        [true,  true,  true],
+    no_seleccionada:   [true,  true,  false],
   };
   const [d0, d1, d2] = map[state];
   return [
@@ -686,7 +688,7 @@ export function ProcesoPage({
                   <p className="font-body text-base text-ink-muted">{tp("empresa_proposals_empty")}</p>
                 </div>
               ) : (() => {
-                const STATE_ORDER: Record<OfferState, number> = { adjudicada: 0, en_revision: 1, enviada: 2, no_seleccionada: 3 };
+                const STATE_ORDER: Record<OfferState, number> = { adjudicada: 0, en_revision: 1, solicitar_cambios: 1, enviada: 2, no_seleccionada: 3 };
                 const sorted = [...localOffers].sort((a, b) => STATE_ORDER[a.estado.nombre] - STATE_ORDER[b.estado.nombre]);
 
                 return sorted.map((oferta) => {

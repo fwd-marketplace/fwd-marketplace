@@ -42,6 +42,7 @@ function mapOfferStatus(status: OfferState): Application["status"] {
     case "no_seleccionada":
       return "rechazada";
     case "en_revision":
+    case "solicitar_cambios":
       return "en_proceso";
     case "enviada":
       return "enviada";

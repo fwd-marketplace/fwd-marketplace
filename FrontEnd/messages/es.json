@@ -862,7 +862,8 @@
     "withdraw_modal_cancel": "Cancelar",
     "withdraw_modal_confirm": "Sí, retirar",
     "withdraw_modal_removing": "Retirando...",
-    "withdraw_btn": "Retirar postulación"
+    "withdraw_btn": "Retirar postulación",
+    "rating_from_company": "Calificación de la empresa"
   },
   "empresa_subnav": {
     "back": "Volver",
@@ -1856,7 +1857,14 @@
     "proceso_comentarios_empresa_placeholder": "Escribí comentarios de revisión...",
     "proceso_comentarios_revision_label": "Comentarios de revisión",
     "proceso_cambios_guardados": "Cambios guardados",
+    "proceso_btn_enviar": "Confirmar",
     "proceso_ver_prototipo": "Prototipo",
+    "proceso_observacion_enviada": "Observación enviada",
+    "proceso_calificar_titulo": "Calificar este proyecto",
+    "proceso_calificar_placeholder": "¿Cómo fue la experiencia trabajando con este junior?",
+    "proceso_calificar_btn": "Enviar calificación",
+    "proceso_calificar_enviando": "Enviando...",
+    "proceso_calificacion_enviada": "Calificación enviada",
     "junior_nueva_postulacion": "Nueva postulación",
     "chat_label_empresa": "Empresa",
     "chat_label_junior": "Junior",

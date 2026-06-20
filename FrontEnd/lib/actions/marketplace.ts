@@ -1,6 +1,9 @@
 "use server";
 
 import { revalidatePath } from "next/cache";
+import { cookies } from "next/headers";
+import { BASE_URL, SESSION_COOKIE } from "@/lib/api-client";
+import type { Result } from "@/lib/result";
 import {
   calificarOferta,
   changeProjectState,
@@ -16,6 +19,7 @@ import {
   getProjects,
   replicarCalificacion,
   reviewEntregable,
+  reviewOffer,
   submitEntregable,
   submitOffer,
   updateProject,
@@ -26,6 +30,7 @@ import type {
   CompanyProjectState,
   CreateProjectInput,
   ReplicaInput,
+  ReviewOfferInput,
   SubmitEntregableInput,
   SubmitOfferInput,
   UpdateProjectInput,
@@ -61,6 +66,14 @@ export async function changeProjectStateAction(projectId: string, estado: Compan
 
 export async function decideOfferAction(offerId: string, accion: "aceptar" | "rechazar") {
   const result = await decideOffer(offerId, accion);
+  if (result.ok) {
+    revalidatePath("/");
+  }
+  return result;
+}
+
+export async function reviewOfferAction(offerId: string, input: ReviewOfferInput) {
+  const result = await reviewOffer(offerId, input);
   if (result.ok) {
     revalidatePath("/");
   }
@@ -145,4 +158,24 @@ export async function getProjectsAction() {
 
 export async function getMyOffersAction() {
   return getMyOffers();
+}
+
+export async function uploadDocumentoAction(formData: FormData): Promise<Result<string>> {
+  const jar = await cookies();
+  const token = jar.get(SESSION_COOKIE)?.value;
+  try {
+    const res = await fetch(`${BASE_URL}/upload/documento`, {
+      method: "POST",
+      headers: token ? { Authorization: `Bearer ${token}` } : {},
+      body: formData,
+    });
+    if (!res.ok) {
+      const body = await res.json().catch(() => ({})) as { error?: string };
+      return { ok: false, error: body.error ?? "No se pudo subir el archivo" };
+    }
+    const data = await res.json() as { url: string };
+    return { ok: true, data: data.url };
+  } catch {
+    return { ok: false, error: "Error al subir el archivo. Intentá de nuevo." };
+  }
 }

@@ -20,6 +20,7 @@ import {
   Plus,
   Send,
   Sparkles,
+  Star,
   Trash2,
   Upload,
   Wand2,
@@ -36,10 +37,12 @@ import {
   getProjectByIdAction,
   getProjectOffersAction,
   submitOfferAction,
-  decideOfferAction,
+  reviewOfferAction,
+  calificarOfertaAction,
   getMyProjectsAction,
   getProjectsAction,
   getMyOffersAction,
+  uploadDocumentoAction,
 } from "@/lib/actions/marketplace";
 import { generateProposalAction, suggestStackAction } from "@/lib/actions/ai";
 import { streamAssistant } from "@/lib/api/ai-client";
@@ -85,6 +88,7 @@ interface JuniorProposal {
   desc: string;
   link: string;
   fileName: string;
+  docUrl: string;
   previewName: string;
   previewProject: string;
   repo: string;
@@ -111,6 +115,8 @@ interface EmpresaStudent {
   date: string;
   expanded: boolean;
   proposals: EmpresaProposal[];
+  calificacion: number | null;
+  comentario_calificacion: string | null;
 }
 
 // ── Config ────────────────────────────────────────────────────────────────────
@@ -119,10 +125,11 @@ const OFFER_STATE_CONFIG: Record<
   OfferState,
   { label: string; dot: string; badge: string; step: number }
 > = {
-  enviada:         { label: "Enviada",         dot: "bg-primary",  badge: "bg-primary/10 text-primary border-primary/20",   step: 0 },
-  en_revision:     { label: "En revisión",     dot: "bg-warning",  badge: "bg-warning/10 text-warning border-warning/20",   step: 1 },
-  adjudicada:      { label: "Adjudicada",      dot: "bg-accent",   badge: "bg-accent/10 text-accent border-accent/20",      step: 2 },
-  no_seleccionada: { label: "No seleccionada", dot: "bg-magenta",  badge: "bg-magenta/10 text-magenta border-magenta/20",   step: 2 },
+  enviada:           { label: "Enviada",            dot: "bg-primary",  badge: "bg-primary/10 text-primary border-primary/20",   step: 0 },
+  en_revision:       { label: "En revisión",        dot: "bg-warning",  badge: "bg-warning/10 text-warning border-warning/20",   step: 1 },
+  solicitar_cambios: { label: "Cambios solicitados",dot: "bg-magenta",  badge: "bg-magenta/10 text-magenta border-magenta/20",   step: 1 },
+  adjudicada:        { label: "Adjudicada",         dot: "bg-accent",   badge: "bg-accent/10 text-accent border-accent/20",      step: 2 },
+  no_seleccionada:   { label: "No seleccionada",    dot: "bg-magenta",  badge: "bg-magenta/10 text-magenta border-magenta/20",   step: 2 },
 };
 
 function juniorCircle(status: ProposalStatus): { bg: string; icon: ReactNode } {
@@ -167,13 +174,14 @@ const EMPRESA_BADGE: Record<EmpresaStatus, string> = {
 
 
 function blankProposal(v: number): JuniorProposal {
-  return { v, status: "nuevo", expanded: false, desc: "", link: "", fileName: "", previewName: "", previewProject: "", repo: "", observaciones: "" };
+  return { v, status: "nuevo", expanded: false, desc: "", link: "", fileName: "", docUrl: "", previewName: "", previewProject: "", repo: "", observaciones: "" };
 }
 
 function initJuniorProposals(offer: MyOffer | null, project: ApiProject | null): JuniorProposal[] {
   if (!offer) return [blankProposal(1)];
   const statusMap: Record<OfferState, ProposalStatus> = {
     enviada: "enviada", en_revision: "revision",
+    solicitar_cambios: "cambios",
     adjudicada: "aceptada", no_seleccionada: "noseleccionada",
   };
   return [{
@@ -183,9 +191,10 @@ function initJuniorProposals(offer: MyOffer | null, project: ApiProject | null):
     desc: offer.propuesta,
     link: offer.prototipo_url ?? "",
     fileName: "",
+    docUrl: "",
     previewName: project?.titulo ?? "",
     previewProject: project?.area?.nombre ?? "",
-    repo: offer.prototipo_url ?? "",
+    repo: offer.url_repositorio ?? "",
     observaciones: "",
   }];
 }
@@ -197,10 +206,11 @@ function buildEmpresaStudents(
 ): EmpresaStudent[] {
   const statusMap: Record<OfferState, EmpresaStatus> = {
     enviada: "enviada", en_revision: "revision",
+    solicitar_cambios: "cambios",
     adjudicada: "adjudicada", no_seleccionada: "noseleccionada",
   };
   const ORDER: Record<OfferState, number> = {
-    adjudicada: 0, en_revision: 1, enviada: 2, no_seleccionada: 3,
+    adjudicada: 0, en_revision: 1, solicitar_cambios: 1, enviada: 2, no_seleccionada: 3,
   };
   const sorted = [...offers].sort((a, b) => ORDER[a.estado.nombre] - ORDER[b.estado.nombre]);
   const title = project?.titulo ?? "Propuesta";
@@ -215,7 +225,7 @@ function buildEmpresaStudents(
     const base: EmpresaProposal = {
       v: 1, status: empStatus, date: dateStr, expanded: false,
       desc: offer.propuesta, link: offer.prototipo_url ?? "",
-      previewName: title, previewProject: area, comment: "",
+      previewName: title, previewProject: area, comment: offer.comentario_revision ?? "",
     };
 
     const proposals: EmpresaProposal[] = estado === "adjudicada"
@@ -235,6 +245,8 @@ function buildEmpresaStudents(
       initials, date: dateStr,
       expanded: estado === "adjudicada",
       proposals,
+      calificacion: offer.calificacion ?? null,
+      comentario_calificacion: offer.comentario_calificacion ?? null,
     };
   });
 }
@@ -445,7 +457,7 @@ export function GestionPage({ role, userId, initialProjectId, disponible = true 
                   <ul className="flex flex-col gap-0.5">
                     {sidebarProjects.map((proyecto) => {
                       const isSelected = proyecto.id === selectedId;
-                      const count  = isSelected ? projectOffers.length : 0;
+                      const count  = isSelected ? projectOffers.length : (proyecto.n_ofertas ?? 0);
                       const hasAdj = isSelected && projectOffers.some((o) => o.estado.nombre === "adjudicada");
                       return (
                         <li key={proyecto.id}>
@@ -1010,7 +1022,7 @@ function ProcesoPanel({
   disponible: boolean;
 }) {
   if (isEmpresa) {
-    return <EmpresaProcesoView offers={projectOffers} project={project} locale={locale} t={t} userId={userId} />;
+    return <EmpresaProcesoView offers={projectOffers} project={project} locale={locale} t={t} />;
   }
   return <JuniorProcesoView offer={offer} project={project} locale={locale} t={t} userId={userId} disponible={disponible} />;
 }
@@ -1095,18 +1107,51 @@ function JuniorProcesoView({
   const toggle      = (i: number) => { const c = proposals[i]; if (c) patch(i, { expanded: !c.expanded }); };
   const setField    = (i: number, k: keyof JuniorProposal, v: string) => patch(i, { [k]: v } as Partial<JuniorProposal>);
 
+  const [isUploading, setIsUploading] = useState(false);
+
+  const handleFileChange = async (e: React.ChangeEvent<HTMLInputElement>, i: number) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    patch(i, { fileName: file.name, docUrl: "" });
+    setIsUploading(true);
+    setSubmitError("");
+    const fd = new FormData();
+    fd.append("file", file);
+    const r = await uploadDocumentoAction(fd);
+    setIsUploading(false);
+    if (r.ok) {
+      patch(i, { docUrl: r.data });
+    } else {
+      patch(i, { fileName: "", docUrl: "" });
+      setSubmitError(r.error);
+    }
+    e.target.value = "";
+  };
+
   const submit = async (i: number) => {
     const p = proposals[i];
     if (!p?.desc.trim()) return;
     if (!project || !userId) return;
 
+    if (p.link) {
+      try { new URL(p.link); } catch {
+        setSubmitError("El enlace debe comenzar con https:// (ej: https://mi-demo.vercel.app)");
+        return;
+      }
+    }
+
+    if (!p.link && !p.docUrl) {
+      setSubmitError("Tenés que adjuntar un enlace de documentación o subir un archivo PDF antes de enviar.");
+      return;
+    }
+
     setSubmitError("");
     const result = await submitOfferAction(project.id, {
       propuesta: p.desc,
       ...(p.link ? { prototipo_url: p.link } : {}),
+      ...(p.docUrl ? { documentacion_url: p.docUrl } : {}),
+      ...(p.repo ? { url_repositorio: p.repo } : {}),
     });
-    // Antes marcaba "enviada" sin mirar el resultado: si el BackEnd rechazaba (p. ej.
-    // estudiante ocupado, o ya postulado) la UI mentía. Ahora solo avanza si fue OK.
     if (result.ok) {
       patch(i, { status: "enviada", expanded: false });
     } else {
@@ -1253,24 +1298,35 @@ function JuniorProcesoView({
 
                     <label className="mb-2 mt-5 block font-body text-[13px] font-bold text-ink">
                       {t("proceso_doc_label")}
+                      <span className="ml-1 font-normal text-magenta">*</span>
                     </label>
+                    <p className="mb-2 font-body text-[12px] text-ink-muted">Adjuntá un enlace <strong>o</strong> subí un PDF — al menos uno es obligatorio.</p>
                     <div className="flex gap-3">
                       <input
                         placeholder={t("proceso_link_placeholder")}
                         value={p.link}
-                        onChange={(e) => setField(i, "link", e.target.value)}
-                        className="min-w-0 flex-1 rounded-xl border border-border bg-surface px-[15px] py-3 font-body text-[14px] text-ink placeholder:text-ink-muted/60 focus:border-secondary focus:outline-none focus:ring-2 focus:ring-secondary/20"
+                        onChange={(e) => { setField(i, "link", e.target.value); if (p.docUrl) patch(i, { docUrl: "", fileName: "" }); }}
+                        disabled={!!p.docUrl}
+                        className="min-w-0 flex-1 rounded-xl border border-border bg-surface px-[15px] py-3 font-body text-[14px] text-ink placeholder:text-ink-muted/60 focus:border-secondary focus:outline-none focus:ring-2 focus:ring-secondary/20 disabled:opacity-50"
                       />
-                      <label className="inline-flex cursor-pointer items-center gap-2 whitespace-nowrap rounded-xl border border-border bg-surface px-[18px] py-3 font-body text-[14px] font-semibold text-ink transition-colors hover:border-secondary hover:text-secondary">
-                        <Upload className="size-[15px]" aria-hidden="true" />
-                        {p.fileName || t("proceso_subir_archivo")}
+                      <label className={cn(
+                        "inline-flex cursor-pointer items-center gap-2 whitespace-nowrap rounded-xl border px-[18px] py-3 font-body text-[14px] font-semibold transition-colors",
+                        p.docUrl ? "border-accent bg-accent/10 text-accent" : "border-border bg-surface text-ink hover:border-secondary hover:text-secondary",
+                        p.link && "opacity-50 pointer-events-none",
+                        isUploading && "opacity-50 pointer-events-none",
+                      )}>
+                        {isUploading
+                          ? <><Loader2 className="size-[15px] animate-spin" aria-hidden="true" />Subiendo...</>
+                          : p.docUrl
+                            ? <><CheckCircle2 className="size-[15px]" aria-hidden="true" />{p.fileName}</>
+                            : <><Upload className="size-[15px]" aria-hidden="true" />{t("proceso_subir_archivo")}</>
+                        }
                         <input
                           type="file"
+                          accept=".pdf,.doc,.docx"
                           className="hidden"
-                          onChange={(e) => {
-                            const f = e.target.files?.[0];
-                            if (f) setField(i, "fileName", f.name);
-                          }}
+                          disabled={!!p.link || isUploading}
+                          onChange={(e) => { void handleFileChange(e, i); }}
                         />
                       </label>
                     </div>
@@ -1298,10 +1354,10 @@ function JuniorProcesoView({
                     <div className="mt-6 flex justify-end">
                       <button
                         onClick={() => { void submit(i); }}
-                        disabled={!submitOk}
+                        disabled={!submitOk || isUploading}
                         className={cn(
                           "rounded-xl bg-secondary px-6 py-3 font-body text-[14px] font-bold text-white transition-colors duration-[var(--duration-fast)]",
-                          submitOk ? "hover:bg-secondary/80" : "opacity-50 cursor-not-allowed",
+                          submitOk && !isUploading ? "hover:bg-secondary/80" : "opacity-50 cursor-not-allowed",
                         )}
                       >
                         {t("proceso_subir_propuesta")}
@@ -1422,18 +1478,18 @@ function JuniorProcesoView({
 // ── Empresa proceso view ──────────────────────────────────────────────────────
 
 function EmpresaProcesoView({
-  offers, project, locale, t, userId,
+  offers, project, locale, t,
 }: {
   offers: ProjectOffer[];
   project: ApiProject | null;
   locale: string;
   t: T;
-  userId: string | null;
 }) {
   const [students, setStudents] = useState<EmpresaStudent[]>(
     () => buildEmpresaStudents(offers, project, locale),
   );
   const [saved, setSaved] = useState<string | null>(null);
+  const [ratingForms, setRatingForms] = useState<Record<string, { stars: number; comment: string; submitting: boolean }>>({});
 
   // Reset students when offers prop changes (real data loaded from API)
   useEffect(() => {
@@ -1465,7 +1521,6 @@ function EmpresaProcesoView({
         },
       ),
     );
-    setSaved(`${sid}-${v}`);
   };
 
   const setComment = (sid: number, v: number, comment: string) => {
@@ -1477,18 +1532,39 @@ function EmpresaProcesoView({
         },
       ),
     );
+  };
+
+  // "Enviar" — confirm status selection and save to backend
+  const handleEnviar = async (sid: number, v: number) => {
+    const student = students.find((s) => s.id === sid);
+    if (!student) return;
+    const proposal = student.proposals.find((p) => p.v === v);
+    if (!proposal || !student.offerId) return;
+
+    const accionMap: Record<EmpresaStatus, "en_revision" | "solicitar_cambios" | "aceptar" | "rechazar"> = {
+      enviada:        "en_revision",
+      revision:       "en_revision",
+      cambios:        "solicitar_cambios",
+      adjudicada:     "aceptar",
+      noseleccionada: "rechazar",
+    };
+
+    await reviewOfferAction(student.offerId, {
+      accion: accionMap[proposal.status],
+      ...(proposal.comment.trim() ? { comentario: proposal.comment.trim() } : {}),
+    });
+
     setSaved(`${sid}-${v}`);
   };
 
-  // Call backend for adjudicar / rechazar; other status changes remain local
-  const handleDecide = async (sid: number, v: number, accion: "aceptar" | "rechazar") => {
-    const student = students.find((s) => s.id === sid);
-    if (!student) return;
-    const nextStatus: EmpresaStatus = accion === "aceptar" ? "adjudicada" : "noseleccionada";
-    setStatus(sid, v, nextStatus);
-    if (student.offerId && userId) {
-      await decideOfferAction(student.offerId, accion);
-    }
+  const handleCalificar = async (offerId: string) => {
+    const form = ratingForms[offerId];
+    if (!form || form.stars === 0) return;
+    setRatingForms((prev) => ({ ...prev, [offerId]: { ...prev[offerId]!, submitting: true } }));
+    await calificarOfertaAction(offerId, {
+      calificacion: form.stars,
+      ...(form.comment.trim() ? { comentario: form.comment.trim() } : {}),
+    });
   };
 
   const overall = (props: EmpresaProposal[]): EmpresaStatus => {
@@ -1651,33 +1727,131 @@ function EmpresaProcesoView({
                                   </>
                                 )}
 
-                                <label className="mb-2 mt-5 block font-body text-sm font-bold text-ink">
-                                  {t("proceso_comentarios_revision_label")}
-                                </label>
-                                <textarea
-                                  placeholder={t("proceso_comentarios_empresa_placeholder")}
-                                  value={p.comment}
-                                  onChange={(e) => setComment(s.id, p.v, e.target.value)}
-                                  rows={4}
-                                  className="block w-full resize-y rounded-xl border border-border bg-surface p-3.5 font-body text-sm text-ink placeholder:text-ink-muted/60 focus:border-secondary focus:outline-none focus:ring-2 focus:ring-secondary/20"
-                                />
+                                {p.status === "enviada" ? (
+                                  <>
+                                    <label className="mb-2 mt-5 block font-body text-sm font-bold text-ink">
+                                      {t("proceso_comentarios_revision_label")}
+                                    </label>
+                                    <textarea
+                                      placeholder={t("proceso_comentarios_empresa_placeholder")}
+                                      value={p.comment}
+                                      onChange={(e) => setComment(s.id, p.v, e.target.value)}
+                                      rows={4}
+                                      className="block w-full resize-y rounded-xl border border-border bg-surface p-3.5 font-body text-sm text-ink placeholder:text-ink-muted/60 focus:border-secondary focus:outline-none focus:ring-2 focus:ring-secondary/20"
+                                    />
 
-                                <label className="mb-2 mt-5 block font-body text-sm font-bold text-ink">
-                                  {t("proceso_estado_version")}
-                                </label>
-                                <div className="flex flex-wrap gap-2.5">
-                                  <button onClick={() => setStatus(s.id, p.v, "enviada")}   className={btnCls("enviada")}>  {t("proceso_badge_enviada")}</button>
-                                  <button onClick={() => setStatus(s.id, p.v, "revision")}  className={btnCls("revision")}> {t("proceso_badge_revision")}</button>
-                                  <button onClick={() => setStatus(s.id, p.v, "cambios")}   className={btnCls("cambios")}>  {t("proceso_accion_cambios")}</button>
-                                  <button onClick={() => { void handleDecide(s.id, p.v, "aceptar"); }}     className={btnCls("adjudicada")}>    {t("proceso_accion_adjudicar")}</button>
-                                  <button onClick={() => { void handleDecide(s.id, p.v, "rechazar"); }}    className={btnCls("noseleccionada")}>{t("proceso_accion_rechazar")}</button>
-                                </div>
+                                    <label className="mb-2 mt-5 block font-body text-sm font-bold text-ink">
+                                      {t("proceso_estado_version")}
+                                    </label>
+                                    <div className="flex flex-wrap gap-2.5">
+                                      <button onClick={() => setStatus(s.id, p.v, "enviada")}        className={btnCls("enviada")}>        {t("proceso_badge_enviada")}</button>
+                                      <button onClick={() => setStatus(s.id, p.v, "revision")}       className={btnCls("revision")}>       {t("proceso_badge_revision")}</button>
+                                      <button onClick={() => setStatus(s.id, p.v, "cambios")}        className={btnCls("cambios")}>        {t("proceso_accion_cambios")}</button>
+                                      <button onClick={() => setStatus(s.id, p.v, "adjudicada")}     className={btnCls("adjudicada")}>     {t("proceso_accion_adjudicar")}</button>
+                                      <button onClick={() => setStatus(s.id, p.v, "noseleccionada")} className={btnCls("noseleccionada")}> {t("proceso_accion_rechazar")}</button>
+                                    </div>
 
-                                {isSavedHere && (
-                                  <div className="mt-4 inline-flex items-center gap-2 font-body text-sm font-semibold text-accent">
-                                    <Check className="size-4" aria-hidden="true" />
-                                    {t("proceso_cambios_guardados")}
-                                  </div>
+                                    <div className="mt-5 flex items-center gap-4">
+                                      <button
+                                        type="button"
+                                        onClick={() => { void handleEnviar(s.id, p.v); }}
+                                        className="rounded-xl bg-secondary px-6 py-2.5 font-body text-sm font-bold text-white transition-colors duration-[var(--duration-fast)] hover:bg-secondary/80"
+                                      >
+                                        {t("proceso_btn_enviar")}
+                                      </button>
+                                      {isSavedHere && (
+                                        <div className="inline-flex items-center gap-2 font-body text-sm font-semibold text-accent">
+                                          <Check className="size-4" aria-hidden="true" />
+                                          {t("proceso_cambios_guardados")}
+                                        </div>
+                                      )}
+                                    </div>
+                                  </>
+                                ) : (
+                                  <>
+                                    {/* Read-only card: saved status + comment */}
+                                    <div className="mt-5 rounded-xl border border-border bg-surface p-4">
+                                      <p className="mb-2 font-body text-xs font-bold uppercase tracking-wider text-ink-muted">
+                                        {t("proceso_observacion_enviada")}
+                                      </p>
+                                      <span className={cn("inline-flex items-center rounded-full border px-4 py-1.5 font-body text-sm font-bold", pm)}>
+                                        {p.status === "revision"      ? t("proceso_badge_revision")
+                                          : p.status === "cambios"    ? t("proceso_badge_cambios")
+                                          : p.status === "adjudicada" ? t("proceso_badge_adjudicada")
+                                          : t("proceso_badge_nosel")}
+                                      </span>
+                                      {p.comment && (
+                                        <p className="mt-3 font-body text-sm leading-relaxed text-ink">{p.comment}</p>
+                                      )}
+                                    </div>
+
+                                    {p.status === "adjudicada" && (
+                                      s.calificacion != null ? (
+                                        <div className="mt-4 rounded-xl border border-accent/30 bg-accent/5 p-4">
+                                          <p className="mb-2 font-body text-xs font-bold uppercase tracking-wider text-accent">
+                                            {t("proceso_calificacion_enviada")}
+                                          </p>
+                                          <div className="flex items-center gap-1">
+                                            {Array.from({ length: 5 }).map((_, i) => (
+                                              <Star
+                                                key={i}
+                                                className={cn("size-5", i < s.calificacion! ? "fill-highlight text-highlight" : "text-border")}
+                                                aria-hidden="true"
+                                              />
+                                            ))}
+                                          </div>
+                                          {s.comentario_calificacion && (
+                                            <p className="mt-2 font-body text-sm leading-relaxed text-ink">{s.comentario_calificacion}</p>
+                                          )}
+                                        </div>
+                                      ) : (
+                                        <div className="mt-4 rounded-xl border border-border bg-surface p-4">
+                                          <p className="mb-3 font-body text-sm font-bold text-ink">
+                                            {t("proceso_calificar_titulo")}
+                                          </p>
+                                          <div className="flex items-center gap-1">
+                                            {Array.from({ length: 5 }).map((_, i) => {
+                                              const rf = ratingForms[s.offerId] ?? { stars: 0, comment: "", submitting: false };
+                                              return (
+                                                <button
+                                                  key={i}
+                                                  type="button"
+                                                  onClick={() => setRatingForms((prev) => ({
+                                                    ...prev,
+                                                    [s.offerId]: { ...(prev[s.offerId] ?? { stars: 0, comment: "", submitting: false }), stars: i + 1 },
+                                                  }))}
+                                                  aria-label={`${i + 1} ${i === 0 ? "estrella" : "estrellas"}`}
+                                                >
+                                                  <Star
+                                                    className={cn("size-7 transition-colors duration-[var(--duration-fast)]", i < rf.stars ? "fill-highlight text-highlight" : "text-border hover:text-highlight/60")}
+                                                    aria-hidden="true"
+                                                  />
+                                                </button>
+                                              );
+                                            })}
+                                          </div>
+                                          <textarea
+                                            placeholder={t("proceso_calificar_placeholder")}
+                                            value={ratingForms[s.offerId]?.comment ?? ""}
+                                            onChange={(e) => setRatingForms((prev) => ({
+                                              ...prev,
+                                              [s.offerId]: { ...(prev[s.offerId] ?? { stars: 0, comment: "", submitting: false }), comment: e.target.value },
+                                            }))}
+                                            rows={3}
+                                            className="mt-3 block w-full resize-y rounded-xl border border-border bg-canvas p-3.5 font-body text-sm text-ink placeholder:text-ink-muted/60 focus:border-secondary focus:outline-none focus:ring-2 focus:ring-secondary/20"
+                                          />
+                                          <button
+                                            type="button"
+                                            disabled={(ratingForms[s.offerId]?.stars ?? 0) === 0 || (ratingForms[s.offerId]?.submitting ?? false)}
+                                            onClick={() => { void handleCalificar(s.offerId); }}
+                                            className="mt-3 rounded-xl bg-secondary px-5 py-2.5 font-body text-sm font-bold text-white transition-colors duration-[var(--duration-fast)] hover:bg-secondary/80 disabled:opacity-50"
+                                          >
+                                            {(ratingForms[s.offerId]?.submitting ?? false) ? t("proceso_calificar_enviando") : t("proceso_calificar_btn")}
+                                          </button>
+                                        </div>
+                                      )
+                                    )}
+                                  </>
                                 )}
                               </div>
                             )}
@@ -2071,6 +2245,7 @@ function ProjectFormContent({
         plazo_dias: plazo,
         usa_ia: form.usa_ia,
         skills: form.skills,
+        ...(form.tecnologias_extra.length > 0 ? { tecnologias_extra: form.tecnologias_extra } : {}),
       } satisfies UpdateProjectInput);
     }
   }

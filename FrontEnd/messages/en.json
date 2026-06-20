@@ -843,7 +843,8 @@
     "withdraw_modal_cancel": "Cancel",
     "withdraw_modal_confirm": "Yes, withdraw",
     "withdraw_modal_removing": "Withdrawing...",
-    "withdraw_btn": "Withdraw application"
+    "withdraw_btn": "Withdraw application",
+    "rating_from_company": "Company rating"
   },
   "empresa_subnav": {
     "back": "Back",
@@ -1802,7 +1803,14 @@
     "proceso_comentarios_empresa_placeholder": "Write review comments...",
     "proceso_comentarios_revision_label": "Review comments",
     "proceso_cambios_guardados": "Changes saved",
+    "proceso_btn_enviar": "Confirm",
     "proceso_ver_prototipo": "Prototype",
+    "proceso_observacion_enviada": "Review sent",
+    "proceso_calificar_titulo": "Rate this project",
+    "proceso_calificar_placeholder": "How was the experience working with this junior?",
+    "proceso_calificar_btn": "Submit rating",
+    "proceso_calificar_enviando": "Sending...",
+    "proceso_calificacion_enviada": "Rating submitted",
     "junior_nueva_postulacion": "New application",
     "chat_label_empresa": "Company",
     "chat_label_junior": "Junior",

@@ -1,6 +1,6 @@
 import { supabaseForToken } from "../config/supabase";
 import { ApiError } from "../utils/ApiError";
-import type { CreateOfertaInput, DecideOfertaInput, CalificarOfertaInput, ReplicarCalificacionInput } from "../validations/oferta";
+import type { CreateOfertaInput, DecideOfertaInput, ReviewOfertaInput, CalificarOfertaInput, ReplicarCalificacionInput } from "../validations/oferta";
 
 type Client = ReturnType<typeof supabaseForToken>;
 
@@ -144,7 +144,7 @@ export async function listMyOfertas(accessToken: string, userId: string) {
   const { data, error } = await client
     .from("oferta")
     .select(
-      "id, propuesta, prototipo_url, url_repositorio, documentacion_tecnica, documentacion_url, fecha_envio, estado:estado_oferta(nombre), proyecto:proyecto(id, titulo, fecha_cierre)",
+      "id, propuesta, prototipo_url, url_repositorio, documentacion_tecnica, documentacion_url, fecha_envio, calificacion, comentario_calificacion, estado:estado_oferta(nombre), proyecto:proyecto(id, titulo, fecha_cierre)",
     )
     .eq("id_usuario", userId)
     .order("fecha_envio", { ascending: false });
@@ -211,7 +211,7 @@ export async function listProjectOfertas(accessToken: string, userId: string, pr
   const { data, error } = await client
     .from("oferta")
     .select(
-      "id, propuesta, prototipo_url, url_repositorio, documentacion_tecnica, documentacion_url, fecha_envio, estado:estado_oferta(nombre), junior:users(id, nombre, apellido1)",
+      "id, propuesta, prototipo_url, url_repositorio, documentacion_tecnica, documentacion_url, fecha_envio, comentario_revision, calificacion, comentario_calificacion, estado:estado_oferta(nombre), junior:users(id, nombre, apellido1)",
     )
     .eq("id_proyecto", projectId)
     .order("fecha_envio", { ascending: false });
@@ -276,6 +276,66 @@ export async function decideOferta(
     .update({ id_estado: estadoId, updated_at: new Date().toISOString() })
     .eq("id", ofertaId)
     .select("id, estado:estado_oferta(nombre)")
+    .single();
+  if (error) throw new ApiError(400, error.message);
+  return data;
+}
+
+/**
+ * La empresa revisa una postulación: puede ponerla en revisión, solicitar
+ * cambios, adjudicarla o rechazarla, y dejar un comentario opcional.
+ * Reemplaza el flujo antiguo que solo aceptaba "aceptar"/"rechazar".
+ */
+export async function reviewOferta(
+  accessToken: string,
+  userId: string,
+  ofertaId: string,
+  input: ReviewOfertaInput,
+) {
+  const client = supabaseForToken(accessToken);
+
+  const { data: oferta, error: ofertaError } = await client
+    .from("oferta")
+    .select("id, id_proyecto, id_usuario")
+    .eq("id", ofertaId)
+    .maybeSingle();
+  if (ofertaError) throw new ApiError(500, ofertaError.message);
+  if (!oferta) throw new ApiError(404, "Postulación no encontrada");
+
+  const { data: proyecto, error: projError } = await client
+    .from("proyecto")
+    .select("empresa:empresario(id_usuario)")
+    .eq("id", oferta.id_proyecto)
+    .maybeSingle();
+  if (projError) throw new ApiError(500, projError.message);
+  if (proyecto?.empresa?.id_usuario !== userId) {
+    throw new ApiError(403, "No podés revisar esta postulación");
+  }
+
+  if (input.accion === "aceptar" && (await tieneProyectoActivo(client, oferta.id_usuario))) {
+    throw new ApiError(
+      409,
+      "Este estudiante ya tiene un proyecto activo y no está disponible por el momento.",
+    );
+  }
+
+  const estadoMap: Record<ReviewOfertaInput["accion"], string> = {
+    en_revision:       "en_revision",
+    solicitar_cambios: "solicitar_cambios",
+    aceptar:           "adjudicada",
+    rechazar:          "no_seleccionada",
+  };
+  const estadoId = await getEstadoOfertaId(client, estadoMap[input.accion]);
+
+  const { data, error } = await client
+    .from("oferta")
+    .update({
+      id_estado: estadoId,
+      ...(input.comentario !== undefined ? { comentario_revision: input.comentario } : {}),
+      updated_at: new Date().toISOString(),
+    })
+    .eq("id", ofertaId)
+    .select("id, comentario_revision, estado:estado_oferta(nombre)")
     .single();
   if (error) throw new ApiError(400, error.message);
   return data;

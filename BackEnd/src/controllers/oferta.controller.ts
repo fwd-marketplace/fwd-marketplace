@@ -4,6 +4,7 @@ import { ApiError } from "../utils/ApiError";
 import {
   CreateOfertaSchema,
   DecideOfertaSchema,
+  ReviewOfertaSchema,
   CalificarOfertaSchema,
   ReplicarCalificacionSchema,
 } from "../validations/oferta";
@@ -14,6 +15,7 @@ import {
   listProjectOfertas,
   getOfertaContacto,
   decideOferta,
+  reviewOferta,
   withdrawOferta,
   calificarOferta,
   replicarCalificacion,
@@ -88,6 +90,18 @@ export async function decide(req: Request, res: Response) {
     throw new ApiError(400, parsed.error.issues[0]?.message ?? "Acción inválida");
   }
   const oferta = await decideOferta(token, userId, ofertaId, parsed.data);
+  res.status(200).json({ oferta });
+}
+
+/** PATCH /api/ofertas/:id/revisar (empresa revisa: cambia estado y deja comentario) */
+export async function review(req: Request, res: Response) {
+  const { token, userId } = readAuth(req);
+  const ofertaId = readUuidParam(req.params.id, "de la postulación");
+  const parsed = ReviewOfertaSchema.safeParse(req.body);
+  if (!parsed.success) {
+    throw new ApiError(400, parsed.error.issues[0]?.message ?? "Acción inválida");
+  }
+  const oferta = await reviewOferta(token, userId, ofertaId, parsed.data);
   res.status(200).json({ oferta });
 }
 

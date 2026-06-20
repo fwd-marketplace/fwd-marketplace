@@ -22,7 +22,7 @@ const LOGO_FOLDER = "fwd/logos";
 const ESTUDIANTE_SELECT =
   "id, descripcion, especialidad, modalidad_preferida, disponibilidad, titulo_fwd, estado_verificacion, url_avatar, url_github, url_linkedin, url_portfolio";
 const EMPRESARIO_SELECT =
-  "id, tipo, nombre_comercial, descripcion, sector, tipos_proyecto, apoyo_tecnico_necesario, cedula_juridica, direccion, url_sitio_web, etapa, presupuesto, cantidad_empleados, modalidades, horario";
+  "id, tipo, nombre_comercial, descripcion, sector, tipos_proyecto, apoyo_tecnico_necesario, cedula_juridica, direccion, url_sitio_web, etapa, presupuesto, cantidad_empleados, modalidades, horario, mision, vision, cultura, valores, contactos";
 
 function toUserUpdate(input: PerfilEstudianteInput): UsersUpdate {
   const updates: UsersUpdate = {};

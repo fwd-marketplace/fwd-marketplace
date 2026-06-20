@@ -7,11 +7,20 @@ export const CreateOfertaSchema = z.object({
   url_repositorio: z.union([z.string().url(), z.literal("")]).optional().nullable(),
   documentacion_tecnica: z.string().optional().nullable(),
   documentacion_url: z.union([z.string().url(), z.literal("")]).optional().nullable(),
-});
+}).refine(
+  (d) => !!(d.prototipo_url || d.documentacion_url),
+  { message: "Debés adjuntar un enlace de documentación o subir un archivo PDF" },
+);
 
 /** La empresa decide sobre una postulación. */
 export const DecideOfertaSchema = z.object({
   accion: z.enum(["aceptar", "rechazar"]),
+});
+
+/** La empresa revisa una postulación: cambia estado y deja comentario opcional. */
+export const ReviewOfertaSchema = z.object({
+  accion: z.enum(["en_revision", "solicitar_cambios", "aceptar", "rechazar"]),
+  comentario: z.string().max(2000).optional(),
 });
 
 /** La empresa califica al junior tras cerrar el proyecto. */
@@ -27,5 +36,6 @@ export const ReplicarCalificacionSchema = z.object({
 
 export type CreateOfertaInput = z.infer<typeof CreateOfertaSchema>;
 export type DecideOfertaInput = z.infer<typeof DecideOfertaSchema>;
+export type ReviewOfertaInput = z.infer<typeof ReviewOfertaSchema>;
 export type CalificarOfertaInput = z.infer<typeof CalificarOfertaSchema>;
 export type ReplicarCalificacionInput = z.infer<typeof ReplicarCalificacionSchema>;

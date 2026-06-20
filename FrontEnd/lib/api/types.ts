@@ -13,7 +13,7 @@ export type ProjectState =
 
 export type CompanyProjectState = Exclude<ProjectState, "borrador" | "cancelado">;
 
-export type OfferState = "enviada" | "en_revision" | "adjudicada" | "no_seleccionada";
+export type OfferState = "enviada" | "en_revision" | "solicitar_cambios" | "adjudicada" | "no_seleccionada";
 
 export type CatalogArea = {
   id: string;
@@ -61,6 +61,7 @@ export type ApiProject = {
   area: { id: string; nombre: string } | null;
   empresa: { id?: string; nombre_comercial: string; tipo: "empresa" | "emprendedor" } | null;
   skills: Array<{ skill: CatalogSkill | null }>;
+  n_ofertas?: number;
 };
 
 export type ProjectsResponse = {
@@ -118,6 +119,7 @@ export type UpdateProjectInput = {
   plazo_dias?: number;
   usa_ia?: boolean;
   skills?: string[];
+  tecnologias_extra?: string[];
 };
 
 export type SuggestStackInput = {
@@ -143,6 +145,9 @@ export type ProjectOffer = {
   documentacion_tecnica?: string | null;
   documentacion_url?: string | null;
   fecha_envio: string;
+  comentario_revision?: string | null;
+  calificacion?: number | null;
+  comentario_calificacion?: string | null;
   estado: { nombre: OfferState };
   /** false si el postulante ya tiene un proyecto activo (ocupado). */
   disponible?: boolean;
@@ -165,6 +170,8 @@ export type MyOffer = {
   documentacion_tecnica?: string | null;
   documentacion_url?: string | null;
   fecha_envio: string;
+  calificacion?: number | null;
+  comentario_calificacion?: string | null;
   estado: { nombre: OfferState };
   proyecto: { id: string; titulo: string; fecha_cierre?: string | null } | null;
 };
@@ -362,6 +369,11 @@ export type SubmitOfferInput = {
   url_repositorio?: string;
   documentacion_tecnica?: string;
   documentacion_url?: string;
+};
+
+export type ReviewOfferInput = {
+  accion: "en_revision" | "solicitar_cambios" | "aceptar" | "rechazar";
+  comentario?: string;
 };
 
 export type EntregableState = "pendiente" | "enviado" | "en_revision" | "aprobado";

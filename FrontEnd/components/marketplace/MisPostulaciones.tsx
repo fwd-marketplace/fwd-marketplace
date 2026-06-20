@@ -15,6 +15,7 @@ import {
   Loader2,
   PackageCheck,
   Send,
+  Star,
   Trash2,
   X,
 } from "lucide-react";
@@ -32,10 +33,11 @@ interface Props {
 }
 
 const STATE_CONFIG: Record<OfferState, { label: string; className: string }> = {
-  enviada:         { label: "Enviada",          className: "bg-primary/10 text-primary border-primary/20" },
-  en_revision:     { label: "En revisión",      className: "bg-warning/10 text-warning border-warning/20" },
-  adjudicada:      { label: "Adjudicada",       className: "bg-accent/10 text-accent border-accent/20" },
-  no_seleccionada: { label: "No seleccionada",  className: "bg-ink-muted/10 text-ink-muted border-border" },
+  enviada:           { label: "Enviada",             className: "bg-primary/10 text-primary border-primary/20" },
+  en_revision:       { label: "En revisión",         className: "bg-warning/10 text-warning border-warning/20" },
+  solicitar_cambios: { label: "Cambios solicitados", className: "bg-magenta/10 text-magenta border-magenta/20" },
+  adjudicada:        { label: "Adjudicada",          className: "bg-accent/10 text-accent border-accent/20" },
+  no_seleccionada:   { label: "No seleccionada",     className: "bg-ink-muted/10 text-ink-muted border-border" },
 };
 
 const ENTREGABLE_STATE_CONFIG: Record<EntregableState, { label: string; className: string }> = {
@@ -515,6 +517,32 @@ function OfertaCard({
         {/* ── Entregable con historial (RF-40 + RF-42) ── */}
         {isAdjudicada && (
           <EntregableSection oferta={oferta} entregables={entregables} />
+        )}
+
+        {/* ── Calificacion de la empresa ── */}
+        {oferta.calificacion != null && (
+          <div className="mt-4 rounded-xl border border-highlight/30 bg-highlight/5 p-4">
+            <p className="mb-2 font-body text-[10px] font-bold uppercase tracking-wider text-ink-muted">
+              {t("rating_from_company")}
+            </p>
+            <div className="flex items-center gap-1">
+              {Array.from({ length: 5 }).map((_, i) => (
+                <Star
+                  key={i}
+                  className={cn("size-5", i < oferta.calificacion! ? "fill-highlight text-highlight" : "text-border")}
+                  aria-hidden="true"
+                />
+              ))}
+              <span className="ml-2 font-heading text-base font-bold text-ink-strong">
+                {oferta.calificacion}/5
+              </span>
+            </div>
+            {oferta.comentario_calificacion && (
+              <p className="mt-2 font-body text-sm leading-relaxed text-ink">
+                {oferta.comentario_calificacion}
+              </p>
+            )}
+          </div>
         )}
       </div>
     </li>
