@@ -144,6 +144,8 @@ export type ProjectOffer = {
   documentacion_url?: string | null;
   fecha_envio: string;
   estado: { nombre: OfferState };
+  /** false si el postulante ya tiene un proyecto activo (ocupado). */
+  disponible?: boolean;
   junior: {
     id: string;
     nombre: string;
@@ -184,6 +186,8 @@ export type ApiEstudianteDetail = {
   url_portfolio: string | null;
   skills: string[];
   conocimientos: string[];
+  /** false si el estudiante ya tiene un proyecto activo (no puede postular). */
+  disponible?: boolean;
 };
 
 export type StudentSpecialty = "frontend" | "backend" | "fullstack" | "ia";

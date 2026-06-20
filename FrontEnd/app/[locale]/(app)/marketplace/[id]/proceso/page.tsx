@@ -51,12 +51,17 @@ export default async function ProcesoProjectPage({ params, searchParams }: Props
 
   const isEmpresaView = role === "company" || demoRole === "company";
 
+  // El estudiante con un proyecto activo no puede postular (la regla la fuerza el
+  // BackEnd; acá pre-bloqueamos el form para que no llene en vano).
+  const disponible = profile?.estudiante?.disponible ?? true;
+
   return (
     <ProcesoPage
       project={project}
       role={role}
       offer={offer}
       entregables={entregables}
+      disponible={disponible}
       {...(isEmpresaView ? { projectOffers: MOCK_PROJECT_OFFERS } : {})}
     />
   );

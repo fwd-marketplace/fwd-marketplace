@@ -24,6 +24,10 @@ vi.mock("../../config/supabase", () => ({
       insert: chain,
       update: chain,
       eq: chain,
+      // .in() es el terminal del chequeo de "estudiante ocupado" (estudiantesOcupados).
+      // Usa su propia clave para no chocar con el insert/lista sobre la tabla 'oferta'.
+      // Por defecto vacío = el estudiante NO tiene proyecto activo (está disponible).
+      in: () => Promise.resolve(responses["ocupados"] ?? { data: [], error: null }),
       // En oferta.service, .order() es siempre el terminal de las queries de lista,
       // así que resuelve la respuesta (igual que maybeSingle/single).
       order: () => Promise.resolve(responses[table] ?? { data: null, error: null }),
@@ -96,6 +100,15 @@ describe("createOferta", () => {
     responses["oferta"] = { data: null, error: { code: "23505", message: "duplicate key" } };
     await expect(createOferta(TOKEN, USER, PROJECT, input)).rejects.toMatchObject({ statusCode: 409 });
   });
+
+  it("rechaza (409) si el estudiante ya tiene un proyecto activo", async () => {
+    happyPath();
+    responses["ocupados"] = {
+      data: [{ id_usuario: USER, estado: { nombre: "adjudicada" }, proyecto: { estado: { nombre: "en_desarrollo" } } }],
+      error: null,
+    };
+    await expect(createOferta(TOKEN, USER, PROJECT, input)).rejects.toMatchObject({ statusCode: 409 });
+  });
 });
 
 /**
@@ -106,7 +119,7 @@ describe("createOferta", () => {
  */
 function decideHappyPath(estadoFinal = "adjudicada") {
   responses["oferta"] = {
-    data: { id: OFERTA, id_proyecto: PROJECT, estado: { nombre: estadoFinal } },
+    data: { id: OFERTA, id_proyecto: PROJECT, id_usuario: USER, estado: { nombre: estadoFinal } },
     error: null,
   };
   responses["proyecto"] = { data: { empresa: { id_usuario: USER } }, error: null };
@@ -140,6 +153,17 @@ describe("decideOferta", () => {
     await expect(
       decideOferta(TOKEN, USER, OFERTA, { accion: "aceptar" }),
     ).rejects.toMatchObject({ statusCode: 403 });
+  });
+
+  it("rechaza (409) al aceptar si el estudiante ya tiene un proyecto activo", async () => {
+    decideHappyPath();
+    responses["ocupados"] = {
+      data: [{ id_usuario: USER, estado: { nombre: "adjudicada" }, proyecto: { estado: { nombre: "en_desarrollo" } } }],
+      error: null,
+    };
+    await expect(
+      decideOferta(TOKEN, USER, OFERTA, { accion: "aceptar" }),
+    ).rejects.toMatchObject({ statusCode: 409 });
   });
 });
 

@@ -16,6 +16,44 @@ async function getEstadoOfertaId(client: Client, nombre: string): Promise<string
   return data.id;
 }
 
+/** Estados de proyecto en los que una adjudicación ya NO ocupa al estudiante. */
+const ESTADOS_PROYECTO_INACTIVOS = ["cerrado", "cancelado"];
+
+/**
+ * Devuelve el conjunto de ids de estudiantes OCUPADOS dentro de `userIds`: los que
+ * tienen una oferta 'adjudicada' en un proyecto que no está cerrado ni cancelado.
+ * Un estudiante ocupado no puede postular ni ser adjudicado por otra empresa; se
+ * libera cuando su proyecto pasa a 'cerrado'/'cancelado'.
+ */
+async function estudiantesOcupados(client: Client, userIds: string[]): Promise<Set<string>> {
+  const ocupados = new Set<string>();
+  if (userIds.length === 0) return ocupados;
+
+  const { data, error } = await client
+    .from("oferta")
+    .select("id_usuario, estado:estado_oferta(nombre), proyecto:proyecto(estado:estado_proyecto(nombre))")
+    .in("id_usuario", userIds);
+  if (error) throw new ApiError(500, error.message);
+
+  for (const o of data ?? []) {
+    if (
+      o.estado?.nombre === "adjudicada" &&
+      !ESTADOS_PROYECTO_INACTIVOS.includes(o.proyecto?.estado?.nombre ?? "")
+    ) {
+      ocupados.add(o.id_usuario);
+    }
+  }
+  return ocupados;
+}
+
+/** ¿El estudiante tiene un proyecto adjudicado todavía activo? */
+export async function tieneProyectoActivo(
+  client: ReturnType<typeof supabaseForToken>,
+  userId: string,
+): Promise<boolean> {
+  return (await estudiantesOcupados(client, [userId])).has(userId);
+}
+
 /**
  * El junior postula a un proyecto. Reglas: cuenta aprobada, rol student, el
  * proyecto debe estar en recepción, y no haber postulado antes (UNIQUE).
@@ -41,6 +79,15 @@ export async function createOferta(
   }
   if (cuenta.role?.nombre !== "student") {
     throw new ApiError(403, "Solo los juniors pueden postular");
+  }
+
+  // Un estudiante con un proyecto adjudicado activo no puede postular a otro
+  // (la idea es repartir el trabajo y no sobrecargar a una sola persona).
+  if (await tieneProyectoActivo(client, userId)) {
+    throw new ApiError(
+      409,
+      "Ya tenés un proyecto activo. No podés postular a otro hasta que ese proyecto se cierre.",
+    );
   }
 
   const { data: proyecto, error: projError } = await client
@@ -169,7 +216,18 @@ export async function listProjectOfertas(accessToken: string, userId: string, pr
     .eq("id_proyecto", projectId)
     .order("fecha_envio", { ascending: false });
   if (error) throw new ApiError(500, error.message);
-  return data;
+
+  // Marcamos qué postulantes están "ocupados" (con un proyecto activo) para que la
+  // empresa los vea como no disponibles, sin ocultar su propuesta ni su perfil.
+  const juniorIds = [
+    ...new Set((data ?? []).map((o) => o.junior?.id).filter((id): id is string => Boolean(id))),
+  ];
+  const ocupados = await estudiantesOcupados(client, juniorIds);
+
+  return (data ?? []).map((o) => ({
+    ...o,
+    disponible: o.junior ? !ocupados.has(o.junior.id) : true,
+  }));
 }
 
 /**
@@ -186,7 +244,7 @@ export async function decideOferta(
 
   const { data: oferta, error: ofertaError } = await client
     .from("oferta")
-    .select("id, id_proyecto")
+    .select("id, id_proyecto, id_usuario")
     .eq("id", ofertaId)
     .maybeSingle();
   if (ofertaError) throw new ApiError(500, ofertaError.message);
@@ -200,6 +258,15 @@ export async function decideOferta(
   if (projError) throw new ApiError(500, projError.message);
   if (proyecto?.empresa?.id_usuario !== userId) {
     throw new ApiError(403, "No podés decidir sobre esta postulación");
+  }
+
+  // No se puede adjudicar a un estudiante que ya tiene un proyecto activo. La
+  // empresa igual ve su propuesta/perfil (lo marca como 'ocupado' en la UI).
+  if (input.accion === "aceptar" && (await tieneProyectoActivo(client, oferta.id_usuario))) {
+    throw new ApiError(
+      409,
+      "Este estudiante ya tiene un proyecto activo y no está disponible por el momento.",
+    );
   }
 
   const estadoNombre = input.accion === "aceptar" ? "adjudicada" : "no_seleccionada";

@@ -263,6 +263,9 @@ function OfferCard({
 
   const isAdjudicada = offer.estado.nombre === "adjudicada";
   const isRechazada = offer.estado.nombre === "no_seleccionada";
+  // Ocupado = el postulante ya tiene otro proyecto activo (no se puede adjudicar
+  // ahora, pero su propuesta/perfil/contacto siguen visibles para el futuro).
+  const ocupado = offer.disponible === false;
   const canAccept = !isAdjudicada && !isRechazada;
   const canReject = !isRechazada && !isAdjudicada;
 
@@ -295,6 +298,11 @@ function OfferCard({
               label={t(`offer_states.${offer.estado.nombre}`)}
               variant={offerVariant(offer.estado.nombre)}
             />
+            {ocupado && (
+              <span className="inline-flex items-center rounded-full bg-warning/10 px-2.5 py-0.5 font-body text-[11px] font-bold text-warning">
+                {t("busy_badge")}
+              </span>
+            )}
           </div>
           <div className="flex flex-wrap items-center gap-3">
             <span className="font-body text-xs text-ink-muted">{mockProfile.especialidad}</span>
@@ -314,7 +322,8 @@ function OfferCard({
               size="sm"
               variant="accent"
               onClick={() => onAccept(offer.id)}
-              disabled={isActionPending}
+              disabled={isActionPending || ocupado}
+              title={ocupado ? t("busy_message") : undefined}
             >
               <UserCheck className="size-4" />
               {t("accept_btn")}
@@ -346,6 +355,11 @@ function OfferCard({
       {/* ── Contenido expandido ── */}
       {expanded && (
         <div className="border-t border-border px-4 pb-4 pt-3">
+          {ocupado && (
+            <div className="mb-3 rounded-xl border border-warning/30 bg-warning/10 px-3 py-2.5 font-body text-xs text-ink">
+              {t("busy_message")}
+            </div>
+          )}
           {/* Tabs */}
           <div className="flex gap-1 mb-4 border-b border-border pb-3" role="tablist">
             {tabs.map((tab) => (
@@ -493,10 +507,10 @@ function OfferCard({
             </div>
           )}
 
-          {/* Tab: Contacto (RF-38) */}
+          {/* Tab: Contacto (RF-38) — visible al adjudicar o si está ocupado (contacto a futuro) */}
           {activeTab === "contacto" && (
             <div className="space-y-3">
-              {isAdjudicada ? (
+              {isAdjudicada || ocupado ? (
                 <>
                   <div className="rounded-xl border border-accent/20 bg-accent/5 p-4">
                     <p className="mb-3 font-body text-xs font-bold uppercase tracking-wider text-accent">

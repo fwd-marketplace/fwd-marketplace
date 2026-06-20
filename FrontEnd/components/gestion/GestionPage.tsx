@@ -245,9 +245,9 @@ function buildEmpresaStudents(
 
 // ── Main component ────────────────────────────────────────────────────────────
 
-interface Props { role: ApiRoleName | null; userId: string | null }
+interface Props { role: ApiRoleName | null; userId: string | null; disponible?: boolean }
 
-export function GestionPage({ role, userId }: Props) {
+export function GestionPage({ role, userId, disponible = true }: Props) {
   const t      = useTranslations("gestion_page");
   const locale = useLocale();
   const isEmpresa = role === "company";
@@ -501,6 +501,7 @@ export function GestionPage({ role, userId }: Props) {
                 locale={locale}
                 t={t}
                 userId={userId}
+                disponible={disponible}
               />
             )}
           </>
@@ -768,7 +769,7 @@ function ChatPanel({
 // ── Proceso panel router ──────────────────────────────────────────────────────
 
 function ProcesoPanel({
-  isEmpresa, offer, projectOffers, project, locale, t, userId,
+  isEmpresa, offer, projectOffers, project, locale, t, userId, disponible,
 }: {
   isEmpresa: boolean;
   offer: MyOffer | null;
@@ -777,11 +778,12 @@ function ProcesoPanel({
   locale: string;
   t: T;
   userId: string | null;
+  disponible: boolean;
 }) {
   if (isEmpresa) {
     return <EmpresaProcesoView offers={projectOffers} project={project} locale={locale} t={t} userId={userId} />;
   }
-  return <JuniorProcesoView offer={offer} project={project} locale={locale} t={t} userId={userId} />;
+  return <JuniorProcesoView offer={offer} project={project} locale={locale} t={t} userId={userId} disponible={disponible} />;
 }
 
 // ── Browser mockup ────────────────────────────────────────────────────────────
@@ -835,17 +837,19 @@ function t_noop(k: string) { return k; }
 // ── Junior proceso view ───────────────────────────────────────────────────────
 
 function JuniorProcesoView({
-  offer, project, t, userId,
+  offer, project, t, userId, disponible,
 }: {
   offer: MyOffer | null;
   project: ApiProject | null;
   locale: string;
   t: T;
   userId: string | null;
+  disponible: boolean;
 }) {
   const [proposals, setProposals] = useState<JuniorProposal[]>(
     () => initJuniorProposals(offer, project),
   );
+  const [submitError, setSubmitError] = useState("");
   const closed = false;
 
   // Reset proposals when the offer changes (real data loaded from API)
@@ -865,15 +869,20 @@ function JuniorProcesoView({
   const submit = async (i: number) => {
     const p = proposals[i];
     if (!p?.desc.trim()) return;
+    if (!project || !userId) return;
 
-    if (project && userId) {
-      await submitOfferAction(project.id, {
-        propuesta: p.desc,
-        ...(p.link ? { prototipo_url: p.link } : {}),
-      });
+    setSubmitError("");
+    const result = await submitOfferAction(project.id, {
+      propuesta: p.desc,
+      ...(p.link ? { prototipo_url: p.link } : {}),
+    });
+    // Antes marcaba "enviada" sin mirar el resultado: si el BackEnd rechazaba (p. ej.
+    // estudiante ocupado, o ya postulado) la UI mentía. Ahora solo avanza si fue OK.
+    if (result.ok) {
+      patch(i, { status: "enviada", expanded: false });
+    } else {
+      setSubmitError(result.error);
     }
-
-    patch(i, { status: "enviada", expanded: false });
   };
 
   // ── Derived values ───────────────────────────────────────────────────────
@@ -932,6 +941,12 @@ function JuniorProcesoView({
           {t("proceso_propuestas_label")}
         </p>
 
+        {!disponible && isNew && (
+          <div className="mb-6 rounded-xl border border-warning/30 bg-warning/5 px-4 py-3 font-body text-[13px] text-ink">
+            {t("proceso_busy_message")}
+          </div>
+        )}
+
         {proposals.map((p, i) => {
           const c        = juniorCircle(p.status);
           const isSent   = ["enviada","revision","cambios","aceptada","noseleccionada"].includes(p.status);
@@ -976,7 +991,11 @@ function JuniorProcesoView({
                     {p.status === "nuevo" && (
                       <button
                         onClick={() => startCreate(i)}
-                        className="rounded-[10px] border border-border bg-surface px-[18px] py-[9px] font-body text-[14px] font-semibold text-ink transition-colors duration-[var(--duration-fast)] hover:border-secondary hover:text-secondary"
+                        disabled={!disponible}
+                        className={cn(
+                          "rounded-[10px] border border-border bg-surface px-[18px] py-[9px] font-body text-[14px] font-semibold text-ink transition-colors duration-[var(--duration-fast)]",
+                          disponible ? "hover:border-secondary hover:text-secondary" : "opacity-50 cursor-not-allowed",
+                        )}
                       >
                         {t("proceso_crear_propuesta")}
                       </button>
@@ -1044,6 +1063,9 @@ function JuniorProcesoView({
                         className="w-full rounded-[10px] border border-border bg-surface px-[14px] py-[11px] font-body text-[14px] text-ink focus:border-secondary focus:outline-none focus:ring-2 focus:ring-secondary/20" />
                     </div>
 
+                    {submitError && (
+                      <p className="mt-4 font-body text-[13px] text-magenta">{submitError}</p>
+                    )}
                     <div className="mt-6 flex justify-end">
                       <button
                         onClick={() => { void submit(i); }}
