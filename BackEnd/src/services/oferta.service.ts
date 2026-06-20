@@ -101,6 +101,23 @@ export async function createOferta(
     throw new ApiError(409, "Este proyecto no está recibiendo postulaciones");
   }
 
+  // Check for existing offers from this user for this project.
+  // A new version is only allowed when the latest offer is in 'solicitar_cambios'.
+  const { data: existingOfertas, error: existError } = await client
+    .from("oferta")
+    .select("id, estado:estado_oferta(nombre), fecha_envio")
+    .eq("id_proyecto", projectId)
+    .eq("id_usuario", userId)
+    .order("fecha_envio", { ascending: false });
+  if (existError) throw new ApiError(500, existError.message);
+  if (existingOfertas && existingOfertas.length > 0) {
+    const latest = existingOfertas[0]!;
+    const latestState = (latest.estado as { nombre: string } | null)?.nombre;
+    if (latestState !== "solicitar_cambios") {
+      throw new ApiError(409, "Ya postulaste a este proyecto. Solo podés enviar una nueva versión cuando la empresa solicite cambios.");
+    }
+  }
+
   const estadoId = await getEstadoOfertaId(client, "enviada");
   const { data: oferta, error } = await client
     .from("oferta")
@@ -116,10 +133,7 @@ export async function createOferta(
     })
     .select("id, fecha_envio")
     .single();
-  if (error) {
-    if (error.code === "23505") throw new ApiError(409, "Ya postulaste a este proyecto");
-    throw new ApiError(400, error.message);
-  }
+  if (error) throw new ApiError(400, error.message);
   return oferta;
 }
 
