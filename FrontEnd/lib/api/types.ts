@@ -447,4 +447,18 @@ export type CalificacionesResponse = {
   calificaciones: ApiCalificacion[];
 };
 
+// ── Notificaciones in-app ──────────────────────────────────────────────────────
+
+export type ApiNotificacion = {
+  id: string;
+  tipo: string;
+  mensaje: string;
+  leida: boolean;
+  fecha: string;
+};
+
+export type NotificacionesResponse = {
+  notificaciones: ApiNotificacion[];
+};
+
 

@@ -3,9 +3,11 @@
 import { revalidatePath } from "next/cache";
 import {
   calificarOferta,
+  cancelProject,
   changeProjectState,
   createProject,
   decideOffer,
+  deleteProject,
   getMyOffers,
   getMyProjects,
   getProjectById,
@@ -47,6 +49,22 @@ export async function updateProjectAction(projectId: string, input: UpdateProjec
 
 export async function changeProjectStateAction(projectId: string, estado: CompanyProjectState) {
   const result = await changeProjectState(projectId, estado);
+  if (result.ok) {
+    revalidatePath("/");
+  }
+  return result;
+}
+
+export async function cancelProjectAction(projectId: string) {
+  const result = await cancelProject(projectId);
+  if (result.ok) {
+    revalidatePath("/");
+  }
+  return result;
+}
+
+export async function deleteProjectAction(projectId: string) {
+  const result = await deleteProject(projectId);
   if (result.ok) {
     revalidatePath("/");
   }
