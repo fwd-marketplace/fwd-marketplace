@@ -432,7 +432,7 @@ export async function cancelMyProject(accessToken: string, userId: string, proje
  * La empresa elimina DEFINITIVAMENTE su proyecto (hard delete). Protege los
  * proyectos 'cerrado' (registro historico del junior). Notifica a adjudicados y
  * postulantes ANTES de borrar (luego las ofertas ya no existen) y borra todo via la
- * RPC `eliminar_proyecto` (SECURITY DEFINER, migracion 0029).
+ * RPC `eliminar_proyecto` (SECURITY DEFINER, migracion 0032).
  */
 export async function deleteMyProject(
   accessToken: string,

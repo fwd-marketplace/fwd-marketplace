@@ -1,4 +1,4 @@
--- 0029_notificaciones_y_eliminar_proyecto.sql
+-- 0032_notificaciones_y_eliminar_proyecto.sql
 --
 -- Dos funciones SECURITY DEFINER (corren con privilegios del owner, saltan RLS):
 --
