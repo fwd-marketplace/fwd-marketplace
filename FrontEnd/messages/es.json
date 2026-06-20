@@ -517,6 +517,8 @@
     "owner_banner_desc": "Las postulaciones recibidas te esperan en el panel de empresa.",
     "owner_banner_cta": "Ver postulaciones",
     "offer_expired": "Este proyecto ya no acepta nuevas propuestas. El plazo de recepción ha vencido.",
+    "offer_busy_title": "Ya tenés un proyecto activo",
+    "offer_busy_message": "No podés postular a otro proyecto hasta que el que tenés adjudicado se cierre. Así repartimos las oportunidades entre todos.",
     "offer_expired_chip": "Plazo vencido",
     "offer_already_sent": "Ya enviaste una propuesta para este proyecto. Podés revisarla en Mis Postulaciones.",
     "offer_documentacion_tecnica_label": "Documentación técnica adicional (opcional)",
