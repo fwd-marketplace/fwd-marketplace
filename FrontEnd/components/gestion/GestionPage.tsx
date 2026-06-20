@@ -40,7 +40,6 @@ import {
   reviewOfferAction,
   calificarOfertaAction,
   getMyProjectsAction,
-  getProjectsAction,
   getMyOffersAction,
   uploadDocumentoAction,
 } from "@/lib/actions/marketplace";
@@ -97,7 +96,9 @@ interface JuniorProposal {
 
 interface EmpresaProposal {
   v: number;
+  offerId: string;
   status: EmpresaStatus;
+  dbStatus: EmpresaStatus;  // persisted status from DB — controls editable vs read-only view
   date: string;
   expanded: boolean;
   desc: string;
@@ -214,45 +215,67 @@ function buildEmpresaStudents(
     solicitar_cambios: "cambios",
     adjudicada: "adjudicada", no_seleccionada: "noseleccionada",
   };
-  const ORDER: Record<OfferState, number> = {
-    adjudicada: 0, en_revision: 1, solicitar_cambios: 1, enviada: 2, no_seleccionada: 3,
+  const STATUS_ORDER: Record<EmpresaStatus, number> = {
+    adjudicada: 0, revision: 1, cambios: 1, enviada: 2, noseleccionada: 3,
   };
-  const sorted = [...offers].sort((a, b) => ORDER[a.estado.nombre] - ORDER[b.estado.nombre]);
+
   const title = project?.titulo ?? "Propuesta";
   const area  = project?.area?.nombre ?? "Proyecto";
 
-  return sorted.map((offer, idx) => {
-    const estado    = offer.estado.nombre;
-    const empStatus = statusMap[estado];
-    const dateStr   = new Date(offer.fecha_envio).toLocaleDateString(locale, { day: "numeric", month: "long" });
-    const initials  = ((offer.junior.nombre[0] ?? "") + (offer.junior.apellido1?.[0] ?? "")).toUpperCase();
+  // Group all offers by junior.id — one student row per junior
+  const byJunior = new Map<string, ProjectOffer[]>();
+  for (const offer of offers) {
+    const group = byJunior.get(offer.junior.id) ?? [];
+    group.push(offer);
+    byJunior.set(offer.junior.id, group);
+  }
 
-    const base: EmpresaProposal = {
-      v: 1, status: empStatus, date: dateStr, expanded: false,
-      desc: offer.propuesta, link: offer.prototipo_url ?? "",
-      previewName: title, previewProject: area, comment: offer.comentario_revision ?? "",
-    };
+  const students: EmpresaStudent[] = [];
+  let idx = 0;
 
-    const proposals: EmpresaProposal[] = estado === "adjudicada"
-      ? [
-          { v: 1, status: "cambios", date: dateStr, expanded: false,
-            desc: "Primera versión de la propuesta. Se solicitaron ajustes antes de la adjudicación.",
-            link: offer.prototipo_url ?? "", previewName: title + " (v1)", previewProject: area,
-            comment: "Buen perfil, pero necesitamos más detalle en el cronograma de entregas. Ajustá el alcance de la primera fase y reenvía." },
-          { ...base, v: 2, expanded: true },
-        ]
-      : [base];
+  for (const [, juniorOffers] of byJunior) {
+    // Sort versions oldest-first for v1, v2, v3 numbering
+    const versions = [...juniorOffers].sort(
+      (a, b) => new Date(a.fecha_envio).getTime() - new Date(b.fecha_envio).getTime(),
+    );
+    const latest = versions[versions.length - 1]!;
+    const initials = ((latest.junior.nombre[0] ?? "") + (latest.junior.apellido1?.[0] ?? "")).toUpperCase();
 
-    return {
-      id: idx + 1,
-      offerId: offer.id,
-      name: `${offer.junior.nombre} ${offer.junior.apellido1 ?? ""}`.trim(),
-      initials, date: dateStr,
-      expanded: estado === "adjudicada",
+    const proposals: EmpresaProposal[] = versions.map((offer, vi) => {
+      const mappedStatus = statusMap[offer.estado.nombre];
+      return {
+        v: vi + 1,
+        offerId: offer.id,
+        status: mappedStatus,
+        dbStatus: mappedStatus,
+        date: new Date(offer.fecha_envio).toLocaleDateString(locale, { day: "numeric", month: "long" }),
+        expanded: false,
+        desc: offer.propuesta,
+        link: offer.prototipo_url ?? "",
+        previewName: title,
+        previewProject: area,
+        comment: offer.comentario_revision ?? "",
+      };
+    });
+
+    students.push({
+      id: ++idx,
+      offerId: latest.id,
+      name: `${latest.junior.nombre} ${latest.junior.apellido1 ?? ""}`.trim(),
+      initials,
+      date: new Date(latest.fecha_envio).toLocaleDateString(locale, { day: "numeric", month: "long" }),
+      expanded: false,
       proposals,
-      calificacion: offer.calificacion ?? null,
-      comentario_calificacion: offer.comentario_calificacion ?? null,
-    };
+      calificacion: latest.calificacion ?? null,
+      comentario_calificacion: latest.comentario_calificacion ?? null,
+    });
+  }
+
+  // Sort students: adjudicada first, no_seleccionada last
+  return students.sort((a, b) => {
+    const aStatus = a.proposals[a.proposals.length - 1]?.status ?? "enviada";
+    const bStatus = b.proposals[b.proposals.length - 1]?.status ?? "enviada";
+    return STATUS_ORDER[aStatus] - STATUS_ORDER[bStatus];
   });
 }
 
@@ -1555,7 +1578,7 @@ function EmpresaProcesoView({
     const student = students.find((s) => s.id === sid);
     if (!student) return;
     const proposal = student.proposals.find((p) => p.v === v);
-    if (!proposal || !student.offerId) return;
+    if (!proposal) return;
 
     const accionMap: Record<EmpresaStatus, "en_revision" | "solicitar_cambios" | "aceptar" | "rechazar"> = {
       enviada:        "en_revision",
@@ -1565,22 +1588,76 @@ function EmpresaProcesoView({
       noseleccionada: "rechazar",
     };
 
-    await reviewOfferAction(student.offerId, {
+    const result = await reviewOfferAction(proposal.offerId, {
       accion: accionMap[proposal.status],
       ...(proposal.comment.trim() ? { comentario: proposal.comment.trim() } : {}),
     });
 
-    setSaved(`${sid}-${v}`);
+    if (result.ok) {
+      setSaved(`${sid}-${v}`);
+      // Re-fetch from DB so dbStatus and comment reflect what was actually persisted
+      if (project?.id) {
+        const fresh = await getProjectOffersAction(project.id);
+        if (fresh.ok) {
+          setStudents(buildEmpresaStudents(fresh.data.ofertas, project, locale));
+        } else {
+          // Fallback: update dbStatus locally if re-fetch fails
+          const savedStatus = proposal.status;
+          setStudents((prev) =>
+            prev.map((s) =>
+              s.id !== sid ? s : {
+                ...s,
+                proposals: s.proposals.map((p) =>
+                  p.v !== v ? p : { ...p, dbStatus: savedStatus },
+                ),
+              },
+            ),
+          );
+        }
+      }
+    }
   };
 
   const handleCalificar = async (offerId: string) => {
     const form = ratingForms[offerId];
     if (!form || form.stars === 0) return;
     setRatingForms((prev) => ({ ...prev, [offerId]: { ...prev[offerId]!, submitting: true } }));
-    await calificarOfertaAction(offerId, {
+    const result = await calificarOfertaAction(offerId, {
       calificacion: form.stars,
       ...(form.comment.trim() ? { comentario: form.comment.trim() } : {}),
     });
+    if (result.ok) {
+      // Re-fetch from DB so calificacion state reflects what was actually persisted
+      if (project?.id) {
+        const fresh = await getProjectOffersAction(project.id);
+        if (fresh.ok) {
+          setStudents(buildEmpresaStudents(fresh.data.ofertas, project, locale));
+        } else {
+          // Fallback: update calificacion locally if re-fetch fails
+          setStudents((prev) =>
+            prev.map((s) =>
+              s.offerId !== offerId ? s : {
+                ...s,
+                calificacion: form.stars,
+                comentario_calificacion: form.comment.trim() || null,
+              },
+            ),
+          );
+        }
+      } else {
+        setStudents((prev) =>
+          prev.map((s) =>
+            s.offerId !== offerId ? s : {
+              ...s,
+              calificacion: form.stars,
+              comentario_calificacion: form.comment.trim() || null,
+            },
+          ),
+        );
+      }
+    } else {
+      setRatingForms((prev) => ({ ...prev, [offerId]: { ...prev[offerId]!, submitting: false } }));
+    }
   };
 
   const overall = (props: EmpresaProposal[]): EmpresaStatus => {
@@ -1743,7 +1820,7 @@ function EmpresaProcesoView({
                                   </>
                                 )}
 
-                                {p.status === "enviada" ? (
+                                {p.dbStatus === "enviada" ? (
                                   <>
                                     <label className="mb-2 mt-5 block font-body text-sm font-bold text-ink">
                                       {t("proceso_comentarios_revision_label")}
@@ -1801,7 +1878,7 @@ function EmpresaProcesoView({
                                       )}
                                     </div>
 
-                                    {p.status === "adjudicada" && (
+                                    {p.dbStatus === "adjudicada" && (
                                       s.calificacion != null ? (
                                         <div className="mt-4 rounded-xl border border-accent/30 bg-accent/5 p-4">
                                           <p className="mb-2 font-body text-xs font-bold uppercase tracking-wider text-accent">

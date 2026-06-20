@@ -419,9 +419,6 @@ export async function calificarOferta(
   if (proyecto?.empresa?.id_usuario !== userId) {
     throw new ApiError(403, "No podés calificar esta postulación");
   }
-  if (proyecto?.estado?.nombre !== "cerrado") {
-    throw new ApiError(409, "Solo podés calificar postulaciones de proyectos cerrados");
-  }
 
   const { data, error } = await client
     .from("oferta")
