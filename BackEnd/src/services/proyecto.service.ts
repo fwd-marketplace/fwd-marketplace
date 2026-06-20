@@ -45,6 +45,15 @@ const PROJECT_SELECT = `
 export async function listProjects(accessToken: string, filters: ProjectFilters) {
   const client = supabaseForToken(accessToken);
 
+  // Resolver el id del estado "en_recepcion" para filtrar en DB (no en JS).
+  const { data: estadoRec, error: estadoError } = await client
+    .from("estado_proyecto")
+    .select("id")
+    .eq("nombre", "en_recepcion")
+    .maybeSingle();
+  if (estadoError) throw new ApiError(500, estadoError.message);
+  if (!estadoRec) return []; // seeds no aplicados — no hay proyectos posibles
+
   // Filtro por skill: primero obtenemos los proyectos que la incluyen.
   let projectIdsConSkill: string[] | null = null;
   if (filters.skill) {
@@ -62,9 +71,15 @@ export async function listProjects(accessToken: string, filters: ProjectFilters)
     }
   }
 
+  const now = new Date().toISOString();
+
   let query = client
     .from("proyecto")
     .select(PROJECT_SELECT)
+    // Solo proyectos activamente en recepción (estado exacto en DB)
+    .eq("id_estado", estadoRec.id)
+    // Excluir proyectos cuyo plazo ya venció (fecha_cierre en el pasado)
+    .or(`fecha_cierre.is.null,fecha_cierre.gt.${now}`)
     .order("fecha_publicacion", { ascending: false, nullsFirst: false });
 
   if (filters.area) {
@@ -84,8 +99,7 @@ export async function listProjects(accessToken: string, filters: ProjectFilters)
   if (error) {
     throw new ApiError(500, error.message);
   }
-  // Solo exponer proyectos en recepción en el marketplace; cerrado/cancelado/borrador no aparecen.
-  return (data ?? []).filter((p) => p.estado?.nombre === "en_recepcion");
+  return data ?? [];
 }
 
 /**

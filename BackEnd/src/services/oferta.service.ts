@@ -1,4 +1,4 @@
-import { supabaseForToken } from "../config/supabase";
+import { supabaseForToken, supabaseAdmin } from "../config/supabase";
 import { ApiError } from "../utils/ApiError";
 import type { CreateOfertaInput, DecideOfertaInput, ReviewOfertaInput, CalificarOfertaInput, ReplicarCalificacionInput } from "../validations/oferta";
 
@@ -433,17 +433,22 @@ export async function calificarOferta(
   if (error) throw new ApiError(400, error.message);
 
   // Cerrar el proyecto automáticamente al calificar (fin del ciclo de vida).
-  const { data: estadoCerrado } = await client
+  // Usa el cliente admin (service_role) para bypassar RLS: es una operación de
+  // sistema, no una acción directa del usuario.
+  const admin = supabaseAdmin();
+  const { data: estadoCerrado, error: estadoCerradoError } = await admin
     .from("estado_proyecto")
     .select("id")
     .eq("nombre", "cerrado")
     .maybeSingle();
-  if (estadoCerrado) {
-    await client
-      .from("proyecto")
-      .update({ id_estado: estadoCerrado.id })
-      .eq("id", oferta.id_proyecto);
-  }
+  if (estadoCerradoError) throw new ApiError(500, estadoCerradoError.message);
+  if (!estadoCerrado) throw new ApiError(500, "Falta el estado 'cerrado' (seeds no aplicados)");
+
+  const { error: closeError } = await admin
+    .from("proyecto")
+    .update({ id_estado: estadoCerrado.id })
+    .eq("id", oferta.id_proyecto);
+  if (closeError) throw new ApiError(500, `No se pudo cerrar el proyecto: ${closeError.message}`);
 
   return data;
 }

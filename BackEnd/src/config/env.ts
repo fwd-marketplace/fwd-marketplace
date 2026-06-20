@@ -38,6 +38,9 @@ export const env = {
   supabaseUrl: required("SUPABASE_URL"),
   // Clave anon/publishable: el BackEnd actúa en nombre del usuario vía Supabase Auth.
   supabaseKey: required("SUPABASE_KEY"),
+  // Clave service_role: bypassa RLS para operaciones de sistema (auto-cierre de proyectos).
+  // Supabase Dashboard → Project Settings → API → service_role key.
+  supabaseServiceKey: process.env.SUPABASE_SERVICE_KEY ?? "",
 
   cloudinary: {
     cloudName: process.env.CLOUDINARY_CLOUD_NAME ?? "",
