@@ -1,7 +1,6 @@
 import { setRequestLocale } from "next-intl/server";
 import { MisProyectos } from "@/components/comp-perfil-empresa/MisProyectos";
 import { getCatalogs, getMyProjects } from "@/lib/api/marketplace";
-import { MOCK_AREAS, MOCK_PROJECTS, MOCK_SKILLS } from "@/lib/mock-data";
 import { EmpresaSubnav } from "@/components/layout/empresa-subnav";
 
 interface Props {
@@ -23,9 +22,9 @@ export default async function EmpresaDashboardPage({ params }: Props) {
       <main className="min-h-screen bg-canvas py-8">
         <div className="mx-auto max-w-7xl px-4 md:px-6">
           <MisProyectos
-            initialProjects={projectsResult.ok ? projectsResult.data.projects : MOCK_PROJECTS}
-            areas={catalogsResult.ok ? catalogsResult.data.areas : MOCK_AREAS}
-            skills={catalogsResult.ok ? catalogsResult.data.skills : MOCK_SKILLS}
+            initialProjects={projectsResult.ok ? projectsResult.data.projects : []}
+            areas={catalogsResult.ok ? catalogsResult.data.areas : []}
+            skills={catalogsResult.ok ? catalogsResult.data.skills : []}
           />
         </div>
       </main>

@@ -33,65 +33,6 @@ type Notification = {
   href: string;
 };
 
-const MOCK_STUDENT: Notification[] = [
-  {
-    id: "ns-1",
-    type: "offer_accepted",
-    title: "Propuesta adjudicada",
-    detail: "Plataforma de Telemedicina — te seleccionaron para este proyecto.",
-    time: "hace 2 h",
-    read: false,
-    href: "/gestion",
-  },
-  {
-    id: "ns-2",
-    type: "offer_reviewed",
-    title: "Propuesta en revisión",
-    detail: "Sistema de Gestión de Créditos — la empresa está evaluando tu carta.",
-    time: "hace 1 d",
-    read: false,
-    href: "/gestion",
-  },
-  {
-    id: "ns-3",
-    type: "new_project",
-    title: "Nuevo proyecto disponible",
-    detail: "Dashboard de Métricas — encaja con tu stack de React y TypeScript.",
-    time: "hace 3 d",
-    read: true,
-    href: "/marketplace",
-  },
-];
-
-const MOCK_COMPANY: Notification[] = [
-  {
-    id: "nc-1",
-    type: "new_offer",
-    title: "3 propuestas nuevas",
-    detail: "Dashboard de Análisis de Ventas — hay nuevas postulaciones esperando revisión.",
-    time: "hace 1 h",
-    read: false,
-    href: "/postulaciones",
-  },
-  {
-    id: "nc-2",
-    type: "entregable_sent",
-    title: "Entregable recibido",
-    detail: "Ana García subió su entregable para Plataforma de Telemedicina.",
-    time: "hace 5 h",
-    read: false,
-    href: "/dashboard",
-  },
-  {
-    id: "nc-3",
-    type: "offer_reviewed",
-    title: "Proyecto en desarrollo",
-    detail: "API de Integración SAP — el junior aceptado comenzó a trabajar.",
-    time: "hace 2 d",
-    read: true,
-    href: "/dashboard",
-  },
-];
 
 const ICON_CONFIG: Record<
   NotifType,
@@ -141,8 +82,7 @@ export function NotificationPanel({
 }: Props) {
   const locale = useLocale();
   const t = useTranslations("notification_panel");
-  const initial = role === "company" ? MOCK_COMPANY : MOCK_STUDENT;
-  const [notifs, setNotifs] = useState<Notification[]>(initial);
+  const [notifs, setNotifs] = useState<Notification[]>([]);
   const [internalOpen, setInternalOpen] = useState(false);
 
   const isControlled = controlledOpen !== undefined;

@@ -340,3 +340,50 @@ export async function updateProject(
   if (error) throw new ApiError(500, error.message);
   return data;
 }
+
+/**
+ * Elimina un proyecto. Solo el dueño puede hacerlo y el proyecto debe estar
+ * en borrador (sin postulantes ni actividad real).
+ */
+export async function deleteProject(
+  accessToken: string,
+  userId: string,
+  projectId: string,
+) {
+  const client = supabaseForToken(accessToken);
+
+  const { data: proyecto, error: projError } = await client
+    .from("proyecto")
+    .select("id, empresa:empresario(id_usuario), estado:estado_proyecto(nombre)")
+    .eq("id", projectId)
+    .maybeSingle();
+  if (projError) throw new ApiError(500, projError.message);
+  if (!proyecto) throw new ApiError(404, "Proyecto no encontrado");
+  if (proyecto.empresa?.id_usuario !== userId) {
+    throw new ApiError(403, "Este proyecto no es tuyo");
+  }
+  const estadoActual = proyecto.estado?.nombre;
+  if (estadoActual !== "borrador") {
+    if (estadoActual !== "en_recepcion") {
+      throw new ApiError(409, "Solo podés eliminar proyectos en borrador o sin propuestas recibidas");
+    }
+    // En recepción: solo permitir si no hay propuestas
+    const { count, error: countError } = await client
+      .from("oferta")
+      .select("id", { count: "exact", head: true })
+      .eq("id_proyecto", projectId);
+    if (countError) throw new ApiError(500, countError.message);
+    if ((count ?? 0) > 0) {
+      throw new ApiError(409, "No podés eliminar un proyecto que ya recibió propuestas");
+    }
+  }
+
+  const { error, count } = await client
+    .from("proyecto")
+    .delete({ count: "exact" })
+    .eq("id", projectId);
+  if (error) throw new ApiError(400, error.message);
+  if (!count || count === 0) {
+    throw new ApiError(403, "No se pudo eliminar el proyecto (permiso denegado)");
+  }
+}

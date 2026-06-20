@@ -1,5 +1,5 @@
 import { Router } from "express";
-import { list, listMine, detail, create, changeState, update } from "../controllers/proyecto.controller";
+import { list, listMine, detail, create, changeState, update, remove } from "../controllers/proyecto.controller";
 import { createForProject, listForProject } from "../controllers/oferta.controller";
 import { listForProject as listEntregablesForProject } from "../controllers/entregable.controller";
 import { authenticate } from "../middlewares/auth.middleware";
@@ -17,6 +17,8 @@ router.get("/:id", authenticate, asyncHandler(detail));
 router.patch("/:id/estado", authenticate, asyncHandler(changeState));
 // La empresa edita los datos de su proyecto (solo en borrador o en_recepcion).
 router.patch("/:id", authenticate, asyncHandler(update));
+// La empresa elimina un proyecto en borrador.
+router.delete("/:id", authenticate, asyncHandler(remove));
 
 // Postulaciones de un proyecto: el junior postula, la empresa las consulta.
 router.post("/:id/ofertas", authenticate, asyncHandler(createForProject));

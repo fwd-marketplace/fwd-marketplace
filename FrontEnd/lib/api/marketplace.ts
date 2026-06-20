@@ -162,6 +162,12 @@ export function updateProject(
   });
 }
 
+export function deleteProject(projectId: string): Promise<Result<void>> {
+  return asResult(async () => {
+    await apiAuth(`/projects/${projectId}`, { method: "DELETE" });
+  });
+}
+
 export function getMyCalificaciones(): Promise<Result<ApiCalificacion[]>> {
   return asResult(async () => {
     const res = await apiAuth<CalificacionesResponse>("/ofertas/mis-calificaciones");

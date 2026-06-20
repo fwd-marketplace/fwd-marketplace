@@ -13,17 +13,26 @@ import {
   FileText,
   FolderOpen,
   GitBranch,
+  Loader2,
   Lock,
   MessageSquare,
+  Pencil,
+  Plus,
   Send,
+  Sparkles,
+  Trash2,
   Upload,
+  Wand2,
   X,
   Zap,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
-import { MOCK_OFFERS, MOCK_PROJECTS, MOCK_MARKETPLACE_PROJECTS } from "@/lib/mock-data";
-import { MOCK_PROJECT_OFFERS } from "@/lib/mock-proceso";
+import { Button } from "@/components/ui/button";
 import {
+  getCatalogsAction,
+  createProjectAction,
+  updateProjectAction,
+  deleteProjectAction,
   getProjectByIdAction,
   getProjectOffersAction,
   submitOfferAction,
@@ -32,14 +41,23 @@ import {
   getProjectsAction,
   getMyOffersAction,
 } from "@/lib/actions/marketplace";
+import { generateProposalAction, suggestStackAction } from "@/lib/actions/ai";
+import { streamAssistant } from "@/lib/api/ai-client";
 import { getProjectMensajesAction, sendMensajeAction } from "@/lib/actions/mensajes";
 import type {
+  AiChatMessage,
   ApiMensaje,
   ApiProject,
   ApiRoleName,
+  CatalogArea,
+  CatalogSkill,
+  CreateProjectInput,
   MyOffer,
   OfferState,
   ProjectOffer,
+  ProjectProposal,
+  SuggestStackInput,
+  UpdateProjectInput,
 } from "@/lib/api/types";
 
 // ── Types ─────────────────────────────────────────────────────────────────────
@@ -147,28 +165,6 @@ const EMPRESA_BADGE: Record<EmpresaStatus, string> = {
   noseleccionada: "bg-ink-muted/10 text-ink-muted border-border",
 };
 
-// ── Mock data helpers ─────────────────────────────────────────────────────────
-
-const MOCK_OBS: Record<string, string> = {
-  "proj-1": "La propuesta es muy sólida. Sin embargo, necesitamos más detalle en el cronograma de entregas y confirmar la compatibilidad con la API de pagos actual. Ajustá el alcance de la primera fase y reenvía una nueva versión.",
-};
-
-const MOCK_CHAT: Record<string, ChatMessage[]> = {
-  "mock-1": [
-    { id: "m1", from: "empresa", text: "Hola, revisamos tu propuesta y nos gustó mucho tu experiencia con React y dashboards. ¿Podés contarnos un poco más sobre los proyectos de BI que mencionás?", time: "10:14" },
-    { id: "m2", from: "junior", text: "¡Claro! He trabajado en dos proyectos de Business Intelligence integrando APIs REST con autenticación JWT y visualizaciones en Recharts y D3.js. El más reciente actualizaba métricas cada 30 segundos en tiempo real.", time: "10:21" },
-    { id: "m3", from: "empresa", text: "Muy bien. ¿Tenés experiencia con Power BI o alguna herramienta de reporting similar?", time: "10:35" },
-    { id: "m4", from: "junior", text: "Sí, usé Power BI para reportes ejecutivos en un proyecto anterior. También conozco Looker Studio. Para este proyecto preferiría ir con una solución custom en React para tener más control del diseño.", time: "10:42" },
-    { id: "m5", from: "empresa", text: "Nos parece perfecto. ¿Tenés disponibilidad para iniciar la semana que viene?", time: "11:03" },
-    { id: "m6", from: "junior", text: "Sí, tengo disponibilidad inmediata. ¿Cuál sería el próximo paso del proceso?", time: "11:08" },
-  ],
-  "mock-2": [
-    { id: "m1", from: "empresa", text: "Hola, vimos tu propuesta para la plataforma de telemedicina. El prototipo de Figma que adjuntaste se ve muy completo.", time: "09:30" },
-    { id: "m2", from: "junior", text: "Gracias. Me enfoqué en los flujos de agendamiento y la ficha del paciente. ¿Hay algún aspecto que quieran priorizar?", time: "09:45" },
-    { id: "m3", from: "empresa", text: "Lo más urgente es el módulo de videollamada. ¿Cómo pensás abordarlo técnicamente?", time: "10:02" },
-    { id: "m4", from: "junior", text: "Usaría WebRTC con una capa de señalización simple. Para el MVP podría integrar Daily.co que ya tiene SDK para React y maneja bien la infraestructura de video.", time: "10:15" },
-  ],
-};
 
 function blankProposal(v: number): JuniorProposal {
   return { v, status: "nuevo", expanded: false, desc: "", link: "", fileName: "", previewName: "", previewProject: "", repo: "", observaciones: "" };
@@ -190,7 +186,7 @@ function initJuniorProposals(offer: MyOffer | null, project: ApiProject | null):
     previewName: project?.titulo ?? "",
     previewProject: project?.area?.nombre ?? "",
     repo: offer.prototipo_url ?? "",
-    observaciones: project?.id ? (MOCK_OBS[project.id] ?? "") : "",
+    observaciones: "",
   }];
 }
 
@@ -252,11 +248,25 @@ export function GestionPage({ role, userId, initialProjectId, disponible = true 
   const locale = useLocale();
   const isEmpresa = role === "company";
 
-  // Sidebar data — starts with mock, replaced by real data from API
-  const [sidebarProjects, setSidebarProjects] = useState<ApiProject[]>(
-    () => isEmpresa ? MOCK_PROJECTS : MOCK_MARKETPLACE_PROJECTS,
-  );
-  const [myOffers, setMyOffers] = useState<MyOffer[]>(MOCK_OFFERS);
+  // Sidebar data — starts empty, replaced by real API data on mount
+  const [sidebarProjects, setSidebarProjects] = useState<ApiProject[]>([]);
+  const [myOffers, setMyOffers] = useState<MyOffer[]>([]);
+
+  // Catalogs for create/edit form (empresa only)
+  const [catalogs, setCatalogs] = useState<{ areas: CatalogArea[]; skills: CatalogSkill[] }>({ areas: [], skills: [] });
+
+  // Create / edit sheet
+  const [formMode, setFormMode] = useState<"create" | "edit" | null>(null);
+  const [formSaving, setFormSaving] = useState(false);
+
+  // Delete confirmation
+  const [deleteTarget, setDeleteTarget] = useState<string | null>(null);
+  const [deleting, setDeleting] = useState(false);
+  const [deleteError, setDeleteError] = useState<string | null>(null);
+
+  // Pending navigation when form has unsaved changes
+  type PendingNav = { type: "select"; id: string } | { type: "back" } | { type: "create" };
+  const [pendingNav, setPendingNav] = useState<PendingNav | null>(null);
 
   // Selection state
   const [selectedId, setSelectedId]         = useState<string | null>(initialProjectId ?? null);
@@ -265,13 +275,24 @@ export function GestionPage({ role, userId, initialProjectId, disponible = true 
   const [projectOffers, setProjectOffers]     = useState<ProjectOffer[]>([]);
   const [section, setSection]               = useState<Section>("info");
 
+  // Clean ?proyecto= from URL once used to pre-select
+  useEffect(() => {
+    if (initialProjectId) {
+      window.history.replaceState(null, "", window.location.pathname);
+    }
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
   // ── Load sidebar on mount ───────────────────────────────────────────────────
   useEffect(() => {
     let active = true;
     (async () => {
       if (isEmpresa) {
-        const r = await getMyProjectsAction();
-        if (active && r.ok) setSidebarProjects(r.data.projects);
+        const [pr, cr] = await Promise.all([getMyProjectsAction(), getCatalogsAction()]);
+        if (active) {
+          if (pr.ok) setSidebarProjects(pr.data.projects);
+          if (cr.ok) setCatalogs({ areas: cr.data.areas, skills: cr.data.skills });
+        }
       } else {
         const [pr, or] = await Promise.all([getProjectsAction(), getMyOffersAction()]);
         if (active) {
@@ -310,20 +331,76 @@ export function GestionPage({ role, userId, initialProjectId, disponible = true 
     return () => { active = false; };
   }, [selectedId, isEmpresa, myOffers]);
 
-  const handleSelect = (id: string) => {
-    setSelectedId(id);
-    setSection("info");
-    // Set immediate data from sidebar (may be mock or real)
-    const proj = sidebarProjects.find((p) => p.id === id) ?? null;
-    setSelectedProject(proj);
-    if (isEmpresa) {
-      setProjectOffers(id === "proj-1" ? MOCK_PROJECT_OFFERS : []);
-    } else {
-      setSelectedOffer(myOffers.find((o) => o.proyecto?.id === id) ?? null);
+  const handleSaveProject = async (data: CreateProjectInput | UpdateProjectInput) => {
+    setFormSaving(true);
+    if (formMode === "create") {
+      const r = await createProjectAction(data as CreateProjectInput);
+      if (r.ok) {
+        const pr = await getMyProjectsAction();
+        if (pr.ok) setSidebarProjects(pr.data.projects);
+        setSelectedId(r.data.id);
+        setSelectedProject(null);
+        setSection("info");
+        setFormMode(null);
+      }
+    } else if (formMode === "edit" && selectedId) {
+      const r = await updateProjectAction(selectedId, data as UpdateProjectInput);
+      if (r.ok) {
+        setSelectedProject(r.data);
+        const pr = await getMyProjectsAction();
+        if (pr.ok) setSidebarProjects(pr.data.projects);
+        setFormMode(null);
+      }
     }
+    setFormSaving(false);
   };
 
-  const handleBack = () => setSelectedId(null);
+  const handleDeleteProject = async () => {
+    if (!deleteTarget) return;
+    setDeleting(true);
+    setDeleteError(null);
+    const r = await deleteProjectAction(deleteTarget);
+    if (r.ok) {
+      setSidebarProjects((prev) => prev.filter((p) => p.id !== deleteTarget));
+      if (selectedId === deleteTarget) {
+        setSelectedId(null);
+        setSelectedProject(null);
+      }
+      setDeleteTarget(null);
+    } else {
+      setDeleteError(r.error);
+    }
+    setDeleting(false);
+  };
+
+  const doSelect = (id: string) => {
+    setSelectedId(id);
+    setSection("info");
+    setFormMode(null);
+    const proj = sidebarProjects.find((p) => p.id === id) ?? null;
+    setSelectedProject(proj);
+    if (isEmpresa) setProjectOffers([]);
+    else setSelectedOffer(myOffers.find((o) => o.proyecto?.id === id) ?? null);
+  };
+
+  const handleSelect = (id: string) => {
+    if (formMode !== null) { setPendingNav({ type: "select", id }); return; }
+    doSelect(id);
+  };
+
+  const handleBack = () => {
+    if (formMode !== null) { setPendingNav({ type: "back" }); return; }
+    setSelectedId(null);
+  };
+
+  const handleConfirmNav = () => {
+    if (!pendingNav) return;
+    setFormMode(null);
+    if (pendingNav.type === "select") doSelect(pendingNav.id);
+    else if (pendingNav.type === "back") setSelectedId(null);
+    else if (pendingNav.type === "create") setTimeout(() => setFormMode("create"), 0);
+    setPendingNav(null);
+  };
 
   return (
     <div className="flex h-[calc(100vh-4rem)] overflow-hidden">
@@ -343,30 +420,58 @@ export function GestionPage({ role, userId, initialProjectId, disponible = true 
               <p className="mb-1 font-body text-xs font-bold uppercase tracking-wider text-white/50">
                 {isEmpresa ? t("section_empresa") : t("section_junior")}
               </p>
-              <h1 className="font-heading text-xl font-extrabold tracking-tight text-white">
-                {t("title")}<span className="text-highlight" aria-hidden="true">.</span>
-              </h1>
+              <div className="flex items-center justify-between gap-2">
+                <h1 className="font-heading text-xl font-extrabold tracking-tight text-white">
+                  {t("title")}<span className="text-highlight" aria-hidden="true">.</span>
+                </h1>
+                {isEmpresa && (
+                  <button
+                    type="button"
+                    onClick={() => {
+                      if (formMode === "edit") { setPendingNav({ type: "create" }); return; }
+                      setFormMode("create");
+                    }}
+                    aria-label="Nuevo proyecto"
+                    className="flex size-8 items-center justify-center rounded-full bg-white/10 text-white transition-colors duration-[var(--duration-fast)] ease-[var(--ease-out)] hover:bg-highlight hover:text-secondary"
+                  >
+                    <Plus className="size-4" aria-hidden="true" />
+                  </button>
+                )}
+              </div>
             </div>
             <div className="flex-1 overflow-y-auto p-3">
               {isEmpresa ? (
                 sidebarProjects.length === 0 ? <SidebarEmpty text={t("empty_empresa")} /> : (
                   <ul className="flex flex-col gap-0.5">
                     {sidebarProjects.map((proyecto) => {
-                      const count  = proyecto.id === "proj-1" ? MOCK_PROJECT_OFFERS.length : 0;
-                      const hasAdj = proyecto.id === "proj-1" && MOCK_PROJECT_OFFERS.some((o) => o.estado.nombre === "adjudicada");
+                      const isSelected = proyecto.id === selectedId;
+                      const count  = isSelected ? projectOffers.length : 0;
+                      const hasAdj = isSelected && projectOffers.some((o) => o.estado.nombre === "adjudicada");
                       return (
                         <li key={proyecto.id}>
-                          <button
-                            onClick={() => handleSelect(proyecto.id)}
-                            className="group flex w-full items-center gap-3 rounded-xl px-3 py-3 text-left transition-colors duration-[var(--duration-fast)] ease-[var(--ease-out)] hover:bg-white/10"
-                          >
-                            <div className="min-w-0 flex-1">
-                              <p className="truncate font-heading text-sm font-bold text-white">{proyecto.titulo}</p>
-                              <p className="mt-0.5 font-body text-xs text-white/50">{t("proposals_count", { count })}</p>
-                            </div>
-                            {hasAdj && <CheckCircle2 className="size-4 shrink-0 text-accent" aria-hidden="true" />}
-                            <ChevronRight className="size-4 shrink-0 text-white/30 transition-colors group-hover:text-white/60" aria-hidden="true" />
-                          </button>
+                          <div className="group flex items-center gap-1 rounded-xl hover:bg-white/10 transition-colors duration-[var(--duration-fast)] ease-[var(--ease-out)]">
+                            <button
+                              onClick={() => handleSelect(proyecto.id)}
+                              className="flex flex-1 items-center gap-3 px-3 py-3 text-left"
+                            >
+                              <div className="min-w-0 flex-1">
+                                <p className="truncate font-heading text-sm font-bold text-white">{proyecto.titulo}</p>
+                                <p className="mt-0.5 font-body text-xs text-white/50">{t("proposals_count", { count })}</p>
+                              </div>
+                              {hasAdj && <CheckCircle2 className="size-4 shrink-0 text-accent" aria-hidden="true" />}
+                              <ChevronRight className="size-4 shrink-0 text-white/30 transition-colors group-hover:text-white/60" aria-hidden="true" />
+                            </button>
+                            {proyecto.estado.nombre === "borrador" && (
+                              <button
+                                type="button"
+                                onClick={(e) => { e.stopPropagation(); setDeleteTarget(proyecto.id); }}
+                                aria-label="Eliminar proyecto"
+                                className="mr-2 hidden size-7 shrink-0 items-center justify-center rounded-full text-white/30 transition-colors hover:bg-magenta/20 hover:text-magenta group-hover:flex"
+                              >
+                                <Trash2 className="size-3.5" aria-hidden="true" />
+                              </button>
+                            )}
+                          </div>
                         </li>
                       );
                     })}
@@ -461,11 +566,26 @@ export function GestionPage({ role, userId, initialProjectId, disponible = true 
       <main
         className={cn(
           "flex-1 overflow-y-auto bg-canvas",
-          !selectedId ? "hidden md:flex md:items-center md:justify-center" : "block",
+          !selectedId && formMode === null ? "hidden md:flex md:flex-col" : "block",
         )}
       >
-        {!selectedId ? (
-          <ContentEmpty text={t("select_project_prompt")} />
+        {isEmpresa && formMode !== null ? (
+          <ProjectFormContent
+            mode={formMode}
+            project={formMode === "edit" ? selectedProject : null}
+            catalogs={catalogs}
+            saving={formSaving}
+            onSave={handleSaveProject}
+            onClose={() => setFormMode(null)}
+          />
+        ) : !selectedId ? (
+          <WelcomePanel
+            isEmpresa={isEmpresa}
+            hasProjects={sidebarProjects.length > 0}
+            t={t}
+            locale={locale}
+            onCreateProject={() => setFormMode("create")}
+          />
         ) : (
           <>
             <div className="sticky top-0 z-10 flex items-center gap-3 border-b border-border bg-canvas/95 px-4 py-3 backdrop-blur-sm md:hidden">
@@ -481,7 +601,14 @@ export function GestionPage({ role, userId, initialProjectId, disponible = true 
               </span>
             </div>
             {section === "info" && (
-              <InfoPanel project={selectedProject} locale={locale} t={t} />
+              <InfoPanel
+                project={selectedProject}
+                locale={locale}
+                t={t}
+                isEmpresa={isEmpresa}
+                onEdit={() => setFormMode("edit")}
+                onDelete={() => setDeleteTarget(selectedId)}
+              />
             )}
             {section === "chat" && (
               <ChatPanel
@@ -507,6 +634,25 @@ export function GestionPage({ role, userId, initialProjectId, disponible = true 
           </>
         )}
       </main>
+
+      {/* ── Delete confirmation ── */}
+      {deleteTarget && (
+        <ConfirmDeleteDialog
+          projectTitle={sidebarProjects.find((p) => p.id === deleteTarget)?.titulo ?? ""}
+          deleting={deleting}
+          error={deleteError}
+          onConfirm={handleDeleteProject}
+          onCancel={() => { setDeleteTarget(null); setDeleteError(null); }}
+        />
+      )}
+
+      {/* ── Unsaved changes warning ── */}
+      {pendingNav !== null && (
+        <UnsavedChangesDialog
+          onConfirm={handleConfirmNav}
+          onCancel={() => setPendingNav(null)}
+        />
+      )}
     </div>
   );
 }
@@ -514,6 +660,62 @@ export function GestionPage({ role, userId, initialProjectId, disponible = true 
 // ── Shared ────────────────────────────────────────────────────────────────────
 
 type T = ReturnType<typeof useTranslations<"gestion_page">>;
+
+// ── Welcome panel (main area, no project selected) ────────────────────────────
+
+function WelcomePanel({
+  isEmpresa,
+  hasProjects,
+  t,
+  locale,
+  onCreateProject,
+}: {
+  isEmpresa: boolean;
+  hasProjects: boolean;
+  t: T;
+  locale: string;
+  onCreateProject: () => void;
+}) {
+  const desc = isEmpresa
+    ? hasProjects ? t("welcome_desc_empresa") : t("welcome_desc_empresa_empty")
+    : hasProjects ? t("welcome_desc_junior") : t("welcome_desc_junior_empty");
+
+  return (
+    <div className="flex h-full flex-col items-center justify-center px-8 py-16 text-center">
+      <p className="mb-1 font-body text-xs font-bold uppercase tracking-wider text-primary">
+        {isEmpresa ? t("section_empresa") : t("section_junior")}
+      </p>
+      <h1 className="font-heading text-3xl font-extrabold tracking-tight text-ink-strong">
+        {t("title")}<span className="text-primary" aria-hidden="true">.</span>
+      </h1>
+      <p className="mt-3 max-w-sm font-body text-base leading-relaxed text-ink-muted">
+        {desc}
+      </p>
+      {!hasProjects && (
+        <div className="mt-6">
+          {isEmpresa ? (
+            <button
+              type="button"
+              onClick={onCreateProject}
+              className="inline-flex items-center gap-2 rounded-full bg-primary px-5 py-2.5 font-body text-sm font-semibold text-white transition-colors duration-[var(--duration-fast)] ease-[var(--ease-out)] hover:bg-secondary"
+            >
+              <Plus className="size-4" aria-hidden="true" />
+              {t("welcome_cta_empresa")}
+            </button>
+          ) : (
+            <a
+              href={`/${locale}/marketplace`}
+              className="inline-flex items-center gap-2 rounded-full bg-primary px-5 py-2.5 font-body text-sm font-semibold text-white transition-colors duration-[var(--duration-fast)] ease-[var(--ease-out)] hover:bg-secondary"
+            >
+              <ExternalLink className="size-4" aria-hidden="true" />
+              {t("welcome_cta_junior")}
+            </a>
+          )}
+        </div>
+      )}
+    </div>
+  );
+}
 
 function SidebarEmpty({ text }: { text: string }) {
   return (
@@ -524,20 +726,22 @@ function SidebarEmpty({ text }: { text: string }) {
   );
 }
 
-function ContentEmpty({ text }: { text: string }) {
-  return (
-    <div className="flex flex-col items-center gap-3 px-6 py-16 text-center">
-      <FolderOpen className="size-12 text-ink-muted/30" aria-hidden="true" />
-      <p className="font-body text-base text-ink-muted">{text}</p>
-    </div>
-  );
-}
-
 // ── Info panel ────────────────────────────────────────────────────────────────
 
-function InfoPanel({ project, locale, t }: { project: ApiProject | null; locale: string; t: T }) {
+function InfoPanel({
+  project, locale, t, isEmpresa, onEdit, onDelete,
+}: {
+  project: ApiProject | null;
+  locale: string;
+  t: T;
+  isEmpresa: boolean;
+  onEdit: () => void;
+  onDelete: () => void;
+}) {
   if (!project) return null;
   const skills = project.skills.filter((s) => s.skill != null);
+  const canEdit = isEmpresa && (project.estado.nombre === "borrador" || project.estado.nombre === "en_recepcion");
+  const canDelete = isEmpresa;
   return (
     <div className="px-6 py-10 md:px-10">
       <div className="mb-6">
@@ -546,9 +750,35 @@ function InfoPanel({ project, locale, t }: { project: ApiProject | null; locale:
             {project.area.nombre}
           </p>
         )}
-        <h2 className="font-heading text-2xl font-extrabold tracking-tight text-ink-strong">
-          {project.titulo}<span className="text-highlight" aria-hidden="true">.</span>
-        </h2>
+        <div className="flex items-start justify-between gap-4">
+          <h2 className="font-heading text-2xl font-extrabold tracking-tight text-ink-strong">
+            {project.titulo}<span className="text-highlight" aria-hidden="true">.</span>
+          </h2>
+          {isEmpresa && (
+            <div className="flex shrink-0 items-center gap-1.5">
+              {canEdit && (
+                <button
+                  type="button"
+                  onClick={onEdit}
+                  aria-label="Editar proyecto"
+                  className="flex size-8 items-center justify-center rounded-full border border-border text-ink-muted transition-colors duration-[var(--duration-fast)] ease-[var(--ease-out)] hover:border-primary/30 hover:text-primary"
+                >
+                  <Pencil className="size-3.5" aria-hidden="true" />
+                </button>
+              )}
+              <button
+                type="button"
+                onClick={onDelete}
+                disabled={!canDelete}
+                aria-label={canDelete ? "Eliminar proyecto" : "Solo se pueden eliminar proyectos en borrador"}
+                title={canDelete ? undefined : "Solo se pueden eliminar proyectos en borrador"}
+                className="flex size-8 items-center justify-center rounded-full border border-border text-ink-muted transition-colors duration-[var(--duration-fast)] ease-[var(--ease-out)] hover:border-magenta/30 hover:text-magenta disabled:cursor-not-allowed disabled:opacity-30"
+              >
+                <Trash2 className="size-3.5" aria-hidden="true" />
+              </button>
+            </div>
+          )}
+        </div>
         {project.empresa && (
           <p className="mt-1 font-body text-sm text-ink-muted">{project.empresa.nombre_comercial}</p>
         )}
@@ -603,7 +833,7 @@ function ChatPanel({
 }) {
   const me = isEmpresa ? "empresa" : "junior";
 
-  const [msgs, setMsgs]     = useState<ChatMessage[]>(() => project?.id ? (MOCK_CHAT[project.id] ?? []) : []);
+  const [msgs, setMsgs]     = useState<ChatMessage[]>([]);
   const [draft, setDraft]   = useState("");
   const [sending, setSending] = useState(false);
   const bottomRef = useRef<HTMLDivElement>(null);
@@ -623,8 +853,7 @@ function ChatPanel({
       time: new Date(m.fecha_envio).toLocaleTimeString("es-CR", { hour: "2-digit", minute: "2-digit" }),
     });
 
-    // Reset to mock seed, then load real messages
-    setMsgs(MOCK_CHAT[project.id] ?? []);
+    setMsgs([]);
 
     const load = async () => {
       const r = await getProjectMensajesAction(project.id);
@@ -1464,5 +1693,710 @@ function EmpresaProcesoView({
         </div>
       )}
     </div>
+  );
+}
+
+// ── AI assistant helpers ──────────────────────────────────────────────────────
+
+function ChatBubble({ role, content }: { role: "user" | "assistant"; content: string }) {
+  const isUser = role === "user";
+  return (
+    <div className={cn("flex", isUser ? "justify-end" : "justify-start")}>
+      <div
+        className={cn(
+          "max-w-[85%] whitespace-pre-wrap rounded-2xl px-3 py-2 font-body text-sm",
+          isUser ? "bg-primary text-white" : "bg-surface-sunken text-ink-strong",
+        )}
+      >
+        {content}
+      </div>
+    </div>
+  );
+}
+
+function TypingIndicator({ label }: { label: string }) {
+  return (
+    <div className="flex items-center gap-2 text-ink-muted">
+      <span className="flex gap-1" aria-hidden="true">
+        <span className="size-1.5 animate-bounce rounded-full bg-ink-muted" />
+        <span className="size-1.5 animate-bounce rounded-full bg-ink-muted [animation-delay:150ms]" />
+        <span className="size-1.5 animate-bounce rounded-full bg-ink-muted [animation-delay:300ms]" />
+      </span>
+      <span className="font-body text-xs">{label}</span>
+    </div>
+  );
+}
+
+function AiAssistant({ onApply }: { onApply: (proposal: ProjectProposal) => void }) {
+  const [idea, setIdea] = useState("");
+  const [messages, setMessages] = useState<AiChatMessage[]>([]);
+  const [streamingText, setStreamingText] = useState("");
+  const [isStreaming, setIsStreaming] = useState(false);
+  const [reply, setReply] = useState("");
+  const [error, setError] = useState<string | null>(null);
+  const [isGenerating, setIsGenerating] = useState(false);
+  const [pendingQuestions, setPendingQuestions] = useState<string[]>([]);
+  const [disenos, setDisenos] = useState<string[]>([]);
+  const [applied, setApplied] = useState(false);
+  const abortRef = useRef<AbortController | null>(null);
+  const scrollRef = useRef<HTMLDivElement | null>(null);
+
+  useEffect(() => () => abortRef.current?.abort(), []);
+
+  useEffect(() => {
+    const node = scrollRef.current;
+    if (node) node.scrollTop = node.scrollHeight;
+  }, [messages, streamingText, isStreaming]);
+
+  const hasConversation = messages.length > 0;
+  const canGenerate = messages.some((m) => m.role === "assistant") && !isStreaming && !isGenerating;
+
+  async function runTurn(history: AiChatMessage[]) {
+    setError(null);
+    setIsStreaming(true);
+    setStreamingText("");
+    const controller = new AbortController();
+    abortRef.current = controller;
+    let accumulated = "";
+    let failed = false;
+    await streamAssistant(
+      history,
+      (event) => {
+        if (event.type === "delta") {
+          accumulated += event.text;
+          setStreamingText(accumulated);
+        } else if (event.type === "error") {
+          failed = true;
+          setError(event.error);
+        }
+      },
+      controller.signal,
+    );
+    setIsStreaming(false);
+    setStreamingText("");
+    if (accumulated.trim()) {
+      setMessages((prev) => [...prev, { role: "assistant", content: accumulated.trim() }]);
+    } else if (!failed) {
+      setError("Ocurrió un error. Intentá de nuevo.");
+    }
+  }
+
+  async function startConversation() {
+    const text = idea.trim();
+    if (!text || isStreaming) return;
+    const history: AiChatMessage[] = [{ role: "user", content: text }];
+    setMessages(history);
+    setIdea("");
+    setApplied(false);
+    setPendingQuestions([]);
+    await runTurn(history);
+  }
+
+  async function sendReply() {
+    const text = reply.trim();
+    if (!text || isStreaming) return;
+    const history: AiChatMessage[] = [...messages, { role: "user", content: text }];
+    setMessages(history);
+    setReply("");
+    await runTurn(history);
+  }
+
+  async function generate() {
+    setIsGenerating(true);
+    setError(null);
+    const result = await generateProposalAction(messages);
+    setIsGenerating(false);
+    if (result.ok) {
+      onApply(result.data);
+      setPendingQuestions(result.data.preguntas_pendientes);
+      setDisenos(result.data.estilos_diseno);
+      setApplied(true);
+    } else {
+      setError(result.error);
+    }
+  }
+
+  function restart() {
+    abortRef.current?.abort();
+    setMessages([]);
+    setStreamingText("");
+    setIsStreaming(false);
+    setReply("");
+    setError(null);
+    setIsGenerating(false);
+    setPendingQuestions([]);
+    setDisenos([]);
+    setApplied(false);
+    setIdea("");
+  }
+
+  return (
+    <div className="rounded-xl border border-primary/20 bg-primary/5 p-4">
+      <div className="mb-3 flex items-center gap-2">
+        <Sparkles className="size-4 text-primary" aria-hidden="true" />
+        <span className="font-body text-sm font-bold text-primary">Asistente de IA</span>
+        <span className="rounded-full bg-highlight px-2 py-0.5 font-body text-[10px] font-bold uppercase tracking-wide text-secondary">
+          Beta
+        </span>
+      </div>
+
+      {!hasConversation ? (
+        <div className="space-y-3">
+          <div className="space-y-1">
+            <label htmlFor="ai-idea" className="block font-body text-xs font-bold uppercase tracking-wider text-ink-muted">
+              Contanos la idea de tu proyecto
+            </label>
+            <textarea
+              id="ai-idea"
+              value={idea}
+              onChange={(e) => setIdea(e.target.value)}
+              placeholder="Ej: Necesito una app web para gestionar turnos de una clínica pequeña..."
+              rows={3}
+              className="w-full resize-none rounded-xl border border-border bg-surface-sunken px-3.5 py-2 font-body text-sm text-ink-strong placeholder:text-ink-muted outline-none focus:ring-2 focus:ring-primary/20"
+            />
+          </div>
+          <button
+            type="button"
+            onClick={() => void startConversation()}
+            disabled={!idea.trim()}
+            className="flex w-full items-center justify-center gap-2 rounded-xl bg-primary px-4 py-2 font-body text-sm font-bold text-white transition-colors duration-[var(--duration-fast)] ease-[var(--ease-out)] hover:bg-secondary disabled:cursor-not-allowed disabled:opacity-50"
+          >
+            <Sparkles className="size-4" aria-hidden="true" />
+            Completar formulario con IA
+          </button>
+          <p className="font-body text-xs text-ink-muted">
+            La IA hará algunas preguntas para entender mejor tu proyecto antes de completar el formulario.
+          </p>
+        </div>
+      ) : (
+        <div className="space-y-3">
+          <div ref={scrollRef} className="max-h-56 space-y-3 overflow-y-auto rounded-xl border border-border bg-surface p-3">
+            {messages.map((m, i) => (
+              <ChatBubble key={i} role={m.role} content={m.content} />
+            ))}
+            {isStreaming && (
+              streamingText
+                ? <ChatBubble role="assistant" content={streamingText} />
+                : <TypingIndicator label="Escribiendo..." />
+            )}
+          </div>
+
+          {applied && (
+            <div className="space-y-2 rounded-xl border border-accent/30 bg-accent/10 p-3">
+              <div className="flex items-center gap-2">
+                <CheckCircle2 className="size-4 shrink-0 text-accent" aria-hidden="true" />
+                <p className="font-body text-xs font-semibold text-ink-strong">Formulario completado. Revisá y ajustá lo que necesites.</p>
+              </div>
+              {disenos.length > 0 && (
+                <div className="space-y-1 pl-6">
+                  <p className="font-body text-[11px] font-bold uppercase tracking-wider text-ink-muted">Referencias de diseño sugeridas</p>
+                  <ul className="list-disc space-y-0.5 pl-4 font-body text-xs text-ink-muted">
+                    {disenos.map((d, i) => <li key={i}>{d}</li>)}
+                  </ul>
+                </div>
+              )}
+              {pendingQuestions.length > 0 && (
+                <div className="space-y-1 pl-6">
+                  <p className="font-body text-[11px] font-bold uppercase tracking-wider text-ink-muted">Preguntas que podés definir después</p>
+                  <ul className="list-disc space-y-0.5 pl-4 font-body text-xs text-ink-muted">
+                    {pendingQuestions.map((q, i) => <li key={i}>{q}</li>)}
+                  </ul>
+                </div>
+              )}
+            </div>
+          )}
+
+          {error && (
+            <p className="rounded-xl border border-magenta/30 bg-magenta/10 px-3 py-2 font-body text-xs font-semibold text-magenta">
+              {error}
+            </p>
+          )}
+
+          {!applied && (
+            <div className="flex items-center gap-2">
+              <input
+                type="text"
+                value={reply}
+                onChange={(e) => setReply(e.target.value)}
+                onKeyDown={(e) => { if (e.key === "Enter") { e.preventDefault(); void sendReply(); } }}
+                disabled={isStreaming}
+                placeholder="Respondé al asistente..."
+                className="w-full rounded-xl border border-border bg-surface-sunken px-3.5 py-2 font-body text-sm text-ink-strong placeholder:text-ink-muted outline-none focus:ring-2 focus:ring-primary/20 disabled:opacity-60"
+              />
+              <Button type="button" size="icon" onClick={() => void sendReply()} disabled={!reply.trim() || isStreaming} aria-label="Enviar">
+                <Send className="size-4" />
+              </Button>
+            </div>
+          )}
+
+          <div className="flex flex-wrap items-center justify-between gap-2">
+            {!applied && (
+              <Button type="button" variant="accent" onClick={() => void generate()} disabled={!canGenerate} className="gap-2">
+                {isGenerating ? <Loader2 className="size-4 animate-spin" /> : <Wand2 className="size-4" />}
+                {isGenerating ? "Generando..." : "Generar propuesta"}
+              </Button>
+            )}
+            <button type="button" onClick={restart} className="font-body text-xs font-semibold text-ink-muted underline-offset-2 hover:text-primary hover:underline">
+              {applied ? "Reiniciar asistente" : "Continuar manualmente"}
+            </button>
+          </div>
+        </div>
+      )}
+    </div>
+  );
+}
+
+// ── Project form (create / edit) — renders inline in the main content area ────
+
+interface FormData {
+  titulo: string;
+  descripcion: string;
+  id_area_negocio: string;
+  plazo_dias: string;
+  usa_ia: boolean;
+  skills: string[];
+  tecnologias_extra: string[];
+  publicar: boolean;
+}
+
+function ProjectFormContent({
+  mode,
+  project,
+  catalogs,
+  saving,
+  onSave,
+  onClose,
+}: {
+  mode: "create" | "edit";
+  project: ApiProject | null;
+  catalogs: { areas: CatalogArea[]; skills: CatalogSkill[] };
+  saving: boolean;
+  onSave: (data: CreateProjectInput | UpdateProjectInput) => void;
+  onClose: () => void;
+}) {
+  const [form, setForm] = useState<FormData>(() => ({
+    titulo: project?.titulo ?? "",
+    descripcion: project?.descripcion ?? "",
+    id_area_negocio: project?.area?.id ?? "",
+    plazo_dias: project ? String(project.plazo_dias) : "10",
+    usa_ia: project?.usa_ia ?? false,
+    skills: project?.skills.flatMap((s) => s.skill ? [s.skill.id] : []) ?? [],
+    tecnologias_extra: project?.tecnologias_extra ?? [],
+    publicar: true,
+  }));
+  const [otrosInput, setOtrosInput] = useState("");
+  const [isSuggestingStack, setIsSuggestingStack] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+
+  const techSkills = catalogs.skills.filter((s) => s.tipo === "tecnologia");
+
+  function applyProposal(proposal: ProjectProposal) {
+    setForm((prev) => ({
+      ...prev,
+      titulo: proposal.nombre || prev.titulo,
+      descripcion: proposal.descripcion || proposal.objetivo || prev.descripcion,
+      id_area_negocio:
+        proposal.id_area_negocio && catalogs.areas.some((a) => a.id === proposal.id_area_negocio)
+          ? proposal.id_area_negocio
+          : prev.id_area_negocio,
+      plazo_dias: proposal.plazo_dias ? String(proposal.plazo_dias) : prev.plazo_dias,
+      usa_ia: proposal.usa_ia,
+      skills: proposal.habilidades
+        .map((h) => h.id)
+        .filter((id) => techSkills.some((s) => s.id === id)),
+    }));
+  }
+
+  async function handleSuggestStack() {
+    if (isSuggestingStack) return;
+    const descripcion = form.descripcion.trim();
+    if (descripcion.length < 10) return;
+    setIsSuggestingStack(true);
+    const input: SuggestStackInput = { descripcion };
+    if (form.titulo.trim()) input.titulo = form.titulo.trim();
+    if (form.id_area_negocio) input.id_area_negocio = form.id_area_negocio;
+    const result = await suggestStackAction(input);
+    setIsSuggestingStack(false);
+    if (result.ok) {
+      const suggested = result.data.habilidades
+        .map((h) => h.id)
+        .filter((id) => techSkills.some((s) => s.id === id));
+      setForm((prev) => ({ ...prev, skills: suggested }));
+    }
+  }
+
+  function addOtraTecnologia() {
+    const val = otrosInput.trim();
+    if (!val || form.tecnologias_extra.includes(val)) return;
+    setForm((prev) => ({ ...prev, tecnologias_extra: [...prev.tecnologias_extra, val] }));
+    setOtrosInput("");
+  }
+
+  function removeOtraTecnologia(tech: string) {
+    setForm((prev) => ({ ...prev, tecnologias_extra: prev.tecnologias_extra.filter((t) => t !== tech) }));
+  }
+
+  function toggleSkill(id: string) {
+    setForm((prev) => ({
+      ...prev,
+      skills: prev.skills.includes(id)
+        ? prev.skills.filter((s) => s !== id)
+        : [...prev.skills, id],
+    }));
+  }
+
+  function handleSubmit() {
+    if (!form.titulo.trim()) { setError("El título es obligatorio"); return; }
+    if (!form.descripcion.trim()) { setError("La descripción es obligatoria"); return; }
+    if (!form.id_area_negocio) { setError("Seleccioná un área de negocio"); return; }
+    const plazo = parseInt(form.plazo_dias, 10);
+    if (!plazo || plazo < 5 || plazo > 15) { setError("El plazo debe ser entre 5 y 15 días"); return; }
+    setError(null);
+    if (mode === "create") {
+      onSave({
+        titulo: form.titulo.trim(),
+        descripcion: form.descripcion.trim(),
+        id_area_negocio: form.id_area_negocio,
+        plazo_dias: plazo,
+        usa_ia: form.usa_ia,
+        skills: form.skills,
+        ...(form.tecnologias_extra.length > 0 ? { tecnologias_extra: form.tecnologias_extra } : {}),
+        publicar: form.publicar,
+      } satisfies CreateProjectInput);
+    } else {
+      onSave({
+        titulo: form.titulo.trim(),
+        descripcion: form.descripcion.trim(),
+        id_area_negocio: form.id_area_negocio,
+        plazo_dias: plazo,
+        usa_ia: form.usa_ia,
+        skills: form.skills,
+      } satisfies UpdateProjectInput);
+    }
+  }
+
+  return (
+    <div className="flex h-full flex-col">
+      {/* Header */}
+      <div className="sticky top-0 z-10 flex items-center justify-between gap-4 border-b border-border bg-canvas/95 px-6 py-4 backdrop-blur-sm">
+        <h2 className="font-heading text-lg font-extrabold tracking-tight text-ink-strong">
+          {mode === "create" ? "Nuevo proyecto" : "Editar proyecto"}
+          <span className="text-primary" aria-hidden="true">.</span>
+        </h2>
+        <button
+          type="button"
+          onClick={onClose}
+          aria-label="Cancelar"
+          className="flex size-9 items-center justify-center rounded-full text-ink-muted hover:bg-surface-sunken hover:text-ink-strong"
+        >
+          <X className="size-5" aria-hidden="true" />
+        </button>
+      </div>
+
+      {/* Body */}
+      <div className="flex-1 overflow-y-auto">
+        <div className="mx-auto max-w-2xl space-y-5 px-6 py-6">
+
+          {/* AI assistant — only on create */}
+          {mode === "create" && <AiAssistant onApply={applyProposal} />}
+
+          {mode === "create" && (
+            <div className="relative flex items-center gap-3 py-1">
+              <div className="h-px flex-1 bg-border" />
+              <span className="font-body text-[11px] font-semibold uppercase tracking-wider text-ink-muted">
+                o completá manualmente
+              </span>
+              <div className="h-px flex-1 bg-border" />
+            </div>
+          )}
+
+          {error && (
+            <p className="rounded-xl bg-magenta/10 px-4 py-3 font-body text-sm font-semibold text-magenta">
+              {error}
+            </p>
+          )}
+
+          <div className="space-y-1">
+            <label htmlFor="pf-titulo" className="block font-body text-xs font-bold uppercase tracking-wider text-ink-muted">
+              Título
+            </label>
+            <input
+              id="pf-titulo"
+              type="text"
+              value={form.titulo}
+              onChange={(e) => setForm((p) => ({ ...p, titulo: e.target.value }))}
+              placeholder="Nombre del proyecto"
+              className="w-full rounded-xl border border-border bg-surface-sunken px-3.5 py-2 font-body text-sm text-ink-strong outline-none focus:ring-2 focus:ring-primary/20"
+            />
+          </div>
+
+          <div className="space-y-1">
+            <label htmlFor="pf-desc" className="block font-body text-xs font-bold uppercase tracking-wider text-ink-muted">
+              Descripción
+            </label>
+            <textarea
+              id="pf-desc"
+              rows={5}
+              value={form.descripcion}
+              onChange={(e) => setForm((p) => ({ ...p, descripcion: e.target.value }))}
+              placeholder="Describí el proyecto, objetivos y entregables esperados"
+              className="min-h-28 w-full resize-none rounded-xl border border-border bg-surface-sunken px-3.5 py-2 font-body text-sm text-ink-strong outline-none focus:ring-2 focus:ring-primary/20"
+            />
+          </div>
+
+          <div className="grid gap-4 md:grid-cols-2">
+            <div className="space-y-1">
+              <label htmlFor="pf-area" className="block font-body text-xs font-bold uppercase tracking-wider text-ink-muted">
+                Área de negocio
+              </label>
+              <select
+                id="pf-area"
+                value={form.id_area_negocio}
+                onChange={(e) => setForm((p) => ({ ...p, id_area_negocio: e.target.value }))}
+                className="w-full rounded-xl border border-border bg-surface-sunken px-3.5 py-2 font-body text-sm text-ink-strong outline-none focus:ring-2 focus:ring-primary/20"
+              >
+                <option value="">Seleccioná un área</option>
+                {catalogs.areas.map((a) => (
+                  <option key={a.id} value={a.id}>{a.nombre}</option>
+                ))}
+              </select>
+            </div>
+            <div className="space-y-1">
+              <label htmlFor="pf-plazo" className="block font-body text-xs font-bold uppercase tracking-wider text-ink-muted">
+                Plazo (5–15 días)
+              </label>
+              <input
+                id="pf-plazo"
+                type="number"
+                min={5}
+                max={15}
+                value={form.plazo_dias}
+                onChange={(e) => setForm((p) => ({ ...p, plazo_dias: e.target.value }))}
+                className="w-full rounded-xl border border-border bg-surface-sunken px-3.5 py-2 font-body text-sm text-ink-strong outline-none focus:ring-2 focus:ring-primary/20"
+              />
+            </div>
+          </div>
+
+          {/* Skills */}
+          {techSkills.length > 0 && (
+            <fieldset className="space-y-2">
+              <div className="flex flex-wrap items-center justify-between gap-2">
+                <legend className="font-body text-xs font-bold uppercase tracking-wider text-ink-muted">
+                  Tecnologías requeridas
+                </legend>
+                <Button
+                  type="button"
+                  variant="accent"
+                  size="sm"
+                  onClick={() => void handleSuggestStack()}
+                  disabled={isSuggestingStack || form.descripcion.trim().length < 10}
+                  className="gap-1.5"
+                >
+                  {isSuggestingStack ? <Loader2 className="size-3.5 animate-spin" /> : <Wand2 className="size-3.5" />}
+                  {isSuggestingStack ? "Sugiriendo..." : "Sugerir stack"}
+                </Button>
+              </div>
+              <div className="flex max-h-36 flex-wrap gap-2 overflow-y-auto rounded-xl border border-border bg-surface-sunken p-3">
+                {techSkills.map((skill) => (
+                  <label
+                    key={skill.id}
+                    className="inline-flex cursor-pointer items-center gap-2 rounded-full border border-border bg-surface px-3 py-1 font-body text-xs font-semibold text-ink"
+                  >
+                    <input
+                      type="checkbox"
+                      checked={form.skills.includes(skill.id)}
+                      onChange={() => toggleSkill(skill.id)}
+                      className="accent-primary"
+                    />
+                    {skill.nombre}
+                  </label>
+                ))}
+              </div>
+
+              {/* Tecnologías extra */}
+              <div className="space-y-2">
+                <div className="flex items-center gap-2">
+                  <input
+                    type="text"
+                    value={otrosInput}
+                    onChange={(e) => setOtrosInput(e.target.value)}
+                    onKeyDown={(e) => { if (e.key === "Enter") { e.preventDefault(); addOtraTecnologia(); } }}
+                    placeholder="Otra tecnología no listada..."
+                    className="w-full rounded-xl border border-border bg-surface-sunken px-3.5 py-2 font-body text-sm text-ink-strong placeholder:text-ink-muted outline-none focus:ring-2 focus:ring-primary/20"
+                  />
+                  <Button type="button" variant="outline" size="sm" onClick={addOtraTecnologia} disabled={!otrosInput.trim()}>
+                    Agregar
+                  </Button>
+                </div>
+                {form.tecnologias_extra.length > 0 && (
+                  <div className="flex flex-wrap gap-2">
+                    {form.tecnologias_extra.map((tech) => (
+                      <span key={tech} className="inline-flex items-center gap-1.5 rounded-full bg-primary/10 px-3 py-1 font-body text-xs font-semibold text-primary">
+                        {tech}
+                        <button type="button" onClick={() => removeOtraTecnologia(tech)} aria-label={`Quitar ${tech}`} className="rounded-full p-0.5 hover:bg-primary/20">
+                          <X className="size-3" />
+                        </button>
+                      </span>
+                    ))}
+                  </div>
+                )}
+              </div>
+            </fieldset>
+          )}
+
+          {/* Checkboxes */}
+          <div className="flex flex-wrap gap-4">
+            <label className="inline-flex cursor-pointer items-center gap-2 font-body text-sm font-semibold text-ink">
+              <input
+                type="checkbox"
+                checked={form.usa_ia}
+                onChange={(e) => setForm((c) => ({ ...c, usa_ia: e.target.checked }))}
+                className="accent-primary"
+              />
+              Usa inteligencia artificial
+            </label>
+            {mode === "create" && (
+              <label className="inline-flex cursor-pointer items-center gap-2 font-body text-sm font-semibold text-ink">
+                <input
+                  type="checkbox"
+                  checked={form.publicar}
+                  onChange={(e) => setForm((c) => ({ ...c, publicar: e.target.checked }))}
+                  className="accent-primary"
+                />
+                Publicar inmediatamente
+              </label>
+            )}
+          </div>
+        </div>
+      </div>
+
+      {/* Footer */}
+      <div className="sticky bottom-0 flex gap-3 border-t border-border bg-canvas px-6 py-4">
+        <button
+          type="button"
+          onClick={onClose}
+          className="flex-1 rounded-full border border-border px-4 py-2.5 font-body text-sm font-semibold text-ink-muted transition-colors hover:bg-surface-sunken"
+        >
+          Cancelar
+        </button>
+        <button
+          type="button"
+          onClick={handleSubmit}
+          disabled={saving}
+          className="flex-1 rounded-full bg-primary px-4 py-2.5 font-body text-sm font-semibold text-white transition-colors hover:bg-secondary disabled:opacity-60"
+        >
+          {saving ? "Guardando..." : mode === "create" ? "Crear proyecto" : "Guardar cambios"}
+        </button>
+      </div>
+    </div>
+  );
+}
+
+// ── Unsaved changes dialog ────────────────────────────────────────────────────
+
+function UnsavedChangesDialog({
+  onConfirm,
+  onCancel,
+}: {
+  onConfirm: () => void;
+  onCancel: () => void;
+}) {
+  return (
+    <>
+      <div className="fixed inset-0 z-40 bg-ink-strong/50 backdrop-blur-sm" aria-hidden="true" onClick={onCancel} />
+      <div
+        role="dialog"
+        aria-modal="true"
+        aria-label="Cambios sin guardar"
+        className="fixed left-1/2 top-1/2 z-50 w-full max-w-sm -translate-x-1/2 -translate-y-1/2 rounded-2xl border border-border bg-canvas p-6 shadow-[var(--shadow-elevated)]"
+      >
+        <h3 className="font-heading text-lg font-extrabold tracking-tight text-ink-strong">
+          Cambios sin guardar<span className="text-warning" aria-hidden="true">.</span>
+        </h3>
+        <p className="mt-1 font-body text-sm text-ink-muted">
+          Si salís ahora, los cambios del formulario se van a perder. ¿Seguro que querés continuar?
+        </p>
+        <div className="mt-5 flex gap-3">
+          <button
+            type="button"
+            onClick={onCancel}
+            className="flex-1 rounded-full border border-border px-4 py-2.5 font-body text-sm font-semibold text-ink-muted transition-colors hover:bg-surface-sunken"
+          >
+            Seguir editando
+          </button>
+          <button
+            type="button"
+            onClick={onConfirm}
+            className="flex-1 rounded-full bg-warning px-4 py-2.5 font-body text-sm font-semibold text-white transition-colors hover:bg-warning/80"
+          >
+            Salir sin guardar
+          </button>
+        </div>
+      </div>
+    </>
+  );
+}
+
+// ── Confirm delete dialog ─────────────────────────────────────────────────────
+
+function ConfirmDeleteDialog({
+  projectTitle,
+  deleting,
+  error,
+  onConfirm,
+  onCancel,
+}: {
+  projectTitle: string;
+  deleting: boolean;
+  error: string | null;
+  onConfirm: () => void;
+  onCancel: () => void;
+}) {
+  return (
+    <>
+      <div
+        className="fixed inset-0 z-40 bg-ink-strong/50 backdrop-blur-sm"
+        aria-hidden="true"
+        onClick={onCancel}
+      />
+      <div
+        role="dialog"
+        aria-modal="true"
+        aria-label="Confirmar eliminación"
+        className="fixed left-1/2 top-1/2 z-50 w-full max-w-sm -translate-x-1/2 -translate-y-1/2 rounded-2xl border border-border bg-canvas p-6 shadow-[var(--shadow-elevated)]"
+      >
+        <div className="mb-1 flex size-10 items-center justify-center rounded-full bg-magenta/10">
+          <Trash2 className="size-5 text-magenta" aria-hidden="true" />
+        </div>
+        <h3 className="mt-3 font-heading text-lg font-extrabold tracking-tight text-ink-strong">
+          Eliminar proyecto<span className="text-magenta" aria-hidden="true">.</span>
+        </h3>
+        <p className="mt-1 font-body text-sm text-ink-muted">
+          ¿Seguro que querés eliminar <span className="font-semibold text-ink">{projectTitle}</span>? Esta acción no se puede deshacer.
+        </p>
+        {error && (
+          <p className="mt-3 rounded-xl bg-magenta/10 px-3 py-2 font-body text-sm font-semibold text-magenta">
+            {error}
+          </p>
+        )}
+        <div className="mt-5 flex gap-3">
+          <button
+            type="button"
+            onClick={onCancel}
+            className="flex-1 rounded-full border border-border px-4 py-2.5 font-body text-sm font-semibold text-ink-muted transition-colors hover:bg-surface-sunken"
+          >
+            Cancelar
+          </button>
+          <button
+            type="button"
+            onClick={onConfirm}
+            disabled={deleting}
+            className="flex-1 rounded-full bg-magenta px-4 py-2.5 font-body text-sm font-semibold text-white transition-colors hover:bg-magenta/80 disabled:opacity-60"
+          >
+            {deleting ? "Eliminando..." : "Eliminar"}
+          </button>
+        </div>
+      </div>
+    </>
   );
 }

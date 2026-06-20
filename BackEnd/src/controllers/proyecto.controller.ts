@@ -92,6 +92,16 @@ export async function update(req: Request, res: Response) {
   res.status(200).json({ project });
 }
 
+/** DELETE /api/projects/:id (ruta protegida — empresa dueña, solo borrador) */
+export async function remove(req: Request, res: Response) {
+  if (!req.user) throw new ApiError(401, "No autenticado");
+  const idParsed = idParamSchema.safeParse(req.params.id);
+  if (!idParsed.success) throw new ApiError(400, "El id del proyecto no es válido");
+
+  await projectService.deleteProject(readToken(req), req.user.id, idParsed.data);
+  res.status(204).send();
+}
+
 /** PATCH /api/projects/:id/estado (ruta protegida — empresa dueña) */
 export async function changeState(req: Request, res: Response) {
   if (!req.user) {

@@ -28,6 +28,9 @@ export async function apiFetch<T>(path: string, init: RequestInit = {}): Promise
     const body = await res.json().catch(() => ({})) as { error?: string };
     throw new ApiError(res.status, body.error ?? "Error desconocido");
   }
+  if (res.status === 204 || res.headers.get("content-length") === "0") {
+    return undefined as T;
+  }
   return res.json() as Promise<T>;
 }
 

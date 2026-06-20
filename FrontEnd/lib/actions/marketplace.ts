@@ -6,6 +6,8 @@ import {
   changeProjectState,
   createProject,
   decideOffer,
+  deleteProject,
+  getCatalogs,
   getMyOffers,
   getMyProjects,
   getProjectById,
@@ -28,6 +30,10 @@ import type {
   SubmitOfferInput,
   UpdateProjectInput,
 } from "@/lib/api/types";
+
+export async function getCatalogsAction() {
+  return getCatalogs();
+}
 
 export async function createProjectAction(input: CreateProjectInput) {
   const result = await createProject(input);
@@ -115,6 +121,14 @@ export async function calificarOfertaAction(ofertaId: string, input: CalificarIn
 
 export async function replicarCalificacionAction(ofertaId: string, input: ReplicaInput) {
   const result = await replicarCalificacion(ofertaId, input);
+  if (result.ok) {
+    revalidatePath("/");
+  }
+  return result;
+}
+
+export async function deleteProjectAction(projectId: string) {
+  const result = await deleteProject(projectId);
   if (result.ok) {
     revalidatePath("/");
   }
