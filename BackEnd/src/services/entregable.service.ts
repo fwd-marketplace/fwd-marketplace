@@ -1,5 +1,6 @@
 import { supabaseForToken } from "../config/supabase";
 import { ApiError } from "../utils/ApiError";
+import { crearNotificacion, MENSAJES_NOTIFICACION, TIPO_POR_MENSAJE } from "./notificacion.service";
 import type { Database } from "../types/database.types";
 
 type Client = ReturnType<typeof supabaseForToken>;
@@ -77,10 +78,22 @@ export async function submitEntregable(
       url: input.url,
     })
     .select(
-      "id, version, tipo, fecha, url, group_id, estado:estado_entregable(nombre), proyecto:proyecto(id, titulo), junior:users(id, nombre, apellido1)",
+      "id, version, tipo, fecha, url, group_id, estado:estado_entregable(nombre), proyecto:proyecto(id, titulo, empresa:empresario(id_usuario)), junior:users(id, nombre, apellido1)",
     )
     .single();
   if (insertError) throw new ApiError(400, insertError.message);
+
+  // Notificar a la empresa que recibio un entregable (best-effort).
+  const proyectoData = entregable.proyecto as { titulo: string; empresa: { id_usuario: string } | null } | null;
+  const empresaUserId = proyectoData?.empresa?.id_usuario;
+  if (empresaUserId && proyectoData) {
+    await crearNotificacion(
+      accessToken,
+      empresaUserId,
+      MENSAJES_NOTIFICACION.entregableRecibido(proyectoData.titulo),
+      TIPO_POR_MENSAJE.entregableRecibido,
+    );
+  }
 
   return entregable;
 }
@@ -144,7 +157,7 @@ export async function reviewEntregable(
   // Verificar que el entregable pertenece a un proyecto del usuario.
   const { data: entregable, error: entError } = await client
     .from("entregable")
-    .select("id, id_proyecto")
+    .select("id, id_proyecto, id_usuario")
     .eq("id", entregableId)
     .maybeSingle();
   if (entError) throw new ApiError(500, entError.message);
@@ -152,7 +165,7 @@ export async function reviewEntregable(
 
   const { data: proyecto, error: projError } = await client
     .from("proyecto")
-    .select("empresa:empresario(id_usuario)")
+    .select("titulo, empresa:empresario(id_usuario)")
     .eq("id", entregable.id_proyecto)
     .maybeSingle();
   if (projError) throw new ApiError(500, projError.message);
@@ -183,5 +196,24 @@ export async function reviewEntregable(
     )
     .single();
   if (error) throw new ApiError(400, error.message);
+
+  // Notificar al junior segun la decision sobre su entregable (best-effort).
+  const titulo = proyecto?.titulo ?? "";
+  if (accion === "aprobar") {
+    await crearNotificacion(
+      accessToken,
+      entregable.id_usuario,
+      MENSAJES_NOTIFICACION.entregableAprobado(titulo),
+      TIPO_POR_MENSAJE.entregableAprobado,
+    );
+  } else if (accion === "solicitar_cambios") {
+    await crearNotificacion(
+      accessToken,
+      entregable.id_usuario,
+      MENSAJES_NOTIFICACION.entregableCambiosSolicitados(titulo),
+      TIPO_POR_MENSAJE.entregableCambiosSolicitados,
+    );
+  }
+
   return data;
 }

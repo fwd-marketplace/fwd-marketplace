@@ -1715,11 +1715,31 @@ function EmpresaProcesoView({
 
     if (result.ok) {
       setSaved(`${sid}-${v}`);
+      const adjudicando = accion === "aceptar";
+      const targetOfferId = proposal.offerId;
+
       // Re-fetch from DB so dbStatus and comment reflect what was actually persisted
       if (project?.id) {
         const fresh = await getProjectOffersAction(project.id);
         if (fresh.ok) {
-          setStudents(buildEmpresaStudents(fresh.data.ofertas, project, locale));
+          const rebuilt = buildEmpresaStudents(fresh.data.ofertas, project, locale);
+          if (adjudicando) {
+            // Mantener expandido el student y la propuesta adjudicada
+            // para que el formulario de calificacion aparezca de inmediato.
+            setStudents(rebuilt.map((st) => {
+              const adjProp = st.proposals.find((p) => p.offerId === targetOfferId);
+              if (!adjProp) return st;
+              return {
+                ...st,
+                expanded: true,
+                proposals: st.proposals.map((p) =>
+                  p.offerId === targetOfferId ? { ...p, expanded: true } : p,
+                ),
+              };
+            }));
+          } else {
+            setStudents(rebuilt);
+          }
         } else {
           // Fallback: update dbStatus locally if re-fetch fails
           const savedStatus = proposal.status;

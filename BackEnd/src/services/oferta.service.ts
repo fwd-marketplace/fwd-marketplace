@@ -1,6 +1,6 @@
 import { supabaseForToken, supabaseAdmin } from "../config/supabase";
 import { ApiError } from "../utils/ApiError";
-import { crearNotificacion, MENSAJES_NOTIFICACION } from "./notificacion.service";
+import { crearNotificacion, MENSAJES_NOTIFICACION, TIPO_POR_MENSAJE } from "./notificacion.service";
 import type { CreateOfertaInput, DecideOfertaInput, ReviewOfertaInput, CalificarOfertaInput, ReplicarCalificacionInput, EditOfertaInput } from "../validations/oferta";
 
 type Client = ReturnType<typeof supabaseForToken>;
@@ -93,7 +93,7 @@ export async function createOferta(
 
   const { data: proyecto, error: projError } = await client
     .from("proyecto")
-    .select("id, estado:estado_proyecto(nombre)")
+    .select("id, titulo, estado:estado_proyecto(nombre), empresa:empresario(id_usuario)")
     .eq("id", projectId)
     .maybeSingle();
   if (projError) throw new ApiError(500, projError.message);
@@ -135,6 +135,18 @@ export async function createOferta(
     .select("id, fecha_envio")
     .single();
   if (error) throw new ApiError(400, error.message);
+
+  // Notificar a la empresa que recibio una nueva postulacion (best-effort).
+  const empresaUserId = (proyecto.empresa as { id_usuario: string } | null)?.id_usuario;
+  if (empresaUserId) {
+    await crearNotificacion(
+      accessToken,
+      empresaUserId,
+      MENSAJES_NOTIFICACION.nuevaPostulacion(proyecto.titulo),
+      TIPO_POR_MENSAJE.nuevaPostulacion,
+    );
+  }
+
   return oferta;
 }
 
@@ -294,12 +306,20 @@ export async function decideOferta(
     .single();
   if (error) throw new ApiError(400, error.message);
 
-  // Al rechazar una postulacion, se agradece al junior con una notificacion (best-effort).
+  // Notificar al junior segun la decision de la empresa (best-effort).
   if (input.accion === "rechazar") {
     await crearNotificacion(
       accessToken,
       oferta.id_usuario,
       MENSAJES_NOTIFICACION.postulacionRechazada(proyecto.titulo),
+      TIPO_POR_MENSAJE.postulacionRechazada,
+    );
+  } else if (input.accion === "aceptar") {
+    await crearNotificacion(
+      accessToken,
+      oferta.id_usuario,
+      MENSAJES_NOTIFICACION.postulacionAdjudicada(proyecto.titulo),
+      TIPO_POR_MENSAJE.postulacionAdjudicada,
     );
   }
 
@@ -329,7 +349,7 @@ export async function reviewOferta(
 
   const { data: proyecto, error: projError } = await client
     .from("proyecto")
-    .select("empresa:empresario(id_usuario)")
+    .select("titulo, empresa:empresario(id_usuario)")
     .eq("id", oferta.id_proyecto)
     .maybeSingle();
   if (projError) throw new ApiError(500, projError.message);
@@ -363,6 +383,28 @@ export async function reviewOferta(
     .select("id, comentario_revision, estado:estado_oferta(nombre)")
     .single();
   if (error) throw new ApiError(400, error.message);
+
+  const titulo = proyecto.titulo;
+  if (input.accion === "aceptar") {
+    await crearNotificacion(
+      accessToken, oferta.id_usuario,
+      MENSAJES_NOTIFICACION.postulacionAdjudicada(titulo),
+      TIPO_POR_MENSAJE.postulacionAdjudicada,
+    );
+  } else if (input.accion === "solicitar_cambios") {
+    await crearNotificacion(
+      accessToken, oferta.id_usuario,
+      MENSAJES_NOTIFICACION.cambiosSolicitados(titulo),
+      TIPO_POR_MENSAJE.cambiosSolicitados,
+    );
+  } else if (input.accion === "rechazar") {
+    await crearNotificacion(
+      accessToken, oferta.id_usuario,
+      MENSAJES_NOTIFICACION.postulacionRechazada(titulo),
+      TIPO_POR_MENSAJE.postulacionRechazada,
+    );
+  }
+
   return data;
 }
 

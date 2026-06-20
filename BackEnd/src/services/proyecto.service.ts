@@ -1,7 +1,7 @@
 import { supabaseForToken } from "../config/supabase";
 import { ApiError } from "../utils/ApiError";
 import { logger } from "../utils/logger";
-import { crearNotificaciones, MENSAJES_NOTIFICACION } from "./notificacion.service";
+import { crearNotificaciones, MENSAJES_NOTIFICACION, TIPO_POR_MENSAJE } from "./notificacion.service";
 import type { Database } from "../types/database.types";
 import type {
   CreateProjectInput,
@@ -331,6 +331,7 @@ export async function changeProjectState(
       accessToken,
       adjudicados,
       MENSAJES_NOTIFICACION.proyectoCerrado(proyecto.titulo),
+      TIPO_POR_MENSAJE.proyectoCerrado,
     );
   }
 
@@ -453,6 +454,7 @@ export async function cancelMyProject(accessToken: string, userId: string, proje
     accessToken,
     destinatarios,
     MENSAJES_NOTIFICACION.proyectoEliminado(proyecto.titulo),
+      TIPO_POR_MENSAJE.proyectoEliminado,
   );
 
   return data;
@@ -495,6 +497,7 @@ export async function deleteMyProject(
     accessToken,
     destinatarios,
     MENSAJES_NOTIFICACION.proyectoEliminado(proyecto.titulo),
+      TIPO_POR_MENSAJE.proyectoEliminado,
   );
 
   const { error } = await client.rpc("eliminar_proyecto", { p_id: projectId });

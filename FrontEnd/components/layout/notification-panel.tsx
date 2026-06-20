@@ -2,7 +2,8 @@
 
 import { useEffect, useState } from "react";
 import Link from "next/link";
-import { useFormatter, useLocale, useTranslations } from "next-intl";
+import { useFormatter, useLocale, useNow, useTranslations } from "next-intl";
+import { useRouter } from "next/navigation";
 import {
   Bell,
   BellOff,
@@ -35,6 +36,18 @@ function iconFor(tipo: string): { Icon: React.ElementType; className: string; bg
   return ICON_BY_TIPO[tipo] ?? DEFAULT_ICON;
 }
 
+/** Ruta de destino al hacer click en una notificacion, segun tipo y rol. */
+function linkFor(tipo: string, role: ApiRoleName | undefined, locale: string): string {
+  if (role === "company") {
+    if (tipo === "nuevo_mensaje") return `/${locale}/mensajes`;
+    return `/${locale}/gestion`;
+  }
+  if (role === "admin") return `/${locale}/admin`;
+  // student y fallback
+  if (tipo === "nuevo_mensaje") return `/${locale}/mensajes`;
+  return `/${locale}/mis-postulaciones`;
+}
+
 interface Props {
   role: ApiRoleName | undefined;
   open?: boolean;
@@ -53,15 +66,17 @@ export function NotificationPanel({
   const locale = useLocale();
   const t = useTranslations("notification_panel");
   const format = useFormatter();
+  const now = useNow({ updateInterval: 60_000 });
+  const router = useRouter();
   const [notifs, setNotifs] = useState<ApiNotificacion[]>([]);
   const [internalOpen, setInternalOpen] = useState(false);
 
   const isControlled = controlledOpen !== undefined;
   const open = isControlled ? controlledOpen : internalOpen;
 
-  // Trae las notificaciones reales del usuario autenticado (server action: lee la cookie httpOnly).
+  // Carga al montar (para el badge) y refresca cada vez que el panel se abre.
   useEffect(() => {
-    if (!role || !open) return;
+    if (!role) return;
     let active = true;
     void getNotificacionesAction().then((res) => {
       if (active && res.ok) setNotifs(res.data);
@@ -88,6 +103,12 @@ export function NotificationPanel({
   async function markRead(id: string) {
     setNotifs((prev) => prev.map((n) => (n.id === id ? { ...n, leida: true } : n)));
     await marcarNotificacionLeidaAction(id);
+  }
+
+  async function handleNotifClick(notif: ApiNotificacion) {
+    setOpen(false);
+    if (!notif.leida) await markRead(notif.id);
+    router.push(linkFor(notif.tipo, role, locale));
   }
 
   return (
@@ -182,7 +203,7 @@ export function NotificationPanel({
                   <li key={notif.id}>
                     <button
                       type="button"
-                      onClick={() => markRead(notif.id)}
+                      onClick={() => { void handleNotifClick(notif); }}
                       className={cn(
                         "flex w-full items-start gap-3 px-4 py-3.5 text-left transition-colors duration-[var(--duration-fast)] ease-[var(--ease-out)] hover:bg-surface-sunken",
                         !notif.leida && "bg-primary/3",
@@ -204,7 +225,7 @@ export function NotificationPanel({
                           {notif.mensaje}
                         </p>
                         <p className="mt-1 font-body text-[10px] text-ink-subtle">
-                          {format.relativeTime(new Date(notif.fecha))}
+                          {format.relativeTime(new Date(notif.fecha), now)}
                         </p>
                       </div>
 
