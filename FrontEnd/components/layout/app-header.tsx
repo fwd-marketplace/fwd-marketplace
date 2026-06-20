@@ -174,10 +174,14 @@ export function AppHeader({
       className={cn(
         "sticky top-0 z-50 border-b",
         container,
-        dark && "relative overflow-hidden",
+        dark && "relative",
       )}
     >
-      {dark && <NavStars />}
+      {dark && (
+        <div className="pointer-events-none absolute inset-0 overflow-hidden">
+          <NavStars />
+        </div>
+      )}
       <div className="relative z-10 mx-auto flex h-16 max-w-7xl items-center justify-between px-4 md:px-6">
         <div className="flex items-center gap-6">
           <Link

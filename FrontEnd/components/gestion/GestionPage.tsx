@@ -12,6 +12,7 @@ import {
   ExternalLink,
   FileText,
   FolderOpen,
+  Eye,
   GitBranch,
   Loader2,
   Lock,
@@ -1675,23 +1676,40 @@ function EmpresaProcesoView({
     );
   };
 
-  // "Enviar" — confirm status selection and save to backend
+  // Toggle "en revisión" — se guarda inmediatamente al activar
+  const handleMarkRevision = async (sid: number, v: number, offerId: string) => {
+    const result = await reviewOfferAction(offerId, { accion: "en_revision" });
+    if (result.ok) {
+      setStudents((prev) =>
+        prev.map((s) =>
+          s.id !== sid ? s : {
+            ...s,
+            proposals: s.proposals.map((p) =>
+              p.v === v ? { ...p, dbStatus: "revision" as EmpresaStatus, status: "revision" as EmpresaStatus } : p,
+            ),
+          },
+        ),
+      );
+    }
+  };
+
+  // "Enviar" — confirma la accion terminal (cambios / adjudicar / rechazar)
   const handleEnviar = async (sid: number, v: number) => {
     const student = students.find((s) => s.id === sid);
     if (!student) return;
     const proposal = student.proposals.find((p) => p.v === v);
     if (!proposal) return;
 
-    const accionMap: Record<EmpresaStatus, "en_revision" | "solicitar_cambios" | "aceptar" | "rechazar"> = {
-      enviada:        "en_revision",
-      revision:       "en_revision",
+    const accionMap: Partial<Record<EmpresaStatus, "solicitar_cambios" | "aceptar" | "rechazar">> = {
       cambios:        "solicitar_cambios",
       adjudicada:     "aceptar",
       noseleccionada: "rechazar",
     };
+    const accion = accionMap[proposal.status];
+    if (!accion) return;
 
     const result = await reviewOfferAction(proposal.offerId, {
-      accion: accionMap[proposal.status],
+      accion,
       ...(proposal.comment.trim() ? { comentario: proposal.comment.trim() } : {}),
     });
 
@@ -1901,6 +1919,32 @@ function EmpresaProcesoView({
                             {/* Version detail */}
                             {p.expanded && (
                               <div className="mt-4 max-w-[840px]">
+                                {/* Toggle "En revisión" — solo visible mientras la empresa puede actuar */}
+                                {(p.dbStatus === "enviada" || p.dbStatus === "revision") && (
+                                  <div className="mb-5 flex items-center justify-between gap-3 rounded-xl border border-warning/20 bg-warning/5 px-4 py-3">
+                                    <div className="flex items-center gap-2">
+                                      <Eye className="size-4 shrink-0 text-warning" aria-hidden="true" />
+                                      <span className="font-body text-sm font-semibold text-ink">
+                                        {t("proceso_switch_revision_label")}
+                                      </span>
+                                    </div>
+                                    {p.dbStatus === "enviada" ? (
+                                      <button
+                                        type="button"
+                                        onClick={() => { void handleMarkRevision(s.id, p.v, p.offerId); }}
+                                        className="rounded-full border border-warning/30 bg-warning/10 px-3 py-1 font-body text-xs font-bold text-warning transition-colors duration-[var(--duration-fast)] hover:bg-warning hover:text-white"
+                                      >
+                                        {t("proceso_switch_revision_activar")}
+                                      </button>
+                                    ) : (
+                                      <span className="inline-flex items-center gap-1.5 rounded-full bg-warning px-3 py-1 font-body text-xs font-bold text-white">
+                                        <Check className="size-3" aria-hidden="true" />
+                                        {t("proceso_switch_revision_activo")}
+                                      </span>
+                                    )}
+                                  </div>
+                                )}
+
                                 <label className="mb-2 block font-body text-sm font-bold text-ink">
                                   {t("description_label")}
                                 </label>
@@ -1922,7 +1966,7 @@ function EmpresaProcesoView({
                                   </>
                                 )}
 
-                                {p.dbStatus === "enviada" ? (
+                                {(p.dbStatus === "enviada" || p.dbStatus === "revision") ? (
                                   <>
                                     <label className="mb-2 mt-5 block font-body text-sm font-bold text-ink">
                                       {t("proceso_comentarios_revision_label")}
@@ -1939,8 +1983,6 @@ function EmpresaProcesoView({
                                       {t("proceso_estado_version")}
                                     </label>
                                     <div className="flex flex-wrap gap-2.5">
-                                      <button onClick={() => setStatus(s.id, p.v, "enviada")}        className={btnCls("enviada")}>        {t("proceso_badge_enviada")}</button>
-                                      <button onClick={() => setStatus(s.id, p.v, "revision")}       className={btnCls("revision")}>       {t("proceso_badge_revision")}</button>
                                       <button onClick={() => setStatus(s.id, p.v, "cambios")}        className={btnCls("cambios")}>        {t("proceso_accion_cambios")}</button>
                                       <button onClick={() => setStatus(s.id, p.v, "adjudicada")}     className={btnCls("adjudicada")}>     {t("proceso_accion_adjudicar")}</button>
                                       <button onClick={() => setStatus(s.id, p.v, "noseleccionada")} className={btnCls("noseleccionada")}> {t("proceso_accion_rechazar")}</button>
@@ -1950,7 +1992,8 @@ function EmpresaProcesoView({
                                       <button
                                         type="button"
                                         onClick={() => { void handleEnviar(s.id, p.v); }}
-                                        className="rounded-xl bg-secondary px-6 py-2.5 font-body text-sm font-bold text-white transition-colors duration-[var(--duration-fast)] hover:bg-secondary/80"
+                                        disabled={p.status === "enviada" || p.status === "revision"}
+                                        className="rounded-xl bg-secondary px-6 py-2.5 font-body text-sm font-bold text-white transition-colors duration-[var(--duration-fast)] hover:bg-secondary/80 disabled:cursor-not-allowed disabled:opacity-40"
                                       >
                                         {t("proceso_btn_enviar")}
                                       </button>
