@@ -48,7 +48,7 @@ import {
 } from "@/lib/actions/marketplace";
 import { generateProposalAction, suggestStackAction } from "@/lib/actions/ai";
 import { streamAssistant } from "@/lib/api/ai-client";
-import { getProjectMensajesAction, sendMensajeAction } from "@/lib/actions/mensajes";
+import { getProjectMensajesAction, sendMensajeAction, getMyConversacionesAction } from "@/lib/actions/mensajes";
 import type {
   AiChatMessage,
   ApiMensaje,
@@ -56,6 +56,7 @@ import type {
   ApiRoleName,
   CatalogArea,
   CatalogSkill,
+  ConversacionItem,
   CreateProjectInput,
   MyOffer,
   OfferState,
@@ -76,12 +77,6 @@ type ProposalStatus =
 type EmpresaStatus =
   | "enviada" | "revision" | "cambios" | "adjudicada" | "noseleccionada";
 
-interface ChatMessage {
-  id: string;
-  from: "empresa" | "junior";
-  text: string;
-  time: string;
-}
 
 interface JuniorProposal {
   v: number;
@@ -300,6 +295,7 @@ export function GestionPage({ role, userId, initialProjectId, disponible = true 
   // Sidebar data — starts empty, replaced by real API data on mount
   const [sidebarProjects, setSidebarProjects] = useState<ApiProject[]>([]);
   const [myOffers, setMyOffers] = useState<MyOffer[]>([]);
+  const [myConversaciones, setMyConversaciones] = useState<ConversacionItem[]>([]);
 
   // Catalogs for create/edit form (empresa only)
   const [catalogs, setCatalogs] = useState<{ areas: CatalogArea[]; skills: CatalogSkill[] }>({ areas: [], skills: [] });
@@ -343,8 +339,11 @@ export function GestionPage({ role, userId, initialProjectId, disponible = true 
           if (cr.ok) setCatalogs({ areas: cr.data.areas, skills: cr.data.skills });
         }
       } else {
-        const or = await getMyOffersAction();
-        if (active && or.ok) setMyOffers(or.data.ofertas);
+        const [or, cr] = await Promise.all([getMyOffersAction(), getMyConversacionesAction()]);
+        if (active) {
+          if (or.ok) setMyOffers(or.data.ofertas);
+          if (cr.ok) setMyConversaciones(cr.data);
+        }
       }
     })();
     return () => { active = false; };
@@ -530,15 +529,20 @@ export function GestionPage({ role, userId, initialProjectId, disponible = true 
                   </ul>
                 )
               ) : (
-                myOffers.length === 0 ? <SidebarEmpty text={t("empty_junior")} /> : (() => {
-                  // Unique projects from offers (keep latest state per project — myOffers is DESC)
+                (() => {
+                  // Proyectos de offers + proyectos de conversaciones (sin propuesta)
                   const seen = new Set<string>();
-                  const juniorProjects = myOffers
+                  const fromOffers = myOffers
                     .filter((o) => o.proyecto && !seen.has(o.proyecto.id) && !!seen.add(o.proyecto.id))
-                    .map((o) => o.proyecto!);
-                  return (
+                    .map((o) => ({ id: o.proyecto!.id, titulo: o.proyecto!.titulo, soloChat: false }));
+                  const fromConvos = myConversaciones
+                    .filter((c) => c.proyecto && !seen.has(c.proyecto.id) && !!seen.add(c.proyecto.id))
+                    .map((c) => ({ id: c.proyecto.id, titulo: c.proyecto.titulo, soloChat: true }));
+                  const allProjects = [...fromOffers, ...fromConvos];
+
+                  return allProjects.length === 0 ? <SidebarEmpty text={t("empty_junior")} /> : (
                     <ul className="flex flex-col gap-0.5">
-                      {juniorProjects.map((proyecto) => {
+                      {allProjects.map((proyecto) => {
                         const latestOferta = myOffers.find((o) => o.proyecto?.id === proyecto.id);
                         const cfg = latestOferta ? OFFER_STATE_CONFIG[latestOferta.estado.nombre] : null;
                         return (
@@ -556,6 +560,11 @@ export function GestionPage({ role, userId, initialProjectId, disponible = true 
                                     <>
                                       <span className={cn("size-2 shrink-0 rounded-full", cfg.dot)} aria-hidden="true" />
                                       {cfg.label}
+                                    </>
+                                  ) : proyecto.soloChat ? (
+                                    <>
+                                      <MessageSquare className="size-3 shrink-0 text-white/40" aria-hidden="true" />
+                                      {t("junior_solo_chat")}
                                     </>
                                   ) : (
                                     <>
@@ -882,6 +891,15 @@ function InfoPanel({
 
 // ── Chat panel ────────────────────────────────────────────────────────────────
 
+function formatChatTime(iso: string) {
+  return new Date(iso).toLocaleTimeString("es-CR", { hour: "2-digit", minute: "2-digit" });
+}
+
+function juniorDisplayName(u: { nombre: string; apellido1: string | null } | null | undefined) {
+  if (!u) return "Junior";
+  return u.apellido1 ? `${u.nombre} ${u.apellido1}` : u.nombre;
+}
+
 function ChatPanel({
   isEmpresa, project, t, userId,
 }: {
@@ -890,74 +908,90 @@ function ChatPanel({
   t: T;
   userId: string | null;
 }) {
-  const me = isEmpresa ? "empresa" : "junior";
-
-  const [msgs, setMsgs]     = useState<ChatMessage[]>([]);
-  const [draft, setDraft]   = useState("");
-  const [sending, setSending] = useState(false);
+  const [rawMsgs, setRawMsgs]       = useState<ApiMensaje[]>([]);
+  const [draft, setDraft]           = useState("");
+  const [sending, setSending]       = useState(false);
+  const [selectedJuniorId, setSelectedJuniorId] = useState<string | null>(null);
   const bottomRef = useRef<HTMLDivElement>(null);
 
-  // Load messages from backend and poll every 4 s (only when authenticated)
+  // Load + poll every 4 s
   useEffect(() => {
     if (!project?.id || !userId) return;
-
     let active = true;
-
-    const mapMsg = (m: ApiMensaje): ChatMessage => ({
-      id: m.id,
-      from: m.remitente?.id === userId
-        ? (isEmpresa ? "empresa" : "junior")
-        : (isEmpresa ? "junior"  : "empresa"),
-      text: m.contenido,
-      time: new Date(m.fecha_envio).toLocaleTimeString("es-CR", { hour: "2-digit", minute: "2-digit" }),
-    });
-
-    setMsgs([]);
+    setRawMsgs([]);
 
     const load = async () => {
       const r = await getProjectMensajesAction(project.id);
       if (!active) return;
-      if (r.ok) setMsgs(r.data.map(mapMsg));
+      if (r.ok) setRawMsgs(r.data);
     };
 
     void load();
     const timer = setInterval(() => { void load(); }, 4000);
-
     return () => { active = false; clearInterval(timer); };
-  }, [project?.id, userId, isEmpresa]);
+  }, [project?.id, userId]);
+
+  // Derive unique juniors for empresa multi-tab
+  const juniors = (() => {
+    if (!isEmpresa || !userId) return [];
+    const map = new Map<string, { id: string; nombre: string; apellido1: string | null }>();
+    rawMsgs.forEach((m) => {
+      const isMine = m.remitente?.id === userId;
+      const juniorUser = !isMine ? m.remitente : m.destinatario_info;
+      if (juniorUser && !map.has(juniorUser.id)) map.set(juniorUser.id, juniorUser);
+    });
+    return [...map.values()];
+  })();
+
+  // Auto-select first junior when list appears
+  useEffect(() => {
+    if (isEmpresa && juniors.length > 0 && !selectedJuniorId) {
+      setSelectedJuniorId(juniors[0]?.id ?? null);
+    }
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [juniors.length, isEmpresa]);
+
+  // Reset junior selection when project changes
+  useEffect(() => {
+    setSelectedJuniorId(null);
+  }, [project?.id]);
+
+  // Filter messages for the selected junior (empresa) or all (junior)
+  const visibleMsgs = isEmpresa && selectedJuniorId
+    ? rawMsgs.filter((m) => {
+        const isMine = m.remitente?.id === userId;
+        return isMine
+          ? m.destinatario_info?.id === selectedJuniorId
+          : m.remitente?.id === selectedJuniorId;
+      })
+    : rawMsgs;
 
   useEffect(() => {
     bottomRef.current?.scrollIntoView({ behavior: "smooth" });
-  }, [msgs]);
+  }, [visibleMsgs]);
 
+  // Header display info
   const otherName    = isEmpresa
-    ? t("chat_label_junior")
+    ? (selectedJuniorId ? juniorDisplayName(juniors.find((j) => j.id === selectedJuniorId)) : t("chat_label_junior"))
     : (project?.empresa?.nombre_comercial ?? t("chat_label_empresa"));
   const otherInitial = isEmpresa
-    ? "J"
+    ? (selectedJuniorId ? (juniors.find((j) => j.id === selectedJuniorId)?.nombre[0]?.toUpperCase() ?? "J") : "J")
     : (project?.empresa?.nombre_comercial?.[0]?.toUpperCase() ?? "E");
 
   const send = async () => {
     const text = draft.trim();
     if (!text || sending) return;
+    if (!project?.id || !userId) return;
+    if (isEmpresa && !selectedJuniorId) return;
 
     setDraft("");
-
-    if (!project?.id || !userId) {
-      // Demo mode: local only
-      const time = new Date().toLocaleTimeString("es-CR", { hour: "2-digit", minute: "2-digit" });
-      setMsgs((prev) => [...prev, { id: `demo-${Date.now()}`, from: me, text, time }]);
-      return;
-    }
-
     setSending(true);
 
-    // Optimistic update
-    const time   = new Date().toLocaleTimeString("es-CR", { hour: "2-digit", minute: "2-digit" });
-    const tempId = `temp-${Date.now()}`;
-    setMsgs((prev) => [...prev, { id: tempId, from: me, text, time }]);
+    await sendMensajeAction(project.id, text, isEmpresa ? (selectedJuniorId ?? undefined) : undefined);
 
-    await sendMensajeAction(project.id, text);
+    // Reload to get server-confirmed message
+    const r = await getProjectMensajesAction(project.id);
+    if (r.ok) setRawMsgs(r.data);
 
     setSending(false);
   };
@@ -966,90 +1000,135 @@ function ChatPanel({
     if (e.key === "Enter" && !e.shiftKey) { e.preventDefault(); void send(); }
   };
 
+  // ── Empresa sin conversaciones aún ────────────────────────────────────────
+  if (isEmpresa && rawMsgs.length > 0 && juniors.length === 0) {
+    return (
+      <div className="flex h-full flex-col items-center justify-center gap-3 p-8 text-center">
+        <MessageSquare className="size-8 text-ink-muted" aria-hidden="true" />
+        <p className="font-body text-sm text-ink-muted">{t("chat_sin_conversaciones")}</p>
+      </div>
+    );
+  }
+
   return (
     <div className="flex h-full flex-col">
-      {/* Header */}
-      <div className="shrink-0 flex items-center gap-3 border-b border-border bg-surface px-6 py-4">
-        <div className="flex size-9 shrink-0 items-center justify-center rounded-full bg-secondary/15 font-heading text-sm font-bold text-secondary">
-          {otherInitial}
+      {/* Tabs de juniors (solo empresa) */}
+      {isEmpresa && juniors.length > 0 && (
+        <div className="shrink-0 flex gap-0 border-b border-border bg-surface overflow-x-auto">
+          {juniors.map((j) => (
+            <button
+              key={j.id}
+              type="button"
+              onClick={() => setSelectedJuniorId(j.id)}
+              className={cn(
+                "shrink-0 px-4 py-3 font-body text-sm font-semibold transition-colors duration-[var(--duration-fast)] ease-[var(--ease-out)] border-b-2",
+                selectedJuniorId === j.id
+                  ? "border-secondary text-secondary"
+                  : "border-transparent text-ink-muted hover:text-ink hover:border-border",
+              )}
+            >
+              {juniorDisplayName(j)}
+            </button>
+          ))}
         </div>
-        <div className="min-w-0">
-          <p className="truncate font-body text-sm font-bold text-ink-strong">{otherName}</p>
-          <p className="font-body text-xs text-ink-muted">
-            {project?.titulo ?? ""}
-          </p>
-        </div>
-      </div>
+      )}
 
-      {/* Messages */}
-      <div className="flex-1 overflow-y-auto px-6 py-6">
-        {msgs.length === 0 ? (
-          <div className="flex h-full flex-col items-center justify-center gap-3 text-center">
-            <div className="flex size-14 items-center justify-center rounded-2xl bg-primary/10">
-              <MessageSquare className="size-7 text-primary" aria-hidden="true" />
+      {/* Prompt empresa sin junior seleccionado */}
+      {isEmpresa && juniors.length === 0 && (
+        <div className="flex flex-1 flex-col items-center justify-center gap-3 p-8 text-center">
+          <div className="flex size-14 items-center justify-center rounded-2xl bg-primary/10">
+            <MessageSquare className="size-7 text-primary" aria-hidden="true" />
+          </div>
+          <p className="font-body text-sm text-ink-muted">{t("chat_sin_conversaciones")}</p>
+        </div>
+      )}
+
+      {/* Header con nombre del interlocutor */}
+      {(!isEmpresa || selectedJuniorId) && (
+        <div className="shrink-0 flex items-center gap-3 border-b border-border bg-surface px-6 py-4">
+          <div className="flex size-9 shrink-0 items-center justify-center rounded-full bg-secondary/15 font-heading text-sm font-bold text-secondary">
+            {otherInitial}
+          </div>
+          <div className="min-w-0">
+            <p className="truncate font-body text-sm font-bold text-ink-strong">{otherName}</p>
+            <p className="font-body text-xs text-ink-muted">{project?.titulo ?? ""}</p>
+          </div>
+        </div>
+      )}
+
+      {/* Mensajes */}
+      {(!isEmpresa || selectedJuniorId) && (
+        <div className="flex-1 overflow-y-auto px-6 py-6">
+          {visibleMsgs.length === 0 ? (
+            <div className="flex h-full flex-col items-center justify-center gap-3 text-center">
+              <div className="flex size-14 items-center justify-center rounded-2xl bg-primary/10">
+                <MessageSquare className="size-7 text-primary" aria-hidden="true" />
+              </div>
+              <p className="font-body text-sm text-ink-muted">{t("chat_empty")}</p>
             </div>
-            <p className="font-body text-sm text-ink-muted">{t("chat_empty")}</p>
-          </div>
-        ) : (
-          <div className="flex flex-col gap-5">
-            {msgs.map((msg) => {
-              const isMine = msg.from === me;
-              return (
-                <div key={msg.id} className={cn("flex items-end gap-2.5", isMine ? "flex-row-reverse" : "flex-row")}>
-                  {!isMine && (
-                    <div className="mb-1 flex size-8 shrink-0 items-center justify-center rounded-full bg-secondary/15 font-heading text-xs font-bold text-secondary">
-                      {otherInitial}
+          ) : (
+            <div className="flex flex-col gap-5">
+              {visibleMsgs.map((msg) => {
+                const isMine = msg.remitente?.id === userId;
+                return (
+                  <div key={msg.id} className={cn("flex items-end gap-2.5", isMine ? "flex-row-reverse" : "flex-row")}>
+                    {!isMine && (
+                      <div className="mb-1 flex size-8 shrink-0 items-center justify-center rounded-full bg-secondary/15 font-heading text-xs font-bold text-secondary">
+                        {otherInitial}
+                      </div>
+                    )}
+                    <div className={cn("flex max-w-[72%] flex-col gap-1", isMine ? "items-end" : "items-start")}>
+                      <div
+                        className={cn(
+                          "rounded-2xl px-4 py-3 font-body text-sm leading-relaxed",
+                          isMine
+                            ? "rounded-br-sm bg-secondary text-white"
+                            : "rounded-bl-sm border border-border bg-surface text-ink",
+                        )}
+                      >
+                        {msg.contenido}
+                      </div>
+                      <span className="px-1 font-body text-[11px] text-ink-muted">{formatChatTime(msg.fecha_envio)}</span>
                     </div>
-                  )}
-                  <div className={cn("flex max-w-[72%] flex-col gap-1", isMine ? "items-end" : "items-start")}>
-                    <div
-                      className={cn(
-                        "rounded-2xl px-4 py-3 font-body text-sm leading-relaxed",
-                        isMine
-                          ? "rounded-br-sm bg-secondary text-white"
-                          : "rounded-bl-sm border border-border bg-surface text-ink",
-                      )}
-                    >
-                      {msg.text}
-                    </div>
-                    <span className="px-1 font-body text-[11px] text-ink-muted">{msg.time}</span>
                   </div>
-                </div>
-              );
-            })}
-            <div ref={bottomRef} />
-          </div>
-        )}
-      </div>
+                );
+              })}
+              <div ref={bottomRef} />
+            </div>
+          )}
+        </div>
+      )}
 
       {/* Input */}
-      <div className="shrink-0 border-t border-border bg-surface px-4 py-3">
-        <div className="flex items-end gap-2">
-          <textarea
-            value={draft}
-            onChange={(e) => setDraft(e.target.value)}
-            onKeyDown={handleKey}
-            placeholder={t("chat_placeholder")}
-            rows={1}
-            className="min-h-[42px] flex-1 resize-none rounded-xl border border-border bg-canvas px-4 py-2.5 font-body text-sm text-ink placeholder:text-ink-muted/60 focus:border-secondary focus:outline-none focus:ring-2 focus:ring-secondary/20"
-            style={{ maxHeight: 120, overflowY: "auto" }}
-          />
-          <button
-            onClick={() => { void send(); }}
-            disabled={!draft.trim() || sending}
-            aria-label={t("chat_send")}
-            className={cn(
-              "flex size-[42px] shrink-0 items-center justify-center rounded-xl transition-colors duration-[var(--duration-fast)]",
-              draft.trim() && !sending
-                ? "bg-secondary text-white hover:bg-secondary/80"
-                : "bg-border text-ink-muted cursor-not-allowed",
-            )}
-          >
-            <Send className="size-4" aria-hidden="true" />
-          </button>
+      {(!isEmpresa || selectedJuniorId) && (
+        <div className="shrink-0 border-t border-border bg-surface px-4 py-3">
+          <div className="flex items-end gap-2">
+            <textarea
+              value={draft}
+              onChange={(e) => setDraft(e.target.value)}
+              onKeyDown={handleKey}
+              placeholder={t("chat_placeholder")}
+              rows={1}
+              className="min-h-[42px] flex-1 resize-none rounded-xl border border-border bg-canvas px-4 py-2.5 font-body text-sm text-ink placeholder:text-ink-muted/60 focus:border-secondary focus:outline-none focus:ring-2 focus:ring-secondary/20"
+              style={{ maxHeight: 120, overflowY: "auto" }}
+            />
+            <button
+              onClick={() => { void send(); }}
+              disabled={!draft.trim() || sending}
+              aria-label={t("chat_send")}
+              className={cn(
+                "flex size-[42px] shrink-0 items-center justify-center rounded-xl transition-colors duration-[var(--duration-fast)]",
+                draft.trim() && !sending
+                  ? "bg-secondary text-white hover:bg-secondary/80"
+                  : "bg-border text-ink-muted cursor-not-allowed",
+              )}
+            >
+              <Send className="size-4" aria-hidden="true" />
+            </button>
+          </div>
+          <p className="mt-1.5 px-1 font-body text-[11px] text-ink-muted">{t("chat_hint")}</p>
         </div>
-        <p className="mt-1.5 px-1 font-body text-[11px] text-ink-muted">{t("chat_hint")}</p>
-      </div>
+      )}
     </div>
   );
 }

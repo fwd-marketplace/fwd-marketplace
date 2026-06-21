@@ -50,8 +50,8 @@
       "logo_alt": "Fundación Forward Costa Rica logo forming as a constellation",
       "title": "Your first freelance project",
       "description": "Connect with real companies, build your portfolio and start your professional career.",
-      "cta_projects": "View projects",
-      "cta_company": "I'm a company",
+      "cta_projects": "Join the community",
+      "cta_company": "Learn how it works",
       "card_eyebrow": "Featured project",
       "card_title": "Analytics Dashboard",
       "card_company": "TechFlow Systems",
@@ -1683,7 +1683,9 @@
     "mock_badge": "Demo mode",
     "mock_disclaimer": "Messaging in demo mode. Real connection in Phase 2.0.",
     "no_messages": "No messages yet in this conversation.",
-    "unnamed_project": "Untitled project"
+    "unnamed_project": "Untitled project",
+    "empty_desc_open": "You can start a conversation with any published project.",
+    "solo_chat_badge": "Chat only"
   },
   "notification_panel": {
     "aria_open": "Notifications",
@@ -1846,12 +1848,15 @@
     "proceso_retirar_si": "Yes, withdraw",
     "proceso_cancelar": "Cancel",
     "junior_nueva_postulacion": "New application",
+    "junior_solo_chat": "Chat open",
     "chat_label_empresa": "Company",
     "chat_label_junior": "Junior",
     "chat_empty": "No messages yet. Start the conversation.",
     "chat_placeholder": "Write a message... (Enter to send)",
     "chat_send": "Send message",
-    "chat_hint": "Enter to send · Shift+Enter for new line"
+    "chat_hint": "Enter to send · Shift+Enter for new line",
+    "chat_seleccionar_junior": "Select a junior to view the conversation",
+    "chat_sin_conversaciones": "No conversations yet"
   },
   "cosmos_profesional": {
     "screen_label": "Important points constellation",

@@ -423,17 +423,29 @@ export type ReplicaInput = {
 
 // ── Mensajería ────────────────────────────────────────────────────────────────
 
+export type ApiMensajeUser = { id: string; nombre: string; apellido1: string | null };
+
 export type ApiMensaje = {
   id: string;
   contenido: string;
   fecha_envio: string;
   es_publico: boolean;
-  remitente: { id: string; nombre: string; apellido1: string | null } | null;
+  remitente: ApiMensajeUser | null;
+  destinatario_info: ApiMensajeUser | null;
   id_destinatario: string | null;
 };
 
 export type MensajesResponse = {
   mensajes: ApiMensaje[];
+};
+
+export type ConversacionItem = {
+  proyecto: { id: string; titulo: string };
+  ultimo_mensaje: string;
+};
+
+export type ConversacionesResponse = {
+  conversaciones: ConversacionItem[];
 };
 
 // ── Ranking ───────────────────────────────────────────────────────────────────
