@@ -93,19 +93,30 @@ async function listConversaciones(req: Request, res: Response) {
   if (!req.accessToken || !req.user) throw new ApiError(401, "No autenticado");
 
   const client = supabaseForToken(req.accessToken);
+  const userId = req.user.id;
 
   // RLS filtra solo mensajes donde el usuario es remitente o destinatario.
   const { data, error } = await client
     .from("mensaje")
-    .select("id_proyecto, fecha_envio, proyecto:proyecto(id, titulo)")
+    .select("id_proyecto, fecha_envio, id_remitente, proyecto:proyecto(id, titulo)")
     .order("fecha_envio", { ascending: false });
   if (error) throw new ApiError(500, error.message);
 
-  // Deduplicar por proyecto, mantener el mas reciente
+  // Deduplicar por proyecto, mantener el mas reciente y contar participantes únicos
   const seen = new Set<string>();
   const conversaciones = (data ?? [])
     .filter((m) => m.proyecto && !seen.has(m.id_proyecto) && !!seen.add(m.id_proyecto))
-    .map((m) => ({ proyecto: m.proyecto, ultimo_mensaje: m.fecha_envio }));
+    .map((m) => {
+      const msgsForProject = (data ?? []).filter((x) => x.id_proyecto === m.id_proyecto);
+      const uniqueSenders = new Set(
+        msgsForProject.map((x) => x.id_remitente).filter((id): id is string => !!id && id !== userId),
+      );
+      return {
+        proyecto: m.proyecto,
+        ultimo_mensaje: m.fecha_envio,
+        n_participantes: uniqueSenders.size,
+      };
+    });
 
   res.status(200).json({ conversaciones });
 }

@@ -442,6 +442,7 @@ export type MensajesResponse = {
 export type ConversacionItem = {
   proyecto: { id: string; titulo: string };
   ultimo_mensaje: string;
+  n_participantes: number;
 };
 
 export type ConversacionesResponse = {

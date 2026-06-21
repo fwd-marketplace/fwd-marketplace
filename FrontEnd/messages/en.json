@@ -1855,8 +1855,11 @@
     "chat_placeholder": "Write a message... (Enter to send)",
     "chat_send": "Send message",
     "chat_hint": "Enter to send · Shift+Enter for new line",
-    "chat_seleccionar_junior": "Select a junior to view the conversation",
-    "chat_sin_conversaciones": "No conversations yet"
+    "chat_seleccionar_junior": "Conversations",
+    "chat_sin_conversaciones": "No conversations yet",
+    "sidebar_chats_label": "Chats",
+    "chat_n_chats": "{count, plural, one {# chat} other {# chats}}",
+    "chat_overview_empty": "No messages in this project yet"
   },
   "cosmos_profesional": {
     "screen_label": "Important points constellation",

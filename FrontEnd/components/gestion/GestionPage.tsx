@@ -333,16 +333,17 @@ export function GestionPage({ role, userId, initialProjectId, disponible = true 
     let active = true;
     (async () => {
       if (isEmpresa) {
-        const [pr, cr] = await Promise.all([getMyProjectsAction(), getCatalogsAction()]);
+        const [pr, cr, convR] = await Promise.all([getMyProjectsAction(), getCatalogsAction(), getMyConversacionesAction()]);
         if (active) {
           if (pr.ok) setSidebarProjects(pr.data.projects);
           if (cr.ok) setCatalogs({ areas: cr.data.areas, skills: cr.data.skills });
+          if (convR.ok) setMyConversaciones(convR.data);
         }
       } else {
-        const [or, cr] = await Promise.all([getMyOffersAction(), getMyConversacionesAction()]);
+        const [or, convR] = await Promise.all([getMyOffersAction(), getMyConversacionesAction()]);
         if (active) {
           if (or.ok) setMyOffers(or.data.ofertas);
-          if (cr.ok) setMyConversaciones(cr.data);
+          if (convR.ok) setMyConversaciones(convR.data);
         }
       }
     })();
@@ -420,9 +421,9 @@ export function GestionPage({ role, userId, initialProjectId, disponible = true 
     setDeleting(false);
   };
 
-  const doSelect = (id: string) => {
+  const doSelect = (id: string, initialSection: Section = "info") => {
     setSelectedId(id);
-    setSection("info");
+    setSection(initialSection);
     setFormMode(null);
     const proj = sidebarProjects.find((p) => p.id === id) ?? null;
     setSelectedProject(proj);
@@ -434,9 +435,9 @@ export function GestionPage({ role, userId, initialProjectId, disponible = true 
     );
   };
 
-  const handleSelect = (id: string) => {
+  const handleSelect = (id: string, initialSection: Section = "info") => {
     if (formMode !== null) { setPendingNav({ type: "select", id }); return; }
-    doSelect(id);
+    doSelect(id, initialSection);
   };
 
   const handleBack = () => {
@@ -492,97 +493,154 @@ export function GestionPage({ role, userId, initialProjectId, disponible = true 
             </div>
             <div className="flex-1 overflow-y-auto p-3">
               {isEmpresa ? (
-                sidebarProjects.length === 0 ? <SidebarEmpty text={t("empty_empresa")} /> : (
-                  <ul className="flex flex-col gap-0.5">
-                    {sidebarProjects.map((proyecto) => {
-                      const isSelected = proyecto.id === selectedId;
-                      const count  = isSelected ? projectOffers.length : (proyecto.n_ofertas ?? 0);
-                      const hasAdj = isSelected && projectOffers.some((o) => o.estado.nombre === "adjudicada");
-                      return (
-                        <li key={proyecto.id}>
-                          <div className="group flex items-center gap-1 rounded-xl hover:bg-white/10 transition-colors duration-[var(--duration-fast)] ease-[var(--ease-out)]">
+                (() => {
+                  const convSet = new Map(myConversaciones.map((c) => [c.proyecto.id, c.n_participantes]));
+                  const mainProjects = sidebarProjects.filter((p) => (p.n_ofertas ?? 0) > 0 || !convSet.has(p.id));
+                  const chatProjects = sidebarProjects.filter((p) => (p.n_ofertas ?? 0) === 0 && convSet.has(p.id));
+                  const renderEmpresaItem = (proyecto: (typeof sidebarProjects)[0], openChat = false) => {
+                    const isSelected = proyecto.id === selectedId;
+                    const count  = isSelected ? projectOffers.length : (proyecto.n_ofertas ?? 0);
+                    const hasAdj = isSelected && projectOffers.some((o) => o.estado.nombre === "adjudicada");
+                    const nChats = convSet.get(proyecto.id) ?? 0;
+                    return (
+                      <li key={proyecto.id}>
+                        <div className="group flex items-center gap-1 rounded-xl hover:bg-white/10 transition-colors duration-[var(--duration-fast)] ease-[var(--ease-out)]">
+                          <button
+                            onClick={() => handleSelect(proyecto.id, openChat ? "chat" : "info")}
+                            className="flex flex-1 items-center gap-3 px-3 py-3 text-left"
+                          >
+                            <div className="min-w-0 flex-1">
+                              <p className="truncate font-heading text-sm font-bold text-white">{proyecto.titulo}</p>
+                              <p className="mt-0.5 font-body text-xs text-white/50">
+                                {count > 0 && t("proposals_count", { count })}
+                                {count > 0 && nChats > 0 && " · "}
+                                {nChats > 0 && (
+                                  <span className="inline-flex items-center gap-0.5">
+                                    <MessageSquare className="size-2.5 inline" aria-hidden="true" />
+                                    {t("chat_n_chats", { count: nChats })}
+                                  </span>
+                                )}
+                                {count === 0 && nChats === 0 && t("proposals_count", { count: 0 })}
+                              </p>
+                            </div>
+                            {hasAdj && <CheckCircle2 className="size-4 shrink-0 text-accent" aria-hidden="true" />}
+                            <ChevronRight className="size-4 shrink-0 text-white/30 transition-colors group-hover:text-white/60" aria-hidden="true" />
+                          </button>
+                          {proyecto.estado.nombre === "borrador" && (
                             <button
-                              onClick={() => handleSelect(proyecto.id)}
-                              className="flex flex-1 items-center gap-3 px-3 py-3 text-left"
+                              type="button"
+                              onClick={(e) => { e.stopPropagation(); setDeleteTarget(proyecto.id); }}
+                              aria-label="Eliminar proyecto"
+                              className="mr-2 hidden size-7 shrink-0 items-center justify-center rounded-full text-white/30 transition-colors hover:bg-magenta/20 hover:text-magenta group-hover:flex"
                             >
-                              <div className="min-w-0 flex-1">
-                                <p className="truncate font-heading text-sm font-bold text-white">{proyecto.titulo}</p>
-                                <p className="mt-0.5 font-body text-xs text-white/50">{t("proposals_count", { count })}</p>
-                              </div>
-                              {hasAdj && <CheckCircle2 className="size-4 shrink-0 text-accent" aria-hidden="true" />}
-                              <ChevronRight className="size-4 shrink-0 text-white/30 transition-colors group-hover:text-white/60" aria-hidden="true" />
+                              <Trash2 className="size-3.5" aria-hidden="true" />
                             </button>
-                            {proyecto.estado.nombre === "borrador" && (
-                              <button
-                                type="button"
-                                onClick={(e) => { e.stopPropagation(); setDeleteTarget(proyecto.id); }}
-                                aria-label="Eliminar proyecto"
-                                className="mr-2 hidden size-7 shrink-0 items-center justify-center rounded-full text-white/30 transition-colors hover:bg-magenta/20 hover:text-magenta group-hover:flex"
-                              >
-                                <Trash2 className="size-3.5" aria-hidden="true" />
-                              </button>
-                            )}
+                          )}
+                        </div>
+                      </li>
+                    );
+                  };
+                  if (mainProjects.length === 0 && chatProjects.length === 0) {
+                    return <SidebarEmpty text={t("empty_empresa")} />;
+                  }
+                  return (
+                    <>
+                      {mainProjects.length > 0 && (
+                        <ul className="flex flex-col gap-0.5">
+                          {mainProjects.map(renderEmpresaItem)}
+                        </ul>
+                      )}
+                      {chatProjects.length > 0 && (
+                        <>
+                          <div className="my-3 flex items-center gap-2 px-3">
+                            <div className="h-px flex-1 bg-white/10" />
+                            <span className="font-body text-[10px] font-bold uppercase tracking-widest text-white/30">
+                              {t("sidebar_chats_label")}
+                            </span>
+                            <div className="h-px flex-1 bg-white/10" />
                           </div>
-                        </li>
-                      );
-                    })}
-                  </ul>
-                )
+                          <ul className="flex flex-col gap-0.5">
+                            {chatProjects.map((p) => renderEmpresaItem(p, true))}
+                          </ul>
+                        </>
+                      )}
+                    </>
+                  );
+                })()
               ) : (
                 (() => {
-                  // Proyectos de offers + proyectos de conversaciones (sin propuesta)
                   const seen = new Set<string>();
                   const fromOffers = myOffers
                     .filter((o) => o.proyecto && !seen.has(o.proyecto.id) && !!seen.add(o.proyecto.id))
-                    .map((o) => ({ id: o.proyecto!.id, titulo: o.proyecto!.titulo, soloChat: false }));
+                    .map((o) => ({ id: o.proyecto!.id, titulo: o.proyecto!.titulo }));
                   const fromConvos = myConversaciones
                     .filter((c) => c.proyecto && !seen.has(c.proyecto.id) && !!seen.add(c.proyecto.id))
-                    .map((c) => ({ id: c.proyecto.id, titulo: c.proyecto.titulo, soloChat: true }));
-                  const allProjects = [...fromOffers, ...fromConvos];
+                    .map((c) => ({ id: c.proyecto.id, titulo: c.proyecto.titulo }));
 
-                  return allProjects.length === 0 ? <SidebarEmpty text={t("empty_junior")} /> : (
-                    <ul className="flex flex-col gap-0.5">
-                      {allProjects.map((proyecto) => {
-                        const latestOferta = myOffers.find((o) => o.proyecto?.id === proyecto.id);
-                        const cfg = latestOferta ? OFFER_STATE_CONFIG[latestOferta.estado.nombre] : null;
-                        return (
-                          <li key={proyecto.id}>
-                            <button
-                              onClick={() => handleSelect(proyecto.id)}
-                              className="group flex w-full items-center gap-3 rounded-xl px-3 py-3 text-left transition-colors duration-[var(--duration-fast)] ease-[var(--ease-out)] hover:bg-white/10"
-                            >
-                              <div className="min-w-0 flex-1">
-                                <p className="truncate font-heading text-sm font-bold text-white">
-                                  {proyecto.titulo}
-                                </p>
-                                <p className="mt-0.5 flex items-center gap-1.5 font-body text-xs text-white/60">
-                                  {cfg ? (
-                                    <>
-                                      <span className={cn("size-2 shrink-0 rounded-full", cfg.dot)} aria-hidden="true" />
-                                      {cfg.label}
-                                    </>
-                                  ) : proyecto.soloChat ? (
-                                    <>
-                                      <MessageSquare className="size-3 shrink-0 text-white/40" aria-hidden="true" />
-                                      {t("junior_solo_chat")}
-                                    </>
-                                  ) : (
-                                    <>
-                                      <span className="size-2 shrink-0 rounded-full border border-white/40" aria-hidden="true" />
-                                      {t("junior_nueva_postulacion")}
-                                    </>
-                                  )}
-                                </p>
-                              </div>
-                              {latestOferta?.estado.nombre === "adjudicada" && (
-                                <CheckCircle2 className="size-4 shrink-0 text-accent" aria-hidden="true" />
+                  const renderJuniorItem = (proyecto: { id: string; titulo: string }, soloChat: boolean) => {
+                    const latestOferta = myOffers.find((o) => o.proyecto?.id === proyecto.id);
+                    const cfg = latestOferta ? OFFER_STATE_CONFIG[latestOferta.estado.nombre] : null;
+                    return (
+                      <li key={proyecto.id}>
+                        <button
+                          onClick={() => handleSelect(proyecto.id, soloChat ? "chat" : "info")}
+                          className="group flex w-full items-center gap-3 rounded-xl px-3 py-3 text-left transition-colors duration-[var(--duration-fast)] ease-[var(--ease-out)] hover:bg-white/10"
+                        >
+                          <div className="min-w-0 flex-1">
+                            <p className="truncate font-heading text-sm font-bold text-white">{proyecto.titulo}</p>
+                            <p className="mt-0.5 flex items-center gap-1.5 font-body text-xs text-white/60">
+                              {cfg ? (
+                                <>
+                                  <span className={cn("size-2 shrink-0 rounded-full", cfg.dot)} aria-hidden="true" />
+                                  {cfg.label}
+                                </>
+                              ) : soloChat ? (
+                                <>
+                                  <MessageSquare className="size-3 shrink-0 text-white/40" aria-hidden="true" />
+                                  {t("junior_solo_chat")}
+                                </>
+                              ) : (
+                                <>
+                                  <span className="size-2 shrink-0 rounded-full border border-white/40" aria-hidden="true" />
+                                  {t("junior_nueva_postulacion")}
+                                </>
                               )}
-                              <ChevronRight className="size-4 shrink-0 text-white/30 transition-colors group-hover:text-white/60" aria-hidden="true" />
-                            </button>
-                          </li>
-                        );
-                      })}
-                    </ul>
+                            </p>
+                          </div>
+                          {latestOferta?.estado.nombre === "adjudicada" && (
+                            <CheckCircle2 className="size-4 shrink-0 text-accent" aria-hidden="true" />
+                          )}
+                          <ChevronRight className="size-4 shrink-0 text-white/30 transition-colors group-hover:text-white/60" aria-hidden="true" />
+                        </button>
+                      </li>
+                    );
+                  };
+
+                  if (fromOffers.length === 0 && fromConvos.length === 0) {
+                    return <SidebarEmpty text={t("empty_junior")} />;
+                  }
+                  return (
+                    <>
+                      {fromOffers.length > 0 && (
+                        <ul className="flex flex-col gap-0.5">
+                          {fromOffers.map((p) => renderJuniorItem(p, false))}
+                        </ul>
+                      )}
+                      {fromConvos.length > 0 && (
+                        <>
+                          <div className="my-3 flex items-center gap-2 px-3">
+                            <div className="h-px flex-1 bg-white/10" />
+                            <span className="font-body text-[10px] font-bold uppercase tracking-widest text-white/30">
+                              {t("sidebar_chats_label")}
+                            </span>
+                            <div className="h-px flex-1 bg-white/10" />
+                          </div>
+                          <ul className="flex flex-col gap-0.5">
+                            {fromConvos.map((p) => renderJuniorItem(p, true))}
+                          </ul>
+                        </>
+                      )}
+                    </>
                   );
                 })()
               )}
@@ -943,13 +1001,7 @@ function ChatPanel({
     return [...map.values()];
   })();
 
-  // Auto-select first junior when list appears
-  useEffect(() => {
-    if (isEmpresa && juniors.length > 0 && !selectedJuniorId) {
-      setSelectedJuniorId(juniors[0]?.id ?? null);
-    }
-  // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [juniors.length, isEmpresa]);
+  // (no auto-select — empresa must pick a junior from the list)
 
   // Reset junior selection when project changes
   useEffect(() => {
@@ -1000,21 +1052,71 @@ function ChatPanel({
     if (e.key === "Enter" && !e.shiftKey) { e.preventDefault(); void send(); }
   };
 
-  // ── Empresa sin conversaciones aún ────────────────────────────────────────
-  if (isEmpresa && rawMsgs.length > 0 && juniors.length === 0) {
-    return (
-      <div className="flex h-full flex-col items-center justify-center gap-3 p-8 text-center">
-        <MessageSquare className="size-8 text-ink-muted" aria-hidden="true" />
-        <p className="font-body text-sm text-ink-muted">{t("chat_sin_conversaciones")}</p>
-      </div>
-    );
-  }
-
   return (
     <div className="flex h-full flex-col">
-      {/* Tabs de juniors (solo empresa) */}
-      {isEmpresa && juniors.length > 0 && (
+      {/* Empresa: sin conversaciones aún */}
+      {isEmpresa && juniors.length === 0 && (
+        <div className="flex flex-1 flex-col items-center justify-center gap-3 p-8 text-center">
+          <div className="flex size-14 items-center justify-center rounded-2xl bg-primary/10">
+            <MessageSquare className="size-7 text-primary" aria-hidden="true" />
+          </div>
+          <p className="font-body text-sm text-ink-muted">{t("chat_sin_conversaciones")}</p>
+        </div>
+      )}
+
+      {/* Empresa: lista de juniors para seleccionar (sin junior seleccionado) */}
+      {isEmpresa && juniors.length > 0 && !selectedJuniorId && (
+        <div className="flex-1 overflow-y-auto">
+          <div className="border-b border-border bg-surface px-6 py-4">
+            <p className="font-body text-xs font-bold uppercase tracking-wider text-ink-muted">
+              {t("chat_seleccionar_junior")}
+            </p>
+            {project?.titulo && (
+              <p className="mt-0.5 truncate font-heading text-sm font-bold text-ink-strong">
+                {project.titulo}
+              </p>
+            )}
+          </div>
+          <div className="flex flex-col gap-2 p-4">
+            {juniors.map((j) => {
+              const jMsgs = rawMsgs.filter(
+                (m) => m.remitente?.id === j.id || m.destinatario_info?.id === j.id,
+              );
+              const lastMsg = jMsgs[jMsgs.length - 1];
+              return (
+                <button
+                  key={j.id}
+                  type="button"
+                  onClick={() => setSelectedJuniorId(j.id)}
+                  className="flex items-center gap-3 rounded-xl border border-border bg-surface p-4 text-left transition-colors duration-[var(--duration-fast)] ease-[var(--ease-out)] hover:border-secondary/30 hover:bg-secondary/5"
+                >
+                  <div className="flex size-10 shrink-0 items-center justify-center rounded-full bg-secondary/15 font-heading text-sm font-bold text-secondary">
+                    {j.nombre[0]?.toUpperCase() ?? "J"}
+                  </div>
+                  <div className="min-w-0 flex-1">
+                    <p className="truncate font-body text-sm font-bold text-ink-strong">{juniorDisplayName(j)}</p>
+                    {lastMsg && (
+                      <p className="truncate font-body text-xs text-ink-muted">{lastMsg.contenido}</p>
+                    )}
+                  </div>
+                  <ChevronRight className="size-4 shrink-0 text-ink-muted" aria-hidden="true" />
+                </button>
+              );
+            })}
+          </div>
+        </div>
+      )}
+
+      {/* Empresa: tabs cuando hay junior seleccionado */}
+      {isEmpresa && juniors.length > 0 && selectedJuniorId && (
         <div className="shrink-0 flex gap-0 border-b border-border bg-surface overflow-x-auto">
+          <button
+            type="button"
+            onClick={() => setSelectedJuniorId(null)}
+            className="shrink-0 px-4 py-3 font-body text-sm font-semibold text-ink-muted transition-colors duration-[var(--duration-fast)] ease-[var(--ease-out)] hover:text-ink border-b-2 border-transparent"
+          >
+            ←
+          </button>
           {juniors.map((j) => (
             <button
               key={j.id}
@@ -1030,16 +1132,6 @@ function ChatPanel({
               {juniorDisplayName(j)}
             </button>
           ))}
-        </div>
-      )}
-
-      {/* Prompt empresa sin junior seleccionado */}
-      {isEmpresa && juniors.length === 0 && (
-        <div className="flex flex-1 flex-col items-center justify-center gap-3 p-8 text-center">
-          <div className="flex size-14 items-center justify-center rounded-2xl bg-primary/10">
-            <MessageSquare className="size-7 text-primary" aria-hidden="true" />
-          </div>
-          <p className="font-body text-sm text-ink-muted">{t("chat_sin_conversaciones")}</p>
         </div>
       )}
 

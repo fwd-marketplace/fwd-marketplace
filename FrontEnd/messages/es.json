@@ -1909,8 +1909,11 @@
     "chat_placeholder": "Escribí un mensaje... (Enter para enviar)",
     "chat_send": "Enviar mensaje",
     "chat_hint": "Enter para enviar · Shift+Enter para nueva línea",
-    "chat_seleccionar_junior": "Seleccioná un junior para ver la conversación",
-    "chat_sin_conversaciones": "Sin conversaciones aún"
+    "chat_seleccionar_junior": "Conversaciones",
+    "chat_sin_conversaciones": "Sin conversaciones aún",
+    "sidebar_chats_label": "Chats",
+    "chat_n_chats": "{count, plural, one {# chat} other {# chats}}",
+    "chat_overview_empty": "Aún no hay mensajes en este proyecto"
   },
   "cosmos_profesional": {
     "screen_label": "Constelación de puntos importantes",
