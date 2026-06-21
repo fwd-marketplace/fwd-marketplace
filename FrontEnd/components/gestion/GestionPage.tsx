@@ -1155,6 +1155,7 @@ function JuniorProcesoView({
   const toggle      = (i: number) => { const c = proposals[i]; if (c) patch(i, { expanded: !c.expanded }); };
   const setField    = (i: number, k: keyof JuniorProposal, v: string) => patch(i, { [k]: v } as Partial<JuniorProposal>);
 
+  const [withdrawConfirmIdx, setWithdrawConfirmIdx] = useState<number | null>(null);
   const [isUploading, setIsUploading] = useState(false);
 
   const handleFileChange = async (e: React.ChangeEvent<HTMLInputElement>, i: number) => {
@@ -1201,6 +1202,19 @@ function JuniorProcesoView({
     patch(i, { status: "editando", expanded: true });
   };
 
+  const cancelEdit = (i: number) => {
+    const p = proposals[i];
+    if (!p) return;
+    setSubmitError("");
+    if (p.offerId) {
+      // Edicion de propuesta existente: volver a enviada y colapsar
+      patch(i, { status: "enviada", expanded: false });
+    } else {
+      // Creacion nueva: volver a estado vacio
+      patch(i, { status: "nuevo", expanded: false });
+    }
+  };
+
   const submit = async (i: number) => {
     const p = proposals[i];
     if (!p?.desc.trim()) return;
@@ -1244,7 +1258,7 @@ function JuniorProcesoView({
       ...(p.repo ? { url_repositorio: p.repo } : {}),
     });
     if (result.ok) {
-      patch(i, { status: "enviada", expanded: false });
+      patch(i, { status: "enviada", expanded: false, offerId: result.data.id });
     } else {
       setSubmitError(result.error);
     }
@@ -1375,14 +1389,38 @@ function JuniorProcesoView({
                           <Pencil className="size-[13px]" aria-hidden="true" />
                           {t("proceso_editar")}
                         </button>
-                        <button
-                          onClick={() => { void handleWithdraw(i); }}
-                          disabled={withdrawingIdx === i}
-                          className="inline-flex items-center gap-1.5 rounded-[10px] border border-magenta/30 bg-surface px-[14px] py-[7px] font-body text-[13px] font-semibold text-magenta transition-colors duration-[var(--duration-fast)] hover:bg-magenta/5 disabled:opacity-50"
-                        >
-                          <Trash2 className="size-[13px]" aria-hidden="true" />
-                          {withdrawingIdx === i ? t("proceso_retirando") : t("proceso_retirar")}
-                        </button>
+                        {withdrawConfirmIdx === i ? (
+                          <div className="inline-flex items-center gap-2 rounded-[10px] border border-magenta/30 bg-magenta/5 px-[14px] py-[7px]">
+                            <span className="font-body text-[13px] font-semibold text-magenta">
+                              {t("proceso_retirar_confirmar")}
+                            </span>
+                            <button
+                              type="button"
+                              onClick={() => { setWithdrawConfirmIdx(null); void handleWithdraw(i); }}
+                              disabled={withdrawingIdx === i}
+                              className="rounded-[8px] bg-magenta px-3 py-1 font-body text-[12px] font-bold text-white transition-colors duration-[var(--duration-fast)] hover:bg-magenta/80 disabled:opacity-50"
+                            >
+                              {withdrawingIdx === i ? t("proceso_retirando") : t("proceso_retirar_si")}
+                            </button>
+                            <button
+                              type="button"
+                              onClick={() => setWithdrawConfirmIdx(null)}
+                              className="rounded-[8px] border border-border bg-surface px-3 py-1 font-body text-[12px] font-semibold text-ink transition-colors duration-[var(--duration-fast)] hover:border-ink-muted"
+                            >
+                              {t("proceso_cancelar")}
+                            </button>
+                          </div>
+                        ) : (
+                          <button
+                            type="button"
+                            onClick={() => setWithdrawConfirmIdx(i)}
+                            disabled={withdrawingIdx === i}
+                            className="inline-flex items-center gap-1.5 rounded-[10px] border border-magenta/30 bg-surface px-[14px] py-[7px] font-body text-[13px] font-semibold text-magenta transition-colors duration-[var(--duration-fast)] hover:bg-magenta/5 disabled:opacity-50"
+                          >
+                            <Trash2 className="size-[13px]" aria-hidden="true" />
+                            {t("proceso_retirar")}
+                          </button>
+                        )}
                       </>
                     )}
                     {pm && (
@@ -1462,7 +1500,14 @@ function JuniorProcesoView({
                     {submitError && (
                       <p className="mt-4 font-body text-[13px] text-magenta">{submitError}</p>
                     )}
-                    <div className="mt-6 flex justify-end">
+                    <div className="mt-6 flex items-center justify-end gap-3">
+                      <button
+                        type="button"
+                        onClick={() => cancelEdit(i)}
+                        className="rounded-xl border border-border bg-surface px-6 py-3 font-body text-[14px] font-semibold text-ink transition-colors duration-[var(--duration-fast)] hover:border-ink-muted hover:text-ink-strong"
+                      >
+                        {t("proceso_cancelar")}
+                      </button>
                       <button
                         onClick={() => { void submit(i); }}
                         disabled={!submitOk || isUploading}
