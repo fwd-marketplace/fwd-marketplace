@@ -28,15 +28,19 @@ export async function submitEntregable(
   const client = supabaseForToken(accessToken);
 
   // Verificar que el usuario tiene una oferta adjudicada en ese proyecto.
-  const { data: ofertaAdjudicada, error: ofertaError } = await client
+  // Puede haber varias ofertas por (proyecto, usuario) tras una ronda de revisión
+  // (la migración 0031 quitó el UNIQUE), así que se traen todas y se busca la
+  // adjudicada — NO maybeSingle, que reventaría con múltiples filas.
+  const { data: ofertas, error: ofertaError } = await client
     .from("oferta")
     .select("id, estado:estado_oferta(nombre)")
     .eq("id_proyecto", input.id_proyecto)
-    .eq("id_usuario", userId)
-    .maybeSingle();
+    .eq("id_usuario", userId);
   if (ofertaError) throw new ApiError(500, ofertaError.message);
-  if (!ofertaAdjudicada) throw new ApiError(403, "No tenés una postulación en este proyecto");
-  if (ofertaAdjudicada.estado?.nombre !== "adjudicada") {
+  if (!ofertas || ofertas.length === 0) {
+    throw new ApiError(403, "No tenés una postulación en este proyecto");
+  }
+  if (!ofertas.some((oferta) => oferta.estado?.nombre === "adjudicada")) {
     throw new ApiError(403, "Solo podés enviar entregables si fuiste adjudicado en el proyecto");
   }
 

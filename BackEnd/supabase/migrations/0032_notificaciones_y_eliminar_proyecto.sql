@@ -19,7 +19,7 @@ create or replace function public.crear_notificacion(
   p_tipo text,
   p_mensaje text
 ) returns uuid
-language plpgsqlaun 
+language plpgsql
 security definer
 set search_path = public
 as $$
