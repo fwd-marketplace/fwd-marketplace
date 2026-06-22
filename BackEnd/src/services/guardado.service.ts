@@ -8,19 +8,29 @@ type Client = ReturnType<typeof supabaseForToken>;
 export async function listGuardados(token: string, userId: string) {
   const client: Client = supabaseForToken(token);
 
-  const { data, error } = await client
+  // Paso 1: obtener los ids guardados
+  const { data: rows, error: rowsErr } = await client
     .from("proyecto_guardado")
-    .select(`proyecto:proyecto(${PROJECT_SELECT})`)
+    .select("id_proyecto")
     .eq("id_usuario", userId)
     .order("fecha_guardado", { ascending: false });
 
-  if (error) throw new ApiError(500, error.message);
+  if (rowsErr) throw new ApiError(500, rowsErr.message);
+  if (!rows || rows.length === 0) return [];
 
-  const proyectos = (data ?? [])
-    .map((row) => row.proyecto)
-    .filter(Boolean);
+  const ids = rows.map((r) => r.id_proyecto);
 
-  return proyectos;
+  // Paso 2: obtener los proyectos en esos ids
+  const { data: proyectos, error: projErr } = await client
+    .from("proyecto")
+    .select(PROJECT_SELECT)
+    .in("id", ids);
+
+  if (projErr) throw new ApiError(500, projErr.message);
+
+  // Mantener el orden original (guardado más reciente primero)
+  const map = new Map((proyectos ?? []).map((p) => [p.id, p]));
+  return ids.map((id) => map.get(id)).filter(Boolean);
 }
 
 /** Guarda un proyecto para el estudiante. Idempotente (ignora duplicados). */
@@ -29,7 +39,10 @@ export async function guardarProyecto(token: string, userId: string, proyectoId:
 
   const { error } = await client
     .from("proyecto_guardado")
-    .upsert({ id_usuario: userId, id_proyecto: proyectoId }, { onConflict: "id_usuario,id_proyecto" });
+    .upsert(
+      { id_usuario: userId, id_proyecto: proyectoId },
+      { onConflict: "id_usuario,id_proyecto" },
+    );
 
   if (error) throw new ApiError(500, error.message);
 }

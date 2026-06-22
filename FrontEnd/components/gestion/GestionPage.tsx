@@ -285,9 +285,9 @@ function buildEmpresaStudents(
 
 // ── Main component ────────────────────────────────────────────────────────────
 
-interface Props { role: ApiRoleName | null; userId: string | null; initialProjectId?: string | null; disponible?: boolean; initialOffers?: MyOffer[] }
+interface Props { role: ApiRoleName | null; userId: string | null; initialProjectId?: string | null; disponible?: boolean; initialOffers?: MyOffer[]; initialProject?: ApiProject | null }
 
-export function GestionPage({ role, userId, initialProjectId, disponible = true, initialOffers = [] }: Props) {
+export function GestionPage({ role, userId, initialProjectId, disponible = true, initialOffers = [], initialProject = null }: Props) {
   const t      = useTranslations("gestion_page");
   const locale = useLocale();
   const isEmpresa = role === "company";
@@ -315,7 +315,7 @@ export function GestionPage({ role, userId, initialProjectId, disponible = true,
 
   // Selection state
   const [selectedId, setSelectedId]         = useState<string | null>(initialProjectId ?? null);
-  const [selectedProject, setSelectedProject] = useState<ApiProject | null>(null);
+  const [selectedProject, setSelectedProject] = useState<ApiProject | null>(initialProject);
   const [selectedOffers, setSelectedOffers]   = useState<MyOffer[]>([]);
   const [projectLoading, setProjectLoading]   = useState<boolean>(false);
   const [projectError, setProjectError]       = useState<string | null>(null);
