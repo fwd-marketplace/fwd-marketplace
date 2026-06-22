@@ -115,28 +115,29 @@ export async function changeState(req: Request, res: Response) {
   res.status(200).json({ project });
 }
 
-/** PATCH /api/projects/:id/cancelar (ruta protegida — empresa cancela/oculta su proyecto, soft) */
+/** PATCH /api/projects/:id/cancelar (empresa cancela y elimina definitivamente su proyecto) */
 export async function cancel(req: Request, res: Response) {
-  if (!req.user) {
-    throw new ApiError(401, "No autenticado");
-  }
+  if (!req.user) throw new ApiError(401, "No autenticado");
   const parsed = idParamSchema.safeParse(req.params.id);
-  if (!parsed.success) {
-    throw new ApiError(400, "El id del proyecto no es válido");
-  }
-  const project = await projectService.cancelMyProject(readToken(req), req.user.id, parsed.data);
+  if (!parsed.success) throw new ApiError(400, "El id del proyecto no es válido");
+  const result = await projectService.cancelMyProject(readToken(req), req.user.id, parsed.data);
+  res.status(200).json(result);
+}
+
+/** PATCH /api/projects/:id/pausar (empresa pausa temporalmente su proyecto) */
+export async function pause(req: Request, res: Response) {
+  if (!req.user) throw new ApiError(401, "No autenticado");
+  const parsed = idParamSchema.safeParse(req.params.id);
+  if (!parsed.success) throw new ApiError(400, "El id del proyecto no es válido");
+  const project = await projectService.pauseMyProject(readToken(req), req.user.id, parsed.data);
   res.status(200).json({ project });
 }
 
-/** DELETE /api/projects/:id (ruta protegida — empresa elimina definitivamente su proyecto, hard) */
-export async function remove(req: Request, res: Response) {
-  if (!req.user) {
-    throw new ApiError(401, "No autenticado");
-  }
+/** PATCH /api/projects/:id/reactivar (empresa reactiva un proyecto pausado) */
+export async function resume(req: Request, res: Response) {
+  if (!req.user) throw new ApiError(401, "No autenticado");
   const parsed = idParamSchema.safeParse(req.params.id);
-  if (!parsed.success) {
-    throw new ApiError(400, "El id del proyecto no es válido");
-  }
-  const result = await projectService.deleteMyProject(readToken(req), req.user.id, parsed.data);
-  res.status(200).json(result);
+  if (!parsed.success) throw new ApiError(400, "El id del proyecto no es válido");
+  const project = await projectService.resumeMyProject(readToken(req), req.user.id, parsed.data);
+  res.status(200).json({ project });
 }

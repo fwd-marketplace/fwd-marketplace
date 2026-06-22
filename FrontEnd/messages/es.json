@@ -668,6 +668,7 @@
     },
     "page_title": "Mis proyectos",
     "create_btn": "Crear proyecto",
+    "ir_a_gestion": "Ir a gestión",
     "back_btn": "Volver",
     "no_projects_title": "Aún no tenés proyectos",
     "no_projects_desc": "Creá tu primer proyecto para empezar a recibir postulaciones de juniors.",
@@ -683,8 +684,13 @@
     "tabs": {
       "project": "Proyecto",
       "entregables": "Entregables",
-      "applications": "Postulaciones"
+      "applications": "Postulaciones",
+      "matches": "Matches"
     },
+    "matches_invite_btn": "Invitar",
+    "matches_invited_btn": "Invitado",
+    "matches_toast_invited": "{name} fue invitado al proyecto.",
+    "matches_empty": "Aún no hay juniors que coincidan con este proyecto.",
     "objective_title": "Objetivo del Proyecto",
     "scope_title": "Alcance y Requerimientos",
     "deliverables_title": "Entregables Esperados",
@@ -784,6 +790,7 @@
       "search_placeholder": "Buscar por título...",
       "status_label": "Estado",
       "status_all": "Todos los estados",
+      "status_published": "Publicado",
       "status_active": "Activos",
       "status_paused": "Pausados",
       "modality_label": "Modalidad",
@@ -799,7 +806,13 @@
       "skill_label": "Tecnología",
       "skill_all": "Todas las tecnologías"
     },
-    "edit_blocked": "No se puede editar: el proyecto ya tiene una oferta adjudicada"
+    "edit_blocked": "No se puede editar: el proyecto ya tiene una oferta adjudicada",
+    "analytics": {
+      "total": "Postulantes",
+      "received": "En recepción",
+      "awarded": "Adjudicado",
+      "rejected": "Rechazados"
+    }
   },
   "app_header": {
     "notifications": "Notificaciones",
@@ -1336,7 +1349,12 @@
     "empty_no_candidates_desc": "Ajustá los filtros o reducí el nivel de match mínimo.",
     "toast_invited": "Se ha invitado a {name} a postularse al proyecto.",
     "toast_cleared": "Se han limpiado los filtros de búsqueda.",
-    "toast_profile_edit": "Funcionalidad de edición de perfil en desarrollo (Fase 3)."
+    "toast_profile_edit": "Funcionalidad de edición de perfil en desarrollo (Fase 3).",
+    "invite_modal_title": "Invitar a proyecto",
+    "invite_modal_desc": "Elegí a qué proyecto querés invitar a {name}.",
+    "invite_modal_cancel": "Cancelar",
+    "invite_modal_confirm": "Invitar",
+    "invite_modal_no_projects": "No tenés proyectos activos para invitar."
   },
   "prototipo_preview": {
     "button": "Vista previa",
@@ -1515,7 +1533,9 @@
       "delete": "Eliminar logo",
       "invalid_type": "El archivo debe ser una imagen.",
       "too_large": "La imagen supera el máximo de 5 MB.",
-      "upload_error": "No se pudo subir el logo. Intentá de nuevo."
+      "upload_error": "No se pudo subir el logo. Intentá de nuevo.",
+      "section_title": "Logo de la empresa",
+      "upload_hint": "Subí o cambiá el logo de tu empresa. Formatos aceptados: JPG, PNG, WebP. Máximo 5 MB."
     },
     "contacts": {
       "add_btn": "Reclutador",
@@ -1896,7 +1916,13 @@
     "select_project_prompt": "Seleccioná un proyecto para comenzar",
     "welcome_desc_empresa": "Seleccioná un proyecto de la lista para ver las propuestas recibidas y gestionar el proceso.",
     "welcome_desc_empresa_empty": "Publicá tu primer proyecto y empezá a recibir propuestas de juniors.",
-    "welcome_cta_empresa": "Crear primer proyecto",
+    "welcome_cta_empresa": "Nuevo proyecto",
+    "welcome_state_published": "Publicado",
+    "analytics_projects": "Proyectos",
+    "analytics_proposals": "Propuestas recibidas",
+    "analytics_active": "Proyectos activos",
+    "analytics_closed": "{count} cerrados",
+    "analytics_projects_list": "Todos los proyectos",
     "welcome_desc_junior": "Seleccioná un proyecto de la lista para ver el estado de tu postulación y seguir el proceso.",
     "welcome_desc_junior_empty": "Explorá el marketplace, encontrá un proyecto que te interese y enviá tu propuesta.",
     "welcome_cta_junior": "Explorar marketplace",
@@ -1998,7 +2024,34 @@
     "chat_sin_conversaciones": "Sin conversaciones aún",
     "sidebar_chats_label": "Chats",
     "chat_n_chats": "{count, plural, one {# chat} other {# chats}}",
-    "chat_overview_empty": "Aún no hay mensajes en este proyecto"
+    "chat_overview_empty": "Aún no hay mensajes en este proyecto",
+    "action_pause_btn": "Pausar proyecto",
+    "action_cancel_btn": "Cancelar proyecto",
+    "pause_dialog_title": "Pausar proyecto",
+    "pause_dialog_body": "El proyecto dejará de aparecer en el marketplace. El plazo queda congelado hasta que lo retomes.",
+    "pause_dialog_confirm": "Pausar",
+    "pause_dialog_back": "Volver",
+    "cancel_step1_title": "¿Pausar en lugar de cancelar?",
+    "cancel_step1_body": "Pausar oculta el proyecto temporalmente sin notificar a nadie. Cancelar es definitivo y notifica a todos los participantes.",
+    "cancel_step1_pause": "Pausar temporalmente",
+    "cancel_step1_cancel": "Cancelar definitivamente",
+    "cancel_step1_back": "Volver",
+    "cancel_step2_title": "Esta acción es irreversible",
+    "cancel_step2_body": "¿Seguro que querés cancelar el proyecto? Se notificará a todos los juniors que participaron.",
+    "cancel_step2_confirm": "Sí, cancelar proyecto",
+    "cancel_step2_back": "Volver",
+    "state_pausado": "Pausado",
+    "action_resume_btn": "Reactivar proyecto",
+    "resume_dialog_title": "Reactivar proyecto",
+    "resume_dialog_body": "El proyecto volverá a aparecer en el marketplace en estado de recepción de postulantes.",
+    "resume_dialog_confirm": "Reactivar",
+    "resume_dialog_back": "Volver",
+    "state_en_recepcion": "En recepción",
+    "section_matches": "Matches",
+    "matches_empty": "Aún no hay juniors que coincidan con este proyecto. El algoritmo de matching estará disponible pronto.",
+    "matches_invite_btn": "Invitar",
+    "matches_invited_btn": "Invitado",
+    "matches_toast_invited": "{name} fue invitado al proyecto."
   },
   "project_chatbot": {
     "title": "Asistente del proyecto",

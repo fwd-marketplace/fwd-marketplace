@@ -16,9 +16,10 @@ const STATE_LABEL: Record<ProjectState, string> = {
   en_desarrollo: "En desarrollo",
   cerrado: "Cerrado",
   cancelado: "Cancelado",
+  pausado: "Pausado",
 };
 
-const STATE_ORDER: ProjectState[] = ["borrador", "en_recepcion", "en_evaluacion", "adjudicado", "en_desarrollo", "cerrado", "cancelado"];
+const STATE_ORDER: ProjectState[] = ["borrador", "en_recepcion", "en_evaluacion", "adjudicado", "en_desarrollo", "cerrado", "cancelado", "pausado"];
 
 function initials(text: string): string {
   const parts = text.trim().split(/\s+/).filter(Boolean);

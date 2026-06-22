@@ -1,6 +1,8 @@
 "use client";
 
 import { useEffect, useMemo, useRef, useState, useTransition } from "react";
+import Link from "next/link";
+import { ProjectMatchPanel } from "@/components/gestion/ProjectMatchPanel";
 import { useLocale, useTranslations } from "next-intl";
 import {
   AlertCircle,
@@ -55,7 +57,7 @@ import type {
   UpdateProjectInput,
 } from "@/lib/api/types";
 
-type TabType = "project" | "applications" | "entregables";
+type TabType = "project" | "applications" | "entregables" | "matches";
 type ViewType = "list" | "detail";
 
 const STAR_CHAR = "★";
@@ -819,8 +821,8 @@ export function MisProyectos({
           />
         )}
 
-        {/* Top bar: back + state selector */}
-        <div className="flex flex-wrap items-center justify-between gap-4">
+        {/* Top bar: back */}
+        <div>
           <button
             type="button"
             onClick={() => setView("list")}
@@ -829,106 +831,6 @@ export function MisProyectos({
             <ArrowLeft className="size-4" />
             {t("back_btn")}
           </button>
-
-          <div className="flex items-center gap-2">
-            {/* RF-49/RF-50: Calificar junior — solo si el proyecto está cerrado */}
-            {selectedProject.estado.nombre === "cerrado" && (
-              <Button
-                size="sm"
-                variant="highlight"
-                onClick={() => setIsRatingOpen(true)}
-                className="gap-1.5 rounded-full"
-              >
-                <span aria-hidden="true">{STAR_CHAR}</span>
-                {t("rating.open_btn")}
-              </Button>
-            )}
-
-            {/* Editar — solo si no hay ofertas adjudicadas */}
-            {(() => {
-              const hasAdjudicada = (offersByProject[selectedProject.id] ?? []).some(
-                (o) => o.estado.nombre === "adjudicada",
-              );
-              return (
-                <Button
-                  size="sm"
-                  variant="outline"
-                  disabled={isPending || hasAdjudicada}
-                  onClick={openEditModal}
-                  className="gap-1.5 rounded-full"
-                  title={hasAdjudicada ? t("edit_blocked") : undefined}
-                >
-                  <Edit2 className="size-3.5" />
-                  {t("edit_btn")}
-                </Button>
-              );
-            })()}
-
-            {/* Cancelar (soft) — solo en proyectos publicados activos */}
-            {selectedProject.estado.nombre !== "borrador" &&
-              selectedProject.estado.nombre !== "cerrado" &&
-              selectedProject.estado.nombre !== "cancelado" && (
-                <Button
-                  size="sm"
-                  variant="outline"
-                  disabled={isProjectActionPending}
-                  onClick={() => setConfirmTarget({ kind: "cancel" })}
-                  className="gap-1.5 rounded-full"
-                >
-                  <Ban className="size-3.5" />
-                  {t("cancel_project.btn")}
-                </Button>
-              )}
-
-            {/* Eliminar (hard) — no permitido en proyectos cerrados */}
-            {selectedProject.estado.nombre !== "cerrado" && (
-              <Button
-                size="sm"
-                variant="outline"
-                disabled={isProjectActionPending}
-                onClick={() => setConfirmTarget({ kind: "delete" })}
-                className="gap-1.5 rounded-full border-magenta/40 text-magenta hover:bg-magenta/10 hover:text-magenta"
-              >
-                <Trash2 className="size-3.5" />
-                {t("delete_project.btn")}
-              </Button>
-            )}
-
-            <label
-              htmlFor="detail-state"
-              className="font-body text-xs font-bold uppercase tracking-wider text-ink-muted"
-            >
-              {t("state_label")}
-            </label>
-            <select
-              id="detail-state"
-              value={
-                COMPANY_STATES.includes(
-                  selectedProject.estado.nombre as CompanyProjectState,
-                )
-                  ? selectedProject.estado.nombre
-                  : "en_recepcion"
-              }
-              disabled={
-                isPending ||
-                selectedProject.estado.nombre === "borrador" ||
-                selectedProject.estado.nombre === "cancelado"
-              }
-              onChange={(e) =>
-                updateProjectState(
-                  selectedProject.id,
-                  e.target.value as CompanyProjectState,
-                )
-              }
-              className="rounded-xl border border-border bg-surface-sunken px-3 py-1.5 font-body text-sm text-ink-strong outline-none focus:ring-2 focus:ring-primary/20 disabled:opacity-60"
-            >
-              {COMPANY_STATES.map((state) => (
-                <option key={state} value={state}>
-                  {t(`states.${state}`)}
-                </option>
-              ))}
-            </select>
-          </div>
         </div>
 
         {/* Project header card */}
@@ -971,17 +873,16 @@ export function MisProyectos({
           </div>
         </div>
 
-        {/* Tabs */}
-        <div className="border-b border-border">
+        {/* Tabs + botón ir a gestión */}
+        <div className="flex items-end justify-between border-b border-border pb-px">
           <div className="flex gap-6">
-            {(["project", "entregables", "applications"] as TabType[]).map((tab) => (
+            {(["project", "matches", "applications"] as TabType[]).map((tab) => (
               <button
                 key={tab}
                 type="button"
                 onClick={() => {
                   setActiveTab(tab);
                   if (tab === "applications") loadOffers(selectedProject.id);
-                  if (tab === "entregables") loadEntregables(selectedProject.id);
                 }}
                 className={`relative pb-3 font-body text-sm font-bold transition-colors ${
                   activeTab === tab
@@ -996,6 +897,13 @@ export function MisProyectos({
               </button>
             ))}
           </div>
+          <Link
+            href={`/${locale}/gestion?proyecto=${selectedProject.id}`}
+            className="mb-2 flex items-center gap-1.5 rounded-full border border-border bg-surface px-3 py-1.5 font-body text-xs font-semibold text-ink-strong shadow-[var(--shadow-soft)] transition-colors duration-[var(--duration-fast)] ease-[var(--ease-out)] hover:border-primary/40 hover:bg-surface-sunken hover:text-primary"
+          >
+            <ArrowRight className="size-3.5" />
+            {t("ir_a_gestion")}
+          </Link>
         </div>
 
         {/* Tab: Proyecto */}
@@ -1057,180 +965,76 @@ export function MisProyectos({
           </div>
         )}
 
-        {/* Tab: Entregables */}
-        {activeTab === "entregables" && (
-          <div className="space-y-3">
-            {isPending ? (
-              <p className="rounded-xl border border-dashed border-border bg-surface-sunken p-10 text-center font-body text-sm text-ink-muted">
-                {t("loading")}
-              </p>
-            ) : (entregablesByProject[selectedProject.id] ?? []).length > 0 ? (
-              (entregablesByProject[selectedProject.id] ?? []).map((entregable) => {
-                const juniorName = entregable.junior
-                  ? [entregable.junior.nombre, entregable.junior.apellido1].filter(Boolean).join(" ")
-                  : "—";
-                const estadoStyles: Record<string, string> = {
-                  pendiente:   "bg-ink-muted/10 text-ink-muted",
-                  enviado:     "bg-primary/10 text-primary",
-                  en_revision: "bg-warning/10 text-warning",
-                  aprobado:    "bg-accent/10 text-accent",
-                };
-                const estadoNombre = entregable.estado.nombre as EntregableState;
-                return (
-                  <div
-                    key={entregable.id}
-                    className="rounded-xl border border-border bg-surface p-5 shadow-[var(--shadow-soft)]"
-                  >
-                    <div className="flex flex-col justify-between gap-4 md:flex-row md:items-start">
-                      <div className="space-y-1.5">
-                        <div className="flex flex-wrap items-center gap-2">
-                          <p className="font-heading text-base font-bold text-ink-strong">{juniorName}</p>
-                          <span className={`rounded-full px-3 py-1 text-xs font-semibold ${estadoStyles[estadoNombre] ?? estadoStyles.enviado}`}>
-                            {t(`entregables.state_${estadoNombre}`)}
-                          </span>
-                          <span className="rounded-lg bg-surface-sunken px-2 py-0.5 font-body text-[10px] font-bold uppercase tracking-wider text-ink-muted">
-                            {t(`entregables.tipo_${entregable.tipo}`)} v{entregable.version}
-                          </span>
-                        </div>
-                        <p className="font-body text-xs text-ink-muted">
-                          {new Date(entregable.fecha).toLocaleDateString(locale, {
-                            day: "numeric",
-                            month: "long",
-                            year: "numeric",
-                          })}
-                        </p>
-                        {/* RF-43: Botones de vista/descarga claros */}
-                        {entregable.url && (
-                          <div className="flex flex-wrap gap-2 pt-0.5">
-                            <a
-                              href={entregable.url}
-                              target="_blank"
-                              rel="noreferrer"
-                              className="inline-flex items-center gap-1.5 rounded-full bg-primary/10 px-3 py-1.5 font-body text-xs font-bold text-primary transition-colors hover:bg-primary hover:text-white"
-                            >
-                              <ExternalLink className="size-3.5" aria-hidden="true" />
-                              {t("entregables.view_link")}
-                            </a>
-                            <a
-                              href={entregable.url}
-                              download
-                              className="inline-flex items-center gap-1.5 rounded-full border border-border px-3 py-1.5 font-body text-xs font-bold text-ink-muted transition-colors hover:border-primary/30 hover:text-primary"
-                            >
-                              <Download className="size-3.5" aria-hidden="true" />
-                              {t("entregables.download_btn")}
-                            </a>
-                          </div>
-                        )}
-                      </div>
-                      <div className="flex flex-wrap gap-2">
-                        <Button
-                          size="sm"
-                          variant="outline"
-                          disabled={isPending || estadoNombre === "en_revision" || estadoNombre === "aprobado"}
-                          onClick={() => handleReviewEntregable(entregable.id, "revisar")}
-                        >
-                          {t("entregables.review_btn")}
-                        </Button>
-                        {/* RF-44: Solicitar cambios */}
-                        <Button
-                          size="sm"
-                          variant="warning"
-                          disabled={isPending || estadoNombre === "aprobado"}
-                          onClick={() => { setRequestChangesTarget(entregable); setRequestChangesComment(""); }}
-                        >
-                          <AlertCircle className="size-3.5" aria-hidden="true" />
-                          {t("entregables.request_changes_btn")}
-                        </Button>
-                        <Button
-                          size="sm"
-                          variant="accent"
-                          disabled={isPending || estadoNombre === "aprobado"}
-                          onClick={() => handleReviewEntregable(entregable.id, "aprobar")}
-                        >
-                          {t("entregables.approve_btn")}
-                        </Button>
-                      </div>
-                    </div>
-                  </div>
-                );
-              })
-            ) : (
-              <p className="rounded-xl border border-dashed border-border bg-surface-sunken p-10 text-center font-body text-sm text-ink-muted">
-                {t("entregables.empty")}
-              </p>
-            )}
-          </div>
+        {/* Tab: Matches */}
+        {activeTab === "matches" && (
+          <ProjectMatchPanel
+            project={selectedProject}
+            inviteLabel={t("matches_invite_btn")}
+            invitedLabel={t("matches_invited_btn")}
+            emptyText={t("matches_empty")}
+            toastInvitedTemplate={t("matches_toast_invited", { name: "{name}" })}
+          />
         )}
 
-        {/* Tab: Postulaciones */}
-        {activeTab === "applications" && (
-          <div className="space-y-3">
-            {selectedOffers.length > 0 ? (
-              selectedOffers.map((offer) => {
-                const juniorName = [offer.junior.nombre, offer.junior.apellido1]
-                  .filter(Boolean)
-                  .join(" ");
-                return (
-                  <div
-                    key={offer.id}
-                    className="rounded-xl border border-border bg-surface p-5 shadow-[var(--shadow-soft)]"
-                  >
-                    <div className="flex flex-col justify-between gap-4 md:flex-row md:items-start">
-                      <div className="space-y-2">
-                        <div className="flex flex-wrap items-center gap-2">
-                          <p className="font-heading text-base font-bold text-ink-strong">
-                            {juniorName}
-                          </p>
-                          <StatusPill
-                            label={t(`offer_states.${offer.estado.nombre}`)}
-                            variant={offerVariant(offer.estado.nombre)}
-                          />
-                        </div>
-                        <p className="font-body text-sm leading-relaxed text-ink-muted">
-                          {offer.propuesta}
-                        </p>
-                        {offer.prototipo_url && (
-                          <a
-                            href={offer.prototipo_url}
-                            className="font-body text-xs font-bold text-primary hover:underline"
-                            target="_blank"
-                            rel="noreferrer"
-                          >
-                            {t("prototype_link")}
-                          </a>
-                        )}
-                      </div>
-                      <div className="flex gap-2">
-                        <Button
-                          size="sm"
-                          variant="accent"
-                          disabled={isPending || offer.estado.nombre === "adjudicada"}
-                          onClick={() => decideOffer(offer.id, "aceptar")}
-                        >
-                          {t("applications.accept")}
-                        </Button>
-                        <Button
-                          size="sm"
-                          variant="magenta"
-                          disabled={
-                            isPending || offer.estado.nombre === "no_seleccionada"
-                          }
-                          onClick={() => decideOffer(offer.id, "rechazar")}
-                        >
-                          {t("applications.reject")}
-                        </Button>
-                      </div>
+        {/* Tab: Postulaciones — solo analíticas, sin acciones */}
+        {activeTab === "applications" && (() => {
+          const uniqueJuniors = new Set(selectedOffers.map((o) => `${o.junior.nombre}${o.junior.apellido1 ?? ""}`)).size;
+          const total      = uniqueJuniors;
+          const recibidas  = selectedOffers.filter((o) => o.estado.nombre === "enviada").length;
+          const adjudicada = selectedOffers.find((o) => o.estado.nombre === "adjudicada");
+          const rechazadas = selectedOffers.filter((o) => o.estado.nombre === "no_seleccionada").length;
+          const adjName    = adjudicada
+            ? [adjudicada.junior.nombre, adjudicada.junior.apellido1].filter(Boolean).join(" ")
+            : null;
+
+          return (
+            <div className="space-y-6">
+              {isPending ? (
+                <p className="rounded-xl border border-dashed border-border bg-surface-sunken p-10 text-center font-body text-sm text-ink-muted">
+                  {t("loading")}
+                </p>
+              ) : total === 0 ? (
+                <p className="rounded-xl border border-dashed border-border bg-surface-sunken p-10 text-center font-body text-sm text-ink-muted">
+                  {t("applications_empty")}
+                </p>
+              ) : (
+                <>
+                  {/* Métricas */}
+                  <div className="grid grid-cols-2 gap-4 sm:grid-cols-4">
+                    <div className="flex flex-col items-center justify-center rounded-xl border border-border bg-surface-sunken p-5 text-center">
+                      <span className="font-heading text-4xl font-black text-primary">{total}</span>
+                      <span className="mt-1 font-body text-xs font-semibold text-ink-muted">{t("analytics.total")}</span>
+                    </div>
+                    <div className="flex flex-col items-center justify-center rounded-xl border border-border bg-surface-sunken p-5 text-center">
+                      <span className="font-heading text-4xl font-black text-warning">{recibidas}</span>
+                      <span className="mt-1 font-body text-xs font-semibold text-ink-muted">{t("analytics.received")}</span>
+                    </div>
+                    <div className="flex flex-col items-center justify-center rounded-xl border border-border bg-surface-sunken p-5 text-center">
+                      <span className="font-heading text-4xl font-black text-accent">{adjudicada ? 1 : 0}</span>
+                      <span className="mt-1 font-body text-xs font-semibold text-ink-muted">{t("analytics.awarded")}</span>
+                    </div>
+                    <div className="flex flex-col items-center justify-center rounded-xl border border-border bg-surface-sunken p-5 text-center">
+                      <span className="font-heading text-4xl font-black text-magenta">{rechazadas}</span>
+                      <span className="mt-1 font-body text-xs font-semibold text-ink-muted">{t("analytics.rejected")}</span>
                     </div>
                   </div>
-                );
-              })
-            ) : (
-              <p className="rounded-xl border border-dashed border-border bg-surface-sunken p-10 text-center font-body text-sm text-ink-muted">
-                {isPending ? t("loading") : t("applications_empty")}
-              </p>
-            )}
-          </div>
-        )}
+
+                  {/* Junior adjudicado */}
+                  {adjName && (
+                    <div className="flex items-center gap-3 rounded-xl border border-accent/30 bg-accent/10 px-5 py-4">
+                      <CheckCircle2 className="size-5 shrink-0 text-accent" />
+                      <div>
+                        <p className="font-body text-xs font-bold uppercase tracking-wider text-accent">{t("analytics.awarded")}</p>
+                        <p className="font-heading text-base font-bold text-ink-strong">{adjName}</p>
+                      </div>
+                    </div>
+                  )}
+                </>
+              )}
+
+            </div>
+          );
+        })()}
       </div>
     );
   }
@@ -1458,13 +1262,13 @@ export function MisProyectos({
             .
           </span>
         </h1>
-        <Button
-          onClick={() => setIsModalOpen(true)}
-          className="gap-2 rounded-full bg-primary font-semibold text-white hover:bg-primary/90"
+        <Link
+          href={`/${locale}/gestion`}
+          className="flex items-center gap-1.5 rounded-full border border-border bg-surface px-4 py-2 font-body text-sm font-semibold text-ink-strong shadow-[var(--shadow-soft)] transition-colors duration-[var(--duration-fast)] ease-[var(--ease-out)] hover:border-primary/40 hover:bg-surface-sunken hover:text-primary"
         >
-          <Plus className="size-4" />
-          {t("create_btn")}
-        </Button>
+          <ArrowRight className="size-4" />
+          {t("ir_a_gestion")}
+        </Link>
       </div>
 
       {/* Filters */}
@@ -1506,13 +1310,19 @@ export function MisProyectos({
                 className="w-full rounded-xl border border-border bg-surface-sunken px-3.5 py-2 font-body text-sm text-ink-strong outline-none focus:ring-2 focus:ring-primary/20"
               >
                 <option value="all">{t("filters.status_all")}</option>
-                {(["borrador", ...COMPANY_STATES, "cancelado"] as ProjectState[]).map(
-                  (state) => (
-                    <option key={state} value={state}>
-                      {t(`states.${state}`)}
-                    </option>
-                  ),
-                )}
+                {(
+                  [
+                    { value: "en_recepcion",  label: t("filters.status_published") },
+                    { value: "en_evaluacion", label: t("states.en_evaluacion") },
+                    { value: "adjudicado",    label: t("states.adjudicado") },
+                    { value: "cerrado",       label: t("states.cerrado") },
+                    { value: "cancelado",     label: t("states.cancelado") },
+                  ] as { value: ProjectState; label: string }[]
+                ).map(({ value, label }) => (
+                  <option key={value} value={value}>
+                    {label}
+                  </option>
+                ))}
               </select>
             </div>
 
@@ -1575,13 +1385,13 @@ export function MisProyectos({
           <p className="mb-6 max-w-md font-body text-sm text-ink-muted">
             {t("no_projects_desc")}
           </p>
-          <Button
-            onClick={() => setIsModalOpen(true)}
-            className="gap-2 rounded-full bg-primary font-semibold text-white hover:bg-primary/90"
+          <Link
+            href={`/${locale}/gestion`}
+            className="flex items-center gap-1.5 rounded-full border border-border bg-surface px-4 py-2 font-body text-sm font-semibold text-ink-strong shadow-[var(--shadow-soft)] transition-colors duration-[var(--duration-fast)] ease-[var(--ease-out)] hover:border-primary/40 hover:bg-surface-sunken hover:text-primary"
           >
-            <Plus className="size-4" />
-            {t("create_btn")}
-          </Button>
+            <ArrowRight className="size-4" />
+            {t("ir_a_gestion")}
+          </Link>
         </div>
       ) : filteredProjects.length > 0 ? (
         <div className="grid grid-cols-1 gap-6 sm:grid-cols-2">
