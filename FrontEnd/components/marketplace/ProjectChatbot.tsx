@@ -12,6 +12,11 @@ import { cn } from "@/lib/utils";
 interface Props {
   projectId: string;
   projectTitulo: string;
+  /**
+   * Si se provee, "Ir al chat" cambia a la sección de chat en la MISMA página (sin recargar). Si no,
+   * cae a un enlace que navega a /gestion del proyecto.
+   */
+  onGoToChat?: () => void;
 }
 
 /**
@@ -26,7 +31,7 @@ function stripEscalationTag(text: string): string {
   return text.replace(ESCALATION_TAG, "").replace(/\s*\[\[?[A-Z]*$/i, "").trimEnd();
 }
 
-export function ProjectChatbot({ projectId, projectTitulo }: Props) {
+export function ProjectChatbot({ projectId, projectTitulo, onGoToChat }: Props) {
   const t = useTranslations("project_chatbot");
   const locale = useLocale();
 
@@ -228,13 +233,24 @@ export function ProjectChatbot({ projectId, projectTitulo }: Props) {
             {t("escalate_sent_title")}
           </p>
           <p className="mt-1 font-body text-xs text-ink-muted">{t("escalate_sent_desc")}</p>
-          <Link
-            href={`/${locale}/gestion?proyecto=${projectId}`}
-            className="mt-3 inline-flex items-center gap-1.5 rounded-full bg-secondary px-4 py-2 font-body text-sm font-semibold text-white transition-colors hover:bg-secondary/80"
-          >
-            <MessagesSquare className="size-4" aria-hidden="true" />
-            {t("go_to_chat")}
-          </Link>
+          {onGoToChat ? (
+            <button
+              type="button"
+              onClick={onGoToChat}
+              className="mt-3 inline-flex items-center gap-1.5 rounded-full bg-secondary px-4 py-2 font-body text-sm font-semibold text-white transition-colors hover:bg-secondary/80"
+            >
+              <MessagesSquare className="size-4" aria-hidden="true" />
+              {t("go_to_chat")}
+            </button>
+          ) : (
+            <Link
+              href={`/${locale}/gestion?proyecto=${projectId}`}
+              className="mt-3 inline-flex items-center gap-1.5 rounded-full bg-secondary px-4 py-2 font-body text-sm font-semibold text-white transition-colors hover:bg-secondary/80"
+            >
+              <MessagesSquare className="size-4" aria-hidden="true" />
+              {t("go_to_chat")}
+            </Link>
+          )}
         </div>
       ) : escalateOpen ? (
         /* Compositor para escribirle a la empresa */
