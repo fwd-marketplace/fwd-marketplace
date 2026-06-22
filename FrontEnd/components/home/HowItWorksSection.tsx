@@ -26,7 +26,7 @@ export default function HowItWorksSection() {
   ];
 
   return (
-    <section className="py-24 bg-canvas text-ink">
+    <section id="como-funciona" className="py-24 bg-canvas text-ink">
       <div className="mx-auto w-full max-w-7xl px-6 md:px-10">
         <div className="text-center mb-16 space-y-4">
           <p className="text-secondary font-bold text-sm tracking-widest uppercase">{t('eyebrow')}</p>

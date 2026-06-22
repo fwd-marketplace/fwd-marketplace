@@ -50,8 +50,8 @@
       "logo_alt": "Logo de Fundación Forward Costa Rica formándose como una constelación",
       "title": "Tu primer proyecto freelance",
       "description": "Conecta con empresas reales, construye tu portafolio y empieza tu carrera profesional.",
-      "cta_projects": "Ver proyectos",
-      "cta_company": "Soy empresa",
+      "cta_projects": "Unirme a la comunidad",
+      "cta_company": "Conocer la dinámica",
       "card_eyebrow": "Proyecto destacado",
       "card_title": "Dashboard de Analítica",
       "card_company": "TechFlow Systems",
@@ -925,6 +925,7 @@
     "avatar": {
       "alt": "Foto de perfil",
       "change": "Cambiar foto de perfil",
+      "delete": "Eliminar foto de perfil",
       "invalid_type": "El archivo debe ser una imagen.",
       "too_large": "La imagen supera el máximo de 5 MB."
     },
@@ -998,6 +999,8 @@
     "activity": {
       "title": "Actividad Reciente",
       "view_all": "Ver todo el historial",
+      "ver_notificaciones": "Ver todas las notificaciones",
+      "empty": "Aún no hay actividad registrada.",
       "just_now": "Hace un momento",
       "updated_personal": "Actualizó su información personal de contacto",
       "removed_skill": "Eliminó la habilidad '{skill}' de su stack",
@@ -1082,8 +1085,14 @@
       "explore_routes": "Explora nuevas rutas"
     },
     "notifications": {
-      "activity_title": "Actividad Reciente",
+      "activity_title": "Notificaciones",
       "mark_all_read": "Marcar todas como leídas",
+      "mark_read": "Marcar como leída",
+      "unread": "sin leer",
+      "empty": "No tenés notificaciones por el momento.",
+      "page_info": "Mostrando {from}–{to} de {total}",
+      "prev": "Anterior",
+      "next": "Siguiente",
       "today": "Hoy",
       "yesterday": "Ayer",
       "older_empty": "No hay notificaciones más antiguas."
@@ -1737,7 +1746,9 @@
     "mock_badge": "Modo demo",
     "mock_disclaimer": "Mensajería en modo demo. Se conecta con el backend en Fase 2.0.",
     "no_messages": "Aún no hay mensajes en esta conversación.",
-    "unnamed_project": "Proyecto sin título"
+    "unnamed_project": "Proyecto sin título",
+    "empty_desc_open": "Podés iniciar una conversación con cualquier proyecto publicado.",
+    "solo_chat_badge": "Solo chat"
   },
   "notification_panel": {
     "aria_open": "Notificaciones",
@@ -1900,12 +1911,18 @@
     "proceso_retirar_si": "Si, retirar",
     "proceso_cancelar": "Cancelar",
     "junior_nueva_postulacion": "Nueva postulación",
+    "junior_solo_chat": "Chat abierto",
     "chat_label_empresa": "Empresa",
     "chat_label_junior": "Junior",
     "chat_empty": "Aún no hay mensajes. Iniciá la conversación.",
     "chat_placeholder": "Escribí un mensaje... (Enter para enviar)",
     "chat_send": "Enviar mensaje",
-    "chat_hint": "Enter para enviar · Shift+Enter para nueva línea"
+    "chat_hint": "Enter para enviar · Shift+Enter para nueva línea",
+    "chat_seleccionar_junior": "Conversaciones",
+    "chat_sin_conversaciones": "Sin conversaciones aún",
+    "sidebar_chats_label": "Chats",
+    "chat_n_chats": "{count, plural, one {# chat} other {# chats}}",
+    "chat_overview_empty": "Aún no hay mensajes en este proyecto"
   },
   "cosmos_profesional": {
     "screen_label": "Constelación de puntos importantes",

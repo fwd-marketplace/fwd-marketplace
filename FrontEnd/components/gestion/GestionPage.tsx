@@ -48,7 +48,7 @@ import {
 } from "@/lib/actions/marketplace";
 import { generateProposalAction, suggestStackAction } from "@/lib/actions/ai";
 import { streamAssistant } from "@/lib/api/ai-client";
-import { getProjectMensajesAction, sendMensajeAction } from "@/lib/actions/mensajes";
+import { getProjectMensajesAction, sendMensajeAction, getMyConversacionesAction } from "@/lib/actions/mensajes";
 import type {
   AiChatMessage,
   ApiMensaje,
@@ -56,6 +56,7 @@ import type {
   ApiRoleName,
   CatalogArea,
   CatalogSkill,
+  ConversacionItem,
   CreateProjectInput,
   MyOffer,
   OfferState,
@@ -76,12 +77,6 @@ type ProposalStatus =
 type EmpresaStatus =
   | "enviada" | "revision" | "cambios" | "adjudicada" | "noseleccionada";
 
-interface ChatMessage {
-  id: string;
-  from: "empresa" | "junior";
-  text: string;
-  time: string;
-}
 
 interface JuniorProposal {
   v: number;
@@ -300,6 +295,7 @@ export function GestionPage({ role, userId, initialProjectId, disponible = true 
   // Sidebar data — starts empty, replaced by real API data on mount
   const [sidebarProjects, setSidebarProjects] = useState<ApiProject[]>([]);
   const [myOffers, setMyOffers] = useState<MyOffer[]>([]);
+  const [myConversaciones, setMyConversaciones] = useState<ConversacionItem[]>([]);
 
   // Catalogs for create/edit form (empresa only)
   const [catalogs, setCatalogs] = useState<{ areas: CatalogArea[]; skills: CatalogSkill[] }>({ areas: [], skills: [] });
@@ -337,14 +333,18 @@ export function GestionPage({ role, userId, initialProjectId, disponible = true 
     let active = true;
     (async () => {
       if (isEmpresa) {
-        const [pr, cr] = await Promise.all([getMyProjectsAction(), getCatalogsAction()]);
+        const [pr, cr, convR] = await Promise.all([getMyProjectsAction(), getCatalogsAction(), getMyConversacionesAction()]);
         if (active) {
           if (pr.ok) setSidebarProjects(pr.data.projects);
           if (cr.ok) setCatalogs({ areas: cr.data.areas, skills: cr.data.skills });
+          if (convR.ok) setMyConversaciones(convR.data);
         }
       } else {
-        const or = await getMyOffersAction();
-        if (active && or.ok) setMyOffers(or.data.ofertas);
+        const [or, convR] = await Promise.all([getMyOffersAction(), getMyConversacionesAction()]);
+        if (active) {
+          if (or.ok) setMyOffers(or.data.ofertas);
+          if (convR.ok) setMyConversaciones(convR.data);
+        }
       }
     })();
     return () => { active = false; };
@@ -421,9 +421,9 @@ export function GestionPage({ role, userId, initialProjectId, disponible = true 
     setDeleting(false);
   };
 
-  const doSelect = (id: string) => {
+  const doSelect = (id: string, initialSection: Section = "info") => {
     setSelectedId(id);
-    setSection("info");
+    setSection(initialSection);
     setFormMode(null);
     const proj = sidebarProjects.find((p) => p.id === id) ?? null;
     setSelectedProject(proj);
@@ -435,9 +435,9 @@ export function GestionPage({ role, userId, initialProjectId, disponible = true 
     );
   };
 
-  const handleSelect = (id: string) => {
+  const handleSelect = (id: string, initialSection: Section = "info") => {
     if (formMode !== null) { setPendingNav({ type: "select", id }); return; }
-    doSelect(id);
+    doSelect(id, initialSection);
   };
 
   const handleBack = () => {
@@ -493,87 +493,154 @@ export function GestionPage({ role, userId, initialProjectId, disponible = true 
             </div>
             <div className="flex-1 overflow-y-auto p-3">
               {isEmpresa ? (
-                sidebarProjects.length === 0 ? <SidebarEmpty text={t("empty_empresa")} /> : (
-                  <ul className="flex flex-col gap-0.5">
-                    {sidebarProjects.map((proyecto) => {
-                      const isSelected = proyecto.id === selectedId;
-                      const count  = isSelected ? projectOffers.length : (proyecto.n_ofertas ?? 0);
-                      const hasAdj = isSelected && projectOffers.some((o) => o.estado.nombre === "adjudicada");
-                      return (
-                        <li key={proyecto.id}>
-                          <div className="group flex items-center gap-1 rounded-xl hover:bg-white/10 transition-colors duration-[var(--duration-fast)] ease-[var(--ease-out)]">
+                (() => {
+                  const convSet = new Map(myConversaciones.map((c) => [c.proyecto.id, c.n_participantes]));
+                  const mainProjects = sidebarProjects.filter((p) => (p.n_ofertas ?? 0) > 0 || !convSet.has(p.id));
+                  const chatProjects = sidebarProjects.filter((p) => (p.n_ofertas ?? 0) === 0 && convSet.has(p.id));
+                  const renderEmpresaItem = (proyecto: (typeof sidebarProjects)[0], openChat = false) => {
+                    const isSelected = proyecto.id === selectedId;
+                    const count  = isSelected ? projectOffers.length : (proyecto.n_ofertas ?? 0);
+                    const hasAdj = isSelected && projectOffers.some((o) => o.estado.nombre === "adjudicada");
+                    const nChats = convSet.get(proyecto.id) ?? 0;
+                    return (
+                      <li key={proyecto.id}>
+                        <div className="group flex items-center gap-1 rounded-xl hover:bg-white/10 transition-colors duration-[var(--duration-fast)] ease-[var(--ease-out)]">
+                          <button
+                            onClick={() => handleSelect(proyecto.id, openChat ? "chat" : "info")}
+                            className="flex flex-1 items-center gap-3 px-3 py-3 text-left"
+                          >
+                            <div className="min-w-0 flex-1">
+                              <p className="truncate font-heading text-sm font-bold text-white">{proyecto.titulo}</p>
+                              <p className="mt-0.5 font-body text-xs text-white/50">
+                                {count > 0 && t("proposals_count", { count })}
+                                {count > 0 && nChats > 0 && " · "}
+                                {nChats > 0 && (
+                                  <span className="inline-flex items-center gap-0.5">
+                                    <MessageSquare className="size-2.5 inline" aria-hidden="true" />
+                                    {t("chat_n_chats", { count: nChats })}
+                                  </span>
+                                )}
+                                {count === 0 && nChats === 0 && t("proposals_count", { count: 0 })}
+                              </p>
+                            </div>
+                            {hasAdj && <CheckCircle2 className="size-4 shrink-0 text-accent" aria-hidden="true" />}
+                            <ChevronRight className="size-4 shrink-0 text-white/30 transition-colors group-hover:text-white/60" aria-hidden="true" />
+                          </button>
+                          {proyecto.estado.nombre === "borrador" && (
                             <button
-                              onClick={() => handleSelect(proyecto.id)}
-                              className="flex flex-1 items-center gap-3 px-3 py-3 text-left"
+                              type="button"
+                              onClick={(e) => { e.stopPropagation(); setDeleteTarget(proyecto.id); }}
+                              aria-label="Eliminar proyecto"
+                              className="mr-2 hidden size-7 shrink-0 items-center justify-center rounded-full text-white/30 transition-colors hover:bg-magenta/20 hover:text-magenta group-hover:flex"
                             >
-                              <div className="min-w-0 flex-1">
-                                <p className="truncate font-heading text-sm font-bold text-white">{proyecto.titulo}</p>
-                                <p className="mt-0.5 font-body text-xs text-white/50">{t("proposals_count", { count })}</p>
-                              </div>
-                              {hasAdj && <CheckCircle2 className="size-4 shrink-0 text-accent" aria-hidden="true" />}
-                              <ChevronRight className="size-4 shrink-0 text-white/30 transition-colors group-hover:text-white/60" aria-hidden="true" />
+                              <Trash2 className="size-3.5" aria-hidden="true" />
                             </button>
-                            {proyecto.estado.nombre === "borrador" && (
-                              <button
-                                type="button"
-                                onClick={(e) => { e.stopPropagation(); setDeleteTarget(proyecto.id); }}
-                                aria-label="Eliminar proyecto"
-                                className="mr-2 hidden size-7 shrink-0 items-center justify-center rounded-full text-white/30 transition-colors hover:bg-magenta/20 hover:text-magenta group-hover:flex"
-                              >
-                                <Trash2 className="size-3.5" aria-hidden="true" />
-                              </button>
-                            )}
-                          </div>
-                        </li>
-                      );
-                    })}
-                  </ul>
-                )
-              ) : (
-                myOffers.length === 0 ? <SidebarEmpty text={t("empty_junior")} /> : (() => {
-                  // Unique projects from offers (keep latest state per project — myOffers is DESC)
-                  const seen = new Set<string>();
-                  const juniorProjects = myOffers
-                    .filter((o) => o.proyecto && !seen.has(o.proyecto.id) && !!seen.add(o.proyecto.id))
-                    .map((o) => o.proyecto!);
+                          )}
+                        </div>
+                      </li>
+                    );
+                  };
+                  if (mainProjects.length === 0 && chatProjects.length === 0) {
+                    return <SidebarEmpty text={t("empty_empresa")} />;
+                  }
                   return (
-                    <ul className="flex flex-col gap-0.5">
-                      {juniorProjects.map((proyecto) => {
-                        const latestOferta = myOffers.find((o) => o.proyecto?.id === proyecto.id);
-                        const cfg = latestOferta ? OFFER_STATE_CONFIG[latestOferta.estado.nombre] : null;
-                        return (
-                          <li key={proyecto.id}>
-                            <button
-                              onClick={() => handleSelect(proyecto.id)}
-                              className="group flex w-full items-center gap-3 rounded-xl px-3 py-3 text-left transition-colors duration-[var(--duration-fast)] ease-[var(--ease-out)] hover:bg-white/10"
-                            >
-                              <div className="min-w-0 flex-1">
-                                <p className="truncate font-heading text-sm font-bold text-white">
-                                  {proyecto.titulo}
-                                </p>
-                                <p className="mt-0.5 flex items-center gap-1.5 font-body text-xs text-white/60">
-                                  {cfg ? (
-                                    <>
-                                      <span className={cn("size-2 shrink-0 rounded-full", cfg.dot)} aria-hidden="true" />
-                                      {cfg.label}
-                                    </>
-                                  ) : (
-                                    <>
-                                      <span className="size-2 shrink-0 rounded-full border border-white/40" aria-hidden="true" />
-                                      {t("junior_nueva_postulacion")}
-                                    </>
-                                  )}
-                                </p>
-                              </div>
-                              {latestOferta?.estado.nombre === "adjudicada" && (
-                                <CheckCircle2 className="size-4 shrink-0 text-accent" aria-hidden="true" />
+                    <>
+                      {mainProjects.length > 0 && (
+                        <ul className="flex flex-col gap-0.5">
+                          {mainProjects.map(renderEmpresaItem)}
+                        </ul>
+                      )}
+                      {chatProjects.length > 0 && (
+                        <>
+                          <div className="my-3 flex items-center gap-2 px-3">
+                            <div className="h-px flex-1 bg-white/10" />
+                            <span className="font-body text-[10px] font-bold uppercase tracking-widest text-white/30">
+                              {t("sidebar_chats_label")}
+                            </span>
+                            <div className="h-px flex-1 bg-white/10" />
+                          </div>
+                          <ul className="flex flex-col gap-0.5">
+                            {chatProjects.map((p) => renderEmpresaItem(p, true))}
+                          </ul>
+                        </>
+                      )}
+                    </>
+                  );
+                })()
+              ) : (
+                (() => {
+                  const seen = new Set<string>();
+                  const fromOffers = myOffers
+                    .filter((o) => o.proyecto && !seen.has(o.proyecto.id) && !!seen.add(o.proyecto.id))
+                    .map((o) => ({ id: o.proyecto!.id, titulo: o.proyecto!.titulo }));
+                  const fromConvos = myConversaciones
+                    .filter((c) => c.proyecto && !seen.has(c.proyecto.id) && !!seen.add(c.proyecto.id))
+                    .map((c) => ({ id: c.proyecto.id, titulo: c.proyecto.titulo }));
+
+                  const renderJuniorItem = (proyecto: { id: string; titulo: string }, soloChat: boolean) => {
+                    const latestOferta = myOffers.find((o) => o.proyecto?.id === proyecto.id);
+                    const cfg = latestOferta ? OFFER_STATE_CONFIG[latestOferta.estado.nombre] : null;
+                    return (
+                      <li key={proyecto.id}>
+                        <button
+                          onClick={() => handleSelect(proyecto.id, soloChat ? "chat" : "info")}
+                          className="group flex w-full items-center gap-3 rounded-xl px-3 py-3 text-left transition-colors duration-[var(--duration-fast)] ease-[var(--ease-out)] hover:bg-white/10"
+                        >
+                          <div className="min-w-0 flex-1">
+                            <p className="truncate font-heading text-sm font-bold text-white">{proyecto.titulo}</p>
+                            <p className="mt-0.5 flex items-center gap-1.5 font-body text-xs text-white/60">
+                              {cfg ? (
+                                <>
+                                  <span className={cn("size-2 shrink-0 rounded-full", cfg.dot)} aria-hidden="true" />
+                                  {cfg.label}
+                                </>
+                              ) : soloChat ? (
+                                <>
+                                  <MessageSquare className="size-3 shrink-0 text-white/40" aria-hidden="true" />
+                                  {t("junior_solo_chat")}
+                                </>
+                              ) : (
+                                <>
+                                  <span className="size-2 shrink-0 rounded-full border border-white/40" aria-hidden="true" />
+                                  {t("junior_nueva_postulacion")}
+                                </>
                               )}
-                              <ChevronRight className="size-4 shrink-0 text-white/30 transition-colors group-hover:text-white/60" aria-hidden="true" />
-                            </button>
-                          </li>
-                        );
-                      })}
-                    </ul>
+                            </p>
+                          </div>
+                          {latestOferta?.estado.nombre === "adjudicada" && (
+                            <CheckCircle2 className="size-4 shrink-0 text-accent" aria-hidden="true" />
+                          )}
+                          <ChevronRight className="size-4 shrink-0 text-white/30 transition-colors group-hover:text-white/60" aria-hidden="true" />
+                        </button>
+                      </li>
+                    );
+                  };
+
+                  if (fromOffers.length === 0 && fromConvos.length === 0) {
+                    return <SidebarEmpty text={t("empty_junior")} />;
+                  }
+                  return (
+                    <>
+                      {fromOffers.length > 0 && (
+                        <ul className="flex flex-col gap-0.5">
+                          {fromOffers.map((p) => renderJuniorItem(p, false))}
+                        </ul>
+                      )}
+                      {fromConvos.length > 0 && (
+                        <>
+                          <div className="my-3 flex items-center gap-2 px-3">
+                            <div className="h-px flex-1 bg-white/10" />
+                            <span className="font-body text-[10px] font-bold uppercase tracking-widest text-white/30">
+                              {t("sidebar_chats_label")}
+                            </span>
+                            <div className="h-px flex-1 bg-white/10" />
+                          </div>
+                          <ul className="flex flex-col gap-0.5">
+                            {fromConvos.map((p) => renderJuniorItem(p, true))}
+                          </ul>
+                        </>
+                      )}
+                    </>
                   );
                 })()
               )}
@@ -882,6 +949,15 @@ function InfoPanel({
 
 // ── Chat panel ────────────────────────────────────────────────────────────────
 
+function formatChatTime(iso: string) {
+  return new Date(iso).toLocaleTimeString("es-CR", { hour: "2-digit", minute: "2-digit" });
+}
+
+function juniorDisplayName(u: { nombre: string; apellido1: string | null } | null | undefined) {
+  if (!u) return "Junior";
+  return u.apellido1 ? `${u.nombre} ${u.apellido1}` : u.nombre;
+}
+
 function ChatPanel({
   isEmpresa, project, t, userId,
 }: {
@@ -890,74 +966,84 @@ function ChatPanel({
   t: T;
   userId: string | null;
 }) {
-  const me = isEmpresa ? "empresa" : "junior";
-
-  const [msgs, setMsgs]     = useState<ChatMessage[]>([]);
-  const [draft, setDraft]   = useState("");
-  const [sending, setSending] = useState(false);
+  const [rawMsgs, setRawMsgs]       = useState<ApiMensaje[]>([]);
+  const [draft, setDraft]           = useState("");
+  const [sending, setSending]       = useState(false);
+  const [selectedJuniorId, setSelectedJuniorId] = useState<string | null>(null);
   const bottomRef = useRef<HTMLDivElement>(null);
 
-  // Load messages from backend and poll every 4 s (only when authenticated)
+  // Load + poll every 4 s
   useEffect(() => {
     if (!project?.id || !userId) return;
-
     let active = true;
-
-    const mapMsg = (m: ApiMensaje): ChatMessage => ({
-      id: m.id,
-      from: m.remitente?.id === userId
-        ? (isEmpresa ? "empresa" : "junior")
-        : (isEmpresa ? "junior"  : "empresa"),
-      text: m.contenido,
-      time: new Date(m.fecha_envio).toLocaleTimeString("es-CR", { hour: "2-digit", minute: "2-digit" }),
-    });
-
-    setMsgs([]);
+    setRawMsgs([]);
 
     const load = async () => {
       const r = await getProjectMensajesAction(project.id);
       if (!active) return;
-      if (r.ok) setMsgs(r.data.map(mapMsg));
+      if (r.ok) setRawMsgs(r.data);
     };
 
     void load();
     const timer = setInterval(() => { void load(); }, 4000);
-
     return () => { active = false; clearInterval(timer); };
-  }, [project?.id, userId, isEmpresa]);
+  }, [project?.id, userId]);
+
+  // Derive unique juniors for empresa multi-tab
+  const juniors = (() => {
+    if (!isEmpresa || !userId) return [];
+    const map = new Map<string, { id: string; nombre: string; apellido1: string | null }>();
+    rawMsgs.forEach((m) => {
+      const isMine = m.remitente?.id === userId;
+      const juniorUser = !isMine ? m.remitente : m.destinatario_info;
+      if (juniorUser && !map.has(juniorUser.id)) map.set(juniorUser.id, juniorUser);
+    });
+    return [...map.values()];
+  })();
+
+  // (no auto-select — empresa must pick a junior from the list)
+
+  // Reset junior selection when project changes
+  useEffect(() => {
+    setSelectedJuniorId(null);
+  }, [project?.id]);
+
+  // Filter messages for the selected junior (empresa) or all (junior)
+  const visibleMsgs = isEmpresa && selectedJuniorId
+    ? rawMsgs.filter((m) => {
+        const isMine = m.remitente?.id === userId;
+        return isMine
+          ? m.destinatario_info?.id === selectedJuniorId
+          : m.remitente?.id === selectedJuniorId;
+      })
+    : rawMsgs;
 
   useEffect(() => {
     bottomRef.current?.scrollIntoView({ behavior: "smooth" });
-  }, [msgs]);
+  }, [visibleMsgs]);
 
+  // Header display info
   const otherName    = isEmpresa
-    ? t("chat_label_junior")
+    ? (selectedJuniorId ? juniorDisplayName(juniors.find((j) => j.id === selectedJuniorId)) : t("chat_label_junior"))
     : (project?.empresa?.nombre_comercial ?? t("chat_label_empresa"));
   const otherInitial = isEmpresa
-    ? "J"
+    ? (selectedJuniorId ? (juniors.find((j) => j.id === selectedJuniorId)?.nombre[0]?.toUpperCase() ?? "J") : "J")
     : (project?.empresa?.nombre_comercial?.[0]?.toUpperCase() ?? "E");
 
   const send = async () => {
     const text = draft.trim();
     if (!text || sending) return;
+    if (!project?.id || !userId) return;
+    if (isEmpresa && !selectedJuniorId) return;
 
     setDraft("");
-
-    if (!project?.id || !userId) {
-      // Demo mode: local only
-      const time = new Date().toLocaleTimeString("es-CR", { hour: "2-digit", minute: "2-digit" });
-      setMsgs((prev) => [...prev, { id: `demo-${Date.now()}`, from: me, text, time }]);
-      return;
-    }
-
     setSending(true);
 
-    // Optimistic update
-    const time   = new Date().toLocaleTimeString("es-CR", { hour: "2-digit", minute: "2-digit" });
-    const tempId = `temp-${Date.now()}`;
-    setMsgs((prev) => [...prev, { id: tempId, from: me, text, time }]);
+    await sendMensajeAction(project.id, text, isEmpresa ? (selectedJuniorId ?? undefined) : undefined);
 
-    await sendMensajeAction(project.id, text);
+    // Reload to get server-confirmed message
+    const r = await getProjectMensajesAction(project.id);
+    if (r.ok) setRawMsgs(r.data);
 
     setSending(false);
   };
@@ -968,88 +1054,173 @@ function ChatPanel({
 
   return (
     <div className="flex h-full flex-col">
-      {/* Header */}
-      <div className="shrink-0 flex items-center gap-3 border-b border-border bg-surface px-6 py-4">
-        <div className="flex size-9 shrink-0 items-center justify-center rounded-full bg-secondary/15 font-heading text-sm font-bold text-secondary">
-          {otherInitial}
-        </div>
-        <div className="min-w-0">
-          <p className="truncate font-body text-sm font-bold text-ink-strong">{otherName}</p>
-          <p className="font-body text-xs text-ink-muted">
-            {project?.titulo ?? ""}
-          </p>
-        </div>
-      </div>
-
-      {/* Messages */}
-      <div className="flex-1 overflow-y-auto px-6 py-6">
-        {msgs.length === 0 ? (
-          <div className="flex h-full flex-col items-center justify-center gap-3 text-center">
-            <div className="flex size-14 items-center justify-center rounded-2xl bg-primary/10">
-              <MessageSquare className="size-7 text-primary" aria-hidden="true" />
-            </div>
-            <p className="font-body text-sm text-ink-muted">{t("chat_empty")}</p>
+      {/* Empresa: sin conversaciones aún */}
+      {isEmpresa && juniors.length === 0 && (
+        <div className="flex flex-1 flex-col items-center justify-center gap-3 p-8 text-center">
+          <div className="flex size-14 items-center justify-center rounded-2xl bg-primary/10">
+            <MessageSquare className="size-7 text-primary" aria-hidden="true" />
           </div>
-        ) : (
-          <div className="flex flex-col gap-5">
-            {msgs.map((msg) => {
-              const isMine = msg.from === me;
+          <p className="font-body text-sm text-ink-muted">{t("chat_sin_conversaciones")}</p>
+        </div>
+      )}
+
+      {/* Empresa: lista de juniors para seleccionar (sin junior seleccionado) */}
+      {isEmpresa && juniors.length > 0 && !selectedJuniorId && (
+        <div className="flex-1 overflow-y-auto">
+          <div className="border-b border-border bg-surface px-6 py-4">
+            <p className="font-body text-xs font-bold uppercase tracking-wider text-ink-muted">
+              {t("chat_seleccionar_junior")}
+            </p>
+            {project?.titulo && (
+              <p className="mt-0.5 truncate font-heading text-sm font-bold text-ink-strong">
+                {project.titulo}
+              </p>
+            )}
+          </div>
+          <div className="flex flex-col gap-2 p-4">
+            {juniors.map((j) => {
+              const jMsgs = rawMsgs.filter(
+                (m) => m.remitente?.id === j.id || m.destinatario_info?.id === j.id,
+              );
+              const lastMsg = jMsgs[jMsgs.length - 1];
               return (
-                <div key={msg.id} className={cn("flex items-end gap-2.5", isMine ? "flex-row-reverse" : "flex-row")}>
-                  {!isMine && (
-                    <div className="mb-1 flex size-8 shrink-0 items-center justify-center rounded-full bg-secondary/15 font-heading text-xs font-bold text-secondary">
-                      {otherInitial}
-                    </div>
-                  )}
-                  <div className={cn("flex max-w-[72%] flex-col gap-1", isMine ? "items-end" : "items-start")}>
-                    <div
-                      className={cn(
-                        "rounded-2xl px-4 py-3 font-body text-sm leading-relaxed",
-                        isMine
-                          ? "rounded-br-sm bg-secondary text-white"
-                          : "rounded-bl-sm border border-border bg-surface text-ink",
-                      )}
-                    >
-                      {msg.text}
-                    </div>
-                    <span className="px-1 font-body text-[11px] text-ink-muted">{msg.time}</span>
+                <button
+                  key={j.id}
+                  type="button"
+                  onClick={() => setSelectedJuniorId(j.id)}
+                  className="flex items-center gap-3 rounded-xl border border-border bg-surface p-4 text-left transition-colors duration-[var(--duration-fast)] ease-[var(--ease-out)] hover:border-secondary/30 hover:bg-secondary/5"
+                >
+                  <div className="flex size-10 shrink-0 items-center justify-center rounded-full bg-secondary/15 font-heading text-sm font-bold text-secondary">
+                    {j.nombre[0]?.toUpperCase() ?? "J"}
                   </div>
-                </div>
+                  <div className="min-w-0 flex-1">
+                    <p className="truncate font-body text-sm font-bold text-ink-strong">{juniorDisplayName(j)}</p>
+                    {lastMsg && (
+                      <p className="truncate font-body text-xs text-ink-muted">{lastMsg.contenido}</p>
+                    )}
+                  </div>
+                  <ChevronRight className="size-4 shrink-0 text-ink-muted" aria-hidden="true" />
+                </button>
               );
             })}
-            <div ref={bottomRef} />
           </div>
-        )}
-      </div>
+        </div>
+      )}
+
+      {/* Empresa: tabs cuando hay junior seleccionado */}
+      {isEmpresa && juniors.length > 0 && selectedJuniorId && (
+        <div className="shrink-0 flex gap-0 border-b border-border bg-surface overflow-x-auto">
+          <button
+            type="button"
+            onClick={() => setSelectedJuniorId(null)}
+            className="shrink-0 px-4 py-3 font-body text-sm font-semibold text-ink-muted transition-colors duration-[var(--duration-fast)] ease-[var(--ease-out)] hover:text-ink border-b-2 border-transparent"
+          >
+            ←
+          </button>
+          {juniors.map((j) => (
+            <button
+              key={j.id}
+              type="button"
+              onClick={() => setSelectedJuniorId(j.id)}
+              className={cn(
+                "shrink-0 px-4 py-3 font-body text-sm font-semibold transition-colors duration-[var(--duration-fast)] ease-[var(--ease-out)] border-b-2",
+                selectedJuniorId === j.id
+                  ? "border-secondary text-secondary"
+                  : "border-transparent text-ink-muted hover:text-ink hover:border-border",
+              )}
+            >
+              {juniorDisplayName(j)}
+            </button>
+          ))}
+        </div>
+      )}
+
+      {/* Header con nombre del interlocutor */}
+      {(!isEmpresa || selectedJuniorId) && (
+        <div className="shrink-0 flex items-center gap-3 border-b border-border bg-surface px-6 py-4">
+          <div className="flex size-9 shrink-0 items-center justify-center rounded-full bg-secondary/15 font-heading text-sm font-bold text-secondary">
+            {otherInitial}
+          </div>
+          <div className="min-w-0">
+            <p className="truncate font-body text-sm font-bold text-ink-strong">{otherName}</p>
+            <p className="font-body text-xs text-ink-muted">{project?.titulo ?? ""}</p>
+          </div>
+        </div>
+      )}
+
+      {/* Mensajes */}
+      {(!isEmpresa || selectedJuniorId) && (
+        <div className="flex-1 overflow-y-auto px-6 py-6">
+          {visibleMsgs.length === 0 ? (
+            <div className="flex h-full flex-col items-center justify-center gap-3 text-center">
+              <div className="flex size-14 items-center justify-center rounded-2xl bg-primary/10">
+                <MessageSquare className="size-7 text-primary" aria-hidden="true" />
+              </div>
+              <p className="font-body text-sm text-ink-muted">{t("chat_empty")}</p>
+            </div>
+          ) : (
+            <div className="flex flex-col gap-5">
+              {visibleMsgs.map((msg) => {
+                const isMine = msg.remitente?.id === userId;
+                return (
+                  <div key={msg.id} className={cn("flex items-end gap-2.5", isMine ? "flex-row-reverse" : "flex-row")}>
+                    {!isMine && (
+                      <div className="mb-1 flex size-8 shrink-0 items-center justify-center rounded-full bg-secondary/15 font-heading text-xs font-bold text-secondary">
+                        {otherInitial}
+                      </div>
+                    )}
+                    <div className={cn("flex max-w-[72%] flex-col gap-1", isMine ? "items-end" : "items-start")}>
+                      <div
+                        className={cn(
+                          "rounded-2xl px-4 py-3 font-body text-sm leading-relaxed",
+                          isMine
+                            ? "rounded-br-sm bg-secondary text-white"
+                            : "rounded-bl-sm border border-border bg-surface text-ink",
+                        )}
+                      >
+                        {msg.contenido}
+                      </div>
+                      <span className="px-1 font-body text-[11px] text-ink-muted">{formatChatTime(msg.fecha_envio)}</span>
+                    </div>
+                  </div>
+                );
+              })}
+              <div ref={bottomRef} />
+            </div>
+          )}
+        </div>
+      )}
 
       {/* Input */}
-      <div className="shrink-0 border-t border-border bg-surface px-4 py-3">
-        <div className="flex items-end gap-2">
-          <textarea
-            value={draft}
-            onChange={(e) => setDraft(e.target.value)}
-            onKeyDown={handleKey}
-            placeholder={t("chat_placeholder")}
-            rows={1}
-            className="min-h-[42px] flex-1 resize-none rounded-xl border border-border bg-canvas px-4 py-2.5 font-body text-sm text-ink placeholder:text-ink-muted/60 focus:border-secondary focus:outline-none focus:ring-2 focus:ring-secondary/20"
-            style={{ maxHeight: 120, overflowY: "auto" }}
-          />
-          <button
-            onClick={() => { void send(); }}
-            disabled={!draft.trim() || sending}
-            aria-label={t("chat_send")}
-            className={cn(
-              "flex size-[42px] shrink-0 items-center justify-center rounded-xl transition-colors duration-[var(--duration-fast)]",
-              draft.trim() && !sending
-                ? "bg-secondary text-white hover:bg-secondary/80"
-                : "bg-border text-ink-muted cursor-not-allowed",
-            )}
-          >
-            <Send className="size-4" aria-hidden="true" />
-          </button>
+      {(!isEmpresa || selectedJuniorId) && (
+        <div className="shrink-0 border-t border-border bg-surface px-4 py-3">
+          <div className="flex items-end gap-2">
+            <textarea
+              value={draft}
+              onChange={(e) => setDraft(e.target.value)}
+              onKeyDown={handleKey}
+              placeholder={t("chat_placeholder")}
+              rows={1}
+              className="min-h-[42px] flex-1 resize-none rounded-xl border border-border bg-canvas px-4 py-2.5 font-body text-sm text-ink placeholder:text-ink-muted/60 focus:border-secondary focus:outline-none focus:ring-2 focus:ring-secondary/20"
+              style={{ maxHeight: 120, overflowY: "auto" }}
+            />
+            <button
+              onClick={() => { void send(); }}
+              disabled={!draft.trim() || sending}
+              aria-label={t("chat_send")}
+              className={cn(
+                "flex size-[42px] shrink-0 items-center justify-center rounded-xl transition-colors duration-[var(--duration-fast)]",
+                draft.trim() && !sending
+                  ? "bg-secondary text-white hover:bg-secondary/80"
+                  : "bg-border text-ink-muted cursor-not-allowed",
+              )}
+            >
+              <Send className="size-4" aria-hidden="true" />
+            </button>
+          </div>
+          <p className="mt-1.5 px-1 font-body text-[11px] text-ink-muted">{t("chat_hint")}</p>
         </div>
-        <p className="mt-1.5 px-1 font-body text-[11px] text-ink-muted">{t("chat_hint")}</p>
-      </div>
+      )}
     </div>
   );
 }

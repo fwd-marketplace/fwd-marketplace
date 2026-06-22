@@ -50,8 +50,8 @@
       "logo_alt": "Fundación Forward Costa Rica logo forming as a constellation",
       "title": "Your first freelance project",
       "description": "Connect with real companies, build your portfolio and start your professional career.",
-      "cta_projects": "View projects",
-      "cta_company": "I'm a company",
+      "cta_projects": "Join the community",
+      "cta_company": "Learn how it works",
       "card_eyebrow": "Featured project",
       "card_title": "Analytics Dashboard",
       "card_company": "TechFlow Systems",
@@ -906,6 +906,7 @@
     "avatar": {
       "alt": "Profile photo",
       "change": "Change profile photo",
+      "delete": "Remove profile photo",
       "invalid_type": "The file must be an image.",
       "too_large": "The image exceeds the 5 MB limit."
     },
@@ -979,6 +980,8 @@
     "activity": {
       "title": "Recent Activity",
       "view_all": "View full history",
+      "ver_notificaciones": "View all notifications",
+      "empty": "No activity recorded yet.",
       "just_now": "Just now",
       "updated_personal": "Updated personal contact information",
       "removed_skill": "Removed skill '{skill}' from their stack",
@@ -1028,8 +1031,14 @@
       "explore_routes": "Explore new paths"
     },
     "notifications": {
-      "activity_title": "Recent Activity",
+      "activity_title": "Notifications",
       "mark_all_read": "Mark all as read",
+      "mark_read": "Mark as read",
+      "unread": "unread",
+      "empty": "You have no notifications at the moment.",
+      "page_info": "Showing {from}–{to} of {total}",
+      "prev": "Previous",
+      "next": "Next",
       "today": "Today",
       "yesterday": "Yesterday",
       "older_empty": "No older notifications."
@@ -1683,7 +1692,9 @@
     "mock_badge": "Demo mode",
     "mock_disclaimer": "Messaging in demo mode. Real connection in Phase 2.0.",
     "no_messages": "No messages yet in this conversation.",
-    "unnamed_project": "Untitled project"
+    "unnamed_project": "Untitled project",
+    "empty_desc_open": "You can start a conversation with any published project.",
+    "solo_chat_badge": "Chat only"
   },
   "notification_panel": {
     "aria_open": "Notifications",
@@ -1846,12 +1857,18 @@
     "proceso_retirar_si": "Yes, withdraw",
     "proceso_cancelar": "Cancel",
     "junior_nueva_postulacion": "New application",
+    "junior_solo_chat": "Chat open",
     "chat_label_empresa": "Company",
     "chat_label_junior": "Junior",
     "chat_empty": "No messages yet. Start the conversation.",
     "chat_placeholder": "Write a message... (Enter to send)",
     "chat_send": "Send message",
-    "chat_hint": "Enter to send · Shift+Enter for new line"
+    "chat_hint": "Enter to send · Shift+Enter for new line",
+    "chat_seleccionar_junior": "Conversations",
+    "chat_sin_conversaciones": "No conversations yet",
+    "sidebar_chats_label": "Chats",
+    "chat_n_chats": "{count, plural, one {# chat} other {# chats}}",
+    "chat_overview_empty": "No messages in this project yet"
   },
   "cosmos_profesional": {
     "screen_label": "Important points constellation",

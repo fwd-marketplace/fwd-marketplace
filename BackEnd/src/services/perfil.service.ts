@@ -373,6 +373,24 @@ export async function savePreferenciasNotificacion(
   return { ok: true };
 }
 
+export async function removeMyAvatar(accessToken: string, userId: string): Promise<void> {
+  const client = supabaseForToken(accessToken);
+
+  const { data: previo } = await client
+    .from("estudiante")
+    .select("url_avatar")
+    .eq("id_usuario", userId)
+    .maybeSingle();
+
+  const { error } = await client
+    .from("estudiante")
+    .update({ url_avatar: null })
+    .eq("id_usuario", userId);
+  if (error) throw new ApiError(400, error.message);
+
+  if (previo?.url_avatar) destroyImageByUrl(previo.url_avatar);
+}
+
 export async function updateMyAvatar(
   accessToken: string,
   userId: string,
