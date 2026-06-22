@@ -16,6 +16,7 @@ import {
   ChevronRight,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { ProjectChatbot } from "@/components/marketplace/ProjectChatbot";
 import { cn } from "@/lib/utils";
 import type { ApiProject, ApiRoleName } from "@/lib/api/types";
 
@@ -182,6 +183,18 @@ export function ProjectDetailSheet({
                 </p>
               </div>
 
+              {/* Condiciones y preguntas frecuentes (si la empresa las cargó) */}
+              {project.condiciones && project.condiciones.trim() && (
+                <div className="rounded-2xl border border-border bg-surface p-5 shadow-[var(--shadow-soft)]">
+                  <h3 className="mb-3 font-heading text-xs font-bold uppercase tracking-wider text-ink-muted">
+                    Condiciones y preguntas frecuentes
+                  </h3>
+                  <p className="whitespace-pre-line font-body text-sm leading-relaxed text-ink">
+                    {project.condiciones}
+                  </p>
+                </div>
+              )}
+
               {/* Skills */}
               {skills.length > 0 && (
                 <div className="rounded-2xl border border-border bg-surface p-5 shadow-[var(--shadow-soft)]">
@@ -199,6 +212,11 @@ export function ProjectDetailSheet({
                     ))}
                   </div>
                 </div>
+              )}
+
+              {/* Chatbot del proyecto (junior): resuelve dudas antes de postular y deriva a la empresa */}
+              {role === "student" && (
+                <ProjectChatbot projectId={project.id} projectTitulo={project.titulo} />
               )}
 
               {/* Estado: ya postulaste */}

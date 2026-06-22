@@ -1,6 +1,6 @@
 "use server";
 
-import { generateProposal, suggestStack } from "@/lib/api/ai";
+import { generateProposal, mejorarMensaje, suggestStack } from "@/lib/api/ai";
 import type { AiChatMessage, SuggestStackInput } from "@/lib/api/types";
 
 /**
@@ -14,4 +14,9 @@ export async function generateProposalAction(history: AiChatMessage[]) {
 /** Sugiere el stack para el formulario manual a partir de la descripción del proyecto. */
 export async function suggestStackAction(input: SuggestStackInput) {
   return suggestStack(input);
+}
+
+/** Reescribe el borrador de la empresa para el chat con un junior (no lo envía: solo sugiere). */
+export async function mejorarMensajeAction(borrador: string, proyectoId?: string) {
+  return mejorarMensaje(borrador, proyectoId);
 }

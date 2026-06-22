@@ -42,3 +42,21 @@ export function suggestStack(input: SuggestStackInput): Promise<Result<StackSugg
     return response.sugerencia;
   });
 }
+
+/**
+ * Reescribe el borrador de un mensaje de la empresa (chat con un junior) para que quede más claro
+ * y profesional. `proyectoId` aporta contexto técnico. Devuelve el texto sugerido (no envía nada).
+ */
+export function mejorarMensaje(borrador: string, proyectoId?: string): Promise<Result<string>> {
+  return asResult(async () => {
+    const body: Record<string, unknown> = { borrador };
+    if (proyectoId) {
+      body.proyecto_id = proyectoId;
+    }
+    const response = await apiAuth<{ mejorado: string }>("/ai/mejorar-mensaje", {
+      method: "POST",
+      body: JSON.stringify(body),
+    });
+    return response.mejorado;
+  });
+}
