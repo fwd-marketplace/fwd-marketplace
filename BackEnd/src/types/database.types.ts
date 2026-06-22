@@ -1168,6 +1168,14 @@ export type Database = {
         }
         Returns: undefined
       }
+      sistema_crear_notificacion: {
+        Args: {
+          p_id_usuario: string
+          p_tipo: string
+          p_mensaje: string
+        }
+        Returns: undefined
+      }
       crear_pending_login: {
         Args: {
           p_id_usuario: string

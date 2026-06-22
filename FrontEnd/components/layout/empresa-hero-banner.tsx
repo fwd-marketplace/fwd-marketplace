@@ -1,8 +1,9 @@
 import { getTranslations } from 'next-intl/server';
-import { Building2, MapPin, Users } from 'lucide-react';
+import { MapPin, Users } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
 import { FwdGeoBackdrop } from '@/components/ui/fwd-geo-backdrop';
 import { getMe } from '@/lib/api/profile';
+import { EmpresaLogoClient } from '@/components/layout/empresa-logo-client';
 
 function parseLocation(direccion: string | null): { provincia: string; canton: string } {
   if (!direccion) return { provincia: '', canton: '' };
@@ -28,17 +29,8 @@ export async function EmpresaHeroBanner() {
     <div className="relative overflow-hidden bg-secondary px-6 pb-16 pt-10">
       <FwdGeoBackdrop />
       <div className="relative z-10 mx-auto flex max-w-7xl flex-col items-center gap-8 px-4 md:flex-row md:items-center md:px-6">
-        {/* Logo */}
-        <div className="shrink-0">
-          <div className="flex size-32 shrink-0 items-center justify-center overflow-hidden rounded-full border-4 border-white/20 bg-secondary-foreground/10 shadow-[var(--shadow-elevated)]">
-            {emp?.url_logo ? (
-              // eslint-disable-next-line @next/next/no-img-element
-              <img src={emp.url_logo} alt={t('logo.alt')} className="size-full object-cover" />
-            ) : (
-              <Building2 className="size-14 text-highlight" />
-            )}
-          </div>
-        </div>
+        {/* Logo with upload buttons */}
+        <EmpresaLogoClient initialLogoUrl={emp?.url_logo ?? null} />
 
         {/* Info */}
         <div className="flex-1 space-y-4 text-center md:text-left">

@@ -1,5 +1,6 @@
 import { supabaseAdmin, supabaseForToken } from "../config/supabase";
 import { ApiError } from "../utils/ApiError";
+import { logger } from "../utils/logger";
 
 const TIPO_CAMBIO_ESTADO = "cambio_estado";
 const TIPO_ADJUDICACION  = "adjudicacion";
@@ -77,32 +78,24 @@ export async function crearNotificacion(
   tipo: TipoNotificacion = TIPO_CAMBIO_ESTADO,
 ): Promise<void> {
   try {
-    console.log(`\n===== [NOTIF] iniciando =====`);
-    console.log(`  destinatario: ${destinatarioUserId}`);
-    console.log(`  tipo: ${tipo}`);
-    console.log(`  mensaje: ${mensaje.slice(0, 60)}...`);
-
     const admin = supabaseAdmin();
-
-    // Llama a la funcion SECURITY DEFINER en Postgres (corre como postgres,
-    // bypasea RLS y no depende de auth.uid(). Solo accesible via service_role).
-    // @ts-expect-error sistema_crear_notificacion no esta en database.types.ts aun;
-    // regenerar con: npx supabase gen types typescript --project-id <ID>
+    // Funcion SECURITY DEFINER (migracion 0034): corre como postgres, bypasea RLS y
+    // no depende de auth.uid(). Solo accesible via service_role (cliente admin).
     const { error } = await admin.rpc("sistema_crear_notificacion", {
       p_id_usuario: destinatarioUserId,
-      p_tipo:       tipo,
-      p_mensaje:    mensaje,
+      p_tipo: tipo,
+      p_mensaje: mensaje,
     });
-
     if (error) {
-      console.log(`  [NOTIF] RPC FALLO: ${error.message} (code: ${error.code})`);
-      if (error.hint) console.log(`  hint: ${error.hint}`);
-    } else {
-      console.log(`  [NOTIF] RPC OK`);
+      logger.warn("sistema_crear_notificacion fallo (best-effort)", {
+        error: error.message,
+        code: error.code,
+      });
     }
-    console.log(`===========================\n`);
   } catch (err) {
-    console.log(`  [NOTIF] EXCEPCION: ${err instanceof Error ? err.message : String(err)}`);
+    logger.warn("crear_notificacion lanzo (best-effort)", {
+      error: err instanceof Error ? err.message : String(err),
+    });
   }
 }
 

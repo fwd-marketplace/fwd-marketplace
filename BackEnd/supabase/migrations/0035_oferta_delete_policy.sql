@@ -4,6 +4,7 @@
 -- Sin esta policy, RLS bloqueaba el DELETE aunque el GRANT de authenticated
 -- estuviera presente (0009_fix_rls_recursion_and_grants.sql).
 
+DROP POLICY IF EXISTS "junior_retirar_propia_oferta" ON public.oferta;
 CREATE POLICY "junior_retirar_propia_oferta" ON public.oferta
   FOR DELETE
   USING (

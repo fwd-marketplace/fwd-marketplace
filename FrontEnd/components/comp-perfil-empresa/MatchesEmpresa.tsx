@@ -203,13 +203,22 @@ const CANDIDATES: Candidate[] = [
   }
 ];
 
-export function MatchesEmpresa() {
+export function MatchesEmpresa({ realProjects = [] }: { realProjects?: { id: string; titulo: string }[] }) {
   const tDashboard = useTranslations("empresa_dashboard");
   const tMatches = useTranslations("matches_empresa");
   const locale = useLocale();
 
   const [selectedProjectId, setSelectedProjectId] = useState<string>("p1");
   const [toastMessage, setToastMessage] = useState<string | null>(null);
+
+  // When realProjects are provided use them; otherwise fall back to mock PROJECTS
+  const projectsForModal: { id: string; title: string }[] = realProjects.length > 0
+    ? realProjects.map((p) => ({ id: p.id, title: p.titulo }))
+    : PROJECTS.map((p) => ({ id: p.id, title: p.title }));
+
+  // Invite modal state (general matches — user picks which project)
+  const [inviteModal, setInviteModal] = useState<{ candidateId: string; candidateName: string } | null>(null);
+  const [inviteSelectedProjectId, setInviteSelectedProjectId] = useState<string>(projectsForModal[0]?.id ?? "");
 
   // Filters state
   const [selectedSpecialties, setSelectedSpecialties] = useState<string[]>([]);
@@ -252,12 +261,20 @@ export function MatchesEmpresa() {
   };
 
   const handleInvite = (candidateId: string, name: string) => {
+    setInviteSelectedProjectId(projectsForModal[0]?.id ?? "");
+    setInviteModal({ candidateId, candidateName: name });
+  };
+
+  const handleConfirmInvite = () => {
+    if (!inviteModal) return;
+    const projectTitle = projectsForModal.find((p) => p.id === inviteSelectedProjectId)?.title ?? "";
     setInvitedCandidateIds((prev) => {
       const next = new Set(prev);
-      next.add(candidateId);
+      next.add(inviteModal.candidateId);
       return next;
     });
-    triggerToast(tMatches("toast_invited", { name }));
+    setInviteModal(null);
+    triggerToast(`${inviteModal.candidateName} fue invitado a "${projectTitle}".`);
   };
 
   // Filter and sort candidates
@@ -701,6 +718,65 @@ export function MatchesEmpresa() {
           )}
         </section>
       </div>
+
+      {/* ── Invite project picker modal ── */}
+      {inviteModal && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-ink-strong/50 p-4 backdrop-blur-sm">
+          <div className="w-full max-w-sm rounded-2xl border border-border bg-surface p-6 shadow-[var(--shadow-elevated)]">
+            <h2 className="mb-1 font-heading text-lg font-extrabold tracking-tight text-ink-strong">
+              {tMatches("invite_modal_title")}
+            </h2>
+            <p className="mb-4 font-body text-sm text-ink-muted">
+              {tMatches("invite_modal_desc", { name: inviteModal.candidateName })}
+            </p>
+
+            {projectsForModal.length === 0 ? (
+              <p className="mb-4 rounded-xl border border-dashed border-border bg-surface-sunken p-4 text-center font-body text-sm text-ink-muted">
+                {tMatches("invite_modal_no_projects")}
+              </p>
+            ) : (
+              <div className="mb-4 flex flex-col gap-2 max-h-60 overflow-y-auto">
+                {projectsForModal.map((p) => (
+                  <button
+                    key={p.id}
+                    type="button"
+                    onClick={() => setInviteSelectedProjectId(p.id)}
+                    className={`flex items-center gap-3 rounded-xl border px-4 py-3 text-left font-body text-sm font-semibold transition-colors ${
+                      inviteSelectedProjectId === p.id
+                        ? "border-primary bg-primary/10 text-primary"
+                        : "border-border bg-surface text-ink hover:border-primary/30 hover:text-primary"
+                    }`}
+                  >
+                    <span className={`size-4 shrink-0 rounded-full border-2 transition-colors ${
+                      inviteSelectedProjectId === p.id ? "border-primary bg-primary" : "border-border"
+                    }`} />
+                    {p.title}
+                  </button>
+                ))}
+              </div>
+            )}
+
+            <div className="flex justify-end gap-2">
+              <Button
+                variant="ghost"
+                size="sm"
+                onClick={() => setInviteModal(null)}
+                className="rounded-full font-body text-sm"
+              >
+                {tMatches("invite_modal_cancel")}
+              </Button>
+              <Button
+                size="sm"
+                disabled={!inviteSelectedProjectId || projectsForModal.length === 0}
+                onClick={handleConfirmInvite}
+                className="rounded-full bg-primary px-5 font-body text-sm font-bold text-white hover:bg-secondary"
+              >
+                {tMatches("invite_modal_confirm")}
+              </Button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }

@@ -9,7 +9,8 @@ export type ProjectState =
   | "adjudicado"
   | "en_desarrollo"
   | "cerrado"
-  | "cancelado";
+  | "cancelado"
+  | "pausado";
 
 export type CompanyProjectState = Exclude<ProjectState, "borrador" | "cancelado">;
 
