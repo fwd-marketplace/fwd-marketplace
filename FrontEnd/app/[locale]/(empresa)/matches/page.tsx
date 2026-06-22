@@ -1,6 +1,5 @@
 import { setRequestLocale } from "next-intl/server";
 import { MatchesEmpresa } from "@/components/comp-perfil-empresa/MatchesEmpresa";
-import { EmpresaSubnav } from "@/components/layout/empresa-subnav";
 import { searchStudents } from "@/lib/api/students";
 import { getCatalogs } from "@/lib/api/marketplace";
 
@@ -18,14 +17,10 @@ export default async function MatchesPage({ params }: Props) {
     ? catalogsResult.data.skills.map((s) => ({ id: s.id, nombre: s.nombre }))
     : [];
 
+  // El subnav y el <main> los provee (empresa)/layout.tsx; acá solo el contenido.
   return (
-    <>
-      <EmpresaSubnav />
-      <main className="min-h-screen bg-canvas py-8">
-        <div className="mx-auto max-w-7xl px-4 md:px-6">
-          <MatchesEmpresa initialStudents={initialStudents} skills={skills} />
-        </div>
-      </main>
-    </>
+    <div className="mx-auto max-w-7xl px-4 py-8 md:px-6">
+      <MatchesEmpresa initialStudents={initialStudents} skills={skills} />
+    </div>
   );
 }
