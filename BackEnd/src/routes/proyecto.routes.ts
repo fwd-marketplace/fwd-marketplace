@@ -1,5 +1,5 @@
 import { Router } from "express";
-import { list, listMine, detail, create, changeState, update } from "../controllers/proyecto.controller";
+import { list, listMine, detail, create, changeState, update, cancel, remove } from "../controllers/proyecto.controller";
 import { createForProject, listForProject } from "../controllers/oferta.controller";
 import { listForProject as listEntregablesForProject } from "../controllers/entregable.controller";
 import { authenticate } from "../middlewares/auth.middleware";
@@ -15,8 +15,12 @@ router.post("/", authenticate, asyncHandler(create));
 router.get("/:id", authenticate, asyncHandler(detail));
 // La empresa dueña gestiona el ciclo de vida de su proyecto.
 router.patch("/:id/estado", authenticate, asyncHandler(changeState));
+// La empresa cancela/oculta (soft) su proyecto.
+router.patch("/:id/cancelar", authenticate, asyncHandler(cancel));
 // La empresa edita los datos de su proyecto (solo en borrador o en_recepcion).
 router.patch("/:id", authenticate, asyncHandler(update));
+// La empresa elimina definitivamente (hard) su proyecto.
+router.delete("/:id", authenticate, asyncHandler(remove));
 
 // Postulaciones de un proyecto: el junior postula, la empresa las consulta.
 router.post("/:id/ofertas", authenticate, asyncHandler(createForProject));

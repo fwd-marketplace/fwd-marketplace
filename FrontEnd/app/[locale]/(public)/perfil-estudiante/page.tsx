@@ -6,12 +6,16 @@ import {
   type Activity,
   type Application,
   type ApplicationStats,
+  type MockCalificacion,
   type StudentProfile,
 } from "@/app/[locale]/(public)/perfil-estudiante/types";
-import { getCatalogs, getMyOffers } from "@/lib/api/marketplace";
+import { getCatalogs, getMyCalificaciones, getMyOffers } from "@/lib/api/marketplace";
 import { getMe } from "@/lib/api/profile";
+import { SiteFooter } from "@/components/layout/site-footer";
+import { getNotificaciones } from "@/lib/api/notificaciones";
 import { parseJsonStringArray } from "@/lib/api/safe-json";
-import type { ApiMeProfile, MyOffer, OfferState } from "@/lib/api/types";
+import type { ApiCalificacion, ApiMeProfile, ApiNotificacion, MyOffer, OfferState } from "@/lib/api/types";
+import type { ActivityTipo } from "@/app/[locale]/(public)/perfil-estudiante/types";
 
 interface Props {
   params: Promise<{ locale: string }>;
@@ -41,6 +45,7 @@ function mapOfferStatus(status: OfferState): Application["status"] {
     case "no_seleccionada":
       return "rechazada";
     case "en_revision":
+    case "solicitar_cambios":
       return "en_proceso";
     case "enviada":
       return "enviada";
@@ -97,17 +102,87 @@ function buildStats(applications: Application[]): ApplicationStats {
   };
 }
 
+function formatActivityDate(dateStr: string, locale: string): string {
+  const date = new Date(dateStr);
+  const diffDays = Math.floor((Date.now() - date.getTime()) / 86_400_000);
+  if (diffDays === 0) return locale === "es" ? "Hoy" : "Today";
+  if (diffDays === 1) return locale === "es" ? "Ayer" : "Yesterday";
+  if (diffDays < 7) return locale === "es" ? `Hace ${diffDays} días` : `${diffDays} days ago`;
+  return date.toLocaleDateString(locale, { day: "numeric", month: "long" });
+}
+
+function notifTipo(tipo: string): ActivityTipo {
+  if (tipo === "adjudicacion") return "adjudicacion";
+  if (tipo === "nuevo_mensaje") return "nuevo_mensaje";
+  if (tipo === "entregable_subido") return "entregable_subido";
+  return "cambio_estado";
+}
+
+function buildActivities(
+  notifs: ApiNotificacion[],
+  offers: MyOffer[],
+  locale: string,
+): Activity[] {
+  // Events from notifications (adjudicaciones, cambios, mensajes, entregables…)
+  const fromNotifs: Activity[] = notifs.map((n) => ({
+    id: n.id,
+    description: n.mensaje,
+    timestamp: formatActivityDate(n.fecha, locale),
+    tipo: notifTipo(n.tipo),
+  }));
+
+  // Events from junior's own submissions (no notification is sent to themselves)
+  const submittedOfferIds = new Set(notifs.map((n) => n.id));
+  const fromOffers: Activity[] = offers.map((o) => ({
+    id: `offer-${o.id}`,
+    description:
+      locale === "es"
+        ? `Enviaste una propuesta al proyecto "${o.proyecto?.titulo ?? ""}".`
+        : `You submitted a proposal to "${o.proyecto?.titulo ?? ""}".`,
+    timestamp: formatActivityDate(o.fecha_envio, locale),
+    tipo: "propia" as ActivityTipo,
+  }));
+  void submittedOfferIds;
+
+  // Merge, sort most recent first, take top 15
+  return [...fromNotifs, ...fromOffers]
+    .sort((a, b) => {
+      const dateA = notifs.find((n) => n.id === a.id)?.fecha ?? offers.find((o) => `offer-${o.id}` === a.id)?.fecha_envio ?? "";
+      const dateB = notifs.find((n) => n.id === b.id)?.fecha ?? offers.find((o) => `offer-${o.id}` === b.id)?.fecha_envio ?? "";
+      return new Date(dateB).getTime() - new Date(dateA).getTime();
+    })
+    .slice(0, 15);
+}
+
+function mapCalificacion(cal: ApiCalificacion): MockCalificacion {
+  return {
+    id: cal.id,
+    ofertaId: cal.id,
+    companyName: cal.proyecto?.empresa?.nombre_comercial ?? "",
+    projectName: cal.proyecto?.titulo ?? "",
+    score: cal.calificacion,
+    comment: cal.comentario_calificacion ?? "",
+    date: cal.updated_at,
+    reply: cal.replica_calificacion,
+  };
+}
+
 export default async function EstudianteProfile({ params }: Props) {
   const { locale } = await params;
   setRequestLocale(locale);
-  const [meResult, offersResult, catalogsResult] = await Promise.all([
+  const [meResult, offersResult, calResult, catalogsResult, notifsResult] = await Promise.all([
     getMe(),
     getMyOffers(),
+    getMyCalificaciones(),
     getCatalogs(),
+    getNotificaciones(),
   ]);
   const profile = mapProfile(meResult.ok ? meResult.data.profile : null);
-  const applications = offersResult.ok ? offersResult.data.ofertas.map(mapOffer) : [];
-  const activities: Activity[] = [];
+  const offers = offersResult.ok ? offersResult.data.ofertas : [];
+  const applications = offers.map(mapOffer);
+  const calificaciones = calResult.ok ? calResult.data.map(mapCalificacion) : [];
+  const notifs = notifsResult.ok ? notifsResult.data : [];
+  const activities: Activity[] = buildActivities(notifs, offers, locale);
   const knowledgeSuggestions = catalogsResult.ok
     ? catalogsResult.data.conocimientos.map((conocimiento) => conocimiento.nombre)
     : [];
@@ -119,9 +194,12 @@ export default async function EstudianteProfile({ params }: Props) {
         initialProfile={profile}
         initialActivities={activities}
         initialApplications={applications}
+        initialCalificaciones={calificaciones}
+        initialNotificaciones={notifs}
         stats={buildStats(applications)}
         knowledgeSuggestions={knowledgeSuggestions}
       />
+      <SiteFooter />
     </div>
   );
 }

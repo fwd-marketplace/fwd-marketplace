@@ -1,9 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
-import { useForm } from "react-hook-form";
-import { zodResolver } from "@hookform/resolvers/zod";
-import { z } from "zod";
+import { useEffect } from "react";
 import Link from "next/link";
 import { useLocale, useTranslations } from "next-intl";
 import {
@@ -16,27 +13,17 @@ import {
   Lock,
   X,
   Zap,
+  ChevronRight,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { submitOfferAction } from "@/lib/actions/marketplace";
 import { cn } from "@/lib/utils";
 import type { ApiProject, ApiRoleName } from "@/lib/api/types";
-
-const offerSchema = z.object({
-  propuesta: z.string().min(50).max(5000),
-  prototipo_url: z.union([z.string().url(), z.literal(""), z.undefined()]),
-  documentacion_tecnica: z.string().max(3000).optional(),
-  documentacion_url: z.union([z.string().url(), z.literal(""), z.undefined()]),
-});
-
-type OfferFormValues = z.infer<typeof offerSchema>;
 
 interface Props {
   project: ApiProject | null;
   isOpen: boolean;
   onClose: () => void;
   role: ApiRoleName | null;
-  showApplyForm: boolean;
   isLoading?: boolean;
   alreadyApplied?: boolean;
   isProjectExpired?: boolean;
@@ -44,12 +31,7 @@ interface Props {
 
 function SkeletonBlock({ className }: { className?: string }) {
   return (
-    <div
-      className={cn(
-        "animate-pulse rounded-xl bg-surface-sunken",
-        className,
-      )}
-    />
+    <div className={cn("animate-pulse rounded-xl bg-surface-sunken", className)} />
   );
 }
 
@@ -58,33 +40,13 @@ export function ProjectDetailSheet({
   isOpen,
   onClose,
   role,
-  showApplyForm,
   isLoading = false,
   alreadyApplied = false,
   isProjectExpired = false,
 }: Props) {
   const t = useTranslations("project_detail");
+  const tp = useTranslations("proceso_page");
   const locale = useLocale();
-  const [submitted, setSubmitted] = useState(false);
-  const [submitError, setSubmitError] = useState("");
-
-  const {
-    register,
-    handleSubmit,
-    reset,
-    formState: { errors, isSubmitting },
-  } = useForm<OfferFormValues>({ resolver: zodResolver(offerSchema) });
-
-  useEffect(() => {
-    if (!isOpen) {
-      const timer = setTimeout(() => {
-        setSubmitted(false);
-        setSubmitError("");
-        reset();
-      }, 300);
-      return () => clearTimeout(timer);
-    }
-  }, [isOpen, reset]);
 
   useEffect(() => {
     if (isOpen) {
@@ -101,23 +63,6 @@ export function ProjectDetailSheet({
 
   const skills = project?.skills.flatMap((s) => (s.skill ? [s.skill] : [])) ?? [];
 
-  async function onSubmit(data: OfferFormValues) {
-    if (!project) return;
-    setSubmitError("");
-    const input: Parameters<typeof submitOfferAction>[1] = {
-      propuesta: data.propuesta,
-      ...(data.prototipo_url ? { prototipo_url: data.prototipo_url } : {}),
-      ...(data.documentacion_tecnica ? { documentacion_tecnica: data.documentacion_tecnica } : {}),
-      ...(data.documentacion_url ? { documentacion_url: data.documentacion_url } : {}),
-    };
-    const result = await submitOfferAction(project.id, input);
-    if (result.ok) {
-      setSubmitted(true);
-    } else {
-      setSubmitError(result.error);
-    }
-  }
-
   return (
     <>
       {/* Backdrop */}
@@ -127,14 +72,14 @@ export function ProjectDetailSheet({
         onClick={onClose}
       />
 
-      {/* Panel — desliza desde la derecha */}
+      {/* Panel */}
       <aside
         role="dialog"
         aria-modal="true"
         aria-label={project?.titulo ?? "Detalle del proyecto"}
         className="fixed inset-y-0 right-0 z-50 flex w-full max-w-2xl flex-col overflow-y-auto bg-canvas shadow-[var(--shadow-elevated)]"
       >
-        {/* ── Sticky header ── */}
+        {/* Sticky header */}
         <div className="sticky top-0 z-10 flex items-center justify-between gap-4 border-b border-border bg-canvas/95 px-6 py-4 backdrop-blur-sm">
           <div className="min-w-0 flex-1">
             {project?.area && (
@@ -148,7 +93,11 @@ export function ProjectDetailSheet({
               ) : (
                 <>
                   {project?.titulo ?? "Cargando..."}
-                  {project && <span className="text-primary" aria-hidden="true">.</span>}
+                  {project && (
+                    <span className="text-primary" aria-hidden="true">
+                      .
+                    </span>
+                  )}
                 </>
               )}
             </h2>
@@ -177,7 +126,7 @@ export function ProjectDetailSheet({
           </div>
         </div>
 
-        {/* ── Body ── */}
+        {/* Body */}
         <div className="flex-1 space-y-5 px-6 py-6 pb-10">
           {isLoading ? (
             <div className="space-y-4">
@@ -187,7 +136,7 @@ export function ProjectDetailSheet({
             </div>
           ) : project ? (
             <>
-              {/* ── Meta chips ── */}
+              {/* Meta chips */}
               <div className="flex flex-wrap gap-2">
                 {project.empresa && (
                   <span className="inline-flex items-center gap-1.5 rounded-full border border-border bg-surface px-3 py-1.5 font-body text-xs font-semibold text-ink-muted">
@@ -212,7 +161,7 @@ export function ProjectDetailSheet({
                 {project.usa_ia && (
                   <span className="inline-flex items-center gap-1.5 rounded-full bg-accent/10 px-3 py-1.5 font-body text-xs font-semibold text-accent">
                     <Zap className="size-3.5" aria-hidden="true" />
-                    Usa IA
+                    {t("uses_ia")}
                   </span>
                 )}
                 {isProjectExpired && (
@@ -223,7 +172,7 @@ export function ProjectDetailSheet({
                 )}
               </div>
 
-              {/* ── Descripción ── */}
+              {/* Descripción */}
               <div className="rounded-2xl border border-border bg-surface p-5 shadow-[var(--shadow-soft)]">
                 <h3 className="mb-3 font-heading text-xs font-bold uppercase tracking-wider text-ink-muted">
                   Descripción
@@ -233,7 +182,7 @@ export function ProjectDetailSheet({
                 </p>
               </div>
 
-              {/* ── Skills ── */}
+              {/* Skills */}
               {skills.length > 0 && (
                 <div className="rounded-2xl border border-border bg-surface p-5 shadow-[var(--shadow-soft)]">
                   <h3 className="mb-3 font-heading text-xs font-bold uppercase tracking-wider text-ink-muted">
@@ -252,18 +201,8 @@ export function ProjectDetailSheet({
                 </div>
               )}
 
-              {/* ── Plazo vencido ── */}
-              {role === "student" && showApplyForm && isProjectExpired && (
-                <div className="rounded-2xl border border-magenta/30 bg-magenta/5 p-5">
-                  <p className="flex items-center gap-2 font-body font-semibold text-magenta">
-                    <Clock className="size-5 shrink-0" aria-hidden="true" />
-                    {t("offer_expired")}
-                  </p>
-                </div>
-              )}
-
-              {/* ── Ya postulaste ── */}
-              {role === "student" && showApplyForm && !isProjectExpired && alreadyApplied && !submitted && (
+              {/* Estado: ya postulaste */}
+              {role === "student" && !isProjectExpired && alreadyApplied && (
                 <div className="rounded-2xl border border-accent/30 bg-accent/10 p-5">
                   <p className="flex items-center gap-2 font-body font-semibold text-accent">
                     <CheckCircle2 className="size-5 shrink-0" aria-hidden="true" />
@@ -272,128 +211,44 @@ export function ProjectDetailSheet({
                 </div>
               )}
 
-              {/* ── Formulario de postulación (solo estudiantes) ── */}
-              {role === "student" && showApplyForm && !submitted && !alreadyApplied && !isProjectExpired && (
-                <div className="rounded-2xl border border-primary/20 bg-surface p-5 shadow-[var(--shadow-soft)]">
-                  <h3 className="mb-1 font-heading text-lg font-extrabold tracking-tight text-ink-strong">
-                    {t("offer_title")}
+              {/* CTA: iniciar proceso (estudiante) */}
+              {role === "student" && !isProjectExpired && (
+                <div className="rounded-2xl border border-primary/20 bg-primary/5 p-5">
+                  <p className="mb-1 font-heading text-base font-extrabold tracking-tight text-ink-strong">
+                    {alreadyApplied ? tp("already_applied_title") : tp("form_title")}
                     <span className="text-primary" aria-hidden="true">.</span>
-                  </h3>
-                  <p className="mb-5 font-body text-sm text-ink-muted">
-                    {t("offer_subtitle")}
                   </p>
-
-                  <form onSubmit={handleSubmit(onSubmit)} className="flex flex-col gap-4">
-                    <div className="flex flex-col gap-1.5">
-                      <label
-                        htmlFor="sheet-propuesta"
-                        className="font-body text-xs font-semibold text-ink-muted"
-                      >
-                        {t("offer_propuesta_label")}
-                      </label>
-                      <textarea
-                        id="sheet-propuesta"
-                        rows={5}
-                        placeholder={t("offer_propuesta_placeholder")}
-                        {...register("propuesta")}
-                        aria-invalid={!!errors.propuesta}
-                        className="w-full resize-none rounded-2xl bg-surface-sunken px-4 py-3 font-body text-sm text-ink-strong placeholder:text-ink-subtle outline-none focus:ring-2 focus:ring-primary/40"
-                      />
-                      {errors.propuesta && (
-                        <p className="font-body text-xs text-magenta">
-                          {t("offer_propuesta_min")}
-                        </p>
-                      )}
-                    </div>
-
-                    <div className="flex flex-col gap-1.5">
-                      <label
-                        htmlFor="sheet-prototipo"
-                        className="font-body text-xs font-semibold text-ink-muted"
-                      >
-                        {t("offer_prototipo_label")}
-                      </label>
-                      <input
-                        id="sheet-prototipo"
-                        type="url"
-                        placeholder={t("offer_prototipo_placeholder")}
-                        {...register("prototipo_url")}
-                        aria-invalid={!!errors.prototipo_url}
-                        className="w-full rounded-2xl bg-surface-sunken px-4 py-3 font-body text-sm text-ink-strong placeholder:text-ink-subtle outline-none focus:ring-2 focus:ring-primary/40"
-                      />
-                      {errors.prototipo_url && (
-                        <p className="font-body text-xs text-magenta">
-                          {t("offer_prototipo_invalid")}
-                        </p>
-                      )}
-                    </div>
-
-                    <div className="flex flex-col gap-1.5">
-                      <label
-                        htmlFor="sheet-doc-tecnica"
-                        className="font-body text-xs font-semibold text-ink-muted"
-                      >
-                        {t("offer_documentacion_tecnica_label")}
-                      </label>
-                      <textarea
-                        id="sheet-doc-tecnica"
-                        rows={3}
-                        placeholder={t("offer_documentacion_tecnica_placeholder")}
-                        {...register("documentacion_tecnica")}
-                        className="w-full resize-none rounded-2xl bg-surface-sunken px-4 py-3 font-body text-sm text-ink-strong placeholder:text-ink-subtle outline-none focus:ring-2 focus:ring-primary/40"
-                      />
-                    </div>
-
-                    <div className="flex flex-col gap-1.5">
-                      <label
-                        htmlFor="sheet-doc-url"
-                        className="font-body text-xs font-semibold text-ink-muted"
-                      >
-                        {t("offer_documentacion_url_label")}
-                      </label>
-                      <input
-                        id="sheet-doc-url"
-                        type="url"
-                        placeholder={t("offer_documentacion_url_placeholder")}
-                        {...register("documentacion_url")}
-                        aria-invalid={!!errors.documentacion_url}
-                        className="w-full rounded-2xl bg-surface-sunken px-4 py-3 font-body text-sm text-ink-strong placeholder:text-ink-subtle outline-none focus:ring-2 focus:ring-primary/40"
-                      />
-                      {errors.documentacion_url && (
-                        <p className="font-body text-xs text-magenta">
-                          {t("offer_documentacion_url_invalid")}
-                        </p>
-                      )}
-                    </div>
-
-                    {submitError && (
-                      <p className="font-body text-sm text-magenta">
-                        {t("offer_error_generic")}
-                      </p>
+                  <p className="mb-4 font-body text-sm text-ink-muted">
+                    {alreadyApplied ? tp("already_applied_desc") : tp("form_subtitle")}
+                  </p>
+                  <Button
+                    asChild
+                    className={cn(
+                      "rounded-full px-6 font-semibold",
+                      alreadyApplied
+                        ? "bg-accent text-white hover:bg-accent/80"
+                        : "bg-primary text-white hover:bg-secondary"
                     )}
-
-                    <Button
-                      type="submit"
-                      disabled={isSubmitting}
-                      className="self-start rounded-full bg-primary px-6 font-semibold text-white hover:bg-secondary"
-                    >
-                      {isSubmitting ? t("offer_submitting") : t("offer_submit")}
-                    </Button>
-                  </form>
+                  >
+                    <Link href={`/${locale}/gestion?proyecto=${project.id}`}>
+                      {alreadyApplied ? tp("begin_proceso_applied") : tp("begin_proceso")}
+                      <ChevronRight className="ml-1 size-4" aria-hidden="true" />
+                    </Link>
+                  </Button>
                 </div>
               )}
 
-              {/* ── Postulación enviada ── */}
-              {role === "student" && showApplyForm && submitted && (
-                <div className="rounded-2xl border border-accent/30 bg-accent/10 p-5">
-                  <p className="flex items-center gap-2 font-body font-semibold text-accent">
-                    <CheckCircle2 className="size-5 shrink-0" aria-hidden="true" />
-                    {t("offer_success")}
+              {/* Plazo vencido */}
+              {role === "student" && isProjectExpired && (
+                <div className="rounded-2xl border border-magenta/30 bg-magenta/5 p-5">
+                  <p className="flex items-center gap-2 font-body font-semibold text-magenta">
+                    <Clock className="size-5 shrink-0" aria-hidden="true" />
+                    {t("offer_expired")}
                   </p>
                 </div>
               )}
 
-              {/* ── Banner empresa (si entra una empresa) ── */}
+              {/* Banner empresa */}
               {role === "company" && (
                 <div className="rounded-2xl border border-primary/20 bg-primary/5 p-5">
                   <p className="font-heading text-lg font-bold text-ink-strong">

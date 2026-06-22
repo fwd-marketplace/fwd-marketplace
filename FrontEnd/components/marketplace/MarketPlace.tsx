@@ -1,4 +1,4 @@
-'use client';
+﻿'use client';
 
 import { useMemo, useState, type ReactNode } from 'react';
 import Link from 'next/link';
@@ -14,7 +14,6 @@ import {
     Megaphone,
     ShoppingCart,
     Briefcase,
-    Sparkles,
     Search,
     Bookmark,
     ChevronDown,
@@ -22,147 +21,19 @@ import {
     ChevronRight,
     CheckCircle2,
     Clock,
-    ExternalLink,
     Zap,
     X,
 } from 'lucide-react';
 import { MarketplaceHeroBackdrop } from '@/components/marketplace/MarketplaceHeroBackdrop';
-import { ProjectDetailSheet } from '@/components/marketplace/ProjectDetailSheet';
+import { HeroJourneyBadge } from '@/components/ui/HeroJourneyBadge';
+import { buildSparklePoints } from '@/lib/logo-constellation';
+
+const CONTENT_SPARKLE_POINTS = buildSparklePoints(12, 12, 12);
 import { Button } from '@/components/ui/button';
 import type { ApiProject, ApiRoleName, CatalogsResponse } from '@/lib/api/types';
 
-const PAGE_SIZE = 6;
+const PAGE_SIZE = 9;
 
-const MOCK_AREA_ID = {
-    fintech: 'mock-area-1',
-    salud: 'mock-area-2',
-    ecommerce: 'mock-area-3',
-    logistica: 'mock-area-4',
-    edutech: 'mock-area-5',
-    marketing: 'mock-area-6',
-} as const;
-
-const MOCK_CATALOGS: CatalogsResponse = {
-    areas: [
-        { id: MOCK_AREA_ID.fintech, nombre: 'Fintech' },
-        { id: MOCK_AREA_ID.salud, nombre: 'Salud' },
-        { id: MOCK_AREA_ID.ecommerce, nombre: 'E-Commerce' },
-        { id: MOCK_AREA_ID.logistica, nombre: 'Logística' },
-        { id: MOCK_AREA_ID.edutech, nombre: 'Edutech' },
-        { id: MOCK_AREA_ID.marketing, nombre: 'Marketing' },
-    ],
-    skills: [
-        { id: 'sk-1', nombre: 'React', tipo: 'frontend', categoria: null },
-        { id: 'sk-2', nombre: 'Node.js', tipo: 'backend', categoria: null },
-        { id: 'sk-3', nombre: 'Python', tipo: 'backend', categoria: null },
-        { id: 'sk-4', nombre: 'TypeScript', tipo: 'frontend', categoria: null },
-        { id: 'sk-5', nombre: 'PostgreSQL', tipo: 'backend', categoria: null },
-        { id: 'sk-6', nombre: 'React Native', tipo: 'mobile', categoria: null },
-    ],
-    projectStates: [],
-    conocimientos: [],
-};
-
-const MOCK_PROJECTS: ApiProject[] = [
-    {
-        id: 'mock-1',
-        titulo: 'Sistema de Gestión de Créditos',
-        descripcion: 'Rediseño integral de la plataforma B2B para optimizar flujos de aprobación y visualización de KPIs financieros en tiempo real.',
-        usa_ia: true,
-        plazo_dias: 15,
-        fecha_publicacion: '2026-06-10T00:00:00Z',
-        fecha_cierre: null,
-        estado: { nombre: 'en_recepcion' },
-        area: { id: MOCK_AREA_ID.fintech, nombre: 'Fintech' },
-        empresa: { nombre_comercial: 'BancaCR Digital', tipo: 'empresa' },
-        skills: [
-            { skill: { id: 'sk-1', nombre: 'React', tipo: 'frontend', categoria: null } },
-            { skill: { id: 'sk-3', nombre: 'Python', tipo: 'backend', categoria: null } },
-            { skill: { id: 'sk-5', nombre: 'PostgreSQL', tipo: 'backend', categoria: null } },
-        ],
-    },
-    {
-        id: 'mock-2',
-        titulo: 'Plataforma de Telemedicina',
-        descripcion: 'Módulo de citas virtuales con videollamada integrada, historial clínico y recordatorios automáticos para pacientes y médicos.',
-        usa_ia: false,
-        plazo_dias: 12,
-        fecha_publicacion: '2026-06-08T00:00:00Z',
-        fecha_cierre: null,
-        estado: { nombre: 'en_recepcion' },
-        area: { id: MOCK_AREA_ID.salud, nombre: 'Salud' },
-        empresa: { nombre_comercial: 'MediConnect CR', tipo: 'empresa' },
-        skills: [
-            { skill: { id: 'sk-2', nombre: 'Node.js', tipo: 'backend', categoria: null } },
-            { skill: { id: 'sk-4', nombre: 'TypeScript', tipo: 'frontend', categoria: null } },
-        ],
-    },
-    {
-        id: 'mock-3',
-        titulo: 'App de Seguimiento de Pedidos',
-        descripcion: 'Aplicación móvil para que clientes rastreen sus pedidos en tiempo real con notificaciones push y mapa de ruta del repartidor.',
-        usa_ia: false,
-        plazo_dias: 10,
-        fecha_publicacion: '2026-06-05T00:00:00Z',
-        fecha_cierre: null,
-        estado: { nombre: 'en_recepcion' },
-        area: { id: MOCK_AREA_ID.ecommerce, nombre: 'E-Commerce' },
-        empresa: { nombre_comercial: 'ShopRápido', tipo: 'emprendedor' },
-        skills: [
-            { skill: { id: 'sk-6', nombre: 'React Native', tipo: 'mobile', categoria: null } },
-            { skill: { id: 'sk-2', nombre: 'Node.js', tipo: 'backend', categoria: null } },
-        ],
-    },
-    {
-        id: 'mock-4',
-        titulo: 'Dashboard de Métricas de Distribución',
-        descripcion: 'Panel interactivo para supervisores de flota con métricas de entregas, rutas óptimas y alertas de desviación en tiempo real.',
-        usa_ia: true,
-        plazo_dias: 14,
-        fecha_publicacion: '2026-06-03T00:00:00Z',
-        fecha_cierre: null,
-        estado: { nombre: 'en_recepcion' },
-        area: { id: MOCK_AREA_ID.logistica, nombre: 'Logística' },
-        empresa: { nombre_comercial: 'FleetOps Latam', tipo: 'empresa' },
-        skills: [
-            { skill: { id: 'sk-1', nombre: 'React', tipo: 'frontend', categoria: null } },
-            { skill: { id: 'sk-4', nombre: 'TypeScript', tipo: 'frontend', categoria: null } },
-            { skill: { id: 'sk-3', nombre: 'Python', tipo: 'backend', categoria: null } },
-        ],
-    },
-    {
-        id: 'mock-5',
-        titulo: 'Plataforma de Cursos en Vivo',
-        descripcion: 'Aulas virtuales con video en tiempo real, pizarra colaborativa y seguimiento de progreso por estudiante y módulo.',
-        usa_ia: false,
-        plazo_dias: 15,
-        fecha_publicacion: '2026-06-01T00:00:00Z',
-        fecha_cierre: null,
-        estado: { nombre: 'en_recepcion' },
-        area: { id: MOCK_AREA_ID.edutech, nombre: 'Edutech' },
-        empresa: { nombre_comercial: 'AprenderCR', tipo: 'emprendedor' },
-        skills: [
-            { skill: { id: 'sk-1', nombre: 'React', tipo: 'frontend', categoria: null } },
-            { skill: { id: 'sk-2', nombre: 'Node.js', tipo: 'backend', categoria: null } },
-        ],
-    },
-    {
-        id: 'mock-6',
-        titulo: 'Automatización de Reportes de Campaña',
-        descripcion: 'Herramienta que conecta con Google Ads y Meta Ads para generar reportes automáticos con visualizaciones y exportación a PDF.',
-        usa_ia: true,
-        plazo_dias: 8,
-        fecha_publicacion: '2026-05-28T00:00:00Z',
-        fecha_cierre: null,
-        estado: { nombre: 'en_recepcion' },
-        area: { id: MOCK_AREA_ID.marketing, nombre: 'Marketing' },
-        empresa: { nombre_comercial: 'GrowthLab CR', tipo: 'empresa' },
-        skills: [
-            { skill: { id: 'sk-3', nombre: 'Python', tipo: 'backend', categoria: null } },
-            { skill: { id: 'sk-4', nombre: 'TypeScript', tipo: 'frontend', categoria: null } },
-        ],
-    },
-];
 
 const DURATION_RANGES = {
     short: { min: 0, max: 30 },
@@ -291,104 +162,12 @@ function FilterDropdown({
     );
 }
 
-/** Modal showing the full detail of a project when "Ver proyecto" is pressed (pull branch). */
-function ProjectDetailModal({ project, onClose }: { project: ApiProject; onClose: () => void }) {
-    const t = useTranslations('marketplace_page');
-
-    return (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
-            <button
-                type="button"
-                aria-label={t('close')}
-                onClick={onClose}
-                className="absolute inset-0 bg-ink-strong/50 backdrop-blur-sm"
-            />
-            <div
-                role="dialog"
-                aria-modal="true"
-                aria-labelledby="project-modal-title"
-                className="relative z-10 w-full max-w-lg max-h-[85vh] overflow-y-auto rounded-2xl border border-border bg-surface p-6 shadow-elevated"
-            >
-                <div className="flex items-start justify-between gap-4">
-                    <div className="flex items-center gap-3">
-                        <div className="w-11 h-11 rounded-xl bg-canvas flex items-center justify-center border border-border shrink-0">
-                            {project.area ? getAreaIcon(project.area.id, MOCK_CATALOGS.areas, getAreaColor(project.area.id, MOCK_CATALOGS.areas)) : <Briefcase className="w-6 h-6 text-primary" />}
-                        </div>
-                        <span className={`text-[11px] font-bold uppercase tracking-wider ${project.area ? getAreaColor(project.area.id, MOCK_CATALOGS.areas) : 'text-primary'}`}>
-                            {project.area?.nombre ?? '—'}
-                        </span>
-                    </div>
-                    <button
-                        type="button"
-                        aria-label={t('close')}
-                        onClick={onClose}
-                        className="w-8 h-8 shrink-0 flex items-center justify-center rounded-full text-ink-muted hover:bg-surface-sunken transition-colors duration-[var(--duration-fast)] ease-[var(--ease-out)]"
-                    >
-                        <X className="w-4 h-4" />
-                    </button>
-                </div>
-
-                <h2 id="project-modal-title" className="font-heading text-2xl font-bold text-ink-strong mt-4 leading-tight">
-                    {project.titulo}
-                </h2>
-
-                {project.empresa && (
-                    <p className="text-xs text-ink-muted mt-1">{project.empresa.nombre_comercial}</p>
-                )}
-
-                <p className="text-ink-muted text-sm leading-relaxed mt-4">{project.descripcion}</p>
-
-                <div className="grid grid-cols-2 gap-4 mt-5">
-                    <div>
-                        <p className="text-[10px] font-bold text-ink-subtle uppercase tracking-wider mb-1">
-                            {t('business_area_label')}
-                        </p>
-                        <p className="text-sm font-semibold text-ink-strong">{project.area?.nombre ?? '—'}</p>
-                    </div>
-                    <div>
-                        <p className="text-[10px] font-bold text-ink-subtle uppercase tracking-wider mb-1">{t('duration')}</p>
-                        <p className="text-sm font-semibold text-ink-strong">{project.plazo_dias} días</p>
-                    </div>
-                </div>
-
-                {project.skills.length > 0 && (
-                    <div className="flex flex-wrap gap-2 mt-5">
-                        {project.skills.flatMap((s) => s.skill ? [s.skill] : []).map((skill) => (
-                            <span
-                                key={skill.id}
-                                className="bg-ink-strong text-surface text-[11px] font-bold px-3 py-1 rounded-full uppercase tracking-wider"
-                            >
-                                {skill.nombre}
-                            </span>
-                        ))}
-                    </div>
-                )}
-
-                {project.usa_ia && (
-                    <div className="rounded-xl border border-secondary/15 bg-secondary/5 p-4 mt-5">
-                        <p className="text-[10px] font-bold text-secondary uppercase tracking-wider mb-1.5">
-                            {t('ai_usage_label')}
-                        </p>
-                        <p className="text-xs text-ink-muted leading-relaxed">{t('ai_usage_label')}</p>
-                    </div>
-                )}
-
-                <div className="mt-6 flex justify-end">
-                    <Button variant="default" className="rounded-full px-6" onClick={onClose}>
-                        {t('close')}
-                    </Button>
-                </div>
-            </div>
-        </div>
-    );
-}
-
 export default function MarketPlace({ initialProjects, catalogs, role = 'student', appliedProjectIds = [] }: Props) {
     const t = useTranslations('marketplace_page');
     const locale = useLocale();
 
-    const projects = initialProjects.length > 0 ? initialProjects : MOCK_PROJECTS;
-    const activeCatalogs = catalogs.areas.length > 0 ? catalogs : MOCK_CATALOGS;
+    const projects = initialProjects;
+    const activeCatalogs = catalogs;
 
     const [searchQuery, setSearchQuery] = useState('');
     const [activeArea, setActiveArea] = useState<string | null>(null);
@@ -398,8 +177,6 @@ export default function MarketPlace({ initialProjects, catalogs, role = 'student
     const [sortOrder, setSortOrder] = useState<SortOrder>('sort_recent_desc');
     const [currentPage, setCurrentPage] = useState(1);
     const [savedProjectIds, setSavedProjectIds] = useState<ReadonlySet<string>>(new Set());
-    const [sheetProject, setSheetProject] = useState<ApiProject | null>(null);
-    const [selectedProject, setSelectedProject] = useState<ApiProject | null>(null);
 
     const areaOptions: FilterOption[] = activeCatalogs.areas.map((a) => ({ value: a.id, label: a.nombre }));
     const skillOptions: FilterOption[] = activeCatalogs.skills
@@ -489,33 +266,31 @@ export default function MarketPlace({ initialProjects, catalogs, role = 'student
 
     return (
         <>
-        <ProjectDetailSheet
-            project={sheetProject}
-            isOpen={!!sheetProject}
-            onClose={() => setSheetProject(null)}
-            role={role ?? null}
-            showApplyForm={role === 'student'}
-            alreadyApplied={sheetProject ? appliedProjectIds.includes(sheetProject.id) : false}
-            isProjectExpired={sheetProject ? isExpired(sheetProject.fecha_cierre) : false}
-        />
-        <div className="bg-marketplace-sky relative overflow-hidden min-h-screen text-ink font-body pb-20">
-            <MarketplaceHeroBackdrop />
+        <div className="bg-marketplace-sky relative min-h-screen text-ink font-body pb-20">
 
-            {/* Hero */}
-            <section className="relative z-10 px-6 pt-16 pb-40 md:pt-24 md:pb-52">
-                <div className="relative z-10 mx-auto max-w-3xl text-center">
-                    <h1 className="font-heading text-6xl md:text-7xl font-bold tracking-tight text-white">
+            {/* Hero — backdrop is contained here so it never stretches with the cards */}
+            <section className="relative overflow-hidden z-10 px-6 pt-10 pb-24 md:pt-14 md:pb-32">
+                <MarketplaceHeroBackdrop />
+                <div className="relative z-10 max-w-7xl mx-auto px-4 md:px-6 text-left">
+                    <HeroJourneyBadge
+                        stage="desafio"
+                        label={t('hero_journey_label')}
+                        cta={t('hero_journey_cta')}
+                        achievedCta={t('hero_journey_cta_achieved')}
+                        achieved={appliedProjectIds.length > 0}
+                    />
+                    <h1 className="mt-4 font-heading text-4xl md:text-5xl font-bold tracking-tight text-white">
                         {t('hero_title')}<span className="text-primary" aria-hidden="true">.</span>
                     </h1>
-                    <p className="mt-5 text-base md:text-lg text-white/80 leading-relaxed">
+                    <p className="mt-3 text-sm md:text-base text-white/80 leading-relaxed">
                         {t('hero_subtitle')}
                     </p>
                 </div>
             </section>
 
             {/* Search + filters */}
-            <div className="relative z-20 max-w-5xl mx-auto px-6 -mt-16 md:-mt-20">
-                <div className="flex flex-col gap-4 rounded-full border border-white/20 bg-secondary/40 px-3 py-3 shadow-elevated backdrop-blur-md md:flex-row md:items-center md:gap-2 md:py-2 md:pl-6 md:pr-2">
+            <div className="relative z-20 max-w-7xl mx-auto px-4 md:px-6 -mt-10 md:-mt-14">
+                <div className="flex flex-col gap-4 rounded-full bg-white/10 px-3 py-3 shadow-elevated backdrop-blur-md md:flex-row md:items-center md:gap-2 md:py-2 md:pl-6 md:pr-2">
                     <div className="flex flex-1 items-center gap-3">
                         <Search className="w-4 h-4 shrink-0 text-white/70" aria-hidden="true" />
                         <label htmlFor="marketplace-search" className="sr-only">{t('search_label')}</label>
@@ -570,17 +345,53 @@ export default function MarketPlace({ initialProjects, catalogs, role = 'student
                 </div>
             </div>
 
+            {/* Ambient stars scattered in the cards area */}
+            <div className="pointer-events-none absolute inset-x-0 bottom-0 z-0" style={{ top: '420px' }} aria-hidden="true">
+                {([
+                    // bordes izquierdo / derecho
+                    { t: '8%',  l: '1%',   s: 10, g: true,  sp: true,  o: 0.6,  d: '3.2s', dl: '0.3s' },
+                    { t: '22%', l: '99%',  s: 10, g: true,  sp: true,  o: 0.65, d: '3.6s', dl: '0.8s' },
+                    { t: '50%', l: '1%',   s: 10, g: false, sp: true,  o: 0.55, d: '3.1s', dl: '1.4s' },
+                    { t: '72%', l: '99%',  s: 10, g: true,  sp: true,  o: 0.7,  d: '2.9s', dl: '0.5s' },
+                    // centro — visibles cuando los cards no llenan la pantalla
+                    { t: '35%', l: '22%',  s: 4,  g: false, sp: false, o: 0.25, d: '3.0s', dl: '1.0s' },
+                    { t: '45%', l: '62%',  s: 4,  g: false, sp: false, o: 0.2,  d: '3.4s', dl: '0.6s' },
+                    { t: '60%', l: '38%',  s: 10, g: true,  sp: true,  o: 0.3,  d: '3.2s', dl: '1.2s' },
+                    { t: '75%', l: '75%',  s: 4,  g: false, sp: false, o: 0.2,  d: '2.8s', dl: '0.9s' },
+                    { t: '85%', l: '18%',  s: 4,  g: true,  sp: false, o: 0.25, d: '3.5s', dl: '0.4s' },
+                ] as const).map((s, i) => {
+                    const fill = s.g ? 'var(--highlight)' : 'var(--surface)';
+                    if (s.sp) {
+                        return (
+                            <span key={i} className="absolute" style={{ top: s.t, left: s.l, opacity: s.o }}>
+                                <svg width={s.s} height={s.s} viewBox="0 0 24 24" fill="none"
+                                    style={{ display: 'block', filter: `drop-shadow(0 0 3px ${fill})`, animation: `constellation-spark-twinkle ${s.d} ease-in-out ${s.dl} infinite` }}>
+                                    <polygon points={CONTENT_SPARKLE_POINTS} fill={fill} />
+                                </svg>
+                            </span>
+                        );
+                    }
+                    return (
+                        <span key={i} className="absolute rounded-full" style={{
+                            top: s.t, left: s.l, width: s.s, height: s.s, background: fill,
+                            ['--star-opacity' as string]: s.o,
+                            animation: `constellation-twinkle ${s.d} ease-in-out ${s.dl} infinite`,
+                        }} />
+                    );
+                })}
+            </div>
+
             {/* Results */}
-            <div className="max-w-6xl mx-auto px-6 mt-14 relative z-10">
+            <div className="max-w-7xl mx-auto px-4 md:px-6 mt-8 relative z-10">
                 <div className="flex items-center justify-between gap-4 mb-5">
-                    <p className="text-base font-bold text-ink-strong">
+                    <p className="text-sm font-semibold text-white">
                         {t('results_count', { count: totalResults })}
                     </p>
                     {hasActiveFilters && (
                         <button
                             type="button"
                             onClick={clearAllFilters}
-                            className="text-xs font-semibold text-primary hover:underline"
+                            className="text-sm font-semibold text-white hover:underline"
                         >
                             {t('clear_filters')}
                         </button>
@@ -685,13 +496,13 @@ export default function MarketPlace({ initialProjects, catalogs, role = 'student
                                             {skills.slice(0, 4).map((skill) => (
                                                 <span
                                                     key={skill.id}
-                                                    className="bg-ink-strong text-surface text-[11px] font-bold px-3 py-1 rounded-full uppercase tracking-wider"
+                                                    className="border border-primary text-primary text-[11px] font-bold px-3 py-1 rounded-full uppercase tracking-wider"
                                                 >
                                                     {skill.nombre}
                                                 </span>
                                             ))}
                                             {skills.length > 4 && (
-                                                <span className="bg-ink-strong text-surface text-[11px] font-bold px-3 py-1 rounded-full uppercase tracking-wider">
+                                                <span className="border border-primary text-primary text-[11px] font-bold px-3 py-1 rounded-full uppercase tracking-wider">
                                                     +{skills.length - 4}
                                                 </span>
                                             )}
@@ -700,44 +511,28 @@ export default function MarketPlace({ initialProjects, catalogs, role = 'student
 
                                     {/* Footer */}
                                     <div className="mt-auto flex items-center gap-2">
-                                        <button
-                                            type="button"
-                                            onClick={() => setSheetProject(project)}
+                                        <Link
+                                            href={`/${locale}/gestion?proyecto=${project.id}`}
                                             className={`flex-1 rounded-full px-5 py-2.5 text-sm font-semibold text-center transition-colors duration-[var(--duration-fast)] ease-[var(--ease-out)] ${
                                                 expired
-                                                    ? 'bg-surface-sunken text-ink-muted cursor-default'
-                                                    : 'bg-primary text-primary-foreground hover:bg-secondary'
+                                                    ? 'bg-surface-sunken text-ink-muted pointer-events-none'
+                                                    : 'bg-secondary text-white hover:bg-secondary/80'
                                             }`}
                                         >
                                             {expired ? t('badge_expired') : hasApplied ? t('view_my_offer') : t('view_project')}
-                                        </button>
-                                        <button
-                                            type="button"
-                                            onClick={() => setSelectedProject(project)}
-                                            className="flex size-10 shrink-0 items-center justify-center rounded-full border border-border bg-surface text-ink-muted hover:border-primary/30 hover:text-primary transition-colors duration-[var(--duration-fast)] ease-[var(--ease-out)]"
-                                            aria-label={t('view_project')}
-                                        >
-                                            <Sparkles className="w-4 h-4" aria-hidden="true" />
-                                        </button>
-                                        <Link
-                                            href={`/${locale}/marketplace/${project.id}`}
-                                            aria-label="Abrir página completa"
-                                            className="flex size-10 shrink-0 items-center justify-center rounded-full border border-border bg-surface text-ink-muted hover:border-primary/30 hover:text-primary transition-colors duration-[var(--duration-fast)] ease-[var(--ease-out)]"
-                                        >
-                                            <ExternalLink className="w-4 h-4" aria-hidden="true" />
                                         </Link>
                                         <button
                                             type="button"
                                             aria-label={isSaved ? t('saved_project') : t('save_project')}
                                             aria-pressed={isSaved}
                                             onClick={() => toggleSaved(project.id)}
-                                            className={`size-10 shrink-0 flex items-center justify-center rounded-full transition-colors duration-[var(--duration-fast)] ease-[var(--ease-out)] ${
+                                            className={`size-10 shrink-0 flex items-center justify-center rounded-full border transition-colors duration-[var(--duration-fast)] ease-[var(--ease-out)] bg-highlight ${
                                                 isSaved
-                                                    ? 'bg-highlight text-highlight-foreground'
-                                                    : 'bg-ink-strong text-surface hover:bg-secondary'
+                                                    ? 'border-white text-white'
+                                                    : 'border-white text-white/0'
                                             }`}
                                         >
-                                            <Bookmark className={`w-4 h-4 ${isSaved ? 'fill-current' : ''}`} />
+                                            <Bookmark className={`w-4 h-4 stroke-white ${isSaved ? 'fill-white' : 'fill-none'}`} />
                                         </button>
                                     </div>
                                 </div>
@@ -754,7 +549,7 @@ export default function MarketPlace({ initialProjects, catalogs, role = 'student
                             aria-label={t('pagination_prev')}
                             disabled={safePage === 1}
                             onClick={() => setCurrentPage((p) => Math.max(1, p - 1))}
-                            className="w-9 h-9 flex items-center justify-center rounded-lg border border-border text-ink-muted bg-surface hover:bg-surface-sunken transition-colors duration-[var(--duration-fast)] ease-[var(--ease-out)] disabled:opacity-40 disabled:pointer-events-none"
+                            className="w-9 h-9 flex items-center justify-center rounded-lg border border-white/40 text-white bg-transparent hover:bg-white/10 transition-colors duration-[var(--duration-fast)] ease-[var(--ease-out)] disabled:opacity-30 disabled:pointer-events-none"
                         >
                             <ChevronLeft className="w-4 h-4" />
                         </button>
@@ -767,8 +562,8 @@ export default function MarketPlace({ initialProjects, catalogs, role = 'student
                                 onClick={() => setCurrentPage(page)}
                                 className={`w-9 h-9 flex items-center justify-center rounded-lg text-sm font-semibold transition-colors duration-[var(--duration-fast)] ease-[var(--ease-out)] ${
                                     page === safePage
-                                        ? 'bg-primary text-primary-foreground'
-                                        : 'border border-border text-ink-muted bg-surface hover:bg-surface-sunken'
+                                        ? 'bg-white/25 text-white border border-white/40'
+                                        : 'border border-white/40 text-white/70 bg-transparent hover:bg-white/10'
                                 }`}
                             >
                                 {page}
@@ -779,7 +574,7 @@ export default function MarketPlace({ initialProjects, catalogs, role = 'student
                             aria-label={t('pagination_next')}
                             disabled={safePage === totalPages}
                             onClick={() => setCurrentPage((p) => Math.min(totalPages, p + 1))}
-                            className="w-9 h-9 flex items-center justify-center rounded-lg border border-border text-ink-muted bg-surface hover:bg-surface-sunken transition-colors duration-[var(--duration-fast)] ease-[var(--ease-out)] disabled:opacity-40 disabled:pointer-events-none"
+                            className="w-9 h-9 flex items-center justify-center rounded-lg border border-white/40 text-white bg-transparent hover:bg-white/10 transition-colors duration-[var(--duration-fast)] ease-[var(--ease-out)] disabled:opacity-30 disabled:pointer-events-none"
                         >
                             <ChevronRight className="w-4 h-4" />
                         </button>
@@ -787,10 +582,8 @@ export default function MarketPlace({ initialProjects, catalogs, role = 'student
                 )}
             </div>
 
-            {selectedProject && (
-                <ProjectDetailModal project={selectedProject} onClose={() => setSelectedProject(null)} />
-            )}
         </div>
         </>
     );
 }
+

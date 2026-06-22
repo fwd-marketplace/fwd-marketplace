@@ -30,6 +30,7 @@ vi.mock("../../config/supabase", () => ({
         },
         insert: chain,
         eq: chain,
+        in: chain,
         order: chain,
         maybeSingle: resolveSingle,
         single: resolveSingle,
@@ -99,7 +100,8 @@ describe("listMyProjects", () => {
     reads["empresario"] = { data: { id: "emp-1" }, error: null };
     lists["proyecto"] = { data: [{ id: PROJECT, titulo: "Landing" }], error: null };
     const result = await listMyProjects(TOKEN, USER);
-    expect(result).toEqual([{ id: PROJECT, titulo: "Landing" }]);
+    // listMyProjects agrega n_ofertas (conteo de postulaciones) a cada proyecto.
+    expect(result).toEqual([{ id: PROJECT, titulo: "Landing", n_ofertas: 0 }]);
   });
 
   it("rechaza (403) si el usuario no tiene perfil de empresa", async () => {

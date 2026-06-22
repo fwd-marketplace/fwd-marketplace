@@ -15,19 +15,17 @@ import {
   Loader2,
   PackageCheck,
   Send,
+  Star,
   Trash2,
   X,
 } from "lucide-react";
-import { ProjectDetailSheet } from "@/components/marketplace/ProjectDetailSheet";
 import {
-  getProjectByIdAction,
   submitEntregableAction,
   withdrawOfferAction,
 } from "@/lib/actions/marketplace";
-import { MOCK_MARKETPLACE_BY_ID } from "@/lib/mock-data";
 import { cn } from "@/lib/utils";
 import { PrototipoPreview } from "@/components/marketplace/PrototipoPreview";
-import type { ApiProject, Entregable, EntregableState, MyOffer, OfferState } from "@/lib/api/types";
+import type { Entregable, EntregableState, MyOffer, OfferState } from "@/lib/api/types";
 
 interface Props {
   ofertas: MyOffer[];
@@ -35,10 +33,11 @@ interface Props {
 }
 
 const STATE_CONFIG: Record<OfferState, { label: string; className: string }> = {
-  enviada:         { label: "Enviada",          className: "bg-primary/10 text-primary border-primary/20" },
-  en_revision:     { label: "En revisión",      className: "bg-warning/10 text-warning border-warning/20" },
-  adjudicada:      { label: "Adjudicada",       className: "bg-accent/10 text-accent border-accent/20" },
-  no_seleccionada: { label: "No seleccionada",  className: "bg-ink-muted/10 text-ink-muted border-border" },
+  enviada:           { label: "Enviada",             className: "bg-primary/10 text-primary border-primary/20" },
+  en_revision:       { label: "En revisión",         className: "bg-warning/10 text-warning border-warning/20" },
+  solicitar_cambios: { label: "Cambios solicitados", className: "bg-magenta/10 text-magenta border-magenta/20" },
+  adjudicada:        { label: "Adjudicada",          className: "bg-accent/10 text-accent border-accent/20" },
+  no_seleccionada:   { label: "No seleccionada",     className: "bg-ink-muted/10 text-ink-muted border-border" },
 };
 
 const ENTREGABLE_STATE_CONFIG: Record<EntregableState, { label: string; className: string }> = {
@@ -294,12 +293,10 @@ function WithdrawModal({
 function OfertaCard({
   oferta,
   entregables,
-  onVerProyecto,
   onWithdraw,
 }: {
   oferta: MyOffer;
   entregables: Entregable[];
-  onVerProyecto: (id: string) => void;
   onWithdraw: (oferta: MyOffer) => void;
 }) {
   const t = useTranslations("mis_postulaciones");
@@ -349,7 +346,7 @@ function OfertaCard({
           </div>
           {oferta.proyecto && (
             <Link
-              href={`/${locale}/mensajes?proyecto=${oferta.proyecto.id}`}
+              href={`/${locale}/marketplace/${oferta.proyecto.id}/proceso`}
               className="inline-flex items-center gap-1 rounded-full bg-accent/20 px-3 py-1 font-body text-[11px] font-bold text-accent transition-colors hover:bg-accent hover:text-white"
             >
               <ArrowUpRight className="size-3" aria-hidden="true" />
@@ -395,14 +392,13 @@ function OfertaCard({
 
           <div className="flex items-center gap-2 shrink-0">
             {oferta.proyecto && (
-              <button
-                type="button"
-                onClick={() => onVerProyecto(oferta.proyecto!.id)}
+              <Link
+                href={`/${locale}/marketplace/${oferta.proyecto.id}/proceso`}
                 className="inline-flex items-center gap-1.5 rounded-full border border-primary/30 bg-primary/5 px-3.5 py-2 font-body text-xs font-semibold text-primary transition-colors duration-[var(--duration-fast)] ease-[var(--ease-out)] hover:bg-primary hover:text-white"
               >
                 <ArrowUpRight className="size-3.5" aria-hidden="true" />
                 {t("view_project_btn")}
-              </button>
+              </Link>
             )}
 
             {canWithdraw && (
@@ -522,6 +518,32 @@ function OfertaCard({
         {isAdjudicada && (
           <EntregableSection oferta={oferta} entregables={entregables} />
         )}
+
+        {/* ── Calificacion de la empresa ── */}
+        {oferta.calificacion != null && (
+          <div className="mt-4 rounded-xl border border-highlight/30 bg-highlight/5 p-4">
+            <p className="mb-2 font-body text-[10px] font-bold uppercase tracking-wider text-ink-muted">
+              {t("rating_from_company")}
+            </p>
+            <div className="flex items-center gap-1">
+              {Array.from({ length: 5 }).map((_, i) => (
+                <Star
+                  key={i}
+                  className={cn("size-5", i < oferta.calificacion! ? "fill-highlight text-highlight" : "text-border")}
+                  aria-hidden="true"
+                />
+              ))}
+              <span className="ml-2 font-heading text-base font-bold text-ink-strong">
+                {oferta.calificacion}/5
+              </span>
+            </div>
+            {oferta.comentario_calificacion && (
+              <p className="mt-2 font-body text-sm leading-relaxed text-ink">
+                {oferta.comentario_calificacion}
+              </p>
+            )}
+          </div>
+        )}
       </div>
     </li>
   );
@@ -534,26 +556,8 @@ export function MisPostulaciones({ ofertas: initialOfertas, entregables }: Props
   const locale = useLocale();
 
   const [ofertas, setOfertas] = useState(initialOfertas);
-  const [sheetProject, setSheetProject] = useState<ApiProject | null>(null);
-  const [isSheetOpen, setIsSheetOpen] = useState(false);
-  const [isLoadingProject, setIsLoadingProject] = useState(false);
   const [withdrawTarget, setWithdrawTarget] = useState<MyOffer | null>(null);
   const [isWithdrawPending, startWithdrawTransition] = useTransition();
-
-  async function openProjectSheet(projectId: string) {
-    const mock = MOCK_MARKETPLACE_BY_ID.get(projectId);
-    if (mock) {
-      setSheetProject(mock);
-      setIsSheetOpen(true);
-      return;
-    }
-    setSheetProject(null);
-    setIsLoadingProject(true);
-    setIsSheetOpen(true);
-    const result = await getProjectByIdAction(projectId);
-    if (result.ok) setSheetProject(result.data);
-    setIsLoadingProject(false);
-  }
 
   function handleWithdrawConfirm(offerId: string) {
     startWithdrawTransition(async () => {
@@ -567,15 +571,6 @@ export function MisPostulaciones({ ofertas: initialOfertas, entregables }: Props
 
   return (
     <>
-      <ProjectDetailSheet
-        project={sheetProject}
-        isOpen={isSheetOpen}
-        onClose={() => setIsSheetOpen(false)}
-        role="student"
-        showApplyForm={false}
-        isLoading={isLoadingProject}
-      />
-
       {withdrawTarget && (
         <WithdrawModal
           ofertaId={withdrawTarget.id}
@@ -645,7 +640,6 @@ export function MisPostulaciones({ ofertas: initialOfertas, entregables }: Props
                     key={oferta.id}
                     oferta={oferta}
                     entregables={projectEntregables}
-                    onVerProyecto={openProjectSheet}
                     onWithdraw={setWithdrawTarget}
                   />
                 );

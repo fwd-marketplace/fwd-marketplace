@@ -1,16 +1,27 @@
 "use server";
 
 import { revalidatePath } from "next/cache";
+import { cookies } from "next/headers";
+import { BASE_URL, SESSION_COOKIE } from "@/lib/api-client";
+import type { Result } from "@/lib/result";
 import {
   calificarOferta,
+  cancelProject,
   changeProjectState,
   createProject,
   decideOffer,
+  deleteProject,
+  editOffer,
+  getCatalogs,
+  getMyOffers,
+  getMyProjects,
   getProjectById,
   getProjectEntregables,
   getProjectOffers,
+  getProjects,
   replicarCalificacion,
   reviewEntregable,
+  reviewOffer,
   submitEntregable,
   submitOffer,
   updateProject,
@@ -20,11 +31,17 @@ import type {
   CalificarInput,
   CompanyProjectState,
   CreateProjectInput,
+  EditOfferInput,
   ReplicaInput,
+  ReviewOfferInput,
   SubmitEntregableInput,
   SubmitOfferInput,
   UpdateProjectInput,
 } from "@/lib/api/types";
+
+export async function getCatalogsAction() {
+  return getCatalogs();
+}
 
 export async function createProjectAction(input: CreateProjectInput) {
   const result = await createProject(input);
@@ -50,8 +67,32 @@ export async function changeProjectStateAction(projectId: string, estado: Compan
   return result;
 }
 
+export async function cancelProjectAction(projectId: string) {
+  const result = await cancelProject(projectId);
+  if (result.ok) {
+    revalidatePath("/");
+  }
+  return result;
+}
+
+export async function deleteProjectAction(projectId: string) {
+  const result = await deleteProject(projectId);
+  if (result.ok) {
+    revalidatePath("/");
+  }
+  return result;
+}
+
 export async function decideOfferAction(offerId: string, accion: "aceptar" | "rechazar") {
   const result = await decideOffer(offerId, accion);
+  if (result.ok) {
+    revalidatePath("/");
+  }
+  return result;
+}
+
+export async function reviewOfferAction(offerId: string, input: ReviewOfferInput) {
+  const result = await reviewOffer(offerId, input);
   if (result.ok) {
     revalidatePath("/");
   }
@@ -102,6 +143,14 @@ export async function withdrawOfferAction(offerId: string) {
   return result;
 }
 
+export async function editOfferAction(offerId: string, input: EditOfferInput) {
+  const result = await editOffer(offerId, input);
+  if (result.ok) {
+    revalidatePath("/");
+  }
+  return result;
+}
+
 export async function calificarOfertaAction(ofertaId: string, input: CalificarInput) {
   const result = await calificarOferta(ofertaId, input);
   if (result.ok) {
@@ -116,4 +165,36 @@ export async function replicarCalificacionAction(ofertaId: string, input: Replic
     revalidatePath("/");
   }
   return result;
+}
+
+export async function getMyProjectsAction() {
+  return getMyProjects();
+}
+
+export async function getProjectsAction() {
+  return getProjects();
+}
+
+export async function getMyOffersAction() {
+  return getMyOffers();
+}
+
+export async function uploadDocumentoAction(formData: FormData): Promise<Result<string>> {
+  const jar = await cookies();
+  const token = jar.get(SESSION_COOKIE)?.value;
+  try {
+    const res = await fetch(`${BASE_URL}/upload/documento`, {
+      method: "POST",
+      headers: token ? { Authorization: `Bearer ${token}` } : {},
+      body: formData,
+    });
+    if (!res.ok) {
+      const body = await res.json().catch(() => ({})) as { error?: string };
+      return { ok: false, error: body.error ?? "No se pudo subir el archivo" };
+    }
+    const data = await res.json() as { url: string };
+    return { ok: true, data: data.url };
+  } catch {
+    return { ok: false, error: "Error al subir el archivo. Intentá de nuevo." };
+  }
 }

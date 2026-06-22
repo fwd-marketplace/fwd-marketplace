@@ -729,6 +729,7 @@ export type Database = {
         Row: {
           calificacion: number | null
           comentario_calificacion: string | null
+          comentario_revision: string | null
           documentacion_tecnica: string | null
           documentacion_url: string | null
           fecha_envio: string
@@ -745,6 +746,7 @@ export type Database = {
         Insert: {
           calificacion?: number | null
           comentario_calificacion?: string | null
+          comentario_revision?: string | null
           documentacion_tecnica?: string | null
           documentacion_url?: string | null
           fecha_envio?: string
@@ -761,6 +763,7 @@ export type Database = {
         Update: {
           calificacion?: number | null
           comentario_calificacion?: string | null
+          comentario_revision?: string | null
           documentacion_tecnica?: string | null
           documentacion_url?: string | null
           fecha_envio?: string
@@ -1133,6 +1136,28 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
+      crear_notificacion: {
+        Args: {
+          p_id_usuario: string
+          p_tipo: string
+          p_mensaje: string
+        }
+        Returns: string | null
+      }
+      eliminar_proyecto: {
+        Args: {
+          p_id: string
+        }
+        Returns: undefined
+      }
+      sistema_crear_notificacion: {
+        Args: {
+          p_id_usuario: string
+          p_tipo: string
+          p_mensaje: string
+        }
+        Returns: undefined
+      }
       crear_pending_login: {
         Args: {
           p_id_usuario: string

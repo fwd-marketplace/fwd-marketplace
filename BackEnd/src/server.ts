@@ -7,4 +7,8 @@ app.listen(env.port, () => {
     url: `http://localhost:${env.port}`,
     corsOrigin: env.frontendUrl,
   });
+  const serviceKeyStatus = env.supabaseServiceKey
+    ? `OK (${env.supabaseServiceKey.slice(0, 20)}...)`
+    : "FALTA — notificaciones usaran clave anon (RLS bloqueara INSERT)";
+  logger.info(`SUPABASE_SERVICE_KEY: ${serviceKeyStatus}`);
 });

@@ -13,7 +13,7 @@ export type ProjectState =
 
 export type CompanyProjectState = Exclude<ProjectState, "borrador" | "cancelado">;
 
-export type OfferState = "enviada" | "en_revision" | "adjudicada" | "no_seleccionada";
+export type OfferState = "enviada" | "en_revision" | "solicitar_cambios" | "adjudicada" | "no_seleccionada";
 
 export type CatalogArea = {
   id: string;
@@ -61,6 +61,7 @@ export type ApiProject = {
   area: { id: string; nombre: string } | null;
   empresa: { id?: string; nombre_comercial: string; tipo: "empresa" | "emprendedor" } | null;
   skills: Array<{ skill: CatalogSkill | null }>;
+  n_ofertas?: number;
 };
 
 export type ProjectsResponse = {
@@ -118,6 +119,7 @@ export type UpdateProjectInput = {
   plazo_dias?: number;
   usa_ia?: boolean;
   skills?: string[];
+  tecnologias_extra?: string[];
 };
 
 export type SuggestStackInput = {
@@ -143,7 +145,12 @@ export type ProjectOffer = {
   documentacion_tecnica?: string | null;
   documentacion_url?: string | null;
   fecha_envio: string;
+  comentario_revision?: string | null;
+  calificacion?: number | null;
+  comentario_calificacion?: string | null;
   estado: { nombre: OfferState };
+  /** false si el postulante ya tiene un proyecto activo (ocupado). */
+  disponible?: boolean;
   junior: {
     id: string;
     nombre: string;
@@ -163,6 +170,9 @@ export type MyOffer = {
   documentacion_tecnica?: string | null;
   documentacion_url?: string | null;
   fecha_envio: string;
+  comentario_revision?: string | null;
+  calificacion?: number | null;
+  comentario_calificacion?: string | null;
   estado: { nombre: OfferState };
   proyecto: { id: string; titulo: string; fecha_cierre?: string | null } | null;
 };
@@ -184,6 +194,8 @@ export type ApiEstudianteDetail = {
   url_portfolio: string | null;
   skills: string[];
   conocimientos: string[];
+  /** false si el estudiante ya tiene un proyecto activo (no puede postular). */
+  disponible?: boolean;
 };
 
 export type StudentSpecialty = "frontend" | "backend" | "fullstack" | "ia";
@@ -360,6 +372,19 @@ export type SubmitOfferInput = {
   documentacion_url?: string;
 };
 
+export type ReviewOfferInput = {
+  accion: "en_revision" | "solicitar_cambios" | "aceptar" | "rechazar";
+  comentario?: string;
+};
+
+export type EditOfferInput = {
+  propuesta?: string;
+  prototipo_url?: string | null;
+  url_repositorio?: string | null;
+  documentacion_tecnica?: string | null;
+  documentacion_url?: string | null;
+};
+
 export type EntregableState = "pendiente" | "enviado" | "en_revision" | "aprobado";
 export type EntregableTipo = "parcial" | "final";
 
@@ -398,17 +423,30 @@ export type ReplicaInput = {
 
 // ── Mensajería ────────────────────────────────────────────────────────────────
 
+export type ApiMensajeUser = { id: string; nombre: string; apellido1: string | null };
+
 export type ApiMensaje = {
   id: string;
   contenido: string;
   fecha_envio: string;
   es_publico: boolean;
-  remitente: { id: string; nombre: string; apellido1: string | null } | null;
+  remitente: ApiMensajeUser | null;
+  destinatario_info: ApiMensajeUser | null;
   id_destinatario: string | null;
 };
 
 export type MensajesResponse = {
   mensajes: ApiMensaje[];
+};
+
+export type ConversacionItem = {
+  proyecto: { id: string; titulo: string };
+  ultimo_mensaje: string;
+  n_participantes: number;
+};
+
+export type ConversacionesResponse = {
+  conversaciones: ConversacionItem[];
 };
 
 // ── Ranking ───────────────────────────────────────────────────────────────────
@@ -425,4 +463,36 @@ export type ApiRankedJunior = {
 export type RankingResponse = {
   juniors: ApiRankedJunior[];
 };
+
+export type ApiCalificacion = {
+  id: string;
+  calificacion: number;
+  comentario_calificacion: string | null;
+  replica_calificacion: string | null;
+  updated_at: string;
+  proyecto: {
+    id: string;
+    titulo: string;
+    empresa: { nombre_comercial: string | null } | null;
+  } | null;
+};
+
+export type CalificacionesResponse = {
+  calificaciones: ApiCalificacion[];
+};
+
+// ── Notificaciones in-app ──────────────────────────────────────────────────────
+
+export type ApiNotificacion = {
+  id: string;
+  tipo: string;
+  mensaje: string;
+  leida: boolean;
+  fecha: string;
+};
+
+export type NotificacionesResponse = {
+  notificaciones: ApiNotificacion[];
+};
+
 

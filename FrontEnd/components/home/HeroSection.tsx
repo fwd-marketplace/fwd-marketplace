@@ -3,12 +3,10 @@ import Link from 'next/link';
 import { ArrowRight } from 'lucide-react';
 import { ConstellationBackdrop } from '@/components/home/ConstellationBackdrop';
 import { LogoConstellation } from '@/components/home/LogoConstellation';
+import { ScrollToSection } from '@/components/home/ScrollToSection';
 
 export default async function HeroSection({ locale }: { locale: string }) {
   const t = await getTranslations('landing.hero');
-
-  // "Ver proyectos" lleva al registro.
-  const projectsHref = `/${locale}/register`;
 
   return (
     <section className="relative overflow-hidden bg-secondary py-20 text-secondary-foreground lg:py-32">
@@ -31,18 +29,13 @@ export default async function HeroSection({ locale }: { locale: string }) {
 
           <div className="flex flex-col items-center justify-center gap-4 sm:flex-row lg:justify-start">
             <Link
-              href={projectsHref}
+              href={`/${locale}/register`}
               className="inline-flex h-12 items-center justify-center rounded-full bg-highlight px-8 font-semibold text-highlight-foreground transition-opacity hover:opacity-90"
             >
               {t('cta_projects')}
               <ArrowRight className="ml-2 h-5 w-5" />
             </Link>
-            <Link
-              href={`/${locale}/register`}
-              className="inline-flex h-12 items-center justify-center rounded-full border border-white/30 px-8 font-semibold text-white transition-colors hover:bg-white/10"
-            >
-              {t('cta_company')}
-            </Link>
+            <ScrollToSection targetId="como-funciona" label={t('cta_company')} />
           </div>
         </div>
 

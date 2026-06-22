@@ -4,15 +4,20 @@ import { ApiError } from "../utils/ApiError";
 import {
   CreateOfertaSchema,
   DecideOfertaSchema,
+  ReviewOfertaSchema,
   CalificarOfertaSchema,
   ReplicarCalificacionSchema,
+  EditOfertaSchema,
 } from "../validations/oferta";
 import {
   createOferta,
   listMyOfertas,
+  listMyCalificaciones,
   listProjectOfertas,
   getOfertaContacto,
   decideOferta,
+  reviewOferta,
+  editOferta,
   withdrawOferta,
   calificarOferta,
   replicarCalificacion,
@@ -63,6 +68,13 @@ export async function listMine(req: Request, res: Response) {
   res.status(200).json({ ofertas });
 }
 
+/** GET /api/ofertas/mis-calificaciones (calificaciones recibidas — junior) */
+export async function listMisCalificaciones(req: Request, res: Response) {
+  const { token, userId } = readAuth(req);
+  const calificaciones = await listMyCalificaciones(token, userId);
+  res.status(200).json({ calificaciones });
+}
+
 /** GET /api/ofertas/:id (empresa dueña ve la postulación con el contacto del junior) */
 export async function getOne(req: Request, res: Response) {
   const { token, userId } = readAuth(req);
@@ -80,6 +92,30 @@ export async function decide(req: Request, res: Response) {
     throw new ApiError(400, parsed.error.issues[0]?.message ?? "Acción inválida");
   }
   const oferta = await decideOferta(token, userId, ofertaId, parsed.data);
+  res.status(200).json({ oferta });
+}
+
+/** PATCH /api/ofertas/:id/revisar (empresa revisa: cambia estado y deja comentario) */
+export async function review(req: Request, res: Response) {
+  const { token, userId } = readAuth(req);
+  const ofertaId = readUuidParam(req.params.id, "de la postulación");
+  const parsed = ReviewOfertaSchema.safeParse(req.body);
+  if (!parsed.success) {
+    throw new ApiError(400, parsed.error.issues[0]?.message ?? "Acción inválida");
+  }
+  const oferta = await reviewOferta(token, userId, ofertaId, parsed.data);
+  res.status(200).json({ oferta });
+}
+
+/** PATCH /api/ofertas/:id/editar (junior edita su propuesta si aún está en "enviada") */
+export async function edit(req: Request, res: Response) {
+  const { token, userId } = readAuth(req);
+  const ofertaId = readUuidParam(req.params.id, "de la postulación");
+  const parsed = EditOfertaSchema.safeParse(req.body);
+  if (!parsed.success) {
+    throw new ApiError(400, parsed.error.issues[0]?.message ?? "Datos inválidos");
+  }
+  const oferta = await editOferta(token, userId, ofertaId, parsed.data);
   res.status(200).json({ oferta });
 }
 

@@ -5,6 +5,7 @@ import {
   getMyPerfil,
   updateMyPerfil,
   updateMyAvatar,
+  removeMyAvatar,
   uploadMyLogo,
   deleteMyLogo,
   savePreferenciasNotificacion,
@@ -42,6 +43,13 @@ export async function updateAvatar(req: Request, res: Response) {
   }
   const perfil = await updateMyAvatar(token, userId, req.file.buffer);
   res.status(200).json({ perfil });
+}
+
+/** DELETE /api/users/me/perfil/avatar (junior elimina su avatar) */
+export async function removeAvatar(req: Request, res: Response) {
+  const { token, userId } = requireAuth(req);
+  await removeMyAvatar(token, userId);
+  res.status(204).send();
 }
 
 /** DELETE /api/users/me/perfil/logo (empresa elimina su logo) */

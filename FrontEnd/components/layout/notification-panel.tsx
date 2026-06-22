@@ -1,8 +1,9 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import Link from "next/link";
-import { useLocale, useTranslations } from "next-intl";
+import { useFormatter, useLocale, useNow, useTranslations } from "next-intl";
+import { useRouter } from "next/navigation";
 import {
   Bell,
   BellOff,
@@ -14,115 +15,38 @@ import {
   X,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
-import type { ApiRoleName } from "@/lib/api/types";
+import {
+  getNotificacionesAction,
+  marcarNotificacionLeidaAction,
+  marcarTodasLeidasAction,
+} from "@/lib/actions/notificaciones";
+import type { ApiNotificacion, ApiRoleName } from "@/lib/api/types";
 
-type NotifType =
-  | "offer_accepted"
-  | "offer_reviewed"
-  | "new_project"
-  | "entregable_sent"
-  | "new_offer";
-
-type Notification = {
-  id: string;
-  type: NotifType;
-  title: string;
-  detail: string;
-  time: string;
-  read: boolean;
-  href: string;
+/** Icono por tipo de notificacion (los tipos vienen del CHECK de la tabla `notificacion`). */
+const ICON_BY_TIPO: Record<string, { Icon: React.ElementType; className: string; bgClass: string }> = {
+  adjudicacion: { Icon: CheckCircle2, className: "text-accent", bgClass: "bg-accent/10" },
+  cambio_estado: { Icon: Briefcase, className: "text-primary", bgClass: "bg-primary/10" },
+  nuevo_mensaje: { Icon: MessageSquarePlus, className: "text-primary", bgClass: "bg-primary/10" },
+  entregable_subido: { Icon: FileUp, className: "text-secondary", bgClass: "bg-secondary/10" },
+  vencimiento_plazo: { Icon: Clock, className: "text-warning", bgClass: "bg-warning/10" },
 };
+const DEFAULT_ICON = { Icon: Bell, className: "text-ink-muted", bgClass: "bg-surface-sunken" };
 
-const MOCK_STUDENT: Notification[] = [
-  {
-    id: "ns-1",
-    type: "offer_accepted",
-    title: "Propuesta adjudicada",
-    detail: "Plataforma de Telemedicina — te seleccionaron para este proyecto.",
-    time: "hace 2 h",
-    read: false,
-    href: "/mis-postulaciones",
-  },
-  {
-    id: "ns-2",
-    type: "offer_reviewed",
-    title: "Propuesta en revisión",
-    detail: "Sistema de Gestión de Créditos — la empresa está evaluando tu carta.",
-    time: "hace 1 d",
-    read: false,
-    href: "/mis-postulaciones",
-  },
-  {
-    id: "ns-3",
-    type: "new_project",
-    title: "Nuevo proyecto disponible",
-    detail: "Dashboard de Métricas — encaja con tu stack de React y TypeScript.",
-    time: "hace 3 d",
-    read: true,
-    href: "/marketplace",
-  },
-];
+function iconFor(tipo: string): { Icon: React.ElementType; className: string; bgClass: string } {
+  return ICON_BY_TIPO[tipo] ?? DEFAULT_ICON;
+}
 
-const MOCK_COMPANY: Notification[] = [
-  {
-    id: "nc-1",
-    type: "new_offer",
-    title: "3 propuestas nuevas",
-    detail: "Dashboard de Análisis de Ventas — hay nuevas postulaciones esperando revisión.",
-    time: "hace 1 h",
-    read: false,
-    href: "/postulaciones",
-  },
-  {
-    id: "nc-2",
-    type: "entregable_sent",
-    title: "Entregable recibido",
-    detail: "Ana García subió su entregable para Plataforma de Telemedicina.",
-    time: "hace 5 h",
-    read: false,
-    href: "/dashboard",
-  },
-  {
-    id: "nc-3",
-    type: "offer_reviewed",
-    title: "Proyecto en desarrollo",
-    detail: "API de Integración SAP — el junior aceptado comenzó a trabajar.",
-    time: "hace 2 d",
-    read: true,
-    href: "/dashboard",
-  },
-];
-
-const ICON_CONFIG: Record<
-  NotifType,
-  { Icon: React.ElementType; className: string; bgClass: string }
-> = {
-  offer_accepted: {
-    Icon: CheckCircle2,
-    className: "text-accent",
-    bgClass: "bg-accent/10",
-  },
-  offer_reviewed: {
-    Icon: Clock,
-    className: "text-warning",
-    bgClass: "bg-warning/10",
-  },
-  new_project: {
-    Icon: Briefcase,
-    className: "text-primary",
-    bgClass: "bg-primary/10",
-  },
-  entregable_sent: {
-    Icon: FileUp,
-    className: "text-secondary",
-    bgClass: "bg-secondary/10",
-  },
-  new_offer: {
-    Icon: MessageSquarePlus,
-    className: "text-primary",
-    bgClass: "bg-primary/10",
-  },
-};
+/** Ruta de destino al hacer click en una notificacion, segun tipo y rol. */
+function linkFor(tipo: string, role: ApiRoleName | undefined, locale: string): string {
+  if (role === "company") {
+    if (tipo === "nuevo_mensaje") return `/${locale}/mensajes`;
+    return `/${locale}/gestion`;
+  }
+  if (role === "admin") return `/${locale}/admin`;
+  // student y fallback
+  if (tipo === "nuevo_mensaje") return `/${locale}/mensajes`;
+  return `/${locale}/mis-postulaciones`;
+}
 
 interface Props {
   role: ApiRoleName | undefined;
@@ -141,12 +65,26 @@ export function NotificationPanel({
 }: Props) {
   const locale = useLocale();
   const t = useTranslations("notification_panel");
-  const initial = role === "company" ? MOCK_COMPANY : MOCK_STUDENT;
-  const [notifs, setNotifs] = useState<Notification[]>(initial);
+  const format = useFormatter();
+  const now = useNow({ updateInterval: 60_000 });
+  const router = useRouter();
+  const [notifs, setNotifs] = useState<ApiNotificacion[]>([]);
   const [internalOpen, setInternalOpen] = useState(false);
 
   const isControlled = controlledOpen !== undefined;
   const open = isControlled ? controlledOpen : internalOpen;
+
+  // Carga al montar (para el badge) y refresca cada vez que el panel se abre.
+  useEffect(() => {
+    if (!role) return;
+    let active = true;
+    void getNotificacionesAction().then((res) => {
+      if (active && res.ok) setNotifs(res.data);
+    });
+    return () => {
+      active = false;
+    };
+  }, [role, open]);
 
   function setOpen(next: boolean) {
     if (!isControlled) {
@@ -155,16 +93,22 @@ export function NotificationPanel({
     onOpenChange?.(next);
   }
 
-  const unread = notifs.filter((n) => !n.read).length;
+  const unread = notifs.filter((n) => !n.leida).length;
 
-  function markAllRead() {
-    setNotifs((prev) => prev.map((n) => ({ ...n, read: true })));
+  async function markAllRead() {
+    setNotifs((prev) => prev.map((n) => ({ ...n, leida: true })));
+    await marcarTodasLeidasAction();
   }
 
-  function markRead(id: string) {
-    setNotifs((prev) =>
-      prev.map((n) => (n.id === id ? { ...n, read: true } : n)),
-    );
+  async function markRead(id: string) {
+    setNotifs((prev) => prev.map((n) => (n.id === id ? { ...n, leida: true } : n)));
+    await marcarNotificacionLeidaAction(id);
+  }
+
+  async function handleNotifClick(notif: ApiNotificacion) {
+    setOpen(false);
+    if (!notif.leida) await markRead(notif.id);
+    router.push(linkFor(notif.tipo, role, locale));
   }
 
   return (
@@ -204,14 +148,14 @@ export function NotificationPanel({
           type="button"
           aria-hidden="true"
           tabIndex={-1}
-          className="fixed inset-0 z-30 cursor-default"
+          className="fixed inset-0 z-[55] cursor-default"
           onClick={() => setOpen(false)}
         />
       )}
 
       {/* ── Panel dropdown ── */}
       {open && (
-        <div className="absolute right-0 top-full z-40 mt-2 w-80 overflow-hidden rounded-2xl border border-border bg-surface shadow-[var(--shadow-elevated)]">
+        <div className="absolute right-0 top-full z-[60] mt-2 w-80 overflow-hidden rounded-2xl border border-border bg-surface shadow-[var(--shadow-elevated)]">
           {/* Header del panel */}
           <div className="flex items-center justify-between border-b border-border px-4 py-3">
             <h2 className="font-heading text-sm font-bold text-ink-strong">
@@ -254,18 +198,15 @@ export function NotificationPanel({
               </li>
             ) : (
               notifs.map((notif) => {
-                const cfg = ICON_CONFIG[notif.type];
+                const cfg = iconFor(notif.tipo);
                 return (
                   <li key={notif.id}>
-                    <Link
-                      href={`/${locale}${notif.href}`}
-                      onClick={() => {
-                        markRead(notif.id);
-                        setOpen(false);
-                      }}
+                    <button
+                      type="button"
+                      onClick={() => { void handleNotifClick(notif); }}
                       className={cn(
-                        "flex items-start gap-3 px-4 py-3.5 transition-colors duration-[var(--duration-fast)] ease-[var(--ease-out)] hover:bg-surface-sunken",
-                        !notif.read && "bg-primary/3",
+                        "flex w-full items-start gap-3 px-4 py-3.5 text-left transition-colors duration-[var(--duration-fast)] ease-[var(--ease-out)] hover:bg-surface-sunken",
+                        !notif.leida && "bg-primary/3",
                       )}
                     >
                       {/* Icono */}
@@ -280,25 +221,22 @@ export function NotificationPanel({
 
                       {/* Texto */}
                       <div className="flex-1 min-w-0">
-                        <p className="font-body text-xs font-bold text-ink-strong">
-                          {notif.title}
-                        </p>
-                        <p className="mt-0.5 font-body text-xs leading-relaxed text-ink-muted line-clamp-2">
-                          {notif.detail}
+                        <p className="font-body text-xs leading-relaxed text-ink-strong">
+                          {notif.mensaje}
                         </p>
                         <p className="mt-1 font-body text-[10px] text-ink-subtle">
-                          {notif.time}
+                          {format.relativeTime(new Date(notif.fecha), now)}
                         </p>
                       </div>
 
                       {/* Punto no leído */}
-                      {!notif.read && (
+                      {!notif.leida && (
                         <span
                           aria-label={t("aria_unread")}
                           className="mt-1.5 size-2 shrink-0 rounded-full bg-primary"
                         />
                       )}
-                    </Link>
+                    </button>
                   </li>
                 );
               })
@@ -308,7 +246,7 @@ export function NotificationPanel({
           {/* Footer */}
           <div className="border-t border-border px-4 py-2.5 flex items-center justify-between gap-3">
             <Link
-              href={`/${locale}${role === "company" ? "/postulaciones" : "/mis-postulaciones"}`}
+              href={`/${locale}/gestion`}
               onClick={() => setOpen(false)}
               className="font-body text-xs font-semibold text-primary transition-colors hover:text-secondary"
             >

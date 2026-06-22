@@ -1,12 +1,15 @@
 import { ApiError, apiAuth } from "@/lib/api-client";
 import { err, ok, type Result } from "@/lib/result";
 import type {
+  ApiCalificacion,
   ApiProject,
   ApiRankedJunior,
   CalificarInput,
+  CalificacionesResponse,
   CatalogsResponse,
   CompanyProjectState,
   CreateProjectInput,
+  EditOfferInput,
   Entregable,
   EntregablesResponse,
   MyOffersResponse,
@@ -16,6 +19,7 @@ import type {
   ProjectsResponse,
   RankingResponse,
   ReplicaInput,
+  ReviewOfferInput,
   SubmitEntregableInput,
   SubmitOfferInput,
   UpdateProjectInput,
@@ -160,11 +164,37 @@ export function updateProject(
   });
 }
 
+export function getMyCalificaciones(): Promise<Result<ApiCalificacion[]>> {
+  return asResult(async () => {
+    const res = await apiAuth<CalificacionesResponse>("/ofertas/mis-calificaciones");
+    return res.calificaciones;
+  });
+}
+
+export function reviewOffer(offerId: string, input: ReviewOfferInput): Promise<Result<void>> {
+  return asResult(async () => {
+    await apiAuth(`/ofertas/${offerId}/revisar`, {
+      method: "PATCH",
+      body: JSON.stringify(input),
+    });
+  });
+}
+
 export function withdrawOffer(offerId: string): Promise<Result<void>> {
   return asResult(async () => {
     await apiAuth(`/ofertas/${offerId}/retirar`, { method: "DELETE" });
   });
 }
+
+export function editOffer(offerId: string, input: EditOfferInput): Promise<Result<void>> {
+  return asResult(async () => {
+    await apiAuth(`/ofertas/${offerId}/editar`, {
+      method: "PATCH",
+      body: JSON.stringify(input),
+    });
+  });
+}
+
 
 export function submitOffer(projectId: string, input: SubmitOfferInput): Promise<Result<ProjectOffer>> {
   return asResult(async () => {
@@ -173,5 +203,19 @@ export function submitOffer(projectId: string, input: SubmitOfferInput): Promise
       body: JSON.stringify(input),
     });
     return res.oferta;
+  });
+}
+
+/** Cancela/oculta (soft) el proyecto propio: pasa a estado 'cancelado', reversible. */
+export function cancelProject(projectId: string): Promise<Result<void>> {
+  return asResult(async () => {
+    await apiAuth(`/projects/${projectId}/cancelar`, { method: "PATCH" });
+  });
+}
+
+/** Elimina definitivamente (hard) el proyecto propio. No se puede deshacer. */
+export function deleteProject(projectId: string): Promise<Result<void>> {
+  return asResult(async () => {
+    await apiAuth(`/projects/${projectId}`, { method: "DELETE" });
   });
 }

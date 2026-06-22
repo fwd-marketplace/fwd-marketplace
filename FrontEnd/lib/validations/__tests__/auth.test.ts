@@ -100,8 +100,10 @@ describe("JuniorProfileSchema", () => {
   });
 
   it("rejects an invalid URL for githubUrl", () => {
+    // normalizedUrl antepone https:// a un dominio suelto, así que un valor con
+    // espacios sigue siendo inválido tras normalizarse.
     expect(
-      JuniorProfileSchema.safeParse({ ...VALID_JUNIOR, githubUrl: "not-a-url" }).success
+      JuniorProfileSchema.safeParse({ ...VALID_JUNIOR, githubUrl: "not a url" }).success
     ).toBe(false);
   });
 
@@ -170,9 +172,11 @@ describe("EmpresaProfileSchema", () => {
     ).toBe(false);
   });
 
-  it("rejects an invalid websiteUrl", () => {
+  it("rejects an invalid logoUrl", () => {
+    // logoUrl exige una URL completa (z.string().url(), sin normalizar): un valor
+    // sin esquema como "not-a-url" debe rechazarse.
     expect(
-      EmpresaProfileSchema.safeParse({ ...VALID_EMPRESA, websiteUrl: "techcr.com" }).success
+      EmpresaProfileSchema.safeParse({ ...VALID_EMPRESA, logoUrl: "not-a-url" }).success
     ).toBe(false);
   });
 

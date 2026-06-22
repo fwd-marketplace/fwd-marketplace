@@ -26,6 +26,7 @@ import {
   Camera,
   Loader2,
   AlertCircle,
+  MessageSquare,
   Monitor,
 } from "lucide-react";
 import {
@@ -46,11 +47,14 @@ type WorkProject = {
 };
 
 import type {
+  ApiNotificacion,
   StudentAvailability,
   StudentProfileUpdate,
   StudentSpecialty,
 } from "@/lib/api/types";
-import { updateStudentProfile, uploadStudentAvatar } from "@/lib/actions/perfil";
+import { marcarNotificacionLeidaAction, marcarTodasLeidasAction } from "@/lib/actions/notificaciones";
+import { updateStudentProfile, uploadStudentAvatar, deleteStudentAvatar } from "@/lib/actions/perfil";
+import { FwdGeoBackdrop } from "@/components/ui/fwd-geo-backdrop";
 import { replicarCalificacionAction } from "@/lib/actions/marketplace";
 import { getInitials } from "@/lib/api/safe-json";
 
@@ -106,26 +110,6 @@ function StarRow({ score, size = "sm" }: { score: number; size?: "sm" | "md" }) 
   );
 }
 
-const MOCK_CALIFICACIONES: MockCalificacion[] = [
-  {
-    id: "cal-1",
-    companyName: "Global Tech Solutions S.A.",
-    projectName: "Dashboard de análisis de ventas en tiempo real",
-    score: 5,
-    comment: "Excelente trabajo. El junior entregó a tiempo, el código es limpio y documentado. Superó nuestras expectativas en cuanto a la calidad de los componentes React y la integración con la API.",
-    date: "2026-06-10T00:00:00Z",
-    reply: null,
-  },
-  {
-    id: "cal-2",
-    companyName: "LogiTech CR",
-    projectName: "App móvil de gestión de inventario",
-    score: 4,
-    comment: "Buen trabajo general. El junior fue proactivo y comunicó bien los avances. Hubo un par de detalles de UX que requirieron ajuste, pero la entrega final fue sólida.",
-    date: "2026-05-20T00:00:00Z",
-    reply: "Muchas gracias por la retroalimentación. Tomé nota de los puntos de UX para mejorarlos en proyectos futuros.",
-  },
-];
 
 function CalificacionesSection({
   t,
@@ -288,6 +272,8 @@ export interface PerfilUsuarioProps {
   initialProfile: StudentProfile;
   initialActivities: Activity[];
   initialApplications: Application[];
+  initialCalificaciones: MockCalificacion[];
+  initialNotificaciones?: ApiNotificacion[];
   stats: ApplicationStats;
   /** Sugerencias de conocimientos no técnicos (catálogo) para autocompletar. */
   knowledgeSuggestions: string[];
@@ -430,10 +416,14 @@ function PreviewModal({
   );
 }
 
+const NOTIF_PAGE_SIZE = 10;
+
 export default function PerfilUsuario({
   initialProfile,
   initialActivities,
   initialApplications,
+  initialCalificaciones,
+  initialNotificaciones,
   stats,
   knowledgeSuggestions,
 }: PerfilUsuarioProps) {
@@ -446,6 +436,8 @@ export default function PerfilUsuario({
   const [profile, setProfile] = useState<StudentProfile>(initialProfile);
   const [activities, setActivities] = useState<Activity[]>(initialActivities);
   const [applications] = useState<Application[]>(initialApplications);
+  const [notificaciones, setNotificaciones] = useState<ApiNotificacion[]>(initialNotificaciones ?? []);
+  const [notifPage, setNotifPage] = useState(1);
   const [previewProject, setPreviewProject] = useState<WorkProject | null>(null);
   const [projectToDelete, setProjectToDelete] = useState<WorkProject | null>(null);
 
@@ -516,6 +508,7 @@ export default function PerfilUsuario({
 
   const avatarInputRef = useRef<HTMLInputElement>(null);
   const [isUploadingAvatar, setIsUploadingAvatar] = useState(false);
+  const [isDeletingAvatar, setIsDeletingAvatar] = useState(false);
   const [avatarError, setAvatarError] = useState("");
 
   // ── Label maps — avoids dynamic key access ─────────────────────────────────
@@ -588,7 +581,7 @@ export default function PerfilUsuario({
 
   function addActivity(description: string) {
     setActivities((prev) => [
-      { id: `act-${Date.now()}`, description, timestamp: t("activity.just_now") },
+      { id: `act-${Date.now()}`, description, timestamp: t("activity.just_now"), tipo: "propia" },
       ...prev,
     ]);
   }
@@ -798,9 +791,21 @@ export default function PerfilUsuario({
     setProfile((prev) => ({ ...prev, avatarUrl: result.data.url_avatar }));
   }
 
+  async function handleDeleteAvatar() {
+    setAvatarError("");
+    setIsDeletingAvatar(true);
+    const result = await deleteStudentAvatar();
+    setIsDeletingAvatar(false);
+    if (!result.ok) {
+      setAvatarError(result.error);
+      return;
+    }
+    setProfile((prev) => ({ ...prev, avatarUrl: "" }));
+  }
+
   // ── Derived values ─────────────────────────────────────────────────────────
 
-  const unreadCount = 0;
+  const unreadCount = notificaciones.filter((n) => !n.leida).length;
   const filteredApplications = applications.filter(
     (app) => filterStatus === "todas" || app.status === filterStatus
   );
@@ -809,10 +814,9 @@ export default function PerfilUsuario({
 
   return (
     <div className="min-h-screen bg-canvas text-ink flex flex-col font-body transition-colors duration-200">
-      <main className="w-full max-w-7xl mx-auto px-6 py-8 md:px-10 flex-grow space-y-8">
 
-        {/* HERO */}
-        <section className="relative rounded-3xl overflow-hidden shadow-soft bg-gradient-to-r from-primary to-secondary p-8 md:p-12 text-white">
+        {/* HERO — full-width, topa con el navbar */}
+        <section className="relative overflow-hidden bg-gradient-to-r from-primary to-secondary text-white pt-10 pb-16">
           <div className="absolute inset-0 opacity-10 pointer-events-none">
             <svg width="100%" height="100%" fill="none" xmlns="http://www.w3.org/2000/svg">
               <defs>
@@ -826,55 +830,71 @@ export default function PerfilUsuario({
             </svg>
           </div>
 
-          <div className="relative z-10 flex flex-col gap-6 md:flex-row md:items-start md:justify-between">
-            <div className="flex flex-col gap-5 sm:flex-row sm:items-start flex-grow">
+          <div className="relative z-10 mx-auto w-full max-w-7xl px-6 md:px-10 flex flex-col items-center gap-8 md:flex-row md:items-center">
 
-              <div className="shrink-0 space-y-2">
-                <div className="relative">
-                  <div className="size-24 md:size-28 overflow-hidden rounded-2xl border border-white/20 bg-white/10 flex items-center justify-center">
-                    {profile.avatarUrl ? (
-                      // eslint-disable-next-line @next/next/no-img-element -- URL externa (Cloudinary)
-                      <img
-                        src={profile.avatarUrl}
-                        alt={t("avatar.alt")}
-                        className="size-full object-cover"
-                      />
-                    ) : (
-                      <span className="font-heading text-3xl font-extrabold text-white/90">
-                        {getInitials(fullName(profile))}
-                      </span>
-                    )}
-                  </div>
+            <div className="shrink-0 space-y-1">
+              <div className="relative">
+                <div className="flex size-32 shrink-0 items-center justify-center overflow-hidden rounded-full border-4 border-white/20 bg-white/10 shadow-[var(--shadow-elevated)]">
+                  {profile.avatarUrl ? (
+                    // eslint-disable-next-line @next/next/no-img-element -- URL externa (Cloudinary)
+                    <img
+                      src={profile.avatarUrl}
+                      alt={t("avatar.alt")}
+                      className="size-full object-cover"
+                    />
+                  ) : (
+                    <span className="font-heading text-4xl font-extrabold text-white/90">
+                      {getInitials(fullName(profile))}
+                    </span>
+                  )}
+                </div>
+                <div className="absolute -bottom-4 left-1/2 flex -translate-x-1/2 gap-1">
+                  {profile.avatarUrl && (
+                    <button
+                      type="button"
+                      onClick={handleDeleteAvatar}
+                      disabled={isDeletingAvatar || isUploadingAvatar}
+                      aria-label={t("avatar.delete")}
+                      className="flex size-8 cursor-pointer items-center justify-center rounded-full bg-magenta text-white shadow-soft transition-opacity duration-[var(--duration-fast)] hover:opacity-90 disabled:cursor-not-allowed disabled:opacity-60"
+                    >
+                      {isDeletingAvatar ? (
+                        <Loader2 className="size-3.5 animate-spin" />
+                      ) : (
+                        <X className="size-3.5" />
+                      )}
+                    </button>
+                  )}
                   <button
                     type="button"
                     onClick={() => avatarInputRef.current?.click()}
-                    disabled={isUploadingAvatar}
+                    disabled={isUploadingAvatar || isDeletingAvatar}
                     aria-label={t("avatar.change")}
-                    className="absolute -bottom-2 -right-2 flex size-9 items-center justify-center rounded-full bg-highlight text-highlight-foreground shadow-soft transition-opacity duration-[var(--duration-fast)] hover:opacity-90 disabled:cursor-not-allowed disabled:opacity-60 cursor-pointer"
+                    className="flex size-8 cursor-pointer items-center justify-center rounded-full bg-highlight text-secondary shadow-soft transition-opacity duration-[var(--duration-fast)] hover:opacity-90 disabled:cursor-not-allowed disabled:opacity-60"
                   >
                     {isUploadingAvatar ? (
-                      <Loader2 className="size-4 animate-spin" />
+                      <Loader2 className="size-3.5 animate-spin" />
                     ) : (
-                      <Camera className="size-4" />
+                      <Camera className="size-3.5" />
                     )}
                   </button>
-                  <input
-                    ref={avatarInputRef}
-                    type="file"
-                    accept="image/*"
-                    onChange={handleAvatarChange}
-                    className="hidden"
-                  />
                 </div>
-                {avatarError && (
-                  <p className="flex items-center gap-1 text-xs font-medium text-highlight max-w-28">
-                    <AlertCircle className="size-3.5 shrink-0" /> {avatarError}
-                  </p>
-                )}
+                <input
+                  ref={avatarInputRef}
+                  type="file"
+                  accept="image/*"
+                  onChange={handleAvatarChange}
+                  className="hidden"
+                />
               </div>
+              {avatarError && (
+                <p className="flex max-w-28 items-center gap-1 pt-5 text-[10px] font-medium text-highlight">
+                  <AlertCircle className="size-3 shrink-0" /> {avatarError}
+                </p>
+              )}
+            </div>
 
-              <div className="space-y-4 flex-grow">
-                {isEditingHero ? (
+            <div className="flex-1 space-y-4 text-center md:text-left">
+              {isEditingHero ? (
                   <form
                     onSubmit={saveHeroInfo}
                     className="space-y-3 max-w-lg bg-black/30 p-4 rounded-xl backdrop-blur-sm"
@@ -1018,36 +1038,37 @@ export default function PerfilUsuario({
                     </div>
                   </form>
                 ) : (
-                  <>
+                  <div className="space-y-3">
                     <div className="space-y-1">
-                      <h1 className="text-3xl md:text-5xl font-heading font-extrabold tracking-tight uppercase">
+                      {profile.specialty && (
+                        <span className="inline-flex items-center rounded-full bg-highlight px-3 py-1 font-body text-xs font-bold text-secondary">
+                          {specialtyLabel(profile.specialty).toUpperCase()}
+                        </span>
+                      )}
+                      <h1 className="font-heading text-4xl font-extrabold tracking-tight text-white md:text-5xl">
                         {fullName(profile) || t("hero.unnamed")}
-                        <span className="text-highlight">.</span>
+                        <span className="text-highlight" aria-hidden="true">.</span>
                       </h1>
-                      <p className="text-lg md:text-xl font-medium text-white/95">
-                        {profile.specialty ? specialtyLabel(profile.specialty) : t("specialty_options.placeholder")}
-                        {profile.program && (
-                          <>
-                            {" "}&mdash; <span className="opacity-90">{profile.program}</span>
-                          </>
-                        )}
-                      </p>
+                      {profile.program && (
+                        <p className="font-body text-base leading-relaxed text-white/80">
+                          {profile.program}
+                        </p>
+                      )}
                     </div>
 
-                    <div className="flex flex-wrap gap-2 pt-2">
+                    <div className="flex flex-wrap justify-center gap-2 md:justify-start">
                       {profile.badges.map((badge) => (
                         <span
                           key={badge}
-                          className="px-3 py-1 text-xs uppercase tracking-wider rounded-full shadow-sm bg-white/10 text-white border border-white/20"
+                          className="px-3 py-1 text-xs uppercase tracking-wider rounded-full bg-white/10 text-white border border-white/20"
                         >
                           {badgeLabel(badge)}
                         </span>
                       ))}
                     </div>
 
-                    {/* RF-51 — Reputación acumulada */}
                     {typeof profile.reputacion === "number" && profile.reputacion > 0 && (
-                      <div className="flex items-center gap-2 pt-1">
+                      <div className="flex items-center justify-center gap-2 md:justify-start">
                         <StarRow score={profile.reputacion} size="md" />
                         <span className="font-heading text-lg font-extrabold text-highlight tracking-tight">
                           {profile.reputacion.toFixed(1)}
@@ -1057,25 +1078,24 @@ export default function PerfilUsuario({
                         </span>
                       </div>
                     )}
-                  </>
+                  </div>
                 )}
-              </div>
             </div>
 
             {!isEditingHero && (
               <button
                 type="button"
                 onClick={openEditHero}
-                className="flex items-center gap-2 bg-white/10 hover:bg-white/20 active:scale-[0.98] transition-all px-4 py-2 rounded-xl text-sm font-semibold border border-white/20 backdrop-blur-sm cursor-pointer self-start md:self-auto"
+                className="flex items-center gap-1 self-start rounded-full border border-white/20 px-3 py-1.5 font-body text-xs font-semibold text-white/80 transition-colors duration-[var(--duration-fast)] hover:bg-white/10 cursor-pointer md:self-auto"
               >
-                <Edit2 className="w-4 h-4" />
+                <Edit2 className="size-3" />
                 {t("hero.edit_profile")}
               </button>
             )}
           </div>
         </section>
 
-        {/* selected project action pill is rendered near the projects list */}
+      <main className="w-full max-w-7xl mx-auto px-6 md:px-10 py-8 flex-grow space-y-8">
 
         {/* TAB NAV */}
         <nav
@@ -1087,7 +1107,7 @@ export default function PerfilUsuario({
             const isActive = activeTab === tabId;
             let badge: number | null = null;
             if (tabId === "postulaciones") badge = applications.length;
-            if (tabId === "notificaciones") badge = unreadCount;
+            if (tabId === "notificaciones" && unreadCount > 0) badge = unreadCount;
             if (tabId === "sugeridos") badge = 0;
 
             return (
@@ -1102,8 +1122,8 @@ export default function PerfilUsuario({
                   }`}
               >
                 {TAB_LABELS[tabId]}
-                {badge !== null && (
-                  <span className="px-2 py-0.5 text-xs font-bold rounded-full bg-surface-sunken text-ink-muted border border-border">
+                {badge !== null && badge > 0 && (
+                  <span className={`px-2 py-0.5 text-xs font-bold rounded-full ${tabId === "notificaciones" ? "bg-primary text-white" : "bg-surface-sunken text-ink-muted border border-border"}`}>
                     {badge}
                   </span>
                 )}
@@ -1591,25 +1611,39 @@ export default function PerfilUsuario({
             <div className="space-y-8">
 
               {/* Activity */}
-              <section className="bg-surface rounded-2xl border border-border shadow-soft p-6 space-y-6">
+              <section className="bg-surface rounded-2xl border border-border shadow-soft p-5 space-y-4">
                 <div className="flex items-center gap-2">
-                  <History className="w-5 h-5 text-primary" />
-                  <h2 className="text-lg font-bold text-ink-strong">{t("activity.title")}</h2>
+                  <History className="w-4 h-4 text-primary" />
+                  <h2 className="text-sm font-bold text-ink-strong">{t("activity.title")}</h2>
                 </div>
-                <div className="relative border-l-2 border-border pl-4 ml-2.5 space-y-5">
-                  {activities.map((act) => (
-                    <div key={act.id} className="relative space-y-1">
-                      <span className="absolute -left-[23px] top-1 w-3.5 h-3.5 rounded-full bg-primary border-4 border-surface" />
-                      <p className="text-sm text-ink-strong font-medium leading-tight">{act.description}</p>
-                      <span className="block text-xs text-ink-muted">{act.timestamp}</span>
-                    </div>
-                  ))}
-                </div>
+                {activities.length === 0 ? (
+                  <p className="text-xs text-ink-muted">{t("activity.empty")}</p>
+                ) : (
+                  <div className="relative border-l-2 border-border pl-3 ml-2 space-y-3">
+                    {activities.slice(0, 3).map((act) => {
+                      const dotColor =
+                        act.tipo === "adjudicacion" ? "bg-accent" :
+                        act.tipo === "nuevo_mensaje" ? "bg-primary" :
+                        act.tipo === "entregable_subido" ? "bg-warning" :
+                        act.tipo === "propia" ? "bg-secondary" :
+                        "bg-magenta";
+                      return (
+                        <div key={act.id} className="relative">
+                          <span className={`absolute -left-[19px] top-1 w-2.5 h-2.5 rounded-full border-2 border-surface ${dotColor}`} />
+                          <p className="text-xs text-ink leading-snug line-clamp-2">{act.description}</p>
+                          <span className="block text-[11px] text-ink-muted mt-0.5">{act.timestamp}</span>
+                        </div>
+                      );
+                    })}
+                  </div>
+                )}
                 <button
                   type="button"
-                  className="text-primary hover:underline text-sm font-semibold block pt-2 cursor-pointer w-full text-left"
+                  onClick={() => setActiveTab("notificaciones")}
+                  className="inline-flex items-center gap-1 text-xs font-semibold text-primary hover:underline"
                 >
-                  {t("activity.view_all")}
+                  {t("activity.ver_notificaciones")}
+                  <ChevronRight className="w-3 h-3" />
                 </button>
               </section>
 
@@ -1710,7 +1744,7 @@ export default function PerfilUsuario({
             )}
 
             {/* RF-53 — Calificaciones recibidas con réplica */}
-            <CalificacionesSection t={t} initialCalificaciones={MOCK_CALIFICACIONES} />
+            <CalificacionesSection t={t} initialCalificaciones={initialCalificaciones} />
           </section>
         )}
 
@@ -1853,31 +1887,124 @@ export default function PerfilUsuario({
         )}
 
         {/* ── TAB: NOTIFICACIONES ──────────────────────────────────────────────── */}
-        {activeTab === "notificaciones" && (
-          <section className="space-y-6">
-            <div className="flex items-center justify-between">
-              <span className="text-xs font-extrabold uppercase tracking-widest text-ink-strong">
-                {t("notifications.activity_title")}
-              </span>
-              <button
-                type="button"
-                className="text-xs font-bold text-primary hover:text-primary/80 transition-colors cursor-pointer"
-              >
-                {t("notifications.mark_all_read")}
-              </button>
-            </div>
+        {activeTab === "notificaciones" && (() => {
+          const totalPages = Math.max(1, Math.ceil(notificaciones.length / NOTIF_PAGE_SIZE));
+          const paginated = notificaciones.slice((notifPage - 1) * NOTIF_PAGE_SIZE, notifPage * NOTIF_PAGE_SIZE);
 
-            <div className="pt-8 border-t border-border/60">
-              <div className="rounded-2xl border border-dashed border-border bg-surface p-8 text-center">
-                <Sparkles className="mx-auto mb-3 w-7 h-7 text-primary" />
-                <h2 className="text-xl md:text-2xl font-heading font-extrabold tracking-tight text-ink-strong">
-                  {t("two_point_zero.title")}<span className="text-primary">.</span>
-                </h2>
-                <p className="mt-2 text-sm text-ink-muted">{t("two_point_zero.notifications")}</p>
+          const notifDotColor = (tipo: string) => {
+            if (tipo === "adjudicacion") return "bg-accent";
+            if (tipo === "nuevo_mensaje") return "bg-primary";
+            if (tipo === "entregable_subido") return "bg-warning";
+            return "bg-magenta";
+          };
+
+          const handleMarcarLeida = async (id: string) => {
+            await marcarNotificacionLeidaAction(id);
+            setNotificaciones((prev) => prev.map((n) => n.id === id ? { ...n, leida: true } : n));
+          };
+
+          const handleMarcarTodas = async () => {
+            await marcarTodasLeidasAction();
+            setNotificaciones((prev) => prev.map((n) => ({ ...n, leida: true })));
+          };
+
+          return (
+            <section className="space-y-4">
+              {/* Header */}
+              <div className="flex items-center justify-between">
+                <div className="flex items-center gap-3">
+                  <h2 className="font-heading text-xl font-extrabold tracking-tight text-ink-strong">
+                    {t("notifications.activity_title")}
+                  </h2>
+                  {unreadCount > 0 && (
+                    <span className="rounded-full bg-primary/10 px-2.5 py-0.5 font-body text-xs font-bold text-primary">
+                      {unreadCount} {t("notifications.unread")}
+                    </span>
+                  )}
+                </div>
+                {unreadCount > 0 && (
+                  <button
+                    type="button"
+                    onClick={() => { void handleMarcarTodas(); }}
+                    className="font-body text-xs font-semibold text-primary hover:underline transition-colors"
+                  >
+                    {t("notifications.mark_all_read")}
+                  </button>
+                )}
               </div>
-            </div>
-          </section>
-        )}
+
+              {/* List */}
+              {notificaciones.length === 0 ? (
+                <div className="rounded-2xl border border-dashed border-border bg-surface p-12 text-center">
+                  <MessageSquare className="mx-auto mb-3 w-8 h-8 text-ink-muted/40" />
+                  <p className="font-body text-sm text-ink-muted">{t("notifications.empty")}</p>
+                </div>
+              ) : (
+                <div className="flex flex-col divide-y divide-border rounded-2xl border border-border bg-surface overflow-hidden">
+                  {paginated.map((notif) => (
+                    <div
+                      key={notif.id}
+                      className={`flex items-start gap-4 px-5 py-4 transition-colors ${!notif.leida ? "bg-primary/5" : ""}`}
+                    >
+                      <span className={`mt-1.5 size-2.5 shrink-0 rounded-full ${notifDotColor(notif.tipo)}`} />
+                      <div className="min-w-0 flex-1 space-y-0.5">
+                        <p className={`font-body text-sm leading-snug ${notif.leida ? "text-ink" : "font-semibold text-ink-strong"}`}>
+                          {notif.mensaje}
+                        </p>
+                        <span className="font-body text-xs text-ink-muted">
+                          {new Date(notif.fecha).toLocaleDateString(undefined, { day: "numeric", month: "long", year: "numeric" })}
+                          {" · "}
+                          {new Date(notif.fecha).toLocaleTimeString(undefined, { hour: "2-digit", minute: "2-digit" })}
+                        </span>
+                      </div>
+                      {!notif.leida && (
+                        <button
+                          type="button"
+                          onClick={() => { void handleMarcarLeida(notif.id); }}
+                          className="shrink-0 font-body text-[11px] font-semibold text-ink-muted hover:text-primary transition-colors whitespace-nowrap"
+                        >
+                          {t("notifications.mark_read")}
+                        </button>
+                      )}
+                    </div>
+                  ))}
+                </div>
+              )}
+
+              {/* Pagination */}
+              {notificaciones.length > NOTIF_PAGE_SIZE && (
+                <div className="flex items-center justify-between pt-2">
+                  <p className="font-body text-xs text-ink-muted">
+                    {t("notifications.page_info", {
+                      from: (notifPage - 1) * NOTIF_PAGE_SIZE + 1,
+                      to: Math.min(notifPage * NOTIF_PAGE_SIZE, notificaciones.length),
+                      total: notificaciones.length,
+                    })}
+                  </p>
+                  <div className="flex items-center gap-2">
+                    <button
+                      type="button"
+                      disabled={notifPage === 1}
+                      onClick={() => setNotifPage((p) => p - 1)}
+                      className="rounded-lg border border-border bg-surface px-3 py-1.5 font-body text-xs font-semibold text-ink transition-colors hover:border-primary/30 hover:text-primary disabled:cursor-not-allowed disabled:opacity-40"
+                    >
+                      {t("notifications.prev")}
+                    </button>
+                    <span className="font-body text-xs text-ink-muted">{notifPage} / {totalPages}</span>
+                    <button
+                      type="button"
+                      disabled={notifPage === totalPages}
+                      onClick={() => setNotifPage((p) => p + 1)}
+                      className="rounded-lg border border-border bg-surface px-3 py-1.5 font-body text-xs font-semibold text-ink transition-colors hover:border-primary/30 hover:text-primary disabled:cursor-not-allowed disabled:opacity-40"
+                    >
+                      {t("notifications.next")}
+                    </button>
+                  </div>
+                </div>
+              )}
+            </section>
+          );
+        })()}
 
         {/* ── TAB: SUGERIDOS ───────────────────────────────────────────────────── */}
         {activeTab === "sugeridos" && (
@@ -1906,18 +2033,6 @@ export default function PerfilUsuario({
         )}
 
       </main>
-
-      {/* FOOTER */}
-      <footer className="border-t border-border mt-16 bg-surface">
-        <div className="w-full max-w-7xl mx-auto px-6 py-8 md:px-10 md:flex md:justify-between md:items-center text-xs text-ink-muted space-y-4 md:space-y-0">
-          <p className="text-center md:text-left">{t("footer.copyright")}</p>
-          <div className="flex justify-center gap-6">
-            <a href="#" className="hover:text-primary transition-colors">{t("footer.terms")}</a>
-            <a href="#" className="hover:text-primary transition-colors">{t("footer.privacy")}</a>
-            <a href="#" className="hover:text-primary transition-colors">{t("footer.support")}</a>
-          </div>
-        </div>
-      </footer>
     </div>
   );
 }

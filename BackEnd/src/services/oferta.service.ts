@@ -1,6 +1,7 @@
-import { supabaseForToken } from "../config/supabase";
+import { supabaseForToken, supabaseAdmin } from "../config/supabase";
 import { ApiError } from "../utils/ApiError";
-import type { CreateOfertaInput, DecideOfertaInput, CalificarOfertaInput, ReplicarCalificacionInput } from "../validations/oferta";
+import { crearNotificacion, MENSAJES_NOTIFICACION, TIPO_POR_MENSAJE } from "./notificacion.service";
+import type { CreateOfertaInput, DecideOfertaInput, ReviewOfertaInput, CalificarOfertaInput, ReplicarCalificacionInput, EditOfertaInput } from "../validations/oferta";
 
 type Client = ReturnType<typeof supabaseForToken>;
 
@@ -14,6 +15,44 @@ async function getEstadoOfertaId(client: Client, nombre: string): Promise<string
   if (error) throw new ApiError(500, error.message);
   if (!data) throw new ApiError(500, `Falta el estado de oferta '${nombre}' (seeds no aplicados)`);
   return data.id;
+}
+
+/** Estados de proyecto en los que una adjudicación ya NO ocupa al estudiante. */
+const ESTADOS_PROYECTO_INACTIVOS = ["cerrado", "cancelado"];
+
+/**
+ * Devuelve el conjunto de ids de estudiantes OCUPADOS dentro de `userIds`: los que
+ * tienen una oferta 'adjudicada' en un proyecto que no está cerrado ni cancelado.
+ * Un estudiante ocupado no puede postular ni ser adjudicado por otra empresa; se
+ * libera cuando su proyecto pasa a 'cerrado'/'cancelado'.
+ */
+async function estudiantesOcupados(client: Client, userIds: string[]): Promise<Set<string>> {
+  const ocupados = new Set<string>();
+  if (userIds.length === 0) return ocupados;
+
+  const { data, error } = await client
+    .from("oferta")
+    .select("id_usuario, estado:estado_oferta(nombre), proyecto:proyecto(estado:estado_proyecto(nombre))")
+    .in("id_usuario", userIds);
+  if (error) throw new ApiError(500, error.message);
+
+  for (const o of data ?? []) {
+    if (
+      o.estado?.nombre === "adjudicada" &&
+      !ESTADOS_PROYECTO_INACTIVOS.includes(o.proyecto?.estado?.nombre ?? "")
+    ) {
+      ocupados.add(o.id_usuario);
+    }
+  }
+  return ocupados;
+}
+
+/** ¿El estudiante tiene un proyecto adjudicado todavía activo? */
+export async function tieneProyectoActivo(
+  client: ReturnType<typeof supabaseForToken>,
+  userId: string,
+): Promise<boolean> {
+  return (await estudiantesOcupados(client, [userId])).has(userId);
 }
 
 /**
@@ -43,15 +82,41 @@ export async function createOferta(
     throw new ApiError(403, "Solo los juniors pueden postular");
   }
 
+  // Un estudiante con un proyecto adjudicado activo no puede postular a otro
+  // (la idea es repartir el trabajo y no sobrecargar a una sola persona).
+  if (await tieneProyectoActivo(client, userId)) {
+    throw new ApiError(
+      409,
+      "Ya tenés un proyecto activo. No podés postular a otro hasta que ese proyecto se cierre.",
+    );
+  }
+
   const { data: proyecto, error: projError } = await client
     .from("proyecto")
-    .select("id, estado:estado_proyecto(nombre)")
+    .select("id, titulo, estado:estado_proyecto(nombre), empresa:empresario(id_usuario)")
     .eq("id", projectId)
     .maybeSingle();
   if (projError) throw new ApiError(500, projError.message);
   if (!proyecto) throw new ApiError(404, "Proyecto no encontrado");
   if (proyecto.estado?.nombre !== "en_recepcion") {
     throw new ApiError(409, "Este proyecto no está recibiendo postulaciones");
+  }
+
+  // Check for existing offers from this user for this project.
+  // A new version is only allowed when the latest offer is in 'solicitar_cambios'.
+  const { data: existingOfertas, error: existError } = await client
+    .from("oferta")
+    .select("id, estado:estado_oferta(nombre), fecha_envio")
+    .eq("id_proyecto", projectId)
+    .eq("id_usuario", userId)
+    .order("fecha_envio", { ascending: false });
+  if (existError) throw new ApiError(500, existError.message);
+  if (existingOfertas && existingOfertas.length > 0) {
+    const latest = existingOfertas[0]!;
+    const latestState = (latest.estado as { nombre: string } | null)?.nombre;
+    if (latestState !== "solicitar_cambios") {
+      throw new ApiError(409, "Ya postulaste a este proyecto. Solo podés enviar una nueva versión cuando la empresa solicite cambios.");
+    }
   }
 
   const estadoId = await getEstadoOfertaId(client, "enviada");
@@ -69,11 +134,35 @@ export async function createOferta(
     })
     .select("id, fecha_envio")
     .single();
-  if (error) {
-    if (error.code === "23505") throw new ApiError(409, "Ya postulaste a este proyecto");
-    throw new ApiError(400, error.message);
+  if (error) throw new ApiError(400, error.message);
+
+  // Notificar a la empresa que recibio una nueva postulacion (best-effort).
+  const empresaUserId = (proyecto.empresa as { id_usuario: string } | null)?.id_usuario;
+  if (empresaUserId) {
+    await crearNotificacion(
+      accessToken,
+      empresaUserId,
+      MENSAJES_NOTIFICACION.nuevaPostulacion(proyecto.titulo),
+      TIPO_POR_MENSAJE.nuevaPostulacion,
+    );
   }
+
   return oferta;
+}
+
+/** Lista las calificaciones recibidas por el junior autenticado. */
+export async function listMyCalificaciones(accessToken: string, userId: string) {
+  const client = supabaseForToken(accessToken);
+  const { data, error } = await client
+    .from("oferta")
+    .select(
+      "id, calificacion, comentario_calificacion, replica_calificacion, updated_at, proyecto:proyecto(id, titulo, empresa:empresario(nombre_comercial))",
+    )
+    .eq("id_usuario", userId)
+    .not("calificacion", "is", null)
+    .order("updated_at", { ascending: false });
+  if (error) throw new ApiError(500, error.message);
+  return data;
 }
 
 /** Lista las postulaciones del junior autenticado. */
@@ -82,7 +171,7 @@ export async function listMyOfertas(accessToken: string, userId: string) {
   const { data, error } = await client
     .from("oferta")
     .select(
-      "id, propuesta, prototipo_url, url_repositorio, documentacion_tecnica, documentacion_url, fecha_envio, estado:estado_oferta(nombre), proyecto:proyecto(id, titulo)",
+      "id, propuesta, prototipo_url, url_repositorio, documentacion_tecnica, documentacion_url, fecha_envio, comentario_revision, calificacion, comentario_calificacion, estado:estado_oferta(nombre), proyecto:proyecto(id, titulo, fecha_cierre)",
     )
     .eq("id_usuario", userId)
     .order("fecha_envio", { ascending: false });
@@ -149,12 +238,23 @@ export async function listProjectOfertas(accessToken: string, userId: string, pr
   const { data, error } = await client
     .from("oferta")
     .select(
-      "id, propuesta, prototipo_url, url_repositorio, documentacion_tecnica, documentacion_url, fecha_envio, estado:estado_oferta(nombre), junior:users(id, nombre, apellido1)",
+      "id, propuesta, prototipo_url, url_repositorio, documentacion_tecnica, documentacion_url, fecha_envio, comentario_revision, calificacion, comentario_calificacion, estado:estado_oferta(nombre), junior:users(id, nombre, apellido1)",
     )
     .eq("id_proyecto", projectId)
     .order("fecha_envio", { ascending: false });
   if (error) throw new ApiError(500, error.message);
-  return data;
+
+  // Marcamos qué postulantes están "ocupados" (con un proyecto activo) para que la
+  // empresa los vea como no disponibles, sin ocultar su propuesta ni su perfil.
+  const juniorIds = [
+    ...new Set((data ?? []).map((o) => o.junior?.id).filter((id): id is string => Boolean(id))),
+  ];
+  const ocupados = await estudiantesOcupados(client, juniorIds);
+
+  return (data ?? []).map((o) => ({
+    ...o,
+    disponible: o.junior ? !ocupados.has(o.junior.id) : true,
+  }));
 }
 
 /**
@@ -171,7 +271,7 @@ export async function decideOferta(
 
   const { data: oferta, error: ofertaError } = await client
     .from("oferta")
-    .select("id, id_proyecto")
+    .select("id, id_proyecto, id_usuario")
     .eq("id", ofertaId)
     .maybeSingle();
   if (ofertaError) throw new ApiError(500, ofertaError.message);
@@ -179,12 +279,21 @@ export async function decideOferta(
 
   const { data: proyecto, error: projError } = await client
     .from("proyecto")
-    .select("empresa:empresario(id_usuario)")
+    .select("titulo, empresa:empresario(id_usuario)")
     .eq("id", oferta.id_proyecto)
     .maybeSingle();
   if (projError) throw new ApiError(500, projError.message);
-  if (proyecto?.empresa?.id_usuario !== userId) {
+  if (!proyecto || proyecto.empresa?.id_usuario !== userId) {
     throw new ApiError(403, "No podés decidir sobre esta postulación");
+  }
+
+  // No se puede adjudicar a un estudiante que ya tiene un proyecto activo. La
+  // empresa igual ve su propuesta/perfil (lo marca como 'ocupado' en la UI).
+  if (input.accion === "aceptar" && (await tieneProyectoActivo(client, oferta.id_usuario))) {
+    throw new ApiError(
+      409,
+      "Este estudiante ya tiene un proyecto activo y no está disponible por el momento.",
+    );
   }
 
   const estadoNombre = input.accion === "aceptar" ? "adjudicada" : "no_seleccionada";
@@ -194,6 +303,150 @@ export async function decideOferta(
     .update({ id_estado: estadoId, updated_at: new Date().toISOString() })
     .eq("id", ofertaId)
     .select("id, estado:estado_oferta(nombre)")
+    .single();
+  if (error) throw new ApiError(400, error.message);
+
+  // Notificar al junior segun la decision de la empresa (best-effort).
+  if (input.accion === "rechazar") {
+    await crearNotificacion(
+      accessToken,
+      oferta.id_usuario,
+      MENSAJES_NOTIFICACION.postulacionRechazada(proyecto.titulo),
+      TIPO_POR_MENSAJE.postulacionRechazada,
+    );
+  } else if (input.accion === "aceptar") {
+    await crearNotificacion(
+      accessToken,
+      oferta.id_usuario,
+      MENSAJES_NOTIFICACION.postulacionAdjudicada(proyecto.titulo),
+      TIPO_POR_MENSAJE.postulacionAdjudicada,
+    );
+  }
+
+  return data;
+}
+
+/**
+ * La empresa revisa una postulación: puede ponerla en revisión, solicitar
+ * cambios, adjudicarla o rechazarla, y dejar un comentario opcional.
+ * Reemplaza el flujo antiguo que solo aceptaba "aceptar"/"rechazar".
+ */
+export async function reviewOferta(
+  accessToken: string,
+  userId: string,
+  ofertaId: string,
+  input: ReviewOfertaInput,
+) {
+  const client = supabaseForToken(accessToken);
+
+  const { data: oferta, error: ofertaError } = await client
+    .from("oferta")
+    .select("id, id_proyecto, id_usuario")
+    .eq("id", ofertaId)
+    .maybeSingle();
+  if (ofertaError) throw new ApiError(500, ofertaError.message);
+  if (!oferta) throw new ApiError(404, "Postulación no encontrada");
+
+  const { data: proyecto, error: projError } = await client
+    .from("proyecto")
+    .select("titulo, empresa:empresario(id_usuario)")
+    .eq("id", oferta.id_proyecto)
+    .maybeSingle();
+  if (projError) throw new ApiError(500, projError.message);
+  if (proyecto?.empresa?.id_usuario !== userId) {
+    throw new ApiError(403, "No podés revisar esta postulación");
+  }
+
+  if (input.accion === "aceptar" && (await tieneProyectoActivo(client, oferta.id_usuario))) {
+    throw new ApiError(
+      409,
+      "Este estudiante ya tiene un proyecto activo y no está disponible por el momento.",
+    );
+  }
+
+  const estadoMap: Record<ReviewOfertaInput["accion"], string> = {
+    en_revision:       "en_revision",
+    solicitar_cambios: "solicitar_cambios",
+    aceptar:           "adjudicada",
+    rechazar:          "no_seleccionada",
+  };
+  const estadoId = await getEstadoOfertaId(client, estadoMap[input.accion]);
+
+  const { data, error } = await client
+    .from("oferta")
+    .update({
+      id_estado: estadoId,
+      ...(input.comentario !== undefined ? { comentario_revision: input.comentario } : {}),
+      updated_at: new Date().toISOString(),
+    })
+    .eq("id", ofertaId)
+    .select("id, comentario_revision, estado:estado_oferta(nombre)")
+    .single();
+  if (error) throw new ApiError(400, error.message);
+
+  const titulo = proyecto.titulo;
+  if (input.accion === "aceptar") {
+    await crearNotificacion(
+      accessToken, oferta.id_usuario,
+      MENSAJES_NOTIFICACION.postulacionAdjudicada(titulo),
+      TIPO_POR_MENSAJE.postulacionAdjudicada,
+    );
+  } else if (input.accion === "solicitar_cambios") {
+    await crearNotificacion(
+      accessToken, oferta.id_usuario,
+      MENSAJES_NOTIFICACION.cambiosSolicitados(titulo),
+      TIPO_POR_MENSAJE.cambiosSolicitados,
+    );
+  } else if (input.accion === "rechazar") {
+    await crearNotificacion(
+      accessToken, oferta.id_usuario,
+      MENSAJES_NOTIFICACION.postulacionRechazada(titulo),
+      TIPO_POR_MENSAJE.postulacionRechazada,
+    );
+  }
+
+  return data;
+}
+
+/**
+ * El junior edita su propia propuesta. Solo si está en "enviada" (aún no
+ * revisada por la empresa). Permite actualizar carta, enlace y documentación.
+ */
+export async function editOferta(
+  accessToken: string,
+  userId: string,
+  ofertaId: string,
+  input: EditOfertaInput,
+) {
+  const client = supabaseForToken(accessToken);
+
+  const { data: oferta, error: ofertaError } = await client
+    .from("oferta")
+    .select("id, id_usuario, estado:estado_oferta(nombre)")
+    .eq("id", ofertaId)
+    .maybeSingle();
+  if (ofertaError) throw new ApiError(500, ofertaError.message);
+  if (!oferta) throw new ApiError(404, "Postulación no encontrada");
+  if (oferta.id_usuario !== userId) throw new ApiError(403, "No podés editar esta postulación");
+
+  const estadoActual = oferta.estado?.nombre;
+  if (estadoActual !== "enviada") {
+    throw new ApiError(409, "Solo podés editar una propuesta que aún no fue revisada");
+  }
+
+  const { data, error } = await client
+    .from("oferta")
+    .update({
+      ...(input.propuesta !== undefined      ? { propuesta: input.propuesta }                         : {}),
+      ...(input.prototipo_url !== undefined  ? { prototipo_url: input.prototipo_url ?? null }         : {}),
+      ...(input.url_repositorio !== undefined ? { url_repositorio: input.url_repositorio ?? null }    : {}),
+      ...(input.documentacion_tecnica !== undefined ? { documentacion_tecnica: input.documentacion_tecnica ?? null } : {}),
+      ...(input.documentacion_url !== undefined ? { documentacion_url: input.documentacion_url ?? null } : {}),
+      updated_at: new Date().toISOString(),
+    })
+    .eq("id", ofertaId)
+    .eq("id_usuario", userId)
+    .select("id, propuesta, prototipo_url, url_repositorio, documentacion_tecnica, documentacion_url")
     .single();
   if (error) throw new ApiError(400, error.message);
   return data;
@@ -263,9 +516,6 @@ export async function calificarOferta(
   if (proyecto?.empresa?.id_usuario !== userId) {
     throw new ApiError(403, "No podés calificar esta postulación");
   }
-  if (proyecto?.estado?.nombre !== "cerrado") {
-    throw new ApiError(409, "Solo podés calificar postulaciones de proyectos cerrados");
-  }
 
   const { data, error } = await client
     .from("oferta")
@@ -278,6 +528,25 @@ export async function calificarOferta(
     .select("id, calificacion, comentario_calificacion, replica_calificacion, estado:estado_oferta(nombre)")
     .single();
   if (error) throw new ApiError(400, error.message);
+
+  // Cerrar el proyecto automáticamente al calificar (fin del ciclo de vida).
+  // Usa el cliente admin (service_role) para bypassar RLS: es una operación de
+  // sistema, no una acción directa del usuario.
+  const admin = supabaseAdmin();
+  const { data: estadoCerrado, error: estadoCerradoError } = await admin
+    .from("estado_proyecto")
+    .select("id")
+    .eq("nombre", "cerrado")
+    .maybeSingle();
+  if (estadoCerradoError) throw new ApiError(500, estadoCerradoError.message);
+  if (!estadoCerrado) throw new ApiError(500, "Falta el estado 'cerrado' (seeds no aplicados)");
+
+  const { error: closeError } = await admin
+    .from("proyecto")
+    .update({ id_estado: estadoCerrado.id })
+    .eq("id", oferta.id_proyecto);
+  if (closeError) throw new ApiError(500, `No se pudo cerrar el proyecto: ${closeError.message}`);
+
   return data;
 }
 

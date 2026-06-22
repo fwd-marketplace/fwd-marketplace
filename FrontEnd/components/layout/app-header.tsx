@@ -120,6 +120,10 @@ function buildNavLinks(role?: ApiRoleName): NavItem[] {
     { key: "nav_home", href: role ? (HOME_HREF[role] ?? "/bienvenida") : "/home" },
     { key: "nav_marketplace", href: "/marketplace" },
   ];
+  // La gestión (info, chat y proceso) aplica a junior y empresa con sesión.
+  if (role === "student" || role === "company") {
+    links.push({ key: "nav_gestion", href: "/gestion" });
+  }
   // El perfil solo aplica con sesión iniciada.
   if (role) {
     links.push({
@@ -170,10 +174,14 @@ export function AppHeader({
       className={cn(
         "sticky top-0 z-50 border-b",
         container,
-        dark && "relative overflow-hidden",
+        dark && "relative",
       )}
     >
-      {dark && <NavStars />}
+      {dark && (
+        <div className="pointer-events-none absolute inset-0 overflow-hidden">
+          <NavStars />
+        </div>
+      )}
       <div className="relative z-10 mx-auto flex h-16 max-w-7xl items-center justify-between px-4 md:px-6">
         <div className="flex items-center gap-6">
           <Link
