@@ -60,7 +60,7 @@ export type ProjectFilters = {
  * (solo publicados, o los propios del empresario) la garantiza el RLS;
  * aquí solo definimos la forma de la respuesta.
  */
-const PROJECT_SELECT = `
+export const PROJECT_SELECT = `
   id,
   titulo,
   descripcion,

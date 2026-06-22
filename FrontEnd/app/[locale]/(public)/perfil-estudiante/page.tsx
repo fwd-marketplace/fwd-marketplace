@@ -9,12 +9,12 @@ import {
   type MockCalificacion,
   type StudentProfile,
 } from "@/app/[locale]/(public)/perfil-estudiante/types";
-import { getCatalogs, getMyCalificaciones, getMyOffers } from "@/lib/api/marketplace";
-import { getMe } from "@/lib/api/profile";
+import { getCatalogs, getMyCalificaciones, getMyOffers, getSavedProjects } from "@/lib/api/marketplace";
+import { getMe, getMyPortafolio } from "@/lib/api/profile";
 import { SiteFooter } from "@/components/layout/site-footer";
 import { getNotificaciones } from "@/lib/api/notificaciones";
 import { parseJsonStringArray } from "@/lib/api/safe-json";
-import type { ApiCalificacion, ApiMeProfile, ApiNotificacion, MyOffer, OfferState } from "@/lib/api/types";
+import type { ApiCalificacion, ApiMeProfile, ApiNotificacion, MyOffer, OfferState, PortafolioItem } from "@/lib/api/types";
 import type { ActivityTipo } from "@/app/[locale]/(public)/perfil-estudiante/types";
 
 interface Props {
@@ -86,6 +86,7 @@ function mapProfile(profile: ApiMeProfile | null): StudentProfile {
 function mapOffer(offer: MyOffer): Application {
   return {
     id: offer.id,
+    projectId: offer.proyecto?.id ?? "",
     projectName: offer.proyecto?.titulo ?? "",
     companyName: "",
     status: mapOfferStatus(offer.estado.nombre),
@@ -154,6 +155,17 @@ function buildActivities(
     .slice(0, 15);
 }
 
+function mapPortafolioItem(item: PortafolioItem) {
+  return {
+    id: item.id,
+    title: item.titulo,
+    description: item.descripcion ?? "",
+    netlifyUrl: item.url_demo ?? "",
+    ...(item.url_repositorio ? { repoUrl: item.url_repositorio } : {}),
+    tags: (() => { try { return JSON.parse(item.tecnologias ?? "[]") as string[]; } catch { return []; } })(),
+  };
+}
+
 function mapCalificacion(cal: ApiCalificacion): MockCalificacion {
   return {
     id: cal.id,
@@ -170,22 +182,29 @@ function mapCalificacion(cal: ApiCalificacion): MockCalificacion {
 export default async function EstudianteProfile({ params }: Props) {
   const { locale } = await params;
   setRequestLocale(locale);
-  const [meResult, offersResult, calResult, catalogsResult, notifsResult] = await Promise.all([
+  const [meResult, offersResult, calResult, catalogsResult, notifsResult, portafolioResult, savedResult] = await Promise.all([
     getMe(),
     getMyOffers(),
     getMyCalificaciones(),
     getCatalogs(),
     getNotificaciones(),
+    getMyPortafolio(),
+    getSavedProjects(),
   ]);
   const profile = mapProfile(meResult.ok ? meResult.data.profile : null);
   const offers = offersResult.ok ? offersResult.data.ofertas : [];
   const applications = offers.map(mapOffer);
   const calificaciones = calResult.ok ? calResult.data.map(mapCalificacion) : [];
+  const initialPortafolio = portafolioResult.ok ? portafolioResult.data.map(mapPortafolioItem) : [];
   const notifs = notifsResult.ok ? notifsResult.data : [];
   const activities: Activity[] = buildActivities(notifs, offers, locale);
   const knowledgeSuggestions = catalogsResult.ok
     ? catalogsResult.data.conocimientos.map((conocimiento) => conocimiento.nombre)
     : [];
+  const catalogSkills = catalogsResult.ok
+    ? catalogsResult.data.skills.map((s) => s.nombre)
+    : [];
+  const initialSavedProjects = savedResult.ok ? savedResult.data.proyectos : [];
 
   return (
     <div className="flex min-h-[100dvh] flex-col bg-canvas">
@@ -196,8 +215,11 @@ export default async function EstudianteProfile({ params }: Props) {
         initialApplications={applications}
         initialCalificaciones={calificaciones}
         initialNotificaciones={notifs}
+        initialPortafolio={initialPortafolio}
+        initialSavedProjects={initialSavedProjects}
         stats={buildStats(applications)}
         knowledgeSuggestions={knowledgeSuggestions}
+        catalogSkills={catalogSkills}
       />
       <SiteFooter />
     </div>

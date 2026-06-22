@@ -1,7 +1,8 @@
 "use client";
 
 import React, { useRef, useState, useTransition } from "react";
-import { useTranslations } from "next-intl";
+import { useTranslations, useLocale } from "next-intl";
+import Link from "next/link";
 import {
   Mail,
   Globe,
@@ -24,10 +25,15 @@ import {
   Code2,
   Palette,
   Camera,
+  ChevronDown,
   Loader2,
   AlertCircle,
   MessageSquare,
   Monitor,
+  Pencil,
+  Trash2,
+  GitBranch,
+  Bookmark,
 } from "lucide-react";
 import {
   fullName,
@@ -43,19 +49,21 @@ type WorkProject = {
   title: string;
   description: string;
   netlifyUrl: string;
+  repoUrl?: string;
   tags: string[];
 };
 
 import type {
   ApiNotificacion,
+  ApiProject,
   StudentAvailability,
   StudentProfileUpdate,
   StudentSpecialty,
 } from "@/lib/api/types";
 import { marcarNotificacionLeidaAction, marcarTodasLeidasAction } from "@/lib/actions/notificaciones";
-import { updateStudentProfile, uploadStudentAvatar, deleteStudentAvatar } from "@/lib/actions/perfil";
+import { updateStudentProfile, uploadStudentAvatar, deleteStudentAvatar, createPortafolioItemAction, updatePortafolioItemAction, deletePortafolioItemAction } from "@/lib/actions/perfil";
 import { FwdGeoBackdrop } from "@/components/ui/fwd-geo-backdrop";
-import { replicarCalificacionAction } from "@/lib/actions/marketplace";
+import { replicarCalificacionAction, unsaveProjectAction } from "@/lib/actions/marketplace";
 import { getInitials } from "@/lib/api/safe-json";
 
 // ── Inline SVG icons ───────────────────────────────────────────────────────────
@@ -97,8 +105,8 @@ const LinkedinIcon = (props: React.SVGProps<SVGSVGElement>) => (
 
 const STAR_CHAR = "★";
 
-function StarRow({ score, size = "sm" }: { score: number; size?: "sm" | "md" }) {
-  const cls = size === "md" ? "text-xl" : "text-base";
+function StarRow({ score, size = "sm" }: { score: number; size?: "sm" | "md" | "lg" }) {
+  const cls = size === "lg" ? "text-3xl" : size === "md" ? "text-xl" : "text-base";
   return (
     <span className={`inline-flex gap-0.5 ${cls}`} aria-label={`${score} de 5 estrellas`}>
       {Array.from({ length: 5 }).map((_, i) => (
@@ -138,83 +146,60 @@ function CalificacionesSection({
     });
   }
 
-  if (calificaciones.length === 0) {
-    return (
-      <div className="rounded-2xl border border-dashed border-border bg-surface p-8 text-center">
-        <p className="font-body text-sm text-ink-muted">{t("calificaciones.empty")}</p>
-      </div>
-    );
-  }
-
   return (
-    <div className="space-y-4">
-      <h2 className="font-heading text-xl font-bold text-ink-strong">
-        {t("calificaciones.title")}<span className="text-primary">.</span>
-      </h2>
-      {calificaciones.map((cal) => (
-        <div key={cal.id} className="rounded-2xl border border-border bg-surface p-5 shadow-[var(--shadow-soft)] space-y-3">
-          <div className="flex flex-wrap items-start justify-between gap-2">
-            <div>
-              <p className="font-body text-xs font-bold uppercase tracking-wider text-ink-muted mb-1">{cal.companyName}</p>
-              <p className="font-heading text-base font-bold text-ink-strong leading-tight">{cal.projectName}</p>
-            </div>
-            <div className="flex flex-col items-end gap-1">
-              <StarRow score={cal.score} />
-              <span className="font-body text-[10px] text-ink-subtle">
-                {new Date(cal.date).toLocaleDateString([], { day: "numeric", month: "long", year: "numeric" })}
-              </span>
-            </div>
-          </div>
+    <div className="space-y-5 pt-8 border-t border-border/60">
+      <div>
+        <h2 className="font-heading text-2xl font-bold text-ink-strong">
+          {t("calificaciones.title")}<span className="text-primary">.</span>
+        </h2>
+        <p className="text-sm text-ink-muted mt-1">{t("calificaciones.subtitle")}</p>
+      </div>
 
-          <p className="font-body text-sm leading-relaxed text-ink">{cal.comment}</p>
+      {calificaciones.length === 0 ? (
+        <div className="rounded-2xl border border-dashed border-border bg-surface p-10 text-center">
+          <p className="font-body text-sm text-ink-muted">{t("calificaciones.empty")}</p>
+        </div>
+      ) : (
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
+          {calificaciones.map((cal) => (
+            <div key={cal.id} className="rounded-2xl border border-border bg-surface shadow-soft flex flex-col overflow-hidden">
+              {/* Header con empresa y proyecto */}
+              <div className="px-5 pt-5 pb-4 border-b border-border/60">
+                {cal.companyName && (
+                  <p className="text-[11px] font-bold uppercase tracking-widest text-ink-muted mb-1">{cal.companyName}</p>
+                )}
+                <p className="font-heading text-lg font-extrabold text-ink-strong leading-tight">{cal.projectName}</p>
+                <p className="text-[11px] text-ink-muted mt-1">
+                  {new Date(cal.date).toLocaleDateString([], { day: "numeric", month: "long", year: "numeric" })}
+                </p>
+              </div>
 
-          {/* Réplica existente o botón para responder */}
-          {cal.reply ? (
-            <div className="rounded-xl bg-surface-sunken border border-border px-4 py-3">
-              <p className="font-body text-[10px] font-bold uppercase tracking-wider text-ink-muted mb-1">{t("calificaciones.your_reply")}</p>
-              <p className="font-body text-sm text-ink">{cal.reply}</p>
-            </div>
-          ) : replyingId === cal.id ? (
-            <div className="space-y-2">
-              <label htmlFor={`reply-${cal.id}`} className="sr-only">{t("calificaciones.reply_placeholder")}</label>
-              <textarea
-                id={`reply-${cal.id}`}
-                rows={3}
-                value={replyDraft}
-                onChange={(e) => setReplyDraft(e.target.value)}
-                placeholder={t("calificaciones.reply_placeholder")}
-                className="w-full resize-none rounded-xl border border-border bg-surface-sunken px-3 py-2.5 font-body text-sm text-ink-strong outline-none focus:ring-2 focus:ring-primary/20"
-              />
-              <div className="flex gap-2">
-                <button
-                  type="button"
-                  disabled={isSaving || !replyDraft.trim()}
-                  onClick={() => handleSendReply(cal.id)}
-                  className="inline-flex items-center gap-1.5 rounded-full bg-primary px-4 py-2 font-body text-xs font-semibold text-white transition-colors hover:bg-secondary disabled:opacity-50"
-                >
-                  {isSaving ? <Loader2 className="size-3.5 animate-spin" /> : <Check className="size-3.5" />}
-                  {isSaving ? t("calificaciones.reply_sending") : t("calificaciones.reply_send")}
-                </button>
-                <button
-                  type="button"
-                  onClick={() => { setReplyingId(null); setReplyDraft(""); }}
-                  className="rounded-full border border-border px-3 py-2 font-body text-xs font-semibold text-ink-muted hover:bg-surface-sunken"
-                >
-                  {t("calificaciones.reply_cancel")}
-                </button>
+              {/* Rating — protagonista */}
+              <div className="px-5 py-4 bg-highlight/5 border-b border-border/40 flex items-center gap-3">
+                <StarRow score={cal.score} size="lg" />
+                <span className="font-heading text-4xl font-extrabold text-highlight leading-none">{cal.score}</span>
+                <span className="text-sm text-ink-muted">/5</span>
+              </div>
+
+              {/* Comentario — protagonista */}
+              <div className="px-5 py-4 flex-grow">
+                <p className="text-sm font-semibold text-ink-muted uppercase tracking-wider mb-2">{t("calificaciones.comment_label")}</p>
+                <p className="font-body text-base leading-relaxed text-ink">{cal.comment}</p>
+              </div>
+
+              {/* Réplica */}
+              <div className="px-5 pb-5">
+                {cal.reply && (
+                  <div className="rounded-xl bg-primary/5 border border-primary/15 px-4 py-3">
+                    <p className="text-[10px] font-bold uppercase tracking-wider text-primary/70 mb-1">{t("calificaciones.your_reply")}</p>
+                    <p className="font-body text-sm text-ink">{cal.reply}</p>
+                  </div>
+                )}
               </div>
             </div>
-          ) : (
-            <button
-              type="button"
-              onClick={() => { setReplyingId(cal.id); setReplyDraft(""); }}
-              className="font-body text-xs font-semibold text-primary hover:underline"
-            >
-              {t("calificaciones.reply_btn")}
-            </button>
-          )}
+          ))}
         </div>
-      ))}
+      )}
     </div>
   );
 }
@@ -274,58 +259,121 @@ export interface PerfilUsuarioProps {
   initialApplications: Application[];
   initialCalificaciones: MockCalificacion[];
   initialNotificaciones?: ApiNotificacion[];
+  initialPortafolio?: WorkProject[];
+  initialSavedProjects?: ApiProject[];
   stats: ApplicationStats;
   /** Sugerencias de conocimientos no técnicos (catálogo) para autocompletar. */
   knowledgeSuggestions: string[];
+  /** Nombres del catálogo de skills para autocompletar y distinguir catalog vs custom. */
+  catalogSkills: string[];
 }
 
   function ProjectCard({
   project,
   onPreview,
+  onEdit,
   onDelete,
 }: {
   project: WorkProject;
   onPreview: (project: WorkProject) => void;
+  onEdit?: (project: WorkProject) => void;
   onDelete?: (id: string) => void;
 }) {
   const t = useTranslations("perfil_junior.work");
+  const hostname = (() => {
+    try { return new URL(project.netlifyUrl).hostname; } catch { return project.netlifyUrl || "—"; }
+  })();
   return (
     <div className="rounded-2xl border border-border bg-surface shadow-soft overflow-hidden flex flex-col transition-all hover:shadow-md">
-      <div className="h-40 bg-gradient-to-tr from-primary to-secondary w-full" />
-      <div className="p-6 flex flex-col flex-grow">
-        <h3 className="font-heading text-xl font-extrabold text-ink-strong mb-2">{project.title}</h3>
-        <p className="text-sm text-ink-muted mb-4 line-clamp-2">{project.description}</p>
-        <div className="flex flex-wrap gap-2 mb-6 mt-auto">
-          {project.tags.map(tag => (
-            <span key={tag} className="px-2.5 py-1 text-xs font-semibold rounded-full bg-accent/10 text-accent">
-              {tag}
-            </span>
-          ))}
+      {/* Browser chrome header */}
+      <div className="flex items-center gap-2 px-3 py-2 bg-[oklch(0.97_0.005_245)] border-b border-border">
+        <div className="flex gap-1.5 shrink-0">
+          <span className="w-2.5 h-2.5 rounded-full bg-[#FF5F57]" />
+          <span className="w-2.5 h-2.5 rounded-full bg-[#FFBD2E]" />
+          <span className="w-2.5 h-2.5 rounded-full bg-[#28C840]" />
         </div>
-        <div className="flex gap-3">
-          <button
-            onClick={() => { onPreview(project); }}
-            className="flex-1 flex items-center justify-center gap-2 px-4 py-2 text-sm font-semibold text-primary border border-primary/30 hover:border-primary hover:bg-primary/5 rounded-xl transition-colors text-center cursor-pointer"
-          >
-            <Monitor className="w-4 h-4" /> {t("preview_btn")}
-          </button>
-          <a
-            href={project.netlifyUrl}
-            target="_blank"
-            rel="noopener noreferrer"
-            className="flex-1 flex items-center justify-center gap-2 px-4 py-2 text-sm font-semibold bg-surface-sunken hover:bg-border/30 text-ink rounded-xl transition-colors"
-          >
-            {t("open_btn")} <ArrowUpRight className="w-4 h-4" />
-          </a>
-          {/** Delete button */}
-          {typeof onDelete === "function" && (
-            <button
-              onClick={() => onDelete(project.id)}
-              className="flex-none items-center justify-center gap-2 px-3 py-2 text-sm font-semibold bg-magenta text-white hover:opacity-90 rounded-xl transition-colors whitespace-nowrap"
-            >
-              {t("confirm_delete.confirm")}
-            </button>
+        <div className="flex-1 rounded bg-white border border-border/50 px-2 py-0.5 text-[11px] text-ink-muted truncate">
+          {hostname}
+        </div>
+      </div>
+      {/* Preview area */}
+      <div className="h-44 bg-gradient-to-tr from-primary/8 to-secondary/8 relative overflow-hidden flex items-center justify-center">
+        <div className="absolute inset-0 opacity-20" style={{ backgroundImage: "repeating-linear-gradient(0deg, transparent, transparent 28px, var(--border) 28px, var(--border) 29px), repeating-linear-gradient(90deg, transparent, transparent 28px, var(--border) 28px, var(--border) 29px)" }} />
+        <Monitor className="w-12 h-12 text-primary/30" />
+      </div>
+      {/* Content */}
+      <div className="p-5 flex flex-col gap-3 flex-grow">
+        <div className="flex items-start justify-between gap-2">
+          <h3 className="font-heading text-lg font-extrabold text-ink-strong leading-tight">{project.title}</h3>
+          {project.tags[0] && (
+            <span className="text-[10px] uppercase tracking-wider font-bold px-2 py-0.5 rounded-md bg-primary/10 text-primary border border-primary/20 shrink-0">
+              {project.tags[0]}
+            </span>
           )}
+        </div>
+        {project.description && (
+          <p className="text-sm text-primary/80 line-clamp-2 leading-relaxed">{project.description}</p>
+        )}
+        {project.tags.length > 1 && (
+          <div className="flex flex-wrap gap-1.5 mt-auto">
+            {project.tags.slice(1).map(tag => (
+              <span key={tag} className="px-2 py-0.5 text-[11px] font-semibold rounded-full bg-accent/10 text-accent">
+                {tag}
+              </span>
+            ))}
+          </div>
+        )}
+        {/* Actions */}
+        <div className="flex items-center gap-2 pt-2 border-t border-border/50">
+          <button
+            type="button"
+            onClick={() => onPreview(project)}
+            className="flex items-center gap-1.5 px-3 py-1.5 text-xs font-semibold text-primary border border-primary/30 hover:border-primary hover:bg-primary/5 rounded-lg transition-colors cursor-pointer"
+          >
+            <Monitor className="w-3.5 h-3.5" /> {t("preview_btn")}
+          </button>
+          {project.netlifyUrl && (
+            <a
+              href={project.netlifyUrl}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="flex items-center gap-1.5 px-3 py-1.5 text-xs font-semibold bg-surface-sunken hover:bg-border/30 text-ink rounded-lg transition-colors"
+            >
+              {t("open_btn")} <ArrowUpRight className="w-3.5 h-3.5" />
+            </a>
+          )}
+          {project.repoUrl && (
+            <a
+              href={project.repoUrl}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="flex items-center gap-1.5 px-3 py-1.5 text-xs font-semibold bg-surface-sunken hover:bg-border/30 text-ink rounded-lg transition-colors"
+            >
+              <GitBranch className="w-3.5 h-3.5" />
+            </a>
+          )}
+          <div className="ml-auto flex items-center gap-1.5">
+            {typeof onEdit === "function" && (
+              <button
+                type="button"
+                onClick={() => onEdit(project)}
+                className="p-1.5 rounded-lg text-ink-muted hover:text-primary hover:bg-primary/5 transition-colors cursor-pointer"
+                aria-label={t("edit_btn")}
+              >
+                <Pencil className="w-4 h-4" />
+              </button>
+            )}
+            {typeof onDelete === "function" && (
+              <button
+                type="button"
+                onClick={() => onDelete(project.id)}
+                className="p-1.5 rounded-lg text-ink-muted hover:text-magenta hover:bg-magenta/5 transition-colors cursor-pointer"
+                aria-label={t("confirm_delete.confirm")}
+              >
+                <Trash2 className="w-4 h-4" />
+              </button>
+            )}
+          </div>
         </div>
       </div>
     </div>
@@ -417,6 +465,7 @@ function PreviewModal({
 }
 
 const NOTIF_PAGE_SIZE = 10;
+const APP_PAGE_SIZE = 6;
 
 export default function PerfilUsuario({
   initialProfile,
@@ -424,10 +473,14 @@ export default function PerfilUsuario({
   initialApplications,
   initialCalificaciones,
   initialNotificaciones,
+  initialPortafolio,
+  initialSavedProjects = [],
   stats,
   knowledgeSuggestions,
+  catalogSkills,
 }: PerfilUsuarioProps) {
   const t = useTranslations("perfil_junior");
+  const locale = useLocale();
 
   // ── State ──────────────────────────────────────────────────────────────────
 
@@ -436,26 +489,59 @@ export default function PerfilUsuario({
   const [profile, setProfile] = useState<StudentProfile>(initialProfile);
   const [activities, setActivities] = useState<Activity[]>(initialActivities);
   const [applications] = useState<Application[]>(initialApplications);
+  const [savedProjects, setSavedProjects] = useState<ApiProject[]>(initialSavedProjects);
   const [notificaciones, setNotificaciones] = useState<ApiNotificacion[]>(initialNotificaciones ?? []);
   const [notifPage, setNotifPage] = useState(1);
+  const [appPage, setAppPage] = useState(1);
+  const [showAllPortafolio, setShowAllPortafolio] = useState(false);
   const [previewProject, setPreviewProject] = useState<WorkProject | null>(null);
   const [projectToDelete, setProjectToDelete] = useState<WorkProject | null>(null);
+  const [projectToEdit, setProjectToEdit] = useState<WorkProject | null>(null);
+  const [portfolioError, setPortfolioError] = useState("");
 
-  const workProjects: WorkProject[] = [
-    {
-      id: "demo-project",
-      title: "Proyecto FWD",
-      description: "Demo del proyecto freelance con visualización en vivo.",
-      netlifyUrl: "https://amazing-empanada-a4e3b4.netlify.app/",
-      tags: profile.skills.length > 0 ? profile.skills.slice(0, 3) : ["React", "Tailwind", "Next.js"],
-    },
-  ];
-  const [workProjectsState, setWorkProjectsState] = useState<WorkProject[]>(workProjects);
+  const [workProjectsState, setWorkProjectsState] = useState<WorkProject[]>(initialPortafolio ?? []);
   const [showAddProjectModal, setShowAddProjectModal] = useState(false);
 
-  function addProject(project: Omit<WorkProject, "id">) {
-    const newProject: WorkProject = { id: `proj-${Date.now()}`, ...project };
-    setWorkProjectsState((prev) => [newProject, ...prev]);
+  function parsePortafolioTags(tecnologias: string | null): string[] {
+    try { return JSON.parse(tecnologias ?? "[]") as string[]; } catch { return []; }
+  }
+
+  function toWorkProject(data: { id: string; titulo: string; descripcion: string | null; url_demo: string | null; url_repositorio: string | null; tecnologias: string | null }): WorkProject {
+    return {
+      id: data.id,
+      title: data.titulo,
+      description: data.descripcion ?? "",
+      netlifyUrl: data.url_demo ?? "",
+      ...(data.url_repositorio ? { repoUrl: data.url_repositorio } : {}),
+      tags: parsePortafolioTags(data.tecnologias),
+    };
+  }
+
+  async function addProject(project: Omit<WorkProject, "id">) {
+    setPortfolioError("");
+    const result = await createPortafolioItemAction({
+      titulo: project.title,
+      descripcion: project.description,
+      tecnologias: project.tags,
+      url_demo: project.netlifyUrl,
+      ...(project.repoUrl ? { url_repositorio: project.repoUrl } : {}),
+    });
+    if (!result.ok) { setPortfolioError(result.error); return; }
+    setWorkProjectsState((prev) => [toWorkProject(result.data), ...prev]);
+  }
+
+  async function saveEditProject(id: string, updated: Omit<WorkProject, "id">) {
+    setPortfolioError("");
+    const result = await updatePortafolioItemAction(id, {
+      titulo: updated.title,
+      descripcion: updated.description,
+      tecnologias: updated.tags,
+      url_demo: updated.netlifyUrl,
+      ...(updated.repoUrl ? { url_repositorio: updated.repoUrl } : { url_repositorio: "" }),
+    });
+    if (!result.ok) { setPortfolioError(result.error); return; }
+    setWorkProjectsState((prev) => prev.map((p) => p.id === id ? toWorkProject(result.data) : p));
+    setProjectToEdit(null);
   }
 
   function requestDeleteProject(id: string) {
@@ -463,10 +549,11 @@ export default function PerfilUsuario({
     setProjectToDelete(p);
   }
 
-  // removed: showProjectCard / selectedProjectCard — not needed per request
-
-  function confirmDeleteProject() {
+  async function confirmDeleteProject() {
     if (!projectToDelete) return;
+    setPortfolioError("");
+    const result = await deletePortafolioItemAction(projectToDelete.id);
+    if (!result.ok) { setPortfolioError(result.error); return; }
     setWorkProjectsState((prev) => prev.filter((p) => p.id !== projectToDelete.id));
     setProjectToDelete(null);
   }
@@ -501,10 +588,12 @@ export default function PerfilUsuario({
   const [newSkill, setNewSkill] = useState("");
   const [isAddingSkill, setIsAddingSkill] = useState(false);
   const [skillError, setSkillError] = useState("");
+  const [showSkillSuggestions, setShowSkillSuggestions] = useState(false);
 
   const [newConocimiento, setNewConocimiento] = useState("");
   const [isAddingConocimiento, setIsAddingConocimiento] = useState(false);
   const [conocimientoError, setConocimientoError] = useState("");
+  const [showConocimientoSuggestions, setShowConocimientoSuggestions] = useState(false);
 
   const avatarInputRef = useRef<HTMLInputElement>(null);
   const [isUploadingAvatar, setIsUploadingAvatar] = useState(false);
@@ -722,16 +811,23 @@ export default function PerfilUsuario({
     setLinksError("");
   }
 
-  function addSkill(e: React.FormEvent<HTMLFormElement>) {
-    e.preventDefault();
-    const trimmed = newSkill.trim();
-    if (!trimmed || profile.skills.includes(trimmed)) return;
+
+  function doAddSkill(nameToAdd: string) {
+    const trimmed = nameToAdd.trim();
+    if (!trimmed) return;
+    if (profile.skills.some((s) => s.toLowerCase() === trimmed.toLowerCase())) return;
     const next = [...profile.skills, trimmed];
     persistProfile({ skills: next }, {}, setSkillError, () => {
       addActivity(t("activity.added_skill", { skill: trimmed }));
       setNewSkill("");
+      setShowSkillSuggestions(false);
       setIsAddingSkill(false);
     });
+  }
+
+  function addSkill(e: React.FormEvent<HTMLFormElement>) {
+    e.preventDefault();
+    doAddSkill(newSkill);
   }
 
   function removeSkill(skillToRemove: string) {
@@ -741,14 +837,14 @@ export default function PerfilUsuario({
     });
   }
 
-  function addConocimiento(e: React.FormEvent<HTMLFormElement>) {
+  function addConocimiento(e: React.FormEvent | React.FormEvent<HTMLFormElement>, valueOverride?: string) {
     e.preventDefault();
-    const trimmed = newConocimiento.trim().replace(/\s+/g, " ");
+    const trimmed = (valueOverride ?? newConocimiento).trim().replace(/\s+/g, " ");
     if (!trimmed) return;
-    // Sin distinguir mayúsculas, para no permitir el mismo conocimiento repetido.
     if (profile.conocimientos.some((item) => item.toLowerCase() === trimmed.toLowerCase())) {
       setNewConocimiento("");
       setIsAddingConocimiento(false);
+      setShowConocimientoSuggestions(false);
       return;
     }
     const next = [...profile.conocimientos, trimmed];
@@ -756,6 +852,7 @@ export default function PerfilUsuario({
       addActivity(t("activity.added_knowledge", { name: trimmed }));
       setNewConocimiento("");
       setIsAddingConocimiento(false);
+      setShowConocimientoSuggestions(false);
     });
   }
 
@@ -1106,7 +1203,6 @@ export default function PerfilUsuario({
           {TAB_IDS.map((tabId) => {
             const isActive = activeTab === tabId;
             let badge: number | null = null;
-            if (tabId === "postulaciones") badge = applications.length;
             if (tabId === "notificaciones" && unreadCount > 0) badge = unreadCount;
             if (tabId === "sugeridos") badge = 0;
 
@@ -1281,7 +1377,7 @@ export default function PerfilUsuario({
                   {!isAddingSkill && (
                     <button
                       type="button"
-                      onClick={() => setIsAddingSkill(true)}
+                      onClick={() => { setIsAddingSkill(true); setSkillError(""); }}
                       className="text-primary hover:text-primary/80 transition-colors flex items-center gap-1 text-sm font-semibold cursor-pointer"
                     >
                       <Plus className="w-4 h-4" /> {t("stack.add")}
@@ -1289,58 +1385,105 @@ export default function PerfilUsuario({
                   )}
                 </div>
 
-                {isAddingSkill && (
-                  <form onSubmit={addSkill} className="flex gap-2 max-w-md">
-                    <label htmlFor="new-skill" className="sr-only">
-                      {t("stack.add")}
-                    </label>
-                    <input
-                      id="new-skill"
-                      type="text"
-                      placeholder={t("stack.placeholder")}
-                      value={newSkill}
-                      onChange={(e) => setNewSkill(e.target.value)}
-                      className="flex-grow bg-surface-sunken border border-border text-ink rounded-lg px-3 py-2 text-sm focus:outline-primary"
-                      autoFocus
-                      required
-                    />
-                    <button
-                      type="submit"
-                      disabled={isPending}
-                      className="bg-primary hover:opacity-95 text-primary-foreground text-sm font-semibold px-4 rounded-xl cursor-pointer disabled:opacity-60 disabled:cursor-not-allowed"
-                    >
-                      {isPending ? <Loader2 className="w-4 h-4 animate-spin" /> : t("stack.add_btn")}
-                    </button>
-                    <button
-                      type="button"
-                      onClick={() => { setNewSkill(""); setIsAddingSkill(false); setSkillError(""); }}
-                      className="bg-surface-sunken hover:bg-border/30 text-ink text-sm font-semibold px-3 rounded-xl cursor-pointer"
-                      aria-label={t("stack.cancel_btn")}
-                    >
-                      <X className="w-4 h-4" />
-                    </button>
-                  </form>
-                )}
+                {isAddingSkill && (() => {
+                  const skillSuggestions = catalogSkills.filter(
+                    (cs) =>
+                      newSkill.trim().length > 0 &&
+                      cs.toLowerCase().includes(newSkill.trim().toLowerCase()) &&
+                      !profile.skills.some((ps) => ps.toLowerCase() === cs.toLowerCase()),
+                  );
+                  const canAddCustom =
+                    newSkill.trim().length > 0 &&
+                    !skillSuggestions.some((s) => s.toLowerCase() === newSkill.trim().toLowerCase()) &&
+                    !profile.skills.some((ps) => ps.toLowerCase() === newSkill.trim().toLowerCase());
+                  return (
+                    <form onSubmit={addSkill} className="relative max-w-md">
+                      <label htmlFor="new-skill" className="sr-only">{t("stack.add")}</label>
+                      <div className="flex gap-2">
+                        <div className="relative flex-grow">
+                          <input
+                            id="new-skill"
+                            type="text"
+                            placeholder={t("stack.placeholder")}
+                            value={newSkill}
+                            autoComplete="off"
+                            onChange={(e) => { setNewSkill(e.target.value); setShowSkillSuggestions(true); }}
+                            onFocus={() => setShowSkillSuggestions(true)}
+                            onBlur={() => setTimeout(() => setShowSkillSuggestions(false), 150)}
+                            className="w-full bg-surface-sunken border border-border text-ink rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-primary/30 focus:border-primary"
+                            autoFocus
+                          />
+                          {showSkillSuggestions && (skillSuggestions.length > 0 || canAddCustom) && (
+                            <ul className="absolute z-20 mt-1 w-full rounded-xl border border-border bg-surface shadow-[var(--shadow-elevated)] overflow-hidden">
+                              {skillSuggestions.map((s) => (
+                                <li key={s}>
+                                  <button
+                                    type="button"
+                                    onMouseDown={(e) => { e.preventDefault(); doAddSkill(s); }}
+                                    className="w-full flex items-center gap-2 px-3 py-2 text-sm text-left hover:bg-primary/5 transition-colors cursor-pointer"
+                                  >
+                                    <span className="size-2 rounded-full bg-primary shrink-0" />
+                                    <span className="text-ink-strong">{s}</span>
+                                    <span className="ml-auto text-[10px] font-semibold text-primary uppercase tracking-wide">{t("stack.catalog_label")}</span>
+                                  </button>
+                                </li>
+                              ))}
+                              {canAddCustom && (
+                                <li>
+                                  <button
+                                    type="button"
+                                    onMouseDown={(e) => { e.preventDefault(); doAddSkill(newSkill); }}
+                                    className="w-full flex items-center gap-2 px-3 py-2 text-sm text-left hover:bg-warning/5 transition-colors cursor-pointer border-t border-border"
+                                  >
+                                    <Plus className="size-3.5 text-warning shrink-0" />
+                                    <span className="text-ink">{t("stack.add_custom")}: <strong>{newSkill.trim()}</strong></span>
+                                  </button>
+                                </li>
+                              )}
+                            </ul>
+                          )}
+                        </div>
+                        <button
+                          type="submit"
+                          disabled={isPending || !newSkill.trim()}
+                          className="bg-primary hover:opacity-95 text-primary-foreground text-sm font-semibold px-4 rounded-xl cursor-pointer disabled:opacity-60 disabled:cursor-not-allowed"
+                        >
+                          {isPending ? <Loader2 className="w-4 h-4 animate-spin" /> : t("stack.add_btn")}
+                        </button>
+                        <button
+                          type="button"
+                          onClick={() => { setNewSkill(""); setIsAddingSkill(false); setSkillError(""); setShowSkillSuggestions(false); }}
+                          className="bg-surface-sunken hover:bg-border/30 text-ink text-sm font-semibold px-3 rounded-xl cursor-pointer"
+                          aria-label={t("stack.cancel_btn")}
+                        >
+                          <X className="w-4 h-4" />
+                        </button>
+                      </div>
+                    </form>
+                  );
+                })()}
 
                 <div className="flex flex-wrap gap-2.5">
                   {profile.skills.length > 0 ? (
-                    profile.skills.map((skill) => (
-                      <div
-                        key={skill}
-                        className="flex items-center gap-1.5 px-3 py-1.5 text-sm rounded-lg bg-surface-sunken border border-border text-ink hover:border-border-strong transition-all"
-                      >
-                        <span>{skill}</span>
-                        <button
-                          type="button"
-                          onClick={() => removeSkill(skill)}
-                          disabled={isPending}
-                          className="text-ink-subtle hover:text-magenta transition-colors focus:outline-none cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed"
-                          aria-label={t("stack.remove_skill", { skill })}
+                    profile.skills.map((skill) => {
+                      return (
+                        <div
+                          key={skill}
+                          className="flex items-center gap-1.5 px-3 py-1.5 text-sm rounded-lg border border-primary/20 bg-primary/10 text-primary transition-all"
                         >
-                          <X className="w-3.5 h-3.5" />
-                        </button>
-                      </div>
-                    ))
+                          <span>{skill}</span>
+                          <button
+                            type="button"
+                            onClick={() => removeSkill(skill)}
+                            disabled={isPending}
+                            className="hover:text-magenta transition-colors focus:outline-none cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed opacity-50 hover:opacity-100"
+                            aria-label={t("stack.remove_skill", { skill })}
+                          >
+                            <X className="w-3.5 h-3.5" />
+                          </button>
+                        </div>
+                      );
+                    })
                   ) : (
                     <p className="text-sm text-ink-muted italic">{t("stack.empty")}</p>
                   )}
@@ -1351,7 +1494,7 @@ export default function PerfilUsuario({
                     <AlertCircle className="size-3.5 shrink-0" /> {skillError}
                   </p>
                 )}
-                <p className="text-xs text-ink-muted">{t("stack.catalog_hint")}</p>
+
               </section>
 
               {/* Conocimientos adicionales (no técnicos) */}
@@ -1372,44 +1515,92 @@ export default function PerfilUsuario({
                   )}
                 </div>
 
-                {isAddingConocimiento && (
-                  <form onSubmit={addConocimiento} className="flex gap-2 max-w-md">
-                    <label htmlFor="new-knowledge" className="sr-only">
-                      {t("knowledge.add")}
-                    </label>
-                    <input
-                      id="new-knowledge"
-                      type="text"
-                      list="knowledge-suggestions"
-                      placeholder={t("knowledge.placeholder")}
-                      value={newConocimiento}
-                      onChange={(e) => setNewConocimiento(e.target.value)}
-                      className="flex-grow bg-surface-sunken border border-border text-ink rounded-lg px-3 py-2 text-sm focus:outline-accent"
-                      autoFocus
-                      required
-                    />
-                    <datalist id="knowledge-suggestions">
-                      {knowledgeSuggestions.map((suggestion) => (
-                        <option key={suggestion} value={suggestion} />
-                      ))}
-                    </datalist>
-                    <button
-                      type="submit"
-                      disabled={isPending}
-                      className="bg-accent hover:opacity-95 text-white text-sm font-semibold px-4 rounded-xl cursor-pointer disabled:opacity-60 disabled:cursor-not-allowed"
-                    >
-                      {isPending ? <Loader2 className="w-4 h-4 animate-spin" /> : t("knowledge.add_btn")}
-                    </button>
-                    <button
-                      type="button"
-                      onClick={() => { setNewConocimiento(""); setIsAddingConocimiento(false); setConocimientoError(""); }}
-                      className="bg-surface-sunken hover:bg-border/30 text-ink text-sm font-semibold px-3 rounded-xl cursor-pointer"
-                      aria-label={t("knowledge.cancel_btn")}
-                    >
-                      <X className="w-4 h-4" />
-                    </button>
-                  </form>
-                )}
+                {isAddingConocimiento && (() => {
+                  const query = newConocimiento.trim().toLowerCase();
+                  const suggestions = knowledgeSuggestions.filter(
+                    (s) =>
+                      (query.length === 0 || s.toLowerCase().includes(query)) &&
+                      !profile.conocimientos.some((c) => c.toLowerCase() === s.toLowerCase()),
+                  );
+                  const canAddCustom =
+                    query.length > 0 &&
+                    !knowledgeSuggestions.some((s) => s.toLowerCase() === query) &&
+                    !profile.conocimientos.some((c) => c.toLowerCase() === query);
+                  const listOpen = showConocimientoSuggestions && (suggestions.length > 0 || canAddCustom);
+                  return (
+                    <form onSubmit={addConocimiento} className="flex gap-2 max-w-md">
+                      <label htmlFor="new-knowledge" className="sr-only">{t("knowledge.add")}</label>
+                      <div className="relative flex-grow">
+                        <input
+                          id="new-knowledge"
+                          type="text"
+                          placeholder={t("knowledge.placeholder")}
+                          value={newConocimiento}
+                          onChange={(e) => { setNewConocimiento(e.target.value); setShowConocimientoSuggestions(true); }}
+                          onFocus={() => setShowConocimientoSuggestions(true)}
+                          onBlur={() => setTimeout(() => setShowConocimientoSuggestions(false), 150)}
+                          className="w-full bg-surface-sunken border border-border text-ink rounded-lg px-3 py-2 pr-8 text-sm focus:outline-none focus:border-accent focus:ring-1 focus:ring-accent/30"
+                          autoFocus
+                        />
+                        <button
+                          type="button"
+                          tabIndex={-1}
+                          onMouseDown={(e) => { e.preventDefault(); setShowConocimientoSuggestions((v) => !v); }}
+                          className="absolute right-2 top-1/2 -translate-y-1/2 p-0.5 text-ink-muted hover:text-ink transition-colors"
+                          aria-label="Mostrar sugerencias"
+                        >
+                          <ChevronDown
+                            className={`size-4 transition-transform duration-[var(--duration-fast)] ${listOpen ? "rotate-180" : ""}`}
+                            aria-hidden="true"
+                          />
+                        </button>
+                        {listOpen && (
+                          <ul className="absolute left-0 top-full z-20 mt-1 w-full max-h-48 overflow-y-auto rounded-xl border border-border bg-surface shadow-elevated">
+                            {suggestions.map((s) => (
+                              <li key={s}>
+                                <button
+                                  type="button"
+                                  onMouseDown={(e) => { e.preventDefault(); addConocimiento({ preventDefault: () => {} } as React.FormEvent, s); }}
+                                  className="w-full flex items-center gap-2 px-3 py-2 text-sm text-left hover:bg-accent/5 transition-colors cursor-pointer"
+                                >
+                                  <span className="size-2 rounded-full bg-accent shrink-0" />
+                                  <span className="text-ink-strong">{s}</span>
+                                </button>
+                              </li>
+                            ))}
+                            {canAddCustom && (
+                              <li>
+                                <button
+                                  type="button"
+                                  onMouseDown={(e) => { e.preventDefault(); addConocimiento({ preventDefault: () => {} } as React.FormEvent, newConocimiento); }}
+                                  className="w-full flex items-center gap-2 px-3 py-2 text-sm text-left hover:bg-primary/5 transition-colors cursor-pointer border-t border-border"
+                                >
+                                  <Plus className="size-3.5 text-primary shrink-0" />
+                                  <span className="text-ink">{t("stack.add_custom")}: <strong>{newConocimiento.trim()}</strong></span>
+                                </button>
+                              </li>
+                            )}
+                          </ul>
+                        )}
+                      </div>
+                      <button
+                        type="submit"
+                        disabled={isPending}
+                        className="bg-accent hover:opacity-95 text-white text-sm font-semibold px-4 rounded-xl cursor-pointer disabled:opacity-60 disabled:cursor-not-allowed"
+                      >
+                        {isPending ? <Loader2 className="w-4 h-4 animate-spin" /> : t("knowledge.add_btn")}
+                      </button>
+                      <button
+                        type="button"
+                        onClick={() => { setNewConocimiento(""); setIsAddingConocimiento(false); setConocimientoError(""); setShowConocimientoSuggestions(false); }}
+                        className="bg-surface-sunken hover:bg-border/30 text-ink text-sm font-semibold px-3 rounded-xl cursor-pointer"
+                        aria-label={t("knowledge.cancel_btn")}
+                      >
+                        <X className="w-4 h-4" />
+                      </button>
+                    </form>
+                  );
+                })()}
 
                 <div className="flex flex-wrap gap-2.5">
                   {profile.conocimientos.length > 0 ? (
@@ -1613,8 +1804,8 @@ export default function PerfilUsuario({
               {/* Activity */}
               <section className="bg-surface rounded-2xl border border-border shadow-soft p-5 space-y-4">
                 <div className="flex items-center gap-2">
-                  <History className="w-4 h-4 text-primary" />
-                  <h2 className="text-sm font-bold text-ink-strong">{t("activity.title")}</h2>
+                  <History className="w-5 h-5 text-primary" />
+                  <h2 className="text-2xl font-bold text-ink-strong">{t("activity.title")}</h2>
                 </div>
                 {activities.length === 0 ? (
                   <p className="text-xs text-ink-muted">{t("activity.empty")}</p>
@@ -1648,38 +1839,50 @@ export default function PerfilUsuario({
               </section>
 
               {/* Applications sidebar widget */}
-              <section className="bg-surface rounded-2xl border border-border shadow-soft p-6 space-y-6">
+              <section className="bg-surface rounded-2xl border border-border shadow-soft p-6 space-y-4">
                 <div className="flex items-center gap-2">
                   <Briefcase className="w-5 h-5 text-primary" />
-                  <h2 className="text-lg font-bold text-ink-strong">{t("applications_sidebar.title")}</h2>
+                  <h2 className="text-xl font-bold text-ink-strong">{t("applications_sidebar.title")}</h2>
                 </div>
-                <div className="space-y-4">
-                  {applications.slice(0, 3).map((app) => {
-                    const sidebarStyles = getStatusStyles(app.status);
-                    return (
-                      <div
-                        key={app.id}
-                        className="flex justify-between items-start gap-4 p-3 rounded-xl border border-border bg-surface-sunken"
-                      >
-                        <div className="space-y-1">
-                          <h3 className="text-sm font-bold text-ink-strong leading-tight">{app.projectName}</h3>
-                          <span className="block text-xs text-ink-muted">{app.companyName}</span>
-                        </div>
-                        <span
-                          className={`text-[10px] uppercase tracking-wider font-bold px-2 py-0.5 rounded-md border shrink-0 ${sidebarStyles.badge}`}
-                        >
-                          {sidebarStyles.label}
-                        </span>
-                      </div>
-                    );
-                  })}
-                </div>
+                {applications.length === 0 ? (
+                  <p className="text-sm text-ink-muted italic">{t("applications_sidebar.empty")}</p>
+                ) : (
+                  <div className="space-y-3">
+                    {[...applications]
+                      .sort((a, b) => new Date(b.relativeTime).getTime() - new Date(a.relativeTime).getTime())
+                      .slice(0, 3)
+                      .map((app) => {
+                        const sidebarStyles = getStatusStyles(app.status);
+                        const fecha = new Date(app.relativeTime);
+                        const fechaLabel = isNaN(fecha.getTime())
+                          ? ""
+                          : fecha.toLocaleDateString("es-CR", { day: "numeric", month: "short" });
+                        return (
+                          <div
+                            key={app.id}
+                            className="flex justify-between items-start gap-3 p-3 rounded-xl border border-border bg-surface-sunken"
+                          >
+                            <div className="space-y-1 min-w-0">
+                              <h3 className="text-sm font-bold text-ink-strong leading-tight truncate">{app.projectName}</h3>
+                              {fechaLabel && <span className="block text-xs text-ink-muted">{fechaLabel}</span>}
+                            </div>
+                            <span
+                              className={`text-[10px] uppercase tracking-wider font-bold px-2 py-0.5 rounded-md border shrink-0 ${sidebarStyles.badge}`}
+                            >
+                              {sidebarStyles.label}
+                            </span>
+                          </div>
+                        );
+                      })}
+                  </div>
+                )}
                 <button
                   type="button"
                   onClick={() => setActiveTab("postulaciones")}
-                  className="text-primary hover:underline text-sm font-semibold block pt-2 cursor-pointer w-full text-left"
+                  className="inline-flex items-center gap-1 text-xs font-semibold text-primary hover:underline"
                 >
                   {t("applications_sidebar.manage")}
+                  <ChevronRight className="w-3 h-3" />
                 </button>
               </section>
             </div>
@@ -1689,54 +1892,83 @@ export default function PerfilUsuario({
         {/* ── TAB: TRABAJO ─────────────────────────────────────────────────────── */}
         {activeTab === "trabajo" && (
           <section className="space-y-6">
-            <div className="space-y-2">
-              <h1 className="text-3xl md:text-4xl font-heading font-extrabold tracking-tight text-ink-strong">
-                {t("work.title")}<span className="text-primary">.</span>
-              </h1>
-              <p className="text-sm text-ink-muted leading-relaxed">{t("work.description")}</p>
+            <div className="flex items-start justify-between gap-4">
+              <div className="space-y-2">
+                <h1 className="text-3xl md:text-4xl font-heading font-extrabold tracking-tight text-ink-strong">
+                  {t("work.title")}<span className="text-primary">.</span>
+                </h1>
+                <p className="text-sm text-ink-muted leading-relaxed">{t("work.description")}</p>
+              </div>
+              <button
+                type="button"
+                onClick={() => setShowAddProjectModal(true)}
+                className="inline-flex items-center gap-2 px-4 py-2 rounded-full border border-primary/30 bg-primary/5 text-sm font-semibold text-primary hover:bg-primary/10 hover:border-primary/50 transition-all shrink-0"
+              >
+                <Plus className="w-4 h-4" /> {t("work.add_project")}
+              </button>
             </div>
 
-            <div className="pt-8 border-t border-border/60">
-              <div className="flex items-center justify-between mb-6">
-                <div>
-                  <h2 className="text-xl font-semibold text-ink-strong">{t("work.my_projects")}</h2>
-                  <p className="text-sm text-ink-muted">{t("work.my_projects_help")}</p>
-                </div>
-                  <div className="flex items-center gap-3">
-                    <button
-                      type="button"
-                      onClick={() => setShowAddProjectModal(true)}
-                      className="inline-flex items-center gap-2 px-4 py-2 rounded-xl bg-primary text-white hover:opacity-95 transition-all"
-                    >
-                      <Plus className="w-4 h-4" /> {t("work.add_project")}
-                    </button>
-
-                  </div>
-              </div>
-
-              {workProjectsState.length > 0 ? (
-                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                  {workProjectsState.map((project) => (
-                    <ProjectCard
-                      key={project.id}
-                      project={project}
-                      onPreview={setPreviewProject}
-                      onDelete={requestDeleteProject}
-                    />
-                  ))}
-                </div>
-              ) : (
-                <div className="rounded-2xl border border-dashed border-border bg-surface p-8 text-center">
-                  <Briefcase className="mx-auto mb-3 w-7 h-7 text-ink-muted" />
-                  <p className="mt-2 text-sm text-ink-muted">{t("work.no_projects")}</p>
-                </div>
+            <div className="pt-2">
+              {portfolioError && (
+                <div className="rounded-xl bg-magenta/10 border border-magenta/20 px-4 py-3 text-sm text-magenta">{portfolioError}</div>
               )}
+              {(() => {
+                const PORTFOLIO_PAGE = 6;
+                const visible = showAllPortafolio ? workProjectsState : workProjectsState.slice(0, PORTFOLIO_PAGE);
+                const hasMore = workProjectsState.length > PORTFOLIO_PAGE;
+                return (
+                  <>
+                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">
+                      {visible.map((project) => (
+                        <ProjectCard
+                          key={project.id}
+                          project={project}
+                          onPreview={setPreviewProject}
+                          onEdit={setProjectToEdit}
+                          onDelete={requestDeleteProject}
+                        />
+                      ))}
+                      {/* Add card — siempre visible */}
+                      <button
+                        type="button"
+                        onClick={() => setShowAddProjectModal(true)}
+                        className="rounded-2xl border-2 border-dashed border-border bg-surface hover:border-primary/40 hover:bg-primary/5 transition-all flex flex-col items-center justify-center gap-3 p-8 min-h-[220px] cursor-pointer group"
+                      >
+                        <span className="w-10 h-10 rounded-full border-2 border-border group-hover:border-primary/40 flex items-center justify-center transition-colors">
+                          <Plus className="w-5 h-5 text-ink-muted group-hover:text-primary transition-colors" />
+                        </span>
+                        <span className="text-sm font-semibold text-ink-muted group-hover:text-primary transition-colors">{t("work.add_title")}</span>
+                        <span className="text-xs text-ink-muted">{t("work.add_formats")}</span>
+                      </button>
+                    </div>
+                    {hasMore && (
+                      <div className="flex justify-center pt-2">
+                        <button
+                          type="button"
+                          onClick={() => setShowAllPortafolio((v) => !v)}
+                          className="inline-flex items-center gap-2 px-5 py-2 rounded-full border border-border text-sm font-semibold text-ink-muted hover:border-primary/40 hover:text-primary transition-all"
+                        >
+                          {showAllPortafolio ? t("work.show_less") : t("work.show_more", { count: workProjectsState.length - PORTFOLIO_PAGE })}
+                          <ChevronDown className={`w-4 h-4 transition-transform ${showAllPortafolio ? "rotate-180" : ""}`} />
+                        </button>
+                      </div>
+                    )}
+                  </>
+                );
+              })()}
             </div>
 
             {showAddProjectModal && (
               <AddProjectModal
                 onClose={() => setShowAddProjectModal(false)}
-                onCreate={(data) => { addProject(data); setShowAddProjectModal(false); }}
+                onCreate={async (data) => { await addProject(data); setShowAddProjectModal(false); }}
+              />
+            )}
+            {projectToEdit && (
+              <EditProjectModal
+                project={projectToEdit}
+                onClose={() => setProjectToEdit(null)}
+                onSave={saveEditProject}
               />
             )}
             {projectToDelete && (
@@ -1778,7 +2010,7 @@ export default function PerfilUsuario({
                   <button
                     key={value}
                     type="button"
-                    onClick={() => setFilterStatus(value)}
+                    onClick={() => { setFilterStatus(value); setAppPage(1); }}
                     className={`px-4 py-1.5 rounded-full text-xs font-medium border transition-colors cursor-pointer ${isActive
                         ? "bg-primary border-primary text-white"
                         : "bg-surface-sunken border-border text-ink-muted hover:bg-border/30 hover:text-ink"
@@ -1790,99 +2022,175 @@ export default function PerfilUsuario({
               })}
             </div>
 
-            {/* Application list */}
-            <div className="space-y-4">
-              {filteredApplications.map((app) => {
-                const styles = getStatusStyles(app.status);
-                return (
-                  <div
-                    key={app.id}
-                    className="relative rounded-2xl bg-surface border border-border p-5 flex items-center justify-between shadow-soft hover:shadow-md hover:border-primary/20 transition-all duration-200 overflow-hidden pl-7"
-                  >
-                    <div className={`absolute left-0 top-0 bottom-0 w-2.5 ${styles.strip}`} />
-                    <div className="flex items-center gap-4">
-                      <div
-                        className={`w-12 h-12 rounded-xl flex items-center justify-center shrink-0 ${getCategoryBg(app.category)}`}
-                      >
-                        {getCategoryIcon(app.category)}
-                      </div>
-                      <div className="space-y-1">
-                        <h3 className="text-base font-bold text-ink-strong leading-tight">{app.projectName}</h3>
-                        <div className="flex flex-wrap items-center gap-x-4 gap-y-1 text-xs text-ink-muted">
-                          <span className="flex items-center gap-1">
-                            <Building2 className="w-3.5 h-3.5 shrink-0" />
-                            {app.companyName}
-                          </span>
-                          <span className="flex items-center gap-1">
-                            <Clock className="w-3.5 h-3.5 shrink-0" />
-                            {app.relativeTime}
-                          </span>
-                        </div>
-                      </div>
-                    </div>
-                    <div className="flex items-center gap-4">
-                      <span
-                        className={`text-[10px] uppercase tracking-wider font-extrabold px-2.5 py-1 rounded-md border shrink-0 ${styles.badge}`}
-                      >
-                        {styles.label}
-                      </span>
-                      <ChevronRight className="w-5 h-5 text-ink-subtle hover:text-primary transition-colors shrink-0" />
+            {/* Ir a gestión */}
+            <div className="flex justify-end">
+              <Link
+                href={`/${locale}/gestion`}
+                className="inline-flex items-center gap-2 rounded-xl bg-primary px-5 py-2.5 text-sm font-semibold text-white hover:opacity-90 transition-opacity"
+              >
+                <ArrowUpRight className="w-4 h-4" />
+                {t("applications.go_to_marketplace")}
+              </Link>
+            </div>
+
+            {/* Stats compactas */}
+            {(() => {
+              const enProceso = applications.filter((a) => ["enviada", "vista", "en_proceso"].includes(a.status)).length;
+              const adjudicados = applications.filter((a) => a.status === "aceptada").length;
+              return (
+                <div className="flex flex-wrap gap-3">
+                  <div className="flex items-center gap-3 rounded-xl border border-primary/20 bg-primary/5 px-4 py-3 min-w-[160px]">
+                    <TrendingUp className="w-5 h-5 text-primary shrink-0" />
+                    <div>
+                      <div className="text-2xl font-extrabold font-heading tracking-tight text-primary leading-none">{enProceso}</div>
+                      <div className="text-[10px] font-semibold uppercase tracking-wider text-primary/70 mt-0.5">{t("applications.stats.in_progress")}</div>
                     </div>
                   </div>
-                );
-              })}
-              {filteredApplications.length === 0 && (
-                <div className="text-center py-12 bg-surface rounded-2xl border border-border">
-                  <p className="text-sm text-ink-muted italic">{t("applications.empty")}</p>
+                  <div className="flex items-center gap-3 rounded-xl border border-accent/20 bg-accent/5 px-4 py-3 min-w-[160px]">
+                    <Zap className="w-5 h-5 text-accent shrink-0" />
+                    <div>
+                      <div className="text-2xl font-extrabold font-heading tracking-tight text-accent leading-none">{adjudicados}</div>
+                      <div className="text-[10px] font-semibold uppercase tracking-wider text-accent/70 mt-0.5">{t("applications.stats.awarded")}</div>
+                    </div>
+                  </div>
+                </div>
+              );
+            })()}
+
+            {/* Application list paginada */}
+            {(() => {
+              const appTotalPages = Math.max(1, Math.ceil(filteredApplications.length / APP_PAGE_SIZE));
+              const paginated = filteredApplications.slice((appPage - 1) * APP_PAGE_SIZE, appPage * APP_PAGE_SIZE);
+              return (
+                <div className="space-y-4">
+                  {paginated.map((app) => {
+                    const styles = getStatusStyles(app.status);
+                    const fecha = new Date(app.relativeTime);
+                    const fechaLabel = isNaN(fecha.getTime()) ? app.relativeTime : fecha.toLocaleDateString("es-CR", { day: "numeric", month: "short", year: "numeric" });
+                    return (
+                      <Link
+                        key={app.id}
+                        href={app.projectId ? `/${locale}/gestion?proyecto=${app.projectId}` : "#"}
+                        className="relative rounded-2xl bg-surface border border-border p-5 flex items-center justify-between shadow-soft hover:shadow-md hover:border-primary/20 transition-all duration-200 overflow-hidden pl-7 block"
+                      >
+                        <div className={`absolute left-0 top-0 bottom-0 w-2.5 ${styles.strip}`} />
+                        <div className="flex items-center gap-4">
+                          <div className={`w-12 h-12 rounded-xl flex items-center justify-center shrink-0 ${getCategoryBg(app.category)}`}>
+                            {getCategoryIcon(app.category)}
+                          </div>
+                          <div className="space-y-1">
+                            <h3 className="text-base font-bold text-ink-strong leading-tight">{app.projectName}</h3>
+                            <div className="flex flex-wrap items-center gap-x-4 gap-y-1 text-xs text-ink-muted">
+                              {app.companyName && (
+                                <span className="flex items-center gap-1">
+                                  <Building2 className="w-3.5 h-3.5 shrink-0" />
+                                  {app.companyName}
+                                </span>
+                              )}
+                              <span className="flex items-center gap-1">
+                                <Clock className="w-3.5 h-3.5 shrink-0" />
+                                {fechaLabel}
+                              </span>
+                            </div>
+                          </div>
+                        </div>
+                        <div className="flex items-center gap-4">
+                          <span className={`text-[10px] uppercase tracking-wider font-extrabold px-2.5 py-1 rounded-md border shrink-0 ${styles.badge}`}>
+                            {styles.label}
+                          </span>
+                          <ChevronRight className="w-5 h-5 text-ink-subtle hover:text-primary transition-colors shrink-0" />
+                        </div>
+                      </Link>
+                    );
+                  })}
+                  {paginated.length === 0 && (
+                    <div className="text-center py-12 bg-surface rounded-2xl border border-border">
+                      <p className="text-sm text-ink-muted italic">{t("applications.empty")}</p>
+                    </div>
+                  )}
+                  {appTotalPages > 1 && (
+                    <div className="flex items-center justify-center gap-3 pt-2">
+                      <button
+                        type="button"
+                        disabled={appPage === 1}
+                        onClick={() => setAppPage((p) => p - 1)}
+                        className="rounded-lg border border-border bg-surface px-3 py-1.5 font-body text-xs font-semibold text-ink transition-colors hover:border-primary/30 hover:text-primary disabled:cursor-not-allowed disabled:opacity-40"
+                      >
+                        {t("notifications.prev")}
+                      </button>
+                      <span className="font-body text-xs text-ink-muted">{appPage} / {appTotalPages}</span>
+                      <button
+                        type="button"
+                        disabled={appPage === appTotalPages}
+                        onClick={() => setAppPage((p) => p + 1)}
+                        className="rounded-lg border border-border bg-surface px-3 py-1.5 font-body text-xs font-semibold text-ink transition-colors hover:border-primary/30 hover:text-primary disabled:cursor-not-allowed disabled:opacity-40"
+                      >
+                        {t("notifications.next")}
+                      </button>
+                    </div>
+                  )}
+                </div>
+              );
+            })()}
+
+            {/* ── Proyectos guardados ─────────────────────────────────────── */}
+            <div className="space-y-3 pt-4">
+              <div className="flex items-center gap-2">
+                <Bookmark className="w-4 h-4 text-highlight" />
+                <h2 className="text-base font-bold text-ink-strong">{t("applications.saved_title")}</h2>
+                <span className="ml-auto text-xs font-semibold text-ink-muted">{savedProjects.length}</span>
+              </div>
+              {savedProjects.length === 0 ? (
+                <div className="rounded-2xl border border-border bg-surface px-5 py-8 text-center">
+                  <p className="text-sm text-ink-muted italic">{t("applications.saved_empty")}</p>
+                </div>
+              ) : (
+                <div className="space-y-3">
+                  {savedProjects.map((project) => {
+                    const isExpired = project.fecha_cierre ? new Date(project.fecha_cierre) < new Date() : false;
+                    return (
+                      <div
+                        key={project.id}
+                        className="flex items-center gap-4 rounded-2xl border border-border bg-surface px-5 py-4 shadow-soft"
+                      >
+                        <div className="min-w-0 flex-1 space-y-0.5">
+                          <p className="text-sm font-bold text-ink-strong leading-tight truncate">{project.titulo}</p>
+                          {project.empresa && (
+                            <p className="text-xs text-ink-muted truncate">{project.empresa.nombre_comercial}</p>
+                          )}
+                          {isExpired && (
+                            <span className="inline-flex items-center gap-1 text-[10px] font-bold uppercase tracking-wider text-magenta">
+                              <Clock className="w-3 h-3" />
+                              {t("applications.saved_expired")}
+                            </span>
+                          )}
+                        </div>
+                        <div className="flex items-center gap-2 shrink-0">
+                          <Link
+                            href={`/${locale}/gestion?proyecto=${project.id}`}
+                            className="rounded-full bg-secondary px-4 py-1.5 text-xs font-semibold text-white hover:opacity-80 transition-opacity"
+                          >
+                            {t("applications.saved_view")}
+                          </Link>
+                          <button
+                            type="button"
+                            aria-label={t("applications.saved_remove")}
+                            onClick={async () => {
+                              setSavedProjects((prev) => prev.filter((p) => p.id !== project.id));
+                              await unsaveProjectAction(project.id);
+                            }}
+                            className="flex size-8 items-center justify-center rounded-full border border-border text-ink-muted hover:border-magenta hover:text-magenta transition-colors"
+                          >
+                            <Bookmark className="w-3.5 h-3.5 fill-current" />
+                          </button>
+                        </div>
+                      </div>
+                    );
+                  })}
                 </div>
               )}
             </div>
 
-            {/* Stats */}
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-6 pt-6">
-              <div className="bg-primary rounded-2xl p-6 text-white flex flex-col justify-between h-36 shadow-soft hover:shadow-md transition-all">
-                <TrendingUp className="w-7 h-7 text-white/80" />
-                <div>
-                  <div className="text-3xl font-extrabold font-heading tracking-tight">{stats.activeCount}</div>
-                  <div className="text-[10px] font-semibold uppercase tracking-wider text-white/80">
-                    {t("applications.stats.active")}
-                  </div>
-                </div>
-              </div>
-              <div className="bg-surface-sunken rounded-2xl p-6 border border-border flex flex-col justify-between h-36 shadow-soft hover:shadow-md transition-all">
-                <Calendar className="w-7 h-7 text-primary" />
-                <div>
-                  <div className="text-3xl font-extrabold font-heading tracking-tight text-ink-strong">
-                    {stats.scheduledInterviews}
-                  </div>
-                  <div className="text-[10px] font-semibold uppercase tracking-wider text-ink-muted">
-                    {t("applications.stats.interviews")}
-                  </div>
-                </div>
-              </div>
-              <div className="bg-surface rounded-2xl p-6 border border-border flex flex-col justify-between h-36 shadow-soft hover:shadow-md transition-all">
-                <Zap className="w-7 h-7 text-warning" />
-                <div>
-                  <div className="text-3xl font-extrabold font-heading tracking-tight text-ink-strong">
-                    {stats.compatibilityIndex}%
-                  </div>
-                  <div className="text-[10px] font-semibold uppercase tracking-wider text-ink-muted">
-                    {t("applications.stats.compatibility")}
-                  </div>
-                </div>
-              </div>
-            </div>
-
-            {/* More opportunities */}
-            <div className="pt-8 border-t border-border/60">
-              <div className="rounded-2xl border border-dashed border-border bg-surface p-8 text-center">
-                <Sparkles className="mx-auto mb-3 w-7 h-7 text-primary" />
-                <h2 className="text-xl md:text-2xl font-heading font-extrabold tracking-tight text-ink-strong">
-                  {t("two_point_zero.title")}<span className="text-primary">.</span>
-                </h2>
-                <p className="mt-2 text-sm text-ink-muted">{t("two_point_zero.applications")}</p>
-              </div>
-            </div>
           </section>
         )}
 
@@ -1913,7 +2221,7 @@ export default function PerfilUsuario({
               {/* Header */}
               <div className="flex items-center justify-between">
                 <div className="flex items-center gap-3">
-                  <h2 className="font-heading text-xl font-extrabold tracking-tight text-ink-strong">
+                  <h2 className="text-xl font-bold text-ink-strong">
                     {t("notifications.activity_title")}
                   </h2>
                   {unreadCount > 0 && (
@@ -2010,7 +2318,7 @@ export default function PerfilUsuario({
         {activeTab === "sugeridos" && (
           <section className="bg-surface rounded-2xl border border-border shadow-soft p-6 md:p-8 space-y-6">
             <div className="flex justify-between items-center">
-              <h2 className="text-2xl font-bold text-ink-strong flex items-center gap-2">
+              <h2 className="text-xl font-bold text-ink-strong flex items-center gap-2">
                 <Sparkles className="w-6 h-6 text-primary" />
                 {t("suggested.title")}
               </h2>
@@ -2061,11 +2369,145 @@ function ConfirmDeleteModal({
     </div>
   );
 }
-function AddProjectModal({ onClose, onCreate }: { onClose: () => void; onCreate: (p: Omit<WorkProject, "id">) => void }) {
+function EditProjectModal({
+  project,
+  onClose,
+  onSave,
+}: {
+  project: WorkProject;
+  onClose: () => void;
+  onSave: (id: string, updated: Omit<WorkProject, "id">) => Promise<void>;
+}) {
+  const t = useTranslations("perfil_junior.work");
+  const [name, setName] = useState(project.title);
+  const [url, setUrl] = useState(project.netlifyUrl);
+  const [repoUrl, setRepoUrl] = useState(project.repoUrl ?? "");
+  const [description, setDescription] = useState(project.description);
+  const [error, setError] = useState("");
+  const [saving, setSaving] = useState(false);
+
+  const SUGGESTED = [
+    { name: "React", colorVar: "--primary" },
+    { name: "Next.js", colorVar: "--secondary" },
+    { name: "Tailwind", colorVar: "--accent" },
+    { name: "Node.js", colorVar: "--highlight" },
+    { name: "TypeScript", colorVar: "--magenta" },
+  ];
+  const OTHER_COLORS = ["--primary", "--secondary", "--accent", "--highlight", "--magenta"];
+  const [selectedTechs, setSelectedTechs] = useState<{ name: string; colorVar: string }[]>(
+    project.tags.map((tag) => {
+      const found = SUGGESTED.find((s) => s.name === tag);
+      if (found) return found;
+      let hash = 0;
+      for (let i = 0; i < tag.length; i++) hash = (hash << 5) - hash + tag.charCodeAt(i);
+      return { name: tag, colorVar: OTHER_COLORS[Math.abs(hash) % OTHER_COLORS.length] ?? "--primary" };
+    }),
+  );
+  const [showOtherInput, setShowOtherInput] = useState(false);
+  const [otherValue, setOtherValue] = useState("");
+
+  function toggleTech(item: { name: string; colorVar: string }) {
+    setSelectedTechs((prev) => {
+      const exists = prev.find((p) => p.name === item.name);
+      if (exists) return prev.filter((p) => p.name !== item.name);
+      return [...prev, item];
+    });
+  }
+
+  function addOther() {
+    const v = otherValue.trim();
+    if (!v) return;
+    let hash = 0;
+    for (let i = 0; i < v.length; i++) hash = (hash << 5) - hash + v.charCodeAt(i);
+    const colorVar = OTHER_COLORS[Math.abs(hash) % OTHER_COLORS.length] ?? "--primary";
+    setSelectedTechs((prev) => (prev.some(p => p.name.toLowerCase() === v.toLowerCase()) ? prev : [...prev, { name: v, colorVar }]));
+    setOtherValue("");
+    setShowOtherInput(false);
+  }
+
+  async function handleSubmit(e: React.FormEvent) {
+    e.preventDefault();
+    setError("");
+    if (!name.trim()) { setError(t("errors.name_required")); return; }
+    setSaving(true);
+    const trimmedRepo = repoUrl.trim();
+    await onSave(project.id, {
+      title: name.trim(),
+      netlifyUrl: url.trim(),
+      ...(trimmedRepo ? { repoUrl: trimmedRepo } : {}),
+      description: description.trim(),
+      tags: selectedTechs.map(s => s.name),
+    });
+    setSaving(false);
+  }
+
+  return (
+    <div className="fixed inset-0 z-[100] flex items-center justify-center bg-ink-strong/60 p-4" onClick={onClose}>
+      <div className="w-full max-w-2xl bg-surface rounded-2xl shadow-elevated p-6" onClick={e => e.stopPropagation()} role="dialog" aria-modal="true">
+        <div className="flex items-center justify-between mb-4">
+          <h3 className="text-lg font-bold">{t("edit_modal_title")}</h3>
+          <button type="button" onClick={onClose} className="text-ink-muted"><X className="w-5 h-5" /></button>
+        </div>
+        <form onSubmit={handleSubmit} className="space-y-3">
+          <div>
+            <label className="block text-xs text-ink-muted mb-1">{t("fields.name")}</label>
+            <input value={name} onChange={(e) => setName(e.target.value)} className="w-full px-3 py-2 rounded-lg border border-border text-ink bg-surface" />
+          </div>
+          <div>
+            <label className="block text-xs text-ink-muted mb-1">{t("fields.url")}</label>
+            <input value={url} onChange={(e) => setUrl(e.target.value)} className="w-full px-3 py-2 rounded-lg border border-border text-ink bg-surface" />
+          </div>
+          <div>
+            <label className="block text-xs text-ink-muted mb-1">{t("fields.repo_url")}</label>
+            <input value={repoUrl} onChange={(e) => setRepoUrl(e.target.value)} placeholder="https://github.com/..." className="w-full px-3 py-2 rounded-lg border border-border text-ink bg-surface" />
+          </div>
+          <div>
+            <label className="block text-xs text-ink-muted mb-1">{t("fields.description")}</label>
+            <textarea value={description} onChange={(e) => setDescription(e.target.value)} className="w-full px-3 py-2 rounded-lg border border-border text-ink bg-surface" rows={3} />
+          </div>
+          <div>
+            <label className="block text-xs text-ink-muted mb-2">{t("fields.techs")}</label>
+            <div className="flex flex-wrap gap-2 mb-2">
+              {SUGGESTED.map((s) => {
+                const active = selectedTechs.some((st) => st.name === s.name);
+                return (
+                  <button type="button" key={s.name} onClick={() => toggleTech(s)}
+                    style={active ? { backgroundColor: `var(${s.colorVar})`, color: "white" } : undefined}
+                    className={`${active ? "" : "bg-surface-sunken text-ink"} px-3 py-1.5 rounded-full text-sm border border-border/50`}
+                  >
+                    {s.name}
+                  </button>
+                );
+              })}
+              <button type="button" onClick={() => setShowOtherInput((v) => !v)} className="px-3 py-1.5 rounded-full text-sm border border-border/50 bg-surface-sunken">Otros</button>
+            </div>
+            {showOtherInput && (
+              <div className="flex gap-2">
+                <input value={otherValue} onChange={(e) => setOtherValue(e.target.value)} placeholder={t("fields.techs_placeholder")} className="flex-grow px-3 py-2 rounded-lg border border-border text-ink bg-surface" />
+                <button type="button" onClick={addOther} className="px-3 py-2 rounded-lg bg-primary text-white">Agregar</button>
+              </div>
+            )}
+          </div>
+          {error && <p className="text-sm text-magenta">{error}</p>}
+          <div className="flex gap-3 justify-end pt-2">
+            <button type="button" onClick={onClose} className="px-4 py-2 rounded-xl border border-border text-sm font-semibold text-ink hover:bg-surface-sunken">{t("cancel")}</button>
+            <button type="submit" disabled={saving} className="px-5 py-2 rounded-xl bg-primary text-white text-sm font-semibold hover:opacity-95 disabled:opacity-60">
+              {saving ? <Loader2 className="w-4 h-4 animate-spin" /> : t("save_btn")}
+            </button>
+          </div>
+        </form>
+      </div>
+    </div>
+  );
+}
+
+function AddProjectModal({ onClose, onCreate }: { onClose: () => void; onCreate: (p: Omit<WorkProject, "id">) => Promise<void> }) {
   const t = useTranslations("perfil_junior.work");
   const [name, setName] = useState("");
   const [url, setUrl] = useState("");
+  const [repoUrl, setRepoUrl] = useState("");
   const [description, setDescription] = useState("");
+  const [saving, setSaving] = useState(false);
   const [error, setError] = useState("");
 
   // suggested techs mapped to design tokens (see README palette)
@@ -2106,76 +2548,130 @@ function AddProjectModal({ onClose, onCreate }: { onClose: () => void; onCreate:
     setShowOtherInput(false);
   }
 
-  function handleSubmit(e: React.FormEvent) {
+  async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
     setError("");
     if (!name.trim()) { setError(t("work.errors.name_required")); return; }
     if (!url.trim()) { setError(t("work.errors.url_required")); return; }
+    setSaving(true);
     const tags = selectedTechs.map(s => s.name);
-    onCreate({ title: name.trim(), netlifyUrl: url.trim(), description: description.trim(), tags });
+    const trimmedRepo = repoUrl.trim();
+    await onCreate({ title: name.trim(), netlifyUrl: url.trim(), ...(trimmedRepo ? { repoUrl: trimmedRepo } : {}), description: description.trim(), tags });
+    setSaving(false);
   }
 
+  const inputClass = "w-full px-3.5 py-2.5 rounded-xl border border-border bg-canvas text-sm text-ink placeholder:text-ink-muted focus:outline-none focus:ring-2 focus:ring-primary/30 focus:border-primary transition-colors";
+  const labelClass = "block text-xs font-semibold text-ink-muted uppercase tracking-wider mb-1.5";
+
   return (
-    <div className="fixed inset-0 z-[100] flex items-center justify-center bg-ink-strong/60 p-4" onClick={onClose}>
-      <div className="w-full max-w-2xl bg-surface rounded-2xl shadow-elevated p-6 transform transition-all duration-200 ease-[var(--ease-out)]" onClick={e => e.stopPropagation()} role="dialog" aria-modal="true">
-        <div className="flex items-center justify-between mb-4">
-          <h3 className="text-lg font-bold">{t("work.add_modal_title")}</h3>
-          <button onClick={onClose} className="text-ink-muted"><X className="w-5 h-5" /></button>
-        </div>
-        <form onSubmit={handleSubmit} className="space-y-3">
-          <div>
-            <label className="block text-xs text-ink-muted mb-1">{t("work.fields.name")}</label>
-            <input value={name} onChange={(e) => setName(e.target.value)} className="w-full px-3 py-2 rounded-lg border border-border text-ink" />
-          </div>
-          <div>
-            <label className="block text-xs text-ink-muted mb-1">{t("work.fields.url")}</label>
-            <input value={url} onChange={(e) => setUrl(e.target.value)} className="w-full px-3 py-2 rounded-lg border border-border text-ink" />
-          </div>
-          <div>
-            <label className="block text-xs text-ink-muted mb-1">{t("work.fields.description")}</label>
-            <textarea value={description} onChange={(e) => setDescription(e.target.value)} className="w-full px-3 py-2 rounded-lg border border-border text-ink" rows={3} />
-          </div>
-
-          <div>
-            <label className="block text-xs text-ink-muted mb-2">{t("work.fields.techs")}</label>
-            <div className="flex flex-wrap gap-2 mb-2">
-              {SUGGESTED.map((s) => {
-                const active = selectedTechs.some((st) => st.name === s.name);
-                return (
-                  <button
-                    type="button"
-                    key={s.name}
-                    onClick={() => toggleTech(s)}
-                    style={active ? { backgroundColor: `var(${s.colorVar})`, color: 'white' } : undefined}
-                    className={`${active ? '' : 'bg-surface-sunken text-ink'} px-3 py-1.5 rounded-full text-sm border border-border/50`}
-                  >
-                    {s.name}
-                  </button>
-                );
-              })}
-              <button type="button" onClick={() => setShowOtherInput((v) => !v)} className={`px-3 py-1.5 rounded-full text-sm border border-border/50 bg-surface-sunken`}>Otros</button>
+    <div className="fixed inset-0 z-[100] flex items-center justify-center bg-ink-strong/70 backdrop-blur-sm p-4" onClick={onClose}>
+      <div className="w-full max-w-xl bg-surface rounded-2xl shadow-elevated overflow-hidden" onClick={e => e.stopPropagation()} role="dialog" aria-modal="true">
+        {/* Header */}
+        <div className="flex items-center justify-between px-6 py-4 border-b border-border">
+          <div className="flex items-center gap-2.5">
+            <div className="w-8 h-8 rounded-lg bg-primary/10 flex items-center justify-center">
+              <Plus className="w-4 h-4 text-primary" />
             </div>
-            {showOtherInput && (
-              <div className="flex gap-2">
-                <input value={otherValue} onChange={(e) => setOtherValue(e.target.value)} placeholder={t("work.fields.techs_placeholder")} className="flex-grow px-3 py-2 rounded-lg border border-border text-ink" />
-                <button type="button" onClick={addOther} className="px-3 py-2 rounded-lg bg-primary text-white">Agregar</button>
+            <h3 className="text-base font-bold text-ink-strong">{t("work.add_modal_title")}</h3>
+          </div>
+          <button type="button" onClick={onClose} className="p-1.5 rounded-lg text-ink-muted hover:text-ink hover:bg-surface-sunken transition-colors">
+            <X className="w-5 h-5" />
+          </button>
+        </div>
+
+        <form onSubmit={handleSubmit}>
+          <div className="px-6 py-5 space-y-4 max-h-[70vh] overflow-y-auto">
+            {/* Nombre */}
+            <div>
+              <label className={labelClass}>{t("work.fields.name")}</label>
+              <input value={name} onChange={(e) => setName(e.target.value)} className={inputClass} placeholder="Mi proyecto increíble" />
+            </div>
+
+            {/* URLs en grid */}
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+              <div>
+                <label className={labelClass}>{t("work.fields.url")}</label>
+                <input value={url} onChange={(e) => setUrl(e.target.value)} className={inputClass} placeholder="https://mi-proyecto.netlify.app" />
               </div>
-            )}
-            {selectedTechs.length > 0 && (
-              <div className="mt-3 flex flex-wrap gap-2">
-                {selectedTechs.map((st) => (
-                  <span key={st.name} style={{ backgroundColor: `var(${st.colorVar})`, color: 'white' }} className={`px-3 py-1.5 rounded-full text-sm flex items-center gap-2`}>{st.name}
-                    <button type="button" onClick={() => setSelectedTechs(prev => prev.filter(p => p.name !== st.name))} className="w-4 h-4 rounded-full bg-white/20 flex items-center justify-center text-xs">×</button>
-                  </span>
-                ))}
+              <div>
+                <label className={labelClass}>{t("fields.repo_url")}</label>
+                <input value={repoUrl} onChange={(e) => setRepoUrl(e.target.value)} className={inputClass} placeholder="https://github.com/..." />
+              </div>
+            </div>
+
+            {/* Descripción */}
+            <div>
+              <label className={labelClass}>{t("work.fields.description")}</label>
+              <textarea value={description} onChange={(e) => setDescription(e.target.value)} className={inputClass} rows={2} placeholder="Breve descripción de qué hace este proyecto..." />
+            </div>
+
+            {/* Tecnologías */}
+            <div>
+              <label className={labelClass}>{t("work.fields.techs")}</label>
+              <div className="flex flex-wrap gap-2">
+                {SUGGESTED.map((s) => {
+                  const active = selectedTechs.some((st) => st.name === s.name);
+                  return (
+                    <button
+                      type="button"
+                      key={s.name}
+                      onClick={() => toggleTech(s)}
+                      style={active ? { backgroundColor: `var(${s.colorVar})`, borderColor: `var(${s.colorVar})`, color: "white" } : undefined}
+                      className={`px-3 py-1 rounded-full text-xs font-semibold border transition-all ${active ? "" : "border-border bg-surface-sunken text-ink-muted hover:border-primary/30 hover:text-ink"}`}
+                    >
+                      {s.name}
+                    </button>
+                  );
+                })}
+                <button
+                  type="button"
+                  onClick={() => setShowOtherInput((v) => !v)}
+                  className="px-3 py-1 rounded-full text-xs font-semibold border border-dashed border-border bg-transparent text-ink-muted hover:border-primary/40 hover:text-primary transition-all"
+                >
+                  + Otros
+                </button>
+              </div>
+              {showOtherInput && (
+                <div className="flex gap-2 mt-2">
+                  <input
+                    value={otherValue}
+                    onChange={(e) => setOtherValue(e.target.value)}
+                    onKeyDown={(e) => { if (e.key === "Enter") { e.preventDefault(); addOther(); } }}
+                    placeholder={t("work.fields.techs_placeholder")}
+                    className={inputClass}
+                  />
+                  <button type="button" onClick={addOther} className="px-3 py-2 rounded-xl bg-primary text-white text-sm font-semibold shrink-0">Agregar</button>
+                </div>
+              )}
+              {selectedTechs.length > 0 && (
+                <div className="mt-2 flex flex-wrap gap-1.5">
+                  {selectedTechs.map((st) => (
+                    <span key={st.name} style={{ backgroundColor: `var(${st.colorVar})` }} className="flex items-center gap-1.5 pl-3 pr-1.5 py-1 rounded-full text-xs font-semibold text-white">
+                      {st.name}
+                      <button type="button" onClick={() => setSelectedTechs(prev => prev.filter(p => p.name !== st.name))} className="w-4 h-4 rounded-full bg-white/25 hover:bg-white/40 flex items-center justify-center transition-colors">
+                        <X className="w-2.5 h-2.5" />
+                      </button>
+                    </span>
+                  ))}
+                </div>
+              )}
+            </div>
+
+            {error && (
+              <div className="flex items-center gap-2 rounded-xl bg-magenta/8 border border-magenta/20 px-3.5 py-2.5">
+                <AlertCircle className="w-4 h-4 text-magenta shrink-0" />
+                <p className="text-sm text-magenta">{error}</p>
               </div>
             )}
           </div>
 
-          {error && <p className="text-sm text-magenta">{error}</p>}
-          <div className="flex gap-2 justify-end">
-            <button type="button" onClick={onClose} className="px-4 py-2 rounded-xl bg-surface-sunken">{t("work.cancel")}</button>
-            <button type="submit" className="px-4 py-2 rounded-xl bg-primary text-white">{t("work.create")}</button>
+          {/* Footer */}
+          <div className="flex items-center justify-end gap-2 px-6 py-4 border-t border-border bg-canvas">
+            <button type="button" onClick={onClose} className="px-4 py-2 rounded-xl text-sm font-semibold text-ink-muted border border-border hover:bg-surface-sunken transition-colors">{t("work.cancel")}</button>
+            <button type="submit" disabled={saving} className="inline-flex items-center gap-2 px-5 py-2 rounded-xl bg-primary text-white text-sm font-semibold hover:opacity-95 disabled:opacity-60 transition-opacity">
+              {saving ? <Loader2 className="w-4 h-4 animate-spin" /> : <Plus className="w-4 h-4" />}
+              {saving ? "Guardando..." : t("work.create")}
+            </button>
           </div>
         </form>
       </div>

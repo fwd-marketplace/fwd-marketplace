@@ -12,6 +12,7 @@ import mensajesRoutes from "./mensajes.routes";
 import notificacionRoutes from "./notificacion.routes";
 import aiRoutes from "./ai.routes";
 import uploadRoutes from "./upload.routes";
+import guardadoRoutes from "./guardado.routes";
 import { asyncHandler } from "../utils/asyncHandler";
 import { isDatabaseReachable } from "../services/health.service";
 
@@ -42,5 +43,6 @@ router.use("/mensajes", mensajesRoutes);
 router.use("/notificaciones", notificacionRoutes);
 router.use("/ai", aiRoutes);
 router.use("/upload", uploadRoutes);
+router.use("/guardados", guardadoRoutes);
 
 export default router;

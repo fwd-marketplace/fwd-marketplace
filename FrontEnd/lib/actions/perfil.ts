@@ -12,6 +12,7 @@ import type {
   StudentPerfilResponse,
   StudentProfileUpdate,
   EmpresarioUpdateInput,
+  PortafolioItem,
 } from "@/lib/api/types";
 
 export async function updateEmpresarioProfile(
@@ -142,5 +143,51 @@ export async function uploadStudentAvatar(
     return ok(data.perfil);
   } catch {
     return err("Error de conexión");
+  }
+}
+
+export type PortafolioInput = {
+  titulo: string;
+  descripcion?: string | undefined;
+  tecnologias?: string[] | undefined;
+  url_demo?: string | undefined;
+  url_repositorio?: string | undefined;
+};
+
+export async function createPortafolioItemAction(
+  input: PortafolioInput,
+): Promise<Result<PortafolioItem>> {
+  try {
+    const data = await apiAuth<{ item: PortafolioItem }>("/users/me/perfil/portafolio", {
+      method: "POST",
+      body: JSON.stringify(input),
+    });
+    return ok(data.item);
+  } catch (e) {
+    return err(e instanceof ApiError ? e.message : "Error de conexión");
+  }
+}
+
+export async function updatePortafolioItemAction(
+  id: string,
+  input: Partial<PortafolioInput>,
+): Promise<Result<PortafolioItem>> {
+  try {
+    const data = await apiAuth<{ item: PortafolioItem }>(`/users/me/perfil/portafolio/${id}`, {
+      method: "PATCH",
+      body: JSON.stringify(input),
+    });
+    return ok(data.item);
+  } catch (e) {
+    return err(e instanceof ApiError ? e.message : "Error de conexión");
+  }
+}
+
+export async function deletePortafolioItemAction(id: string): Promise<Result<void>> {
+  try {
+    await apiAuth(`/users/me/perfil/portafolio/${id}`, { method: "DELETE" });
+    return ok(undefined);
+  } catch (e) {
+    return err(e instanceof ApiError ? e.message : "Error de conexión");
   }
 }

@@ -913,10 +913,12 @@
       "reputation_label": "reputación acumulada"
     },
     "calificaciones": {
-      "title": "Calificaciones recibidas",
+      "title": "Proyectos realizados",
+      "subtitle": "Los proyectos completados y las calificaciones que recibiste de las empresas.",
       "empty": "Aún no tenés calificaciones de empresas.",
+      "comment_label": "Comentario de la empresa",
       "your_reply": "Tu réplica",
-      "reply_btn": "Responder",
+      "reply_btn": "Responder a esta calificación",
       "reply_placeholder": "Escribí tu réplica a esta calificación...",
       "reply_send": "Enviar réplica",
       "reply_sending": "Enviando...",
@@ -965,12 +967,16 @@
     "stack": {
       "title": "Mi Stack Tecnológico",
       "add": "Agregar",
-      "placeholder": "Ej. Node.js, GraphQL, PostgreSQL...",
+      "placeholder": "Busca o escribe una tecnología...",
       "add_btn": "Añadir",
       "cancel_btn": "Cancelar",
       "remove_skill": "Quitar {skill}",
       "empty": "No hay tecnologías agregadas aún.",
-      "catalog_hint": "Solo se guardan las tecnologías reconocidas en nuestro catálogo."
+      "catalog_hint": "Las tecnologías del catálogo se destacan en azul. Las personalizadas en amarillo.",
+      "catalog_label": "Catálogo",
+      "add_custom": "Agregar nueva",
+      "legend_catalog": "Del catálogo",
+      "legend_custom": "Personalizada"
     },
     "knowledge": {
       "title": "Conocimientos adicionales",
@@ -1010,37 +1016,44 @@
     },
     "applications_sidebar": {
       "title": "Postulaciones",
-      "manage": "Gestionar postulaciones"
+      "manage": "Gestionar postulaciones",
+      "empty": "Aún no te has postulado a ningún proyecto."
     },
     "work": {
-      "title": "Mi PORTAFOLIOS",
+      "title": "Mi portafolio",
       "description": "Gestioná y exhibí tus desarrollos más impactantes. Visualizá tus productos terminados y añadí nuevas piezas a tu portafolio profesional.",
       "badge_product": "Product",
-      "add_title": "Agregar PORTAFOLIO",
+      "add_title": "Agregar proyecto",
       "add_formats": "Formatos soportados: Link, Figma, GitHub",
-      "add_project": "Agregar PORTAFOLIO",
-      "my_projects": "Mis PORTAFOLIOS",
+      "add_project": "Agregar proyecto",
+      "my_projects": "Mis proyectos",
       "my_projects_help": "Gestioná y exhibí tus desarrollos más impactantes.",
       "preview_btn": "Vista previa",
       "open_btn": "Abrir",
+      "edit_btn": "Editar",
+      "save_btn": "Guardar",
       "preview_modal_title": "Vista previa",
       "open_in_new_tab": "Abrir en nueva pestaña",
       "close": "Cerrar",
       "iframe_error": "Este sitio no permite ser embebido. Podés abrirlo directamente.",
-      "no_projects": "Todavía no hay PORTAFOLIOS en tu portfolio.",
-      "add_modal_title": "Agregar nuevo PORTAFOLIO",
+      "no_projects": "Todavía no hay proyectos en tu portafolio.",
+      "show_more": "Ver {count} más",
+      "show_less": "Ver menos",
+      "add_modal_title": "Agregar nuevo proyecto",
+      "edit_modal_title": "Editar proyecto",
       "fields": {
-        "name": "Nombre del PORTAFOLIO",
-        "url": "URL / Enlace",
+        "name": "Nombre del proyecto",
+        "url": "URL demo / Enlace",
+        "repo_url": "URL repositorio (opcional)",
         "description": "Descripción breve",
-        "techs": "Tecnologías (separadas por comas)",
+        "techs": "Tecnologías",
         "techs_placeholder": "Ej. React, Tailwind, Next.js"
       },
       "create": "Crear proyecto",
       "cancel": "Cancelar",
       "errors": {
-        "name_required": "El nombre del PORTAFOLIO es obligatorio.",
-        "url_required": "La URL del PORTAFOLIO es obligatoria."
+        "name_required": "El nombre del proyecto es obligatorio.",
+        "url_required": "La URL del proyecto es obligatoria."
       },
       "confirm_delete": {
         "title": "Eliminar proyecto",
@@ -1049,16 +1062,20 @@
         "confirm": "Eliminar"
       },
       "work": {
-        "add_modal_title": "Agregar nuevo PORTAFOLIO",
+        "add_modal_title": "Agregar nuevo proyecto",
         "fields": {
-          "name": "Nombre del PORTAFOLIO",
+          "name": "Nombre del proyecto",
           "url": "URL / Enlace",
           "description": "Descripción breve",
-          "techs": "Tecnologías (separadas por comas)",
+          "techs": "Tecnologías",
           "techs_placeholder": "Ej. React, Tailwind, Next.js"
         },
-        "create": "Crear PORTAFOLIO",
-        "cancel": "Cancelar"
+        "create": "Crear proyecto",
+        "cancel": "Cancelar",
+        "errors": {
+          "name_required": "El nombre del proyecto es obligatorio.",
+          "url_required": "La URL del proyecto es obligatoria."
+        }
       }
     },
     "applications": {
@@ -1077,8 +1094,16 @@
       "stats": {
         "active": "Postulaciones Activas",
         "interviews": "Entrevistas Programadas",
-        "compatibility": "Índice de Compatibilidad"
+        "compatibility": "Índice de Compatibilidad",
+        "in_progress": "Proyectos en proceso",
+        "awarded": "Proyectos adjudicados"
       },
+      "go_to_marketplace": "Ir a gestión",
+      "saved_title": "Proyectos guardados",
+      "saved_empty": "No tenés proyectos guardados. Usa el botón guardar en el marketplace para agregarlos aquí.",
+      "saved_expired": "Vencido",
+      "saved_view": "Ver proyecto",
+      "saved_remove": "Quitar de guardados",
       "opportunities_title": "Otras oportunidades para ti",
       "opportunities_description": "Proyectos que podrían encajar con tu trayectoria profesional.",
       "view_details": "Ver detalles",

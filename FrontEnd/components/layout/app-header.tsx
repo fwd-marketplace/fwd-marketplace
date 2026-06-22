@@ -124,13 +124,7 @@ function buildNavLinks(role?: ApiRoleName): NavItem[] {
   if (role === "student" || role === "company") {
     links.push({ key: "nav_gestion", href: "/gestion" });
   }
-  // El perfil solo aplica con sesión iniciada.
-  if (role) {
-    links.push({
-      key: PROFILE_LABEL[role] ?? "nav_my_profile",
-      href: PROFILE_HREF[role] ?? "/perfil-estudiante",
-    });
-  }
+  // El perfil se mueve junto al avatar — no va en la barra de nav.
   links.push(
     { key: "nav_terms", href: "/terminos-y-condiciones" },
     { key: "nav_privacy", href: "/politicas-de-privacidad" },
@@ -215,6 +209,7 @@ export function AppHeader({
           )}
           <UserMenu
             isAuthenticated={isAuthenticated}
+            {...(role !== undefined ? { role } : {})}
             userName={userName}
             avatarUrl={avatarUrl}
             navLinks={navLinks}
@@ -258,6 +253,7 @@ function NavLink({ href, labelKey, dark = false }: { href: string; labelKey: str
 
 function UserMenu({
   isAuthenticated,
+  role,
   userName = "",
   avatarUrl = "",
   navLinks,
@@ -266,6 +262,7 @@ function UserMenu({
   dark = false,
 }: {
   isAuthenticated: boolean;
+  role?: ApiRoleName;
   userName?: string;
   avatarUrl?: string;
   navLinks: readonly NavItem[];
@@ -329,7 +326,24 @@ function UserMenu({
     <>
       {/* Desktop: dropdown (solo con sesión iniciada) */}
       {isAuthenticated && (
-      <div className="hidden md:block">
+      <div className="hidden md:flex md:items-center md:gap-1">
+        {role && (
+          <Link
+            href={`/${locale}${PROFILE_HREF[role] ?? "/perfil-estudiante"}`}
+            className={cn(
+              "rounded-full px-3 py-1.5 font-body text-sm font-medium transition-colors duration-[var(--duration-fast)] ease-[var(--ease-out)]",
+              dark
+                ? pathname.includes(PROFILE_HREF[role] ?? "")
+                  ? "bg-white/20 text-white"
+                  : "text-white/75 hover:bg-white/10 hover:text-white"
+                : pathname.includes(PROFILE_HREF[role] ?? "")
+                  ? "bg-primary/10 text-primary"
+                  : "text-ink-muted hover:bg-surface-sunken hover:text-ink",
+            )}
+          >
+            {t(PROFILE_LABEL[role] ?? "nav_my_profile")}
+          </Link>
+        )}
         <DropdownMenu.Root>
           <DropdownMenu.Trigger asChild>
             <button

@@ -19,6 +19,10 @@ import {
   getProjectEntregables,
   getProjectOffers,
   getProjects,
+  getSavedProjects,
+  getSavedProjectIds,
+  saveProject,
+  unsaveProject,
   replicarCalificacion,
   reviewEntregable,
   reviewOffer,
@@ -173,6 +177,22 @@ export async function getMyProjectsAction() {
 
 export async function getProjectsAction() {
   return getProjects();
+}
+
+export async function getSavedProjectsAction() {
+  return getSavedProjects();
+}
+
+export async function getSavedProjectIdsAction() {
+  return getSavedProjectIds();
+}
+
+export async function saveProjectAction(proyectoId: string) {
+  return saveProject(proyectoId);
+}
+
+export async function unsaveProjectAction(proyectoId: string) {
+  return unsaveProject(proyectoId);
 }
 
 export async function getMyOffersAction() {

@@ -285,16 +285,16 @@ function buildEmpresaStudents(
 
 // ── Main component ────────────────────────────────────────────────────────────
 
-interface Props { role: ApiRoleName | null; userId: string | null; initialProjectId?: string | null; disponible?: boolean }
+interface Props { role: ApiRoleName | null; userId: string | null; initialProjectId?: string | null; disponible?: boolean; initialOffers?: MyOffer[]; initialProject?: ApiProject | null }
 
-export function GestionPage({ role, userId, initialProjectId, disponible = true }: Props) {
+export function GestionPage({ role, userId, initialProjectId, disponible = true, initialOffers = [], initialProject = null }: Props) {
   const t      = useTranslations("gestion_page");
   const locale = useLocale();
   const isEmpresa = role === "company";
 
   // Sidebar data — starts empty, replaced by real API data on mount
   const [sidebarProjects, setSidebarProjects] = useState<ApiProject[]>([]);
-  const [myOffers, setMyOffers] = useState<MyOffer[]>([]);
+  const [myOffers, setMyOffers] = useState<MyOffer[]>(initialOffers);
   const [myConversaciones, setMyConversaciones] = useState<ConversacionItem[]>([]);
 
   // Catalogs for create/edit form (empresa only)
@@ -315,10 +315,13 @@ export function GestionPage({ role, userId, initialProjectId, disponible = true 
 
   // Selection state
   const [selectedId, setSelectedId]         = useState<string | null>(initialProjectId ?? null);
-  const [selectedProject, setSelectedProject] = useState<ApiProject | null>(null);
+  const [selectedProject, setSelectedProject] = useState<ApiProject | null>(initialProject);
   const [selectedOffers, setSelectedOffers]   = useState<MyOffer[]>([]);
+  const [projectLoading, setProjectLoading]   = useState<boolean>(false);
+  const [projectError, setProjectError]       = useState<string | null>(null);
   const [projectOffers, setProjectOffers]     = useState<ProjectOffer[]>([]);
-  const [section, setSection]               = useState<Section>("info");
+  const initialSection: Section = (!isEmpresa && !!initialProjectId) ? "proceso" : "info";
+  const [section, setSection]               = useState<Section>(initialSection);
 
   // Clean ?proyecto= from URL once used to pre-select
   useEffect(() => {
@@ -350,16 +353,28 @@ export function GestionPage({ role, userId, initialProjectId, disponible = true 
     return () => { active = false; };
   }, [isEmpresa]);
 
-  // ── Load project detail when selectedId changes ─────────────────────────────
+  // ── Load project detail when selectedId changes (empresa only) ──────────────
+  // Students get project info from myOffers embed; they don't call getProjectByIdAction
+  // because it hangs or fails for students in this context.
   useEffect(() => {
-    if (!selectedId) return;
+    if (!selectedId || !isEmpresa) return;
     let active = true;
+    setProjectLoading(true);
+    setProjectError(null);
+    setSelectedProject(null);
     (async () => {
       const r = await getProjectByIdAction(selectedId);
-      if (active && r.ok) setSelectedProject(r.data);
+      if (active) {
+        if (r.ok) {
+          setSelectedProject(r.data);
+        } else {
+          setProjectError(r.error);
+        }
+        setProjectLoading(false);
+      }
     })();
     return () => { active = false; };
-  }, [selectedId]);
+  }, [selectedId, isEmpresa]);
 
   // ── Load section-specific data when selectedId or myOffers change ───────────
   useEffect(() => {
@@ -657,7 +672,7 @@ export function GestionPage({ role, userId, initialProjectId, disponible = true 
                 {t("all_projects")}
               </button>
               <h2 className="font-heading text-sm font-extrabold leading-snug tracking-tight text-white">
-                {selectedProject?.titulo ?? ""}<span className="text-highlight" aria-hidden="true">.</span>
+                {selectedProject?.titulo ?? myOffers.find((o) => o.proyecto?.id === selectedId)?.proyecto?.titulo ?? ""}<span className="text-highlight" aria-hidden="true">.</span>
               </h2>
               {selectedProject?.area && (
                 <p className="mt-1 font-body text-xs font-semibold uppercase tracking-wider text-white/50">
@@ -712,6 +727,10 @@ export function GestionPage({ role, userId, initialProjectId, disponible = true 
             locale={locale}
             onCreateProject={() => setFormMode("create")}
           />
+        ) : projectLoading ? (
+          <div className="flex flex-1 items-center justify-center py-20">
+            <Loader2 className="size-7 animate-spin text-primary" aria-label="Cargando proyecto" />
+          </div>
         ) : (
           <>
             <div className="sticky top-0 z-10 flex items-center gap-3 border-b border-border bg-canvas/95 px-4 py-3 backdrop-blur-sm md:hidden">
@@ -723,9 +742,23 @@ export function GestionPage({ role, userId, initialProjectId, disponible = true 
                 {t("all_projects")}
               </button>
               <span className="flex-1 truncate font-heading text-sm font-bold text-ink-strong">
-                {selectedProject?.titulo}
+                {selectedProject?.titulo ?? myOffers.find((o) => o.proyecto?.id === selectedId)?.proyecto?.titulo}
               </span>
             </div>
+            {!selectedProject && projectError && (
+              <div className="flex flex-col items-center gap-3 px-6 py-20 text-center">
+                <FolderOpen className="size-10 text-ink-muted/30" aria-hidden="true" />
+                <p className="font-body text-sm text-ink-muted">No se pudo cargar el proyecto.</p>
+                <p className="font-body text-xs text-magenta">{projectError}</p>
+                <button
+                  type="button"
+                  onClick={handleBack}
+                  className="font-body text-sm font-semibold text-primary hover:underline"
+                >
+                  Volver a mis proyectos
+                </button>
+              </div>
+            )}
             {section === "info" && (
               <InfoPanel
                 project={selectedProject}
