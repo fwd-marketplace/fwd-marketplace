@@ -2017,5 +2017,54 @@
         "desc": "Make yourself visible like a star in the sky."
       }
     }
+  },
+  "project_preview_modal": {
+    "close": "Close",
+    "days": "days",
+    "uses_ia": "Uses AI",
+    "company_type_empresa": "Company",
+    "company_type_emprendedor": "Startup",
+    "view_company_profile": "View profile",
+    "go_to_gestion": "Go to project"
+  },
+  "public_empresa_profile": {
+    "not_found": "Company profile not found.",
+    "back_to_marketplace": "Back to marketplace",
+    "type_empresa": "Company",
+    "type_emprendedor": "Startup",
+    "etapa_idea": "Idea",
+    "etapa_mvp": "MVP",
+    "etapa_validating": "Validating",
+    "etapa_scaling": "Scaling",
+    "no_name": "Company",
+    "website": "Website",
+    "about": "About us",
+    "sectors": "Sectors",
+    "mission_vision": "Mission and vision",
+    "mission": "MISSION",
+    "vision": "VISION",
+    "culture": "Culture",
+    "modalities": "Modalities",
+    "schedule": "Schedule"
+  },
+  "public_junior_profile": {
+    "not_found": "Junior profile not found.",
+    "back": "Back",
+    "about": "About me",
+    "skills": "Technical skills",
+    "knowledge": "Additional knowledge",
+    "availability": "Availability",
+    "availability_label": "AVAILABILITY",
+    "modality_label": "MODALITY",
+    "portfolio_link": "Portfolio",
+    "portfolio": "Project portfolio",
+    "especialidad_frontend": "Frontend",
+    "especialidad_backend": "Backend",
+    "especialidad_fullstack": "Fullstack",
+    "especialidad_ia": "AI",
+    "disponibilidad_immediate": "Available now",
+    "disponibilidad_two_weeks": "Available in 2 weeks",
+    "disponibilidad_one_month": "Available in 1 month",
+    "disponibilidad_unavailable": "Not available"
   }
 }

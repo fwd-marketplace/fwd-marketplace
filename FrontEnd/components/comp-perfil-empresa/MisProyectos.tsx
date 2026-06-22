@@ -973,6 +973,7 @@ export function MisProyectos({
             invitedLabel={t("matches_invited_btn")}
             emptyText={t("matches_empty")}
             toastInvitedTemplate={t("matches_toast_invited", { name: "{name}" })}
+            className=""
           />
         )}
 
