@@ -1,19 +1,22 @@
 "use client";
 
-import { useMemo, useState, useTransition } from "react";
+import { useEffect, useMemo, useState, useTransition } from "react";
+import { useLocale, useTranslations } from "next-intl";
 import {
   LayoutGrid,
   Columns3,
   Table,
   Search,
   Calendar,
+  Eye,
   Loader2,
+  X,
 } from "lucide-react";
 import { PageTitle } from "@/components/ui/page-title";
 import { Button } from "@/components/ui/button";
 import { FilterSelect, Pagination, EmptyRow } from "@/components/comp-administrador/admin-controls";
-import { cancelAdminProjectAction } from "@/lib/actions/admin";
-import type { AdminProject, ProjectState } from "@/lib/api/types";
+import { cancelAdminProjectAction, getAdminProjectDetailAction } from "@/lib/actions/admin";
+import type { AdminProject, ApiProject, ProjectState } from "@/lib/api/types";
 
 type ViewMode = "cards" | "kanban" | "tabla";
 
@@ -57,13 +60,127 @@ function formatDate(iso: string | null): string {
   return new Intl.DateTimeFormat("es", { day: "2-digit", month: "short", year: "numeric" }).format(date);
 }
 
+function DetailRow({ label, value }: { label: string; value: string }) {
+  return (
+    <div>
+      <dt className="font-body text-[11px] font-semibold uppercase tracking-wider text-ink-subtle">{label}</dt>
+      <dd className="mt-0.5 font-body text-sm font-medium text-ink-strong">{value}</dd>
+    </div>
+  );
+}
+
+function ProjectDetailModal({ projectId, onClose }: { projectId: string; onClose: () => void }) {
+  const t = useTranslations("admin_proyectos");
+  const locale = useLocale();
+  const [project, setProject] = useState<ApiProject | null>(null);
+  const [isLoading, setIsLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+  const titleId = "proyecto-detail-title";
+
+  useEffect(() => {
+    let active = true;
+    setIsLoading(true);
+    getAdminProjectDetailAction(projectId).then((result) => {
+      if (!active) return;
+      if (result.ok) setProject(result.data);
+      else setError(result.error);
+      setIsLoading(false);
+    });
+    return () => {
+      active = false;
+    };
+  }, [projectId]);
+
+  useEffect(() => {
+    function handleKeyDown(event: KeyboardEvent) {
+      if (event.key === "Escape") onClose();
+    }
+    window.addEventListener("keydown", handleKeyDown);
+    return () => window.removeEventListener("keydown", handleKeyDown);
+  }, [onClose]);
+
+  function formatModalDate(iso: string | null): string {
+    if (!iso) return t("detail.unpublished");
+    const date = new Date(iso);
+    if (Number.isNaN(date.getTime())) return t("detail.unpublished");
+    return new Intl.DateTimeFormat(locale, { day: "2-digit", month: "short", year: "numeric" }).format(date);
+  }
+
+  const skills = project
+    ? project.skills.map((entry) => entry.skill?.nombre).filter((value): value is string => Boolean(value)).join(", ")
+    : "";
+  const extraTech = project?.tecnologias_extra?.join(", ") ?? "";
+
+  return (
+    <div className="fixed inset-0 z-50 flex items-end justify-center bg-ink-strong/40 p-4 backdrop-blur-sm sm:items-center" onClick={onClose}>
+      <div
+        role="dialog"
+        aria-modal="true"
+        aria-labelledby={titleId}
+        onClick={(event) => event.stopPropagation()}
+        className="w-full max-w-lg overflow-hidden rounded-2xl bg-surface shadow-elevated ring-1 ring-border duration-[var(--duration-base)] ease-[var(--ease-out)]"
+      >
+        <div className="flex items-start justify-between gap-4 border-b border-border bg-surface-sunken p-6">
+          <div className="min-w-0">
+            <h2 id={titleId} className="truncate font-heading text-xl font-bold tracking-tight text-ink-strong">{project ? project.titulo : t("detail.title")}</h2>
+            <p className="font-body text-sm text-ink-muted">{t("detail.subtitle")}</p>
+          </div>
+          <Button variant="ghost" size="icon" onClick={onClose} aria-label={t("detail.close")}>
+            <X className="size-4" aria-hidden="true" />
+          </Button>
+        </div>
+
+        <div className="max-h-[60vh] space-y-5 overflow-y-auto p-6">
+          {isLoading ? (
+            <div className="flex items-center justify-center gap-2 py-8 font-body text-sm text-ink-muted">
+              <Loader2 className="size-4 animate-spin" aria-hidden="true" />
+              {t("detail.loading")}
+            </div>
+          ) : error ? (
+            <p className="py-8 text-center font-body text-sm text-magenta">{error}</p>
+          ) : project ? (
+            <>
+              <div className="flex flex-wrap items-center gap-2">
+                <span className={`rounded-full px-2.5 py-0.5 font-body text-[10px] font-bold uppercase tracking-wider ${stateMeta(project.estado.nombre).tone}`}>
+                  {stateMeta(project.estado.nombre).label}
+                </span>
+              </div>
+              <dl className="grid grid-cols-1 gap-x-6 gap-y-4 sm:grid-cols-2">
+                {project.empresa?.nombre_comercial && <DetailRow label={t("detail.company")} value={project.empresa.nombre_comercial} />}
+                {project.empresa?.tipo && <DetailRow label={t("detail.type")} value={project.empresa.tipo} />}
+                {project.area?.nombre && <DetailRow label={t("detail.area")} value={project.area.nombre} />}
+                <DetailRow label={t("detail.deadline")} value={t("detail.deadline_days", { days: project.plazo_dias })} />
+                <DetailRow label={t("detail.uses_ai")} value={project.usa_ia ? t("detail.yes") : t("detail.no")} />
+                <DetailRow label={t("detail.published")} value={formatModalDate(project.fecha_publicacion)} />
+                <DetailRow label={t("detail.closing")} value={formatModalDate(project.fecha_cierre)} />
+                <DetailRow label={t("detail.id")} value={project.id} />
+                {extraTech && <DetailRow label={t("detail.extra_tech")} value={extraTech} />}
+                {skills && <DetailRow label={t("detail.skills")} value={skills} />}
+              </dl>
+              <div>
+                <p className="font-body text-[11px] font-semibold uppercase tracking-wider text-ink-subtle">{t("detail.description")}</p>
+                <p className="mt-1 whitespace-pre-line font-body text-sm leading-relaxed text-ink">{project.descripcion || t("detail.no_description")}</p>
+              </div>
+            </>
+          ) : null}
+        </div>
+
+        <div className="flex justify-end border-t border-border bg-surface-sunken p-4">
+          <Button variant="outline" onClick={onClose}>{t("detail.close")}</Button>
+        </div>
+      </div>
+    </div>
+  );
+}
+
 export function ProyectosView({ initialProjects }: { initialProjects: AdminProject[] }) {
+  const t = useTranslations("admin_proyectos");
   const [projects, setProjects] = useState<AdminProject[]>(initialProjects);
   const [view, setView] = useState<ViewMode>("cards");
   const [query, setQuery] = useState("");
   const [estado, setEstado] = useState("Todos");
   const [page, setPage] = useState(1);
-  const [expanded, setExpanded] = useState<string | null>(null);
+  const [detailProjectId, setDetailProjectId] = useState<string | null>(null);
   const [message, setMessage] = useState<string | null>(null);
   const [isPending, startTransition] = useTransition();
 
@@ -184,7 +301,6 @@ export function ProyectosView({ initialProjects }: { initialProjects: AdminProje
           {pageItems.map((project) => {
             const meta = stateMeta(project.estado.nombre);
             const company = project.empresa?.nombre_comercial ?? "Sin empresa";
-            const isOpen = expanded === project.id;
             return (
               <article key={project.id} className="rounded-2xl bg-surface p-5 shadow-soft ring-1 ring-border">
                 <div className="flex flex-wrap items-center gap-4">
@@ -202,22 +318,14 @@ export function ProyectosView({ initialProjects }: { initialProjects: AdminProje
                     <span className="font-body text-sm">{formatDate(project.fecha_publicacion)}</span>
                   </div>
                   <div className="flex items-center gap-2">
-                    <Button variant="outline" size="sm" onClick={() => setExpanded((id) => (id === project.id ? null : project.id))}>
-                      {isOpen ? "Ocultar" : "Ver Proyecto"}
+                    <Button variant="outline" size="sm" onClick={() => setDetailProjectId(project.id)}>
+                      <Eye className="size-4" aria-hidden="true" /> {t("view")}
                     </Button>
                     <Button size="sm" variant="outline" disabled={isPending || project.estado.nombre === "cancelado"} onClick={() => cancelProject(project.id)} className="border-magenta/40 text-magenta hover:bg-magenta/10">
                       {isPending ? <Loader2 className="size-4 animate-spin" /> : "Cancelar"}
                     </Button>
                   </div>
                 </div>
-                {isOpen && (
-                  <div className="mt-4 grid grid-cols-2 gap-4 border-t border-border pt-4 font-body text-xs text-ink-muted sm:grid-cols-4">
-                    <div><span className="block font-semibold uppercase tracking-wider text-ink-subtle">ID</span>{project.id.slice(0, 12)}</div>
-                    <div><span className="block font-semibold uppercase tracking-wider text-ink-subtle">Empresa</span>{company}</div>
-                    <div><span className="block font-semibold uppercase tracking-wider text-ink-subtle">Estado</span>{meta.label}</div>
-                    <div><span className="block font-semibold uppercase tracking-wider text-ink-subtle">Publicación</span>{formatDate(project.fecha_publicacion)}</div>
-                  </div>
-                )}
               </article>
             );
           })}
@@ -247,8 +355,13 @@ export function ProyectosView({ initialProjects }: { initialProjects: AdminProje
                       <td className="px-4 py-4 text-ink">{project.empresa?.nombre_comercial ?? "—"}</td>
                       <td className="px-4 py-4"><span className={`rounded-full px-2.5 py-0.5 text-[10px] font-bold uppercase tracking-wider ${meta.tone}`}>{meta.label}</span></td>
                       <td className="px-4 py-4 text-ink-muted">{formatDate(project.fecha_publicacion)}</td>
-                      <td className="px-6 py-4 text-right">
-                        <Button size="sm" variant="outline" disabled={isPending || project.estado.nombre === "cancelado"} onClick={() => cancelProject(project.id)} className="border-magenta/40 text-magenta hover:bg-magenta/10">Cancelar</Button>
+                      <td className="px-6 py-4">
+                        <div className="flex justify-end gap-2">
+                          <Button size="sm" variant="outline" onClick={() => setDetailProjectId(project.id)}>
+                            <Eye className="size-3.5" aria-hidden="true" /> {t("view")}
+                          </Button>
+                          <Button size="sm" variant="outline" disabled={isPending || project.estado.nombre === "cancelado"} onClick={() => cancelProject(project.id)} className="border-magenta/40 text-magenta hover:bg-magenta/10">Cancelar</Button>
+                        </div>
                       </td>
                     </tr>
                   );
@@ -273,10 +386,15 @@ export function ProyectosView({ initialProjects }: { initialProjects: AdminProje
                     <p className="rounded-xl border border-dashed border-border bg-surface px-3 py-6 text-center font-body text-xs text-ink-subtle">Sin proyectos</p>
                   ) : (
                     cards.map((project) => (
-                      <div key={project.id} className="rounded-xl bg-surface p-3 shadow-soft ring-1 ring-border">
+                      <button
+                        key={project.id}
+                        type="button"
+                        onClick={() => setDetailProjectId(project.id)}
+                        className="w-full rounded-xl bg-surface p-3 text-left shadow-soft ring-1 ring-border transition-colors duration-[var(--duration-fast)] ease-[var(--ease-out)] hover:ring-primary/40"
+                      >
                         <h4 className="truncate font-body text-sm font-bold text-ink-strong">{project.titulo}</h4>
                         <p className="font-body text-xs text-ink-muted">{project.empresa?.nombre_comercial ?? "—"}</p>
-                      </div>
+                      </button>
                     ))
                   )}
                 </div>
@@ -296,6 +414,8 @@ export function ProyectosView({ initialProjects }: { initialProjects: AdminProje
           <Pagination page={safePage} pageCount={pageCount} onPage={setPage} shape="square" />
         </div>
       )}
+
+      {detailProjectId && <ProjectDetailModal projectId={detailProjectId} onClose={() => setDetailProjectId(null)} />}
     </div>
   );
 }

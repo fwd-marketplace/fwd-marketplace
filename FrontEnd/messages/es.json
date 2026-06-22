@@ -2397,5 +2397,79 @@
       "deleted": "Empresa eliminada",
       "error": "No se pudo completar la acción"
     }
+  },
+  "admin_proyectos": {
+    "view": "Ver",
+    "detail": {
+      "title": "Detalle del proyecto",
+      "subtitle": "Información completa del proyecto",
+      "loading": "Cargando proyecto...",
+      "close": "Cerrar",
+      "company": "Empresa",
+      "type": "Tipo",
+      "area": "Área de negocio",
+      "description": "Descripción",
+      "deadline": "Plazo",
+      "deadline_days": "{days, plural, one {# día} other {# días}}",
+      "uses_ai": "Usa IA",
+      "yes": "Sí",
+      "no": "No",
+      "extra_tech": "Tecnologías extra",
+      "skills": "Habilidades / Stack",
+      "state": "Estado",
+      "published": "Publicación",
+      "closing": "Cierre",
+      "id": "ID",
+      "none": "—",
+      "unpublished": "Sin publicar",
+      "no_description": "Sin descripción."
+    }
+  },
+  "admin_config": {
+    "eyebrow": "Administración",
+    "title": "Configuración",
+    "description": "Gestioná los parámetros generales del ecosistema FWD Talent y personalizá tu experiencia.",
+    "appearance": {
+      "title": "Apariencia y preferencias",
+      "dark_mode": "Modo oscuro",
+      "dark_mode_desc": "Alterná entre tema claro y oscuro. La preferencia se guarda en este navegador.",
+      "language": "Idioma",
+      "language_desc": "Elegí el idioma de la interfaz.",
+      "spanish": "Español",
+      "english": "English"
+    },
+    "marketplace": {
+      "title": "Marketplace",
+      "registros_label": "Permitir registros",
+      "registros_desc": "Habilita la creación de nuevas cuentas de talento.",
+      "empresas_label": "Permitir empresas",
+      "empresas_desc": "Permite el onboarding de perfiles corporativos.",
+      "postulaciones_label": "Permitir postulaciones",
+      "postulaciones_desc": "Habilita el botón de aplicar en proyectos activos.",
+      "matching_label": "Activar matching",
+      "matching_desc": "Algoritmo automático de sugerencia de talento."
+    },
+    "roles": {
+      "title": "Roles y permisos",
+      "create": "Crear rol",
+      "th_role": "Rol",
+      "th_description": "Descripción",
+      "th_users": "Usuarios",
+      "th_actions": "Acciones",
+      "empty": "No hay roles definidos. Creá uno con “Crear rol”.",
+      "users_count": "{count, plural, one {# usuario} other {# usuarios}}",
+      "edit_aria": "Editar rol",
+      "delete_aria": "Eliminar rol",
+      "modal_create_title": "Crear rol",
+      "modal_edit_title": "Editar rol",
+      "field_name": "Nombre del rol",
+      "field_description": "Descripción",
+      "field_users": "Usuarios",
+      "cancel": "Cancelar",
+      "submit_create": "Crear rol",
+      "submit_edit": "Guardar rol"
+    },
+    "save": "Guardar cambios",
+    "saved": "Cambios guardados"
   }
 }

@@ -2397,5 +2397,79 @@
       "deleted": "Company deleted",
       "error": "The action could not be completed"
     }
+  },
+  "admin_proyectos": {
+    "view": "View",
+    "detail": {
+      "title": "Project detail",
+      "subtitle": "Full project information",
+      "loading": "Loading project...",
+      "close": "Close",
+      "company": "Company",
+      "type": "Type",
+      "area": "Business area",
+      "description": "Description",
+      "deadline": "Deadline",
+      "deadline_days": "{days, plural, one {# day} other {# days}}",
+      "uses_ai": "Uses AI",
+      "yes": "Yes",
+      "no": "No",
+      "extra_tech": "Extra technologies",
+      "skills": "Skills / Stack",
+      "state": "Status",
+      "published": "Published",
+      "closing": "Closing",
+      "id": "ID",
+      "none": "—",
+      "unpublished": "Unpublished",
+      "no_description": "No description."
+    }
+  },
+  "admin_config": {
+    "eyebrow": "Administration",
+    "title": "Settings",
+    "description": "Manage the general parameters of the FWD Talent ecosystem and personalize your experience.",
+    "appearance": {
+      "title": "Appearance and preferences",
+      "dark_mode": "Dark mode",
+      "dark_mode_desc": "Switch between light and dark theme. The preference is saved in this browser.",
+      "language": "Language",
+      "language_desc": "Choose the interface language.",
+      "spanish": "Español",
+      "english": "English"
+    },
+    "marketplace": {
+      "title": "Marketplace",
+      "registros_label": "Allow sign-ups",
+      "registros_desc": "Enables the creation of new talent accounts.",
+      "empresas_label": "Allow companies",
+      "empresas_desc": "Allows onboarding of corporate profiles.",
+      "postulaciones_label": "Allow applications",
+      "postulaciones_desc": "Enables the apply button on active projects.",
+      "matching_label": "Enable matching",
+      "matching_desc": "Automatic talent suggestion algorithm."
+    },
+    "roles": {
+      "title": "Roles and permissions",
+      "create": "Create role",
+      "th_role": "Role",
+      "th_description": "Description",
+      "th_users": "Users",
+      "th_actions": "Actions",
+      "empty": "No roles defined. Create one with “Create role”.",
+      "users_count": "{count, plural, one {# user} other {# users}}",
+      "edit_aria": "Edit role",
+      "delete_aria": "Delete role",
+      "modal_create_title": "Create role",
+      "modal_edit_title": "Edit role",
+      "field_name": "Role name",
+      "field_description": "Description",
+      "field_users": "Users",
+      "cancel": "Cancel",
+      "submit_create": "Create role",
+      "submit_edit": "Save role"
+    },
+    "save": "Save changes",
+    "saved": "Changes saved"
   }
 }

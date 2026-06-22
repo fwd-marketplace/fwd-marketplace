@@ -15,6 +15,7 @@ import {
   updateAdminUser,
   verifyAdminStudent,
 } from "@/lib/api/admin";
+import { getProjectById } from "@/lib/api/marketplace";
 import type {
   CreateAdminCompanyInput,
   CreateAdminUserInput,
@@ -66,6 +67,10 @@ export async function cancelAdminProjectAction(projectId: string) {
   const result = await cancelAdminProject(projectId);
   if (result.ok) revalidatePath("/");
   return result;
+}
+
+export async function getAdminProjectDetailAction(projectId: string) {
+  return getProjectById(projectId);
 }
 
 export async function createAdminCompanyAction(input: CreateAdminCompanyInput) {
