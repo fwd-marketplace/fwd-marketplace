@@ -50,6 +50,7 @@ import { generateProposalAction, suggestStackAction } from "@/lib/actions/ai";
 import { streamAssistant } from "@/lib/api/ai-client";
 import { getProjectMensajesAction, sendMensajeAction, getMyConversacionesAction } from "@/lib/actions/mensajes";
 import { MejorarMensajeButton } from "@/components/gestion/MejorarMensajeButton";
+import { ReportarMensajeButton } from "@/components/gestion/ReportarMensajeButton";
 import type {
   AiChatMessage,
   ApiMensaje,
@@ -1214,7 +1215,10 @@ function ChatPanel({
                       >
                         {msg.contenido}
                       </div>
-                      <span className="px-1 font-body text-[11px] text-ink-muted">{formatChatTime(msg.fecha_envio)}</span>
+                      <span className="flex items-center gap-1.5 px-1 font-body text-[11px] text-ink-muted">
+                        {formatChatTime(msg.fecha_envio)}
+                        {!isMine && <ReportarMensajeButton mensajeId={msg.id} />}
+                      </span>
                     </div>
                   </div>
                 );

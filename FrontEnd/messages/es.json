@@ -2010,5 +2010,25 @@
     "loading": "Mejorando…",
     "undo": "Deshacer",
     "error": "No se pudo mejorar. Probá de nuevo."
+  },
+  "reportar_mensaje": {
+    "button": "Reportar mensaje",
+    "title": "Reportar mensaje",
+    "subtitle": "El equipo de moderación revisará este mensaje.",
+    "close": "Cerrar",
+    "motivo_label": "Motivo",
+    "motivo_falta_respeto": "Falta de respeto",
+    "motivo_spam": "Spam",
+    "motivo_contenido_inapropiado": "Contenido inapropiado",
+    "motivo_fuera_de_lugar": "Fuera de lugar",
+    "motivo_otro": "Otro",
+    "detalle_label": "Detalle (opcional)",
+    "detalle_placeholder": "Contanos qué pasó…",
+    "submit": "Enviar reporte",
+    "sending": "Enviando…",
+    "cancel": "Cancelar",
+    "sent_title": "Reporte enviado",
+    "sent_desc": "Gracias. El equipo de moderación lo revisará.",
+    "error": "No se pudo enviar el reporte. Probá de nuevo."
   }
 }

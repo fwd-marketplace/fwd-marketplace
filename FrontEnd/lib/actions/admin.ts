@@ -5,6 +5,7 @@ import {
   approveAdminUser,
   cancelAdminProject,
   rejectAdminUser,
+  resolverReporte,
   suspendAdminUser,
 } from "@/lib/api/admin";
 
@@ -28,6 +29,15 @@ export async function suspendAdminUserAction(userId: string) {
 
 export async function cancelAdminProjectAction(projectId: string) {
   const result = await cancelAdminProject(projectId);
+  if (result.ok) revalidatePath("/");
+  return result;
+}
+
+export async function resolverReporteAction(
+  reporteId: string,
+  estado: "revisado" | "desestimado",
+) {
+  const result = await resolverReporte(reporteId, estado);
   if (result.ok) revalidatePath("/");
   return result;
 }

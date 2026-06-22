@@ -471,6 +471,45 @@ export type ConversacionesResponse = {
   conversaciones: ConversacionItem[];
 };
 
+// ── Reportes de mensajes (moderación) ─────────────────────────────────────────
+
+export type MotivoReporte =
+  | "falta_respeto"
+  | "spam"
+  | "contenido_inapropiado"
+  | "fuera_de_lugar"
+  | "otro";
+
+export type ReporteEstado = "pendiente" | "revisado" | "desestimado";
+
+export type ReporteUserMini = {
+  id: string;
+  nombre: string;
+  apellido1: string | null;
+  correo: string;
+};
+
+export type AdminReporte = {
+  id: string;
+  contenido_snapshot: string;
+  motivo: MotivoReporte;
+  detalle: string | null;
+  estado: ReporteEstado;
+  fecha: string;
+  fecha_resolucion: string | null;
+  id_mensaje: string;
+  id_reportante: string;
+  id_reportado: string | null;
+  id_proyecto: string | null;
+  reportante: ReporteUserMini | null;
+  reportado: ReporteUserMini | null;
+  proyecto: { id: string; titulo: string } | null;
+};
+
+export type AdminReportesResponse = {
+  reportes: AdminReporte[];
+};
+
 // ── Ranking ───────────────────────────────────────────────────────────────────
 
 export type ApiRankedJunior = {
