@@ -4,9 +4,23 @@ import { revalidatePath } from "next/cache";
 import {
   approveAdminUser,
   cancelAdminProject,
+  createAdminCompany,
+  createAdminUser,
+  deleteAdminUser,
+  getAdminUserDetail,
+  rejectAdminStudent,
   rejectAdminUser,
   suspendAdminUser,
+  updateAdminCompany,
+  updateAdminUser,
+  verifyAdminStudent,
 } from "@/lib/api/admin";
+import type {
+  CreateAdminCompanyInput,
+  CreateAdminUserInput,
+  UpdateAdminCompanyInput,
+  UpdateAdminUserInput,
+} from "@/lib/api/types";
 
 export async function approveAdminUserAction(userId: string) {
   const result = await approveAdminUser(userId);
@@ -26,8 +40,54 @@ export async function suspendAdminUserAction(userId: string) {
   return result;
 }
 
+export async function getAdminUserDetailAction(userId: string) {
+  return getAdminUserDetail(userId);
+}
+
+export async function createAdminUserAction(input: CreateAdminUserInput) {
+  const result = await createAdminUser(input);
+  if (result.ok) revalidatePath("/");
+  return result;
+}
+
+export async function updateAdminUserAction(userId: string, input: UpdateAdminUserInput) {
+  const result = await updateAdminUser(userId, input);
+  if (result.ok) revalidatePath("/");
+  return result;
+}
+
+export async function deleteAdminUserAction(userId: string) {
+  const result = await deleteAdminUser(userId);
+  if (result.ok) revalidatePath("/");
+  return result;
+}
+
 export async function cancelAdminProjectAction(projectId: string) {
   const result = await cancelAdminProject(projectId);
+  if (result.ok) revalidatePath("/");
+  return result;
+}
+
+export async function createAdminCompanyAction(input: CreateAdminCompanyInput) {
+  const result = await createAdminCompany(input);
+  if (result.ok) revalidatePath("/");
+  return result;
+}
+
+export async function updateAdminCompanyAction(companyId: string, input: UpdateAdminCompanyInput) {
+  const result = await updateAdminCompany(companyId, input);
+  if (result.ok) revalidatePath("/");
+  return result;
+}
+
+export async function verifyAdminStudentAction(studentId: string) {
+  const result = await verifyAdminStudent(studentId);
+  if (result.ok) revalidatePath("/");
+  return result;
+}
+
+export async function rejectAdminStudentAction(studentId: string) {
+  const result = await rejectAdminStudent(studentId);
   if (result.ok) revalidatePath("/");
   return result;
 }

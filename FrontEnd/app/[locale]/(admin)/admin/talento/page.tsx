@@ -11,6 +11,9 @@ export default async function AdminTalentoPage({ params }: Props) {
   setRequestLocale(locale);
   const studentsResult = await getAdminStudents();
   return (
-    <EgresadosView initialStudents={studentsResult.ok ? studentsResult.data.students : []} />
+    <EgresadosView
+      initialStudents={studentsResult.ok ? studentsResult.data.students : []}
+      locale={locale}
+    />
   );
 }

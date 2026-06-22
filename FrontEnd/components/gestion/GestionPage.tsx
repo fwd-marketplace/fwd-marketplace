@@ -547,7 +547,7 @@ export function GestionPage({ role, userId, initialProjectId, disponible = true 
                     <>
                       {mainProjects.length > 0 && (
                         <ul className="flex flex-col gap-0.5">
-                          {mainProjects.map(renderEmpresaItem)}
+                          {mainProjects.map((p) => renderEmpresaItem(p))}
                         </ul>
                       )}
                       {chatProjects.length > 0 && (
