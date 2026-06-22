@@ -70,13 +70,6 @@
       "cta_projects": "Ver proyectos",
       "cta_register": "Crear cuenta gratis"
     },
-    "featured_projects": {
-      "eyebrow": "Proyectos",
-      "title": "Oportunidades disponibles",
-      "badge_featured": "Destacado",
-      "duration": "semanas",
-      "link_all": "Ver todos"
-    },
     "value_prop": {
       "talents_title": "Para talentos",
       "talents_items": {
@@ -1786,6 +1779,45 @@
     "view_all": "Ver toda la actividad",
     "preferences": "Preferencias"
   },
+  "cosmos_profesional": {
+    "screen_label": "Constelación de puntos importantes",
+    "eyebrow": "Constelación FWD",
+    "title": "Los estudiantes son las estrellas",
+    "description": "Acá ves un poco de todo lo que vas a encontrar en la plataforma. Pasá por cada estrella y descubrí cómo FWD te conecta con proyectos reales.",
+    "controls": {
+      "style_aria": "Estilo de estrella",
+      "style_diamante": "◆ Diamante",
+      "style_circulo": "● Círculo",
+      "style_punta4": "✦ 4 puntas",
+      "style_punta6": "✶ 6 puntas",
+      "style_destello": "✧ Destello",
+      "style_anillo": "◌ Anillo",
+      "toggle_aria": "Mostrar u ocultar trazos",
+      "trazos": "Trazos"
+    },
+    "stars": {
+      "0": {
+        "title": "Proyectos reales",
+        "desc": "Trabajá en retos de empresas, no en ejercicios de práctica."
+      },
+      "1": {
+        "title": "Las empresas publican",
+        "desc": "Suben proyectos y briefs pensados para talento junior."
+      },
+      "2": {
+        "title": "Match con tus skills",
+        "desc": "Te mostramos oportunidades según lo que sabés hacer."
+      },
+      "3": {
+        "title": "Notificaciones",
+        "desc": "Enterate apenas se abre un proyecto que encaja con vos."
+      },
+      "4": {
+        "title": "Publicate",
+        "desc": "Hacete visible como una estrella del cielo."
+      }
+    }
+  },
   "proceso_page": {
     "back": "Volver al marketplace",
     "tab_info": "Info",
@@ -1948,41 +1980,5 @@
     "sidebar_chats_label": "Chats",
     "chat_n_chats": "{count, plural, one {# chat} other {# chats}}",
     "chat_overview_empty": "Aún no hay mensajes en este proyecto"
-  },
-  "cosmos_profesional": {
-    "screen_label": "Constelación de puntos importantes",
-    "controls": {
-      "style_aria": "Estilo de estrella",
-      "style_diamante": "◆ Diamante",
-      "style_circulo": "● Círculo",
-      "style_punta4": "✦ 4 puntas",
-      "style_punta6": "✶ 6 puntas",
-      "style_destello": "✧ Destello",
-      "style_anillo": "◌ Anillo",
-      "toggle_aria": "Mostrar u ocultar trazos",
-      "trazos": "Trazos"
-    },
-    "stars": {
-      "0": {
-        "title": "Proyectos reales",
-        "desc": "Trabajá en retos de empresas, no en ejercicios de práctica."
-      },
-      "1": {
-        "title": "Las empresas publican",
-        "desc": "Suben proyectos y briefs pensados para talento junior."
-      },
-      "2": {
-        "title": "Match con tus skills",
-        "desc": "Te mostramos oportunidades según lo que sabés hacer."
-      },
-      "3": {
-        "title": "Notificaciones",
-        "desc": "Enterate apenas se abre un proyecto que encaja con vos."
-      },
-      "4": {
-        "title": "Publicate",
-        "desc": "Hacete visible como una estrella del cielo."
-      }
-    }
   }
 }

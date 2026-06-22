@@ -1,6 +1,6 @@
 import HeroSection from "@/components/home/HeroSection";
 import HowItWorksSection from "@/components/home/HowItWorksSection";
-import FeaturedProjectsSection from "@/components/home/FeaturedProjectsSection";
+import CosmosProfesional from "@/components/home/CosmosProfesional";
 import ValuePropositionSection from "@/components/home/ValuePropositionSection";
 import StatsSection from "@/components/home/StatsSection";
 import { SiteFooter } from "@/components/layout/site-footer";
@@ -16,7 +16,7 @@ export default async function HomePage({
     <div className="min-h-screen bg-canvas">
       <HeroSection locale={locale} />
       <HowItWorksSection />
-      <FeaturedProjectsSection locale={locale} />
+      <CosmosProfesional />
       <ValuePropositionSection />
       <StatsSection />
       <SiteFooter />
