@@ -1379,8 +1379,17 @@
     "verified": "Verified",
     "empty": "No students match the filters.",
     "results_count": "{count, plural, =0 {No results} one {# student} other {# students}}",
-    "specialty": { "frontend": "Frontend", "backend": "Backend", "fullstack": "Fullstack", "ia": "AI & Data" },
-    "modality": { "remote": "Remote", "hybrid": "Hybrid", "onsite": "On-site" }
+    "specialty": {
+      "frontend": "Frontend",
+      "backend": "Backend",
+      "fullstack": "Fullstack",
+      "ia": "AI & Data"
+    },
+    "modality": {
+      "remote": "Remote",
+      "hybrid": "Hybrid",
+      "onsite": "On-site"
+    }
   },
   "postulaciones_empresa": {
     "select_for_award": "Select this proposal to award",
@@ -2567,7 +2576,8 @@
     "matches_empty": "No juniors match this project yet. The matching algorithm will be available soon.",
     "matches_invite_btn": "Invite",
     "matches_invited_btn": "Invited",
-    "matches_toast_invited": "{name} was invited to the project."
+    "matches_toast_invited": "{name} was invited to the project.",
+    "state_en_recepcion": "Receiving"
   },
   "project_chatbot": {
     "title": "Project assistant",

@@ -38,21 +38,9 @@ const MIN_PASSWORD_LENGTH = 8;
 const COMPANY_TYPE_VALUES: readonly CompanyType[] = ["empresa", "emprendedor"];
 const ACCOUNT_STATE_VALUES: readonly AccountState[] = ["activa", "pendiente", "suspendida", "rechazada"];
 
-<<<<<<< HEAD
 const TYPE_BADGE_STYLE: Record<CompanyType, string> = {
   empresa: "bg-secondary/10 text-secondary",
   emprendedor: "bg-warning/10 text-warning",
-=======
-const STATE_LABEL: Record<ProjectState, string> = {
-  borrador: "Borrador",
-  en_recepcion: "En recepción",
-  en_evaluacion: "En evaluación",
-  adjudicado: "Adjudicado",
-  en_desarrollo: "En desarrollo",
-  cerrado: "Cerrado",
-  cancelado: "Cancelado",
-  pausado: "Pausado",
->>>>>>> eb34129fb0681ae33cce2870141185427c16d44c
 };
 
 const STATUS_BADGE_STYLE: Record<AccountState, string> = {
