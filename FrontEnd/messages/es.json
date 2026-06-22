@@ -2120,6 +2120,523 @@
     "chat_sin_conversaciones": "Sin conversaciones aún",
     "sidebar_chats_label": "Chats",
     "chat_n_chats": "{count, plural, one {# chat} other {# chats}}",
+    "chat_overview_empty": "Aún no hay mensajes en este proyecto"
+  },
+  "gestion_usuarios": {
+    "eyebrow": "Administración",
+    "title": "Gestión de usuarios",
+    "description": "Administrá todas las cuentas de la plataforma: creá, editá, suspendé o eliminá usuarios desde un solo lugar.",
+    "create_user": "Crear usuario",
+    "stats": {
+      "total": "Usuarios totales",
+      "active": "Activos",
+      "suspended": "Suspendidos",
+      "pending": "Pendientes"
+    },
+    "filters": {
+      "title": "Filtros",
+      "search_placeholder": "Buscar por nombre o correo...",
+      "role_all": "Rol: Todos",
+      "status_all": "Estado: Todos"
+    },
+    "roles": {
+      "student": "Junior",
+      "company": "Empresa",
+      "admin": "Administrador"
+    },
+    "statuses": {
+      "activa": "Activa",
+      "pendiente": "Pendiente",
+      "suspendida": "Suspendida",
+      "rechazada": "Rechazada"
+    },
+    "table": {
+      "user": "Usuario",
+      "role": "Rol",
+      "status": "Estado",
+      "joined": "Registro",
+      "actions": "Acciones",
+      "empty": "No hay usuarios para los filtros aplicados."
+    },
+    "row_actions": {
+      "view": "Ver",
+      "edit": "Editar",
+      "suspend": "Suspender",
+      "reactivate": "Reactivar",
+      "delete": "Eliminar"
+    },
+    "pagination_summary": "Mostrando {start}-{end} de {total} usuarios",
+    "detail_modal": {
+      "title": "Información del usuario",
+      "subtitle": "Detalle de la cuenta",
+      "close": "Cerrar",
+      "loading": "Cargando información...",
+      "field_email": "Correo",
+      "field_role": "Rol",
+      "field_status": "Estado",
+      "field_joined": "Fecha de registro",
+      "field_cedula": "Cédula",
+      "section_profile": "Perfil",
+      "no_profile": "Este usuario todavía no completó su onboarding.",
+      "student_especialidad": "Especialidad",
+      "student_titulo": "Título FWD",
+      "student_disponibilidad": "Disponibilidad",
+      "student_reputacion": "Reputación",
+      "student_verificacion": "Verificación",
+      "student_skills": "Habilidades",
+      "student_bio": "Descripción",
+      "student_github": "GitHub",
+      "student_linkedin": "LinkedIn",
+      "student_portfolio": "Portafolio",
+      "company_tipo": "Tipo",
+      "company_nombre": "Nombre comercial",
+      "company_sector": "Sector",
+      "company_etapa": "Etapa",
+      "company_sitio": "Sitio web",
+      "company_bio": "Descripción"
+    },
+    "form_modal": {
+      "create_title": "Crear nuevo usuario",
+      "edit_title": "Editar usuario",
+      "create_subtitle": "Solo se crea la cuenta y el rol. El usuario completa su perfil en el onboarding.",
+      "edit_subtitle": "Actualizá la información de la cuenta seleccionada.",
+      "field_name": "Nombre",
+      "field_name_placeholder": "Ej. Ana",
+      "field_lastname": "Primer apellido",
+      "field_lastname_placeholder": "Ej. Rodríguez",
+      "field_email": "Correo",
+      "field_email_placeholder": "nombre@correo.com",
+      "field_password": "Contraseña temporal",
+      "field_password_placeholder": "Mínimo 8 caracteres",
+      "field_role": "Rol",
+      "field_status": "Estado",
+      "cancel": "Cancelar",
+      "save": "Guardar cambios",
+      "create": "Crear usuario",
+      "creating": "Creando...",
+      "saving": "Guardando...",
+      "errors": {
+        "name_required": "El nombre es obligatorio",
+        "email_invalid": "El correo no es válido",
+        "password_min": "La contraseña debe tener al menos 8 caracteres"
+      }
+    },
+    "confirm_suspend": {
+      "title": "Suspender cuenta",
+      "message": "¿Seguro que querés suspender esta cuenta? El usuario no podrá ingresar hasta que la reactivés.",
+      "confirm": "Suspender",
+      "cancel": "Cancelar",
+      "working": "Suspendiendo..."
+    },
+    "confirm_delete": {
+      "title": "Eliminar usuario",
+      "message": "Esta acción elimina la cuenta y todo su perfil de forma permanente. No se puede deshacer.",
+      "confirm": "Eliminar",
+      "cancel": "Cancelar",
+      "working": "Eliminando..."
+    },
+    "messages": {
+      "created": "Usuario creado",
+      "updated": "Usuario actualizado",
+      "deleted": "Usuario eliminado",
+      "suspended": "Cuenta suspendida",
+      "reactivated": "Cuenta reactivada",
+      "error": "No se pudo completar la acción"
+    }
+  },
+  "admin_dashboard": {
+    "title": "Dashboard",
+    "subtitle": "Resumen operativo del ecosistema FWD Talent con datos en vivo.",
+    "states": {
+      "borrador": "Borrador",
+      "en_recepcion": "En recepción",
+      "en_evaluacion": "En evaluación",
+      "adjudicado": "Adjudicado",
+      "en_desarrollo": "En desarrollo",
+      "cerrado": "Cerrado",
+      "cancelado": "Cancelado"
+    },
+    "stats": {
+      "companies_label": "Empresas",
+      "companies_caption": "Pendientes de aprobación",
+      "talent_label": "Talento",
+      "talent_caption": "Pendientes de verificación",
+      "projects_label": "Proyectos",
+      "projects_caption": "Total en el sistema",
+      "active_label": "Activos",
+      "active_caption": "En ejecución",
+      "requests_label": "Solicitudes",
+      "requests_caption": "Pendientes de revisión",
+      "cancelled_label": "Cancelados",
+      "cancelled_caption": "Proyectos cancelados"
+    },
+    "admissions": {
+      "title": "Solicitudes de admisión",
+      "search_placeholder": "Buscar...",
+      "view_all": "Ver todas",
+      "th_candidate": "Candidato",
+      "th_type": "Tipo",
+      "th_date": "Fecha",
+      "th_status": "Estado",
+      "th_action": "Acción",
+      "empty": "No hay solicitudes pendientes.",
+      "type_company": "Empresa",
+      "type_student": "Talento",
+      "type_account": "Cuenta",
+      "pending": "Pendiente",
+      "approve_aria": "Aprobar solicitud"
+    },
+    "moderation": {
+      "title": "Moderación de proyectos",
+      "active_count": "{count} activos",
+      "th_project": "Proyecto",
+      "th_company": "Empresa",
+      "th_status": "Estado",
+      "th_actions": "Acciones",
+      "empty": "No hay proyectos por moderar.",
+      "cancel": "Cancelar",
+      "hide": "Ocultar"
+    },
+    "modules": {
+      "talento_title": "Talento",
+      "talento_desc": "Gestión de perfiles y habilidades",
+      "empresas_title": "Empresas",
+      "empresas_desc": "Partners corporativos y contratos",
+      "proyectos_title": "Proyectos",
+      "proyectos_desc": "Hitos, pagos y moderación",
+      "solicitudes_title": "Solicitudes",
+      "solicitudes_desc": "Admisiones y verificaciones",
+      "reportes_title": "Reportes",
+      "reportes_desc": "Estadísticas avanzadas y KPIs",
+      "config_title": "Configuración",
+      "config_desc": "Parámetros globales del sistema",
+      "view_module": "Ver módulo"
+    },
+    "summary": {
+      "title": "Resumen",
+      "pending_requests": "Solicitudes pendientes",
+      "total_projects": "Proyectos totales",
+      "to_moderate": "Por moderar",
+      "pending_companies": "Empresas pendientes",
+      "pending_talent": "Talento pendiente"
+    },
+    "quick": {
+      "title": "Accesos rápidos",
+      "review_requests": "Revisar solicitudes",
+      "moderate_projects": "Moderar proyectos",
+      "view_reports": "Ver reportes"
+    },
+    "messages": {
+      "approve_error": "No se pudo aprobar",
+      "approved": "Solicitud aprobada",
+      "cancel_error": "No se pudo cancelar",
+      "cancelled": "Proyecto cancelado",
+      "hidden": "Proyecto ocultado"
+    }
+  },
+  "admin_egresados": {
+    "eyebrow": "Administración",
+    "title": "Egresados",
+    "description": "Gestión y seguimiento de los egresados FWD: verificá, editá o eliminá cuentas de estudiantes.",
+    "create_student": "Crear estudiante",
+    "stats": {
+      "total": "Egresados totales",
+      "verified": "Verificados",
+      "pending": "Pendientes de verificar",
+      "avg_reputation": "Reputación promedio"
+    },
+    "distribution": {
+      "title": "Distribución por verificación",
+      "verificado": "Verificados",
+      "pendiente": "Pendientes",
+      "rechazado": "Rechazados"
+    },
+    "filters": {
+      "search_placeholder": "Buscar por nombre o correo...",
+      "status_all": "Estado: Todos",
+      "specialty_all": "Especialización: Todas",
+      "skill_all": "Fortaleza: Todas",
+      "modality_all": "Modalidad: Todas",
+      "only_pending": "Solo pendientes de verificar",
+      "clear": "Limpiar"
+    },
+    "verification": {
+      "verificado": "Verificado",
+      "pendiente": "Pendiente",
+      "rechazado": "Rechazado"
+    },
+    "table": {
+      "profile": "Perfil",
+      "titulo": "Título FWD",
+      "specialty": "Especialización",
+      "strengths": "Fortalezas",
+      "modality": "Modalidad",
+      "availability": "Disponibilidad",
+      "status": "Estado",
+      "actions": "Acciones",
+      "empty": "No se encontraron egresados con los filtros aplicados.",
+      "summary": "Mostrando {shown} de {total} egresados",
+      "no_skills": "Sin habilidades"
+    },
+    "row_actions": {
+      "view": "Ver",
+      "edit": "Editar",
+      "verify": "Verificar",
+      "reject": "Rechazar",
+      "delete": "Eliminar"
+    },
+    "detail_modal": {
+      "title": "Información del egresado",
+      "subtitle": "Detalle del estudiante",
+      "close": "Cerrar",
+      "loading": "Cargando información...",
+      "field_email": "Correo",
+      "field_status": "Estado de cuenta",
+      "field_joined": "Fecha de registro",
+      "field_cedula": "Cédula",
+      "field_verification": "Verificación",
+      "field_especialidad": "Especialización",
+      "field_titulo": "Título FWD",
+      "field_disponibilidad": "Disponibilidad",
+      "field_modalidad": "Modalidad preferida",
+      "field_reputacion": "Reputación",
+      "field_skills": "Habilidades",
+      "field_bio": "Descripción",
+      "field_github": "GitHub",
+      "field_linkedin": "LinkedIn",
+      "field_portfolio": "Portafolio",
+      "no_profile": "Este egresado todavía no completó su onboarding."
+    },
+    "form_modal": {
+      "create_title": "Crear nuevo estudiante",
+      "edit_title": "Editar estudiante",
+      "create_subtitle": "Solo se crea la cuenta con rol de estudiante. El egresado completa su perfil en el onboarding.",
+      "edit_subtitle": "Actualizá los datos de la cuenta. El perfil académico lo gestiona el propio estudiante.",
+      "field_name": "Nombre",
+      "field_name_placeholder": "Ej. Ana",
+      "field_lastname": "Primer apellido",
+      "field_lastname_placeholder": "Ej. Rodríguez",
+      "field_email": "Correo",
+      "field_email_placeholder": "nombre@correo.com",
+      "field_password": "Contraseña temporal",
+      "field_password_placeholder": "Mínimo 8 caracteres",
+      "cancel": "Cancelar",
+      "create": "Crear estudiante",
+      "save": "Guardar cambios",
+      "creating": "Creando...",
+      "saving": "Guardando...",
+      "errors": {
+        "name_required": "El nombre es obligatorio",
+        "email_invalid": "El correo no es válido",
+        "password_min": "La contraseña debe tener al menos 8 caracteres"
+      }
+    },
+    "confirm_delete": {
+      "title": "Eliminar estudiante",
+      "message": "Esta acción elimina la cuenta del egresado y todo su perfil de forma permanente. No se puede deshacer.",
+      "confirm": "Eliminar",
+      "cancel": "Cancelar",
+      "working": "Eliminando..."
+    },
+    "messages": {
+      "created": "Estudiante creado",
+      "updated": "Estudiante actualizado",
+      "deleted": "Estudiante eliminado",
+      "verified": "Egresado verificado",
+      "rejected": "Verificación rechazada",
+      "error": "No se pudo completar la acción"
+    }
+  },
+  "admin_empresas": {
+    "eyebrow": "Administración",
+    "title": "Empresas",
+    "description": "Gestión de empresas y emprendedores: creá, editá, eliminá o consultá su información.",
+    "create_company": "Crear empresa",
+    "stats": {
+      "total": "Empresas totales",
+      "empresa": "Empresas",
+      "emprendedor": "Emprendedores",
+      "active": "Cuentas activas"
+    },
+    "types": {
+      "empresa": "Empresa",
+      "emprendedor": "Emprendedor"
+    },
+    "account_states": {
+      "activa": "Activa",
+      "pendiente": "Pendiente",
+      "suspendida": "Suspendida",
+      "rechazada": "Rechazada"
+    },
+    "filters": {
+      "title": "Filtros",
+      "search_placeholder": "Buscar por nombre, contacto o correo...",
+      "type_all": "Tipo: Todos",
+      "sector_all": "Sector: Todos",
+      "stage_all": "Etapa: Todas",
+      "status_all": "Estado: Todos",
+      "clear": "Limpiar"
+    },
+    "table": {
+      "company": "Empresa",
+      "type": "Tipo",
+      "sector": "Sector",
+      "stage": "Etapa",
+      "status": "Estado",
+      "actions": "Acciones",
+      "empty": "No se encontraron empresas con los filtros aplicados.",
+      "summary": "Mostrando {shown} de {total} empresas",
+      "no_name": "Sin nombre comercial"
+    },
+    "row_actions": {
+      "view": "Ver",
+      "edit": "Editar",
+      "delete": "Eliminar"
+    },
+    "detail_modal": {
+      "title": "Información de la empresa",
+      "subtitle": "Detalle del perfil",
+      "close": "Cerrar",
+      "field_type": "Tipo",
+      "field_sector": "Sector",
+      "field_stage": "Etapa",
+      "field_employees": "Empleados",
+      "field_website": "Sitio web",
+      "field_address": "Dirección",
+      "field_modality": "Modalidades",
+      "field_budget": "Presupuesto",
+      "field_description": "Descripción",
+      "section_account": "Cuenta de contacto",
+      "field_contact": "Contacto",
+      "field_email": "Correo",
+      "field_account_status": "Estado de cuenta",
+      "field_joined": "Fecha de registro"
+    },
+    "form_modal": {
+      "create_title": "Crear nueva empresa",
+      "edit_title": "Editar empresa",
+      "create_subtitle": "Se crea la cuenta de la empresa y un perfil mínimo. El resto lo completa la empresa en el onboarding.",
+      "edit_subtitle": "Actualizá los datos del perfil de la empresa.",
+      "field_contact_name": "Nombre de contacto",
+      "field_contact_name_placeholder": "Ej. Ana Rodríguez",
+      "field_email": "Correo",
+      "field_email_placeholder": "empresa@correo.com",
+      "field_password": "Contraseña temporal",
+      "field_password_placeholder": "Mínimo 8 caracteres",
+      "field_type": "Tipo",
+      "field_commercial_name": "Nombre comercial",
+      "field_commercial_name_placeholder": "Ej. Estudio Norte",
+      "field_sector": "Sector",
+      "field_sector_placeholder": "Ej. Tecnología",
+      "field_stage": "Etapa",
+      "field_stage_placeholder": "Ej. Crecimiento",
+      "field_employees": "Cantidad de empleados",
+      "field_employees_placeholder": "Ej. 11-50",
+      "field_website": "Sitio web",
+      "field_website_placeholder": "https://...",
+      "field_address": "Dirección",
+      "field_address_placeholder": "Ciudad, país",
+      "field_description": "Descripción",
+      "field_description_placeholder": "Breve descripción de la empresa",
+      "cancel": "Cancelar",
+      "create": "Crear empresa",
+      "save": "Guardar cambios",
+      "creating": "Creando...",
+      "saving": "Guardando...",
+      "errors": {
+        "name_required": "El nombre de contacto es obligatorio",
+        "commercial_required": "El nombre comercial es obligatorio",
+        "email_invalid": "El correo no es válido",
+        "password_min": "La contraseña debe tener al menos 8 caracteres"
+      }
+    },
+    "confirm_delete": {
+      "title": "Eliminar empresa",
+      "message": "Esta acción elimina la cuenta de la empresa y todo su perfil de forma permanente. No se puede deshacer.",
+      "confirm": "Eliminar",
+      "cancel": "Cancelar",
+      "working": "Eliminando..."
+    },
+    "messages": {
+      "created": "Empresa creada",
+      "updated": "Empresa actualizada",
+      "deleted": "Empresa eliminada",
+      "error": "No se pudo completar la acción"
+    }
+  },
+  "admin_proyectos": {
+    "view": "Ver",
+    "detail": {
+      "title": "Detalle del proyecto",
+      "subtitle": "Información completa del proyecto",
+      "loading": "Cargando proyecto...",
+      "close": "Cerrar",
+      "company": "Empresa",
+      "type": "Tipo",
+      "area": "Área de negocio",
+      "description": "Descripción",
+      "deadline": "Plazo",
+      "deadline_days": "{days, plural, one {# día} other {# días}}",
+      "uses_ai": "Usa IA",
+      "yes": "Sí",
+      "no": "No",
+      "extra_tech": "Tecnologías extra",
+      "skills": "Habilidades / Stack",
+      "state": "Estado",
+      "published": "Publicación",
+      "closing": "Cierre",
+      "id": "ID",
+      "none": "—",
+      "unpublished": "Sin publicar",
+      "no_description": "Sin descripción."
+    }
+  },
+  "admin_config": {
+    "eyebrow": "Administración",
+    "title": "Configuración",
+    "description": "Gestioná los parámetros generales del ecosistema FWD Talent y personalizá tu experiencia.",
+    "appearance": {
+      "title": "Apariencia y preferencias",
+      "dark_mode": "Modo oscuro",
+      "dark_mode_desc": "Alterná entre tema claro y oscuro. La preferencia se guarda en este navegador.",
+      "language": "Idioma",
+      "language_desc": "Elegí el idioma de la interfaz.",
+      "spanish": "Español",
+      "english": "English"
+    },
+    "marketplace": {
+      "title": "Marketplace",
+      "registros_label": "Permitir registros",
+      "registros_desc": "Habilita la creación de nuevas cuentas de talento.",
+      "empresas_label": "Permitir empresas",
+      "empresas_desc": "Permite el onboarding de perfiles corporativos.",
+      "postulaciones_label": "Permitir postulaciones",
+      "postulaciones_desc": "Habilita el botón de aplicar en proyectos activos.",
+      "matching_label": "Activar matching",
+      "matching_desc": "Algoritmo automático de sugerencia de talento."
+    },
+    "roles": {
+      "title": "Roles y permisos",
+      "create": "Crear rol",
+      "th_role": "Rol",
+      "th_description": "Descripción",
+      "th_users": "Usuarios",
+      "th_actions": "Acciones",
+      "empty": "No hay roles definidos. Creá uno con “Crear rol”.",
+      "users_count": "{count, plural, one {# usuario} other {# usuarios}}",
+      "edit_aria": "Editar rol",
+      "delete_aria": "Eliminar rol",
+      "modal_create_title": "Crear rol",
+      "modal_edit_title": "Editar rol",
+      "field_name": "Nombre del rol",
+      "field_description": "Descripción",
+      "field_users": "Usuarios",
+      "cancel": "Cancelar",
+      "submit_create": "Crear rol",
+      "submit_edit": "Guardar rol"
+    },
+    "save": "Guardar cambios",
+    "saved": "Cambios guardados",
     "chat_overview_empty": "Aún no hay mensajes en este proyecto",
     "action_pause_btn": "Pausar proyecto",
     "action_cancel_btn": "Cancelar proyecto",

@@ -2,7 +2,7 @@
 
 import { useMemo, useState, useTransition } from "react";
 import Link from "next/link";
-import { useLocale } from "next-intl";
+import { useLocale, useTranslations } from "next-intl";
 import {
   Search,
   ChevronRight,
@@ -21,6 +21,8 @@ import type { AdminPendingUser, AdminProject, ProjectState } from "@/lib/api/typ
 
 const ACTIVE_STATES: ProjectState[] = ["en_recepcion", "en_evaluacion", "adjudicado", "en_desarrollo"];
 
+<<<<<<< HEAD
+=======
 const STATE_LABEL: Record<ProjectState, string> = {
   borrador: "Borrador",
   en_recepcion: "En recepción",
@@ -32,20 +34,23 @@ const STATE_LABEL: Record<ProjectState, string> = {
   pausado: "Pausado",
 };
 
+>>>>>>> eb34129fb0681ae33cce2870141185427c16d44c
 const MODULES = [
-  { icon: Users, title: "Talento", description: "Gestión de perfiles y habilidades", href: "/admin/talento" },
-  { icon: Building2, title: "Empresas", description: "Partners corporativos y contratos", href: "/admin/empresas" },
-  { icon: Briefcase, title: "Proyectos", description: "Hitos, pagos y moderación", href: "/admin/proyectos" },
-  { icon: FileText, title: "Solicitudes", description: "Admisiones y verificaciones", href: "/admin/solicitudes" },
-  { icon: BarChart2, title: "Reportes", description: "Estadísticas avanzadas y KPIs", href: "/admin/reportes" },
-  { icon: Settings, title: "Configuración", description: "Parámetros globales del sistema", href: "/admin/configuracion" },
-];
+  { key: "talento", icon: Users, href: "/admin/talento" },
+  { key: "empresas", icon: Building2, href: "/admin/empresas" },
+  { key: "proyectos", icon: Briefcase, href: "/admin/proyectos" },
+  { key: "solicitudes", icon: FileText, href: "/admin/solicitudes" },
+  { key: "reportes", icon: BarChart2, href: "/admin/reportes" },
+  { key: "config", icon: Settings, href: "/admin/configuracion" },
+] as const;
 
-function formatDate(iso: string | null): string {
-  if (!iso) return "—";
+const EMPTY_VALUE = "—";
+
+function formatDate(iso: string | null, locale: string): string {
+  if (!iso) return EMPTY_VALUE;
   const date = new Date(iso);
-  if (Number.isNaN(date.getTime())) return "—";
-  return new Intl.DateTimeFormat("es", { day: "2-digit", month: "short" }).format(date);
+  if (Number.isNaN(date.getTime())) return EMPTY_VALUE;
+  return new Intl.DateTimeFormat(locale, { day: "2-digit", month: "short" }).format(date);
 }
 
 function initials(text: string): string {
@@ -63,6 +68,7 @@ export function DashboardView({
   projects: AdminProject[];
 }) {
   const locale = useLocale();
+  const t = useTranslations("admin_dashboard");
   const [admissionQuery, setAdmissionQuery] = useState("");
   const [admissions, setAdmissions] = useState(pendingUsers);
   const [moderation, setModeration] = useState(projects.filter((p) => p.estado.nombre !== "cancelado"));
@@ -75,14 +81,14 @@ export function DashboardView({
     const active = projects.filter((p) => ACTIVE_STATES.includes(p.estado.nombre)).length;
     const cancelled = projects.filter((p) => p.estado.nombre === "cancelado").length;
     return [
-      { label: "Empresas", value: String(companies), caption: "Pendientes de aprobación" },
-      { label: "Talento", value: String(students), caption: "Pendientes de verificación" },
-      { label: "Proyectos", value: String(projects.length), caption: "Total en el sistema" },
-      { label: "Activos", value: String(active), caption: "En ejecución" },
-      { label: "Solicitudes", value: String(pendingUsers.length), caption: "Pendientes de revisión", highlight: true },
-      { label: "Cancelados", value: String(cancelled), caption: "Proyectos cancelados" },
+      { label: t("stats.companies_label"), value: String(companies), caption: t("stats.companies_caption") },
+      { label: t("stats.talent_label"), value: String(students), caption: t("stats.talent_caption") },
+      { label: t("stats.projects_label"), value: String(projects.length), caption: t("stats.projects_caption") },
+      { label: t("stats.active_label"), value: String(active), caption: t("stats.active_caption") },
+      { label: t("stats.requests_label"), value: String(pendingUsers.length), caption: t("stats.requests_caption"), highlight: true },
+      { label: t("stats.cancelled_label"), value: String(cancelled), caption: t("stats.cancelled_caption") },
     ];
-  }, [pendingUsers, projects]);
+  }, [pendingUsers, projects, t]);
 
   const filteredAdmissions = useMemo(() => {
     const q = admissionQuery.trim().toLowerCase();
@@ -99,11 +105,11 @@ export function DashboardView({
     startTransition(async () => {
       const result = await approveAdminUserAction(id);
       if (!result.ok) {
-        flash(result.error ?? "No se pudo aprobar");
+        flash(result.error ?? t("messages.approve_error"));
         return;
       }
       setAdmissions((prev) => prev.filter((u) => u.id !== id));
-      flash("Solicitud aprobada");
+      flash(t("messages.approved"));
     });
   }
 
@@ -111,17 +117,23 @@ export function DashboardView({
     startTransition(async () => {
       const result = await cancelAdminProjectAction(id);
       if (!result.ok) {
-        flash(result.error ?? "No se pudo cancelar");
+        flash(result.error ?? t("messages.cancel_error"));
         return;
       }
       setModeration((prev) => prev.filter((p) => p.id !== id));
-      flash("Proyecto cancelado");
+      flash(t("messages.cancelled"));
     });
   }
 
   function dismissModeration(id: string) {
     setModeration((prev) => prev.filter((p) => p.id !== id));
-    flash("Proyecto aprobado");
+    flash(t("messages.hidden"));
+  }
+
+  function admissionType(role: string | undefined): string {
+    if (role === "company") return t("admissions.type_company");
+    if (role === "student") return t("admissions.type_student");
+    return t("admissions.type_account");
   }
 
   return (
@@ -134,9 +146,9 @@ export function DashboardView({
 
       <header>
         <h1 className="font-heading text-4xl font-bold tracking-tight text-ink-strong md:text-5xl">
-          Dashboard<span className="text-primary" aria-hidden="true">.</span>
+          {t("title")}<span className="text-primary" aria-hidden="true">.</span>
         </h1>
-        <p className="mt-2 font-body text-sm text-ink-muted">Resumen operativo del ecosistema FWD Talent con datos en vivo.</p>
+        <p className="mt-2 font-body text-sm text-ink-muted">{t("subtitle")}</p>
       </header>
 
       {/* Stat cards */}
@@ -155,55 +167,58 @@ export function DashboardView({
           {/* Solicitudes de admisión */}
           <section className="rounded-2xl bg-surface p-6 shadow-soft ring-1 ring-border">
             <div className="mb-5 flex flex-wrap items-center justify-between gap-3">
-              <h2 className="font-heading text-lg font-bold text-ink-strong">Solicitudes de Admisión</h2>
+              <h2 className="font-heading text-lg font-bold text-ink-strong">{t("admissions.title")}</h2>
               <div className="flex items-center gap-4">
                 <div className="relative">
                   <Search className="absolute left-3 top-1/2 size-4 -translate-y-1/2 text-ink-subtle" aria-hidden="true" />
-                  <input type="text" value={admissionQuery} onChange={(e) => setAdmissionQuery(e.target.value)} placeholder="Buscar..." className="w-44 rounded-lg bg-surface-sunken py-2 pl-9 pr-3 font-body text-sm text-ink-strong placeholder:text-ink-subtle outline-none focus:ring-2 focus:ring-primary/40" />
+                  <input type="text" value={admissionQuery} onChange={(e) => setAdmissionQuery(e.target.value)} placeholder={t("admissions.search_placeholder")} aria-label={t("admissions.search_placeholder")} className="w-44 rounded-lg bg-surface-sunken py-2 pl-9 pr-3 font-body text-sm text-ink-strong placeholder:text-ink-subtle outline-none focus:ring-2 focus:ring-primary/40" />
                 </div>
-                <Link href={`/${locale}/admin/solicitudes`} className="font-body text-sm font-semibold text-primary hover:underline">Ver todas</Link>
+                <Link href={`/${locale}/admin/solicitudes`} className="font-body text-sm font-semibold text-primary hover:underline">{t("admissions.view_all")}</Link>
               </div>
             </div>
             <div className="overflow-x-auto">
               <table className="w-full text-left">
                 <thead>
                   <tr className="font-body text-[11px] font-semibold uppercase tracking-wider text-ink-subtle">
-                    <th className="pb-3">Candidato</th>
-                    <th className="pb-3">Tipo</th>
-                    <th className="pb-3">Fecha</th>
-                    <th className="pb-3">Estado</th>
-                    <th className="pb-3 text-right">Acción</th>
+                    <th className="pb-3">{t("admissions.th_candidate")}</th>
+                    <th className="pb-3">{t("admissions.th_type")}</th>
+                    <th className="pb-3">{t("admissions.th_date")}</th>
+                    <th className="pb-3">{t("admissions.th_status")}</th>
+                    <th className="pb-3 text-right">{t("admissions.th_action")}</th>
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-border">
                   {filteredAdmissions.length === 0 && (
-                    <tr><td colSpan={5} className="py-8 text-center font-body text-sm text-ink-muted">No hay solicitudes pendientes.</td></tr>
+                    <tr><td colSpan={5} className="py-8 text-center font-body text-sm text-ink-muted">{t("admissions.empty")}</td></tr>
                   )}
-                  {filteredAdmissions.slice(0, 5).map((user) => (
-                    <tr key={user.id} className="font-body text-sm">
-                      <td className="py-3.5">
-                        <div className="flex items-center gap-3">
-                          <span className="flex size-9 shrink-0 items-center justify-center rounded-full bg-primary/10 font-body text-xs font-bold text-primary">{initials([user.nombre, user.apellido1].filter(Boolean).join(" ") || user.correo)}</span>
-                          <div className="min-w-0">
-                            <p className="font-semibold text-ink-strong">{[user.nombre, user.apellido1].filter(Boolean).join(" ") || user.correo}</p>
-                            <p className="text-xs text-ink-muted">{user.correo}</p>
+                  {filteredAdmissions.slice(0, 5).map((user) => {
+                    const fullName = [user.nombre, user.apellido1].filter(Boolean).join(" ") || user.correo;
+                    return (
+                      <tr key={user.id} className="font-body text-sm">
+                        <td className="py-3.5">
+                          <div className="flex items-center gap-3">
+                            <span className="flex size-9 shrink-0 items-center justify-center rounded-full bg-primary/10 font-body text-xs font-bold text-primary">{initials(fullName)}</span>
+                            <div className="min-w-0">
+                              <p className="font-semibold text-ink-strong">{fullName}</p>
+                              <p className="text-xs text-ink-muted">{user.correo}</p>
+                            </div>
                           </div>
-                        </div>
-                      </td>
-                      <td className="py-3.5">
-                        <span className="rounded-md bg-surface-sunken px-2.5 py-1 text-xs font-medium text-ink">{user.role?.nombre === "company" ? "Empresa" : user.role?.nombre === "student" ? "Talento" : "Cuenta"}</span>
-                      </td>
-                      <td className="py-3.5 text-ink-muted">{formatDate(user.fecha_registro)}</td>
-                      <td className="py-3.5">
-                        <span className="flex items-center gap-1.5 text-xs font-medium text-ink"><span className="size-2 rounded-full bg-warning" aria-hidden="true" /> Pendiente</span>
-                      </td>
-                      <td className="py-3.5 text-right">
-                        <button type="button" aria-label="Aprobar solicitud" disabled={isPending} onClick={() => approveAdmission(user.id)} className="inline-flex size-8 items-center justify-center rounded-lg bg-accent/10 text-accent transition-colors hover:bg-accent/20 disabled:opacity-50">
-                          {isPending ? <Loader2 className="size-4 animate-spin" /> : <Check className="size-4" aria-hidden="true" />}
-                        </button>
-                      </td>
-                    </tr>
-                  ))}
+                        </td>
+                        <td className="py-3.5">
+                          <span className="rounded-md bg-surface-sunken px-2.5 py-1 text-xs font-medium text-ink">{admissionType(user.role?.nombre)}</span>
+                        </td>
+                        <td className="py-3.5 text-ink-muted">{formatDate(user.fecha_registro, locale)}</td>
+                        <td className="py-3.5">
+                          <span className="flex items-center gap-1.5 text-xs font-medium text-ink"><span className="size-2 rounded-full bg-warning" aria-hidden="true" /> {t("admissions.pending")}</span>
+                        </td>
+                        <td className="py-3.5 text-right">
+                          <button type="button" aria-label={t("admissions.approve_aria")} disabled={isPending} onClick={() => approveAdmission(user.id)} className="inline-flex size-8 items-center justify-center rounded-lg bg-accent/10 text-accent transition-colors hover:bg-accent/20 disabled:opacity-50">
+                            {isPending ? <Loader2 className="size-4 animate-spin" /> : <Check className="size-4" aria-hidden="true" />}
+                          </button>
+                        </td>
+                      </tr>
+                    );
+                  })}
                 </tbody>
               </table>
             </div>
@@ -212,32 +227,32 @@ export function DashboardView({
           {/* Moderación */}
           <section className="rounded-2xl bg-surface p-6 shadow-soft ring-1 ring-border">
             <div className="mb-5 flex items-center justify-between gap-3">
-              <h2 className="font-heading text-lg font-bold text-ink-strong">Moderación de Proyectos</h2>
-              <span className="rounded-full bg-primary/10 px-3 py-1 font-body text-xs font-bold uppercase tracking-wider text-primary">{moderation.length} activos</span>
+              <h2 className="font-heading text-lg font-bold text-ink-strong">{t("moderation.title")}</h2>
+              <span className="rounded-full bg-primary/10 px-3 py-1 font-body text-xs font-bold uppercase tracking-wider text-primary">{t("moderation.active_count", { count: moderation.length })}</span>
             </div>
             <div className="overflow-x-auto">
               <table className="w-full text-left">
                 <thead>
                   <tr className="font-body text-[11px] font-semibold uppercase tracking-wider text-ink-subtle">
-                    <th className="pb-3">Proyecto</th>
-                    <th className="pb-3">Empresa</th>
-                    <th className="pb-3">Estado</th>
-                    <th className="pb-3 text-right">Acciones</th>
+                    <th className="pb-3">{t("moderation.th_project")}</th>
+                    <th className="pb-3">{t("moderation.th_company")}</th>
+                    <th className="pb-3">{t("moderation.th_status")}</th>
+                    <th className="pb-3 text-right">{t("moderation.th_actions")}</th>
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-border">
                   {moderation.length === 0 && (
-                    <tr><td colSpan={4} className="py-8 text-center font-body text-sm text-ink-muted">No hay proyectos por moderar.</td></tr>
+                    <tr><td colSpan={4} className="py-8 text-center font-body text-sm text-ink-muted">{t("moderation.empty")}</td></tr>
                   )}
                   {moderation.slice(0, 6).map((project) => (
                     <tr key={project.id} className="font-body text-sm">
                       <td className="py-4 font-semibold text-ink-strong">{project.titulo}</td>
-                      <td className="py-4 text-ink">{project.empresa?.nombre_comercial ?? "—"}</td>
-                      <td className="py-4 text-ink-muted">{STATE_LABEL[project.estado.nombre] ?? project.estado.nombre}</td>
+                      <td className="py-4 text-ink">{project.empresa?.nombre_comercial ?? EMPTY_VALUE}</td>
+                      <td className="py-4 text-ink-muted">{t(`states.${project.estado.nombre}`)}</td>
                       <td className="py-4">
                         <div className="flex justify-end gap-2">
-                          <Button variant="accent" size="sm" className="rounded-lg" disabled={isPending} onClick={() => dismissModeration(project.id)}>Aprobar</Button>
-                          <Button size="sm" className="rounded-lg bg-ink-muted text-white hover:bg-ink-muted/85" disabled={isPending} onClick={() => cancelModeration(project.id)}>Ocultar</Button>
+                          <Button variant="magenta" size="sm" className="rounded-lg" disabled={isPending} onClick={() => cancelModeration(project.id)}>{t("moderation.cancel")}</Button>
+                          <Button size="sm" className="rounded-lg bg-ink-muted text-white hover:bg-ink-muted/85" disabled={isPending} onClick={() => dismissModeration(project.id)}>{t("moderation.hide")}</Button>
                         </div>
                       </td>
                     </tr>
@@ -249,13 +264,13 @@ export function DashboardView({
 
           {/* Module cards */}
           <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 xl:grid-cols-3">
-            {MODULES.map(({ icon: Icon, title, description, href }) => (
-              <div key={title} className="rounded-2xl bg-surface p-5 shadow-soft ring-1 ring-border">
+            {MODULES.map(({ icon: Icon, key, href }) => (
+              <div key={key} className="rounded-2xl bg-surface p-5 shadow-soft ring-1 ring-border">
                 <Icon className="size-6 text-primary" aria-hidden="true" />
-                <h3 className="mt-4 font-heading text-lg font-bold text-ink-strong">{title}</h3>
-                <p className="mt-1 font-body text-sm text-ink-muted">{description}</p>
+                <h3 className="mt-4 font-heading text-lg font-bold text-ink-strong">{t(`modules.${key}_title`)}</h3>
+                <p className="mt-1 font-body text-sm text-ink-muted">{t(`modules.${key}_desc`)}</p>
                 <Link href={`/${locale}${href}`} className="mt-4 inline-flex items-center gap-1 font-body text-sm font-semibold text-primary hover:gap-2">
-                  Ver módulo <ChevronRight className="size-4" aria-hidden="true" />
+                  {t("modules.view_module")} <ChevronRight className="size-4" aria-hidden="true" />
                 </Link>
               </div>
             ))}
@@ -265,22 +280,22 @@ export function DashboardView({
         {/* Right column */}
         <div className="space-y-6">
           <section className="rounded-2xl bg-surface p-6 shadow-soft ring-1 ring-border">
-            <h2 className="mb-5 font-heading text-base font-bold text-ink-strong">Resumen</h2>
+            <h2 className="mb-5 font-heading text-base font-bold text-ink-strong">{t("summary.title")}</h2>
             <ul className="space-y-4 font-body text-sm">
-              <li className="flex items-center justify-between"><span className="text-ink-muted">Solicitudes pendientes</span><span className="font-bold text-ink-strong">{pendingUsers.length}</span></li>
-              <li className="flex items-center justify-between"><span className="text-ink-muted">Proyectos totales</span><span className="font-bold text-ink-strong">{projects.length}</span></li>
-              <li className="flex items-center justify-between"><span className="text-ink-muted">Por moderar</span><span className="font-bold text-ink-strong">{moderation.length}</span></li>
-              <li className="flex items-center justify-between"><span className="text-ink-muted">Empresas pendientes</span><span className="font-bold text-ink-strong">{pendingUsers.filter((u) => u.role?.nombre === "company").length}</span></li>
-              <li className="flex items-center justify-between"><span className="text-ink-muted">Talento pendiente</span><span className="font-bold text-ink-strong">{pendingUsers.filter((u) => u.role?.nombre === "student").length}</span></li>
+              <li className="flex items-center justify-between"><span className="text-ink-muted">{t("summary.pending_requests")}</span><span className="font-bold text-ink-strong">{pendingUsers.length}</span></li>
+              <li className="flex items-center justify-between"><span className="text-ink-muted">{t("summary.total_projects")}</span><span className="font-bold text-ink-strong">{projects.length}</span></li>
+              <li className="flex items-center justify-between"><span className="text-ink-muted">{t("summary.to_moderate")}</span><span className="font-bold text-ink-strong">{moderation.length}</span></li>
+              <li className="flex items-center justify-between"><span className="text-ink-muted">{t("summary.pending_companies")}</span><span className="font-bold text-ink-strong">{pendingUsers.filter((u) => u.role?.nombre === "company").length}</span></li>
+              <li className="flex items-center justify-between"><span className="text-ink-muted">{t("summary.pending_talent")}</span><span className="font-bold text-ink-strong">{pendingUsers.filter((u) => u.role?.nombre === "student").length}</span></li>
             </ul>
           </section>
 
           <section className="rounded-2xl bg-surface p-6 shadow-soft ring-1 ring-border">
-            <h2 className="mb-3 font-heading text-base font-bold text-ink-strong">Accesos rápidos</h2>
+            <h2 className="mb-3 font-heading text-base font-bold text-ink-strong">{t("quick.title")}</h2>
             <div className="space-y-2">
-              <Link href={`/${locale}/admin/solicitudes`} className="flex items-center justify-between rounded-xl bg-surface-sunken px-4 py-3 font-body text-sm font-semibold text-ink-strong hover:bg-border/40">Revisar solicitudes <ChevronRight className="size-4 text-ink-muted" aria-hidden="true" /></Link>
-              <Link href={`/${locale}/admin/proyectos`} className="flex items-center justify-between rounded-xl bg-surface-sunken px-4 py-3 font-body text-sm font-semibold text-ink-strong hover:bg-border/40">Moderar proyectos <ChevronRight className="size-4 text-ink-muted" aria-hidden="true" /></Link>
-              <Link href={`/${locale}/admin/reportes`} className="flex items-center justify-between rounded-xl bg-surface-sunken px-4 py-3 font-body text-sm font-semibold text-ink-strong hover:bg-border/40">Ver reportes <ChevronRight className="size-4 text-ink-muted" aria-hidden="true" /></Link>
+              <Link href={`/${locale}/admin/solicitudes`} className="flex items-center justify-between rounded-xl bg-surface-sunken px-4 py-3 font-body text-sm font-semibold text-ink-strong hover:bg-border/40">{t("quick.review_requests")} <ChevronRight className="size-4 text-ink-muted" aria-hidden="true" /></Link>
+              <Link href={`/${locale}/admin/proyectos`} className="flex items-center justify-between rounded-xl bg-surface-sunken px-4 py-3 font-body text-sm font-semibold text-ink-strong hover:bg-border/40">{t("quick.moderate_projects")} <ChevronRight className="size-4 text-ink-muted" aria-hidden="true" /></Link>
+              <Link href={`/${locale}/admin/reportes`} className="flex items-center justify-between rounded-xl bg-surface-sunken px-4 py-3 font-body text-sm font-semibold text-ink-strong hover:bg-border/40">{t("quick.view_reports")} <ChevronRight className="size-4 text-ink-muted" aria-hidden="true" /></Link>
             </div>
           </section>
         </div>

@@ -385,6 +385,140 @@ export type AdminStudentsResponse = {
   students: AdminStudent[];
 };
 
+// ── Gestión de usuarios (admin) ──
+
+export type AdminUser = {
+  id: string;
+  nombre: string;
+  apellido1: string | null;
+  correo: string;
+  estado_cuenta: AccountState;
+  fecha_registro: string;
+  role: { nombre: ApiRoleName } | null;
+};
+
+export type AdminUsersResponse = {
+  users: AdminUser[];
+};
+
+export type AdminUserMutationResponse = {
+  user: AdminUser;
+};
+
+export type AdminUserStudentProfile = {
+  descripcion: string | null;
+  especialidad: string | null;
+  modalidad_preferida: string | null;
+  disponibilidad: string | null;
+  titulo_fwd: string | null;
+  estado_verificacion: StudentVerification;
+  reputacion: number | null;
+  url_avatar: string | null;
+  url_github: string | null;
+  url_linkedin: string | null;
+  url_portfolio: string | null;
+  skills: string[];
+};
+
+export type AdminUserCompanyProfile = {
+  tipo: "empresa" | "emprendedor";
+  nombre_comercial: string | null;
+  descripcion: string | null;
+  sector: string | null;
+  etapa: string | null;
+  url_sitio_web: string | null;
+};
+
+export type AdminUserDetail = {
+  id: string;
+  nombre: string;
+  apellido1: string | null;
+  apellido2: string | null;
+  cedula: string | null;
+  correo: string;
+  estado_cuenta: AccountState;
+  fecha_registro: string;
+  role: { nombre: ApiRoleName } | null;
+  estudiante: AdminUserStudentProfile | null;
+  empresario: AdminUserCompanyProfile | null;
+};
+
+export type AdminUserDetailResponse = {
+  user: AdminUserDetail;
+};
+
+// ── Gestión de empresas (admin) ──
+
+export type CompanyType = "empresa" | "emprendedor";
+
+export type AdminCompany = {
+  id: string;
+  tipo: CompanyType;
+  nombre_comercial: string | null;
+  sector: string | null;
+  etapa: string | null;
+  descripcion: string | null;
+  direccion: string | null;
+  url_sitio_web: string | null;
+  cantidad_empleados: string | null;
+  modalidades: string | null;
+  presupuesto: string | null;
+  usuario: {
+    id: string;
+    nombre: string;
+    apellido1: string | null;
+    correo: string;
+    estado_cuenta: AccountState;
+    fecha_registro: string;
+  } | null;
+};
+
+export type AdminCompaniesResponse = {
+  companies: AdminCompany[];
+};
+
+export type AdminCompanyMutationResponse = {
+  company: AdminCompany;
+};
+
+export type CreateAdminCompanyInput = {
+  correo: string;
+  password: string;
+  nombre: string;
+  apellido1?: string;
+  tipo: CompanyType;
+  nombre_comercial: string;
+  sector?: string;
+};
+
+export type UpdateAdminCompanyInput = {
+  tipo?: CompanyType;
+  nombre_comercial?: string;
+  sector?: string;
+  etapa?: string;
+  descripcion?: string;
+  direccion?: string;
+  url_sitio_web?: string;
+  cantidad_empleados?: string;
+};
+
+export type CreateAdminUserInput = {
+  correo: string;
+  password: string;
+  nombre: string;
+  apellido1?: string;
+  rol: ApiRoleName;
+};
+
+export type UpdateAdminUserInput = {
+  nombre?: string;
+  apellido1?: string;
+  apellido2?: string | null;
+  correo?: string;
+  rol?: ApiRoleName;
+  estado_cuenta?: AccountState;
+};
+
 export type ProjectDetailResponse = {
   project: ApiProject;
 };

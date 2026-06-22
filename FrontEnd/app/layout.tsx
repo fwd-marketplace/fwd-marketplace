@@ -35,6 +35,7 @@ export default function RootLayout({
     <html
       lang="es"
       className={`${figtree.variable} ${archivoNarrow.variable} h-full antialiased`}
+      suppressHydrationWarning
     >
       <body className="min-h-full">
         <script dangerouslySetInnerHTML={{ __html: THEME_INIT_SCRIPT }} />

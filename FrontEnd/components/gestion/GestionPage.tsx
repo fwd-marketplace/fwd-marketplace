@@ -580,6 +580,29 @@ export function GestionPage({ role, userId, initialProjectId, disponible = true,
                     return <SidebarEmpty text={t("empty_empresa")} />;
                   }
                   return (
+<<<<<<< HEAD
+                    <>
+                      {mainProjects.length > 0 && (
+                        <ul className="flex flex-col gap-0.5">
+                          {mainProjects.map((p) => renderEmpresaItem(p))}
+                        </ul>
+                      )}
+                      {chatProjects.length > 0 && (
+                        <>
+                          <div className="my-3 flex items-center gap-2 px-3">
+                            <div className="h-px flex-1 bg-white/10" />
+                            <span className="font-body text-[10px] font-bold uppercase tracking-widest text-white/30">
+                              {t("sidebar_chats_label")}
+                            </span>
+                            <div className="h-px flex-1 bg-white/10" />
+                          </div>
+                          <ul className="flex flex-col gap-0.5">
+                            {chatProjects.map((p) => renderEmpresaItem(p, true))}
+                          </ul>
+                        </>
+                      )}
+                    </>
+=======
                     <ul className="flex flex-col gap-0.5">
                       {sidebarProjects.map((proyecto) => {
                         const isSelected = proyecto.id === selectedId;
@@ -625,6 +648,7 @@ export function GestionPage({ role, userId, initialProjectId, disponible = true,
                         );
                       })}
                     </ul>
+>>>>>>> eb34129fb0681ae33cce2870141185427c16d44c
                   );
                 })()
               ) : (
