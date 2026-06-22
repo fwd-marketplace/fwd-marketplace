@@ -27,14 +27,19 @@ import type { AdminPendingUser } from "@/lib/api/types";
 
 const PAGE_SIZE = 5;
 
-function roleType(role: string | null | undefined): "Empresa" | "Talento" | "Otro" {
-  if (role === "company") return "Empresa";
+type SolicitudTipo = "Empresa" | "Emprendedor" | "Talento" | "Otro";
+
+/** Distingue empresa de emprendedor (empresario.tipo) además de talento. */
+function roleType(user: AdminPendingUser): SolicitudTipo {
+  const role = user.role?.nombre;
+  if (role === "company") return user.empresario?.tipo === "emprendedor" ? "Emprendedor" : "Empresa";
   if (role === "student") return "Talento";
   return "Otro";
 }
 
 const TYPE_META: Record<string, { icon: typeof Building2; bg: string; tone: string; title: string; origin: string }> = {
   Empresa: { icon: Building2, bg: "bg-secondary/10", tone: "text-secondary", title: "Nueva empresa registrada", origin: "Portal Empresas" },
+  Emprendedor: { icon: User, bg: "bg-accent/10", tone: "text-accent", title: "Nuevo emprendedor registrado", origin: "Portal Emprendedores" },
   Talento: { icon: User, bg: "bg-primary/10", tone: "text-primary", title: "Solicitud de verificación", origin: "Registro Talento" },
   Otro: { icon: Flag, bg: "bg-warning/10", tone: "text-warning", title: "Solicitud de cuenta", origin: "Registro" },
 };
@@ -57,7 +62,7 @@ function dateBucket(iso: string | null): "Hoy" | "Esta semana" | "Este mes" | "A
   return "Anterior";
 }
 
-const TYPE_OPTIONS = ["Todos", "Empresa", "Talento", "Otro"];
+const TYPE_OPTIONS = ["Todos", "Empresa", "Emprendedor", "Talento", "Otro"];
 const DATE_OPTIONS = ["Todos", "Hoy", "Esta semana", "Este mes"];
 
 export function SolicitudesView({ initialUsers }: { initialUsers: AdminPendingUser[] }) {
@@ -82,7 +87,7 @@ export function SolicitudesView({ initialUsers }: { initialUsers: AdminPendingUs
   const filtered = useMemo(() => {
     const q = query.trim().toLowerCase();
     return users.filter((user) => {
-      const type = roleType(user.role?.nombre);
+      const type = roleType(user);
       if (tipo !== "Todos" && type !== tipo) return false;
       if (fecha !== "Todos" && dateBucket(user.fecha_registro) !== fecha) return false;
       const haystack = `${user.nombre} ${user.apellido1 ?? ""} ${user.correo} ${user.id}`.toLowerCase();
@@ -198,7 +203,7 @@ export function SolicitudesView({ initialUsers }: { initialUsers: AdminPendingUs
           <EmptyRow message="No hay solicitudes pendientes con los filtros aplicados." />
         ) : (
           pageItems.map((user) => {
-            const type = roleType(user.role?.nombre);
+            const type = roleType(user);
             const meta = TYPE_META[type] ?? TYPE_META.Otro!;
             const Icon = meta.icon;
             const isOpen = expanded === user.id;

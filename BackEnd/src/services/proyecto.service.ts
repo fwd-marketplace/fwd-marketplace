@@ -60,10 +60,11 @@ export type ProjectFilters = {
  * (solo publicados, o los propios del empresario) la garantiza el RLS;
  * aquí solo definimos la forma de la respuesta.
  */
-const PROJECT_SELECT = `
+export const PROJECT_SELECT = `
   id,
   titulo,
   descripcion,
+  condiciones,
   usa_ia,
   plazo_dias,
   tecnologias_extra,
@@ -264,6 +265,7 @@ export async function createProject(
       id_estado: estado.id,
       titulo: input.titulo,
       descripcion: input.descripcion,
+      condiciones: input.condiciones ?? "",
       usa_ia: input.usa_ia ?? false,
       plazo_dias: input.plazo_dias,
       tecnologias_extra: input.tecnologias_extra ?? [],
@@ -372,6 +374,7 @@ export async function updateProject(
   const updatePayload: ProyectoUpdate = {};
   if (input.titulo !== undefined) updatePayload.titulo = input.titulo;
   if (input.descripcion !== undefined) updatePayload.descripcion = input.descripcion;
+  if (input.condiciones !== undefined) updatePayload.condiciones = input.condiciones;
   if (input.id_area_negocio !== undefined) updatePayload.id_area_negocio = input.id_area_negocio;
   if (input.plazo_dias !== undefined) updatePayload.plazo_dias = input.plazo_dias;
   if (input.usa_ia !== undefined) updatePayload.usa_ia = input.usa_ia;
@@ -418,7 +421,89 @@ export async function updateProject(
  * el historial y se libera a los estudiantes adjudicados (los estados inactivos los
  * desocupan). Notifica a adjudicados y postulantes pendientes (best-effort).
  */
-export async function cancelMyProject(accessToken: string, userId: string, projectId: string) {
+/**
+ * La empresa reactiva un proyecto pausado, volviéndolo al estado en_recepcion
+ * para que vuelva a aparecer en el marketplace.
+ */
+export async function resumeMyProject(accessToken: string, userId: string, projectId: string) {
+  const client = supabaseForToken(accessToken);
+
+  const { data: proyecto, error: projError } = await client
+    .from("proyecto")
+    .select("id, titulo, estado:estado_proyecto(nombre), empresa:empresario(id_usuario)")
+    .eq("id", projectId)
+    .maybeSingle();
+  if (projError) throw new ApiError(500, projError.message);
+  if (!proyecto) throw new ApiError(404, "Proyecto no encontrado");
+  if (proyecto.empresa?.id_usuario !== userId) {
+    throw new ApiError(403, "Este proyecto no es tuyo");
+  }
+  if (proyecto.estado?.nombre !== "pausado") {
+    throw new ApiError(409, "Solo se puede reactivar un proyecto pausado");
+  }
+
+  const estadoId = await getEstadoProyectoId(client, "en_recepcion");
+  const { data, error } = await client
+    .from("proyecto")
+    .update({ id_estado: estadoId })
+    .eq("id", projectId)
+    .select("id, estado:estado_proyecto(nombre)")
+    .single();
+  if (error) throw new ApiError(400, error.message);
+
+  return data;
+}
+
+/**
+ * La empresa cancela su proyecto: notifica a los participantes y lo elimina
+ * definitivamente de la base de datos via la RPC `eliminar_proyecto`.
+ */
+export async function cancelMyProject(
+  accessToken: string,
+  userId: string,
+  projectId: string,
+): Promise<{ ok: true }> {
+  const client = supabaseForToken(accessToken);
+
+  const { data: proyecto, error: projError } = await client
+    .from("proyecto")
+    .select("id, titulo, estado:estado_proyecto(nombre), empresa:empresario(id_usuario)")
+    .eq("id", projectId)
+    .maybeSingle();
+  if (projError) throw new ApiError(500, projError.message);
+  if (!proyecto) throw new ApiError(404, "Proyecto no encontrado");
+  if (proyecto.empresa?.id_usuario !== userId) {
+    throw new ApiError(403, "Este proyecto no es tuyo");
+  }
+  if (proyecto.estado?.nombre === "cerrado") {
+    throw new ApiError(409, "No se puede cancelar un proyecto cerrado");
+  }
+
+  // Notificar ANTES de borrar (después las ofertas ya no existen). Best-effort.
+  const destinatarios = await getOfertaRecipients(client, projectId, [
+    "adjudicada",
+    "enviada",
+    "en_revision",
+  ]);
+  await crearNotificaciones(
+    accessToken,
+    destinatarios,
+    MENSAJES_NOTIFICACION.proyectoEliminado(proyecto.titulo),
+    TIPO_POR_MENSAJE.proyectoEliminado,
+  );
+
+  const { error } = await client.rpc("eliminar_proyecto", { p_id: projectId });
+  if (error) throw new ApiError(400, error.message);
+
+  return { ok: true };
+}
+
+/**
+ * La empresa pausa temporalmente su proyecto. El proyecto deja de aparecer en
+ * el marketplace y su fecha_cierre se limpia (plazo congelado). No se envían
+ * notificaciones porque es una acción reversible.
+ */
+export async function pauseMyProject(accessToken: string, userId: string, projectId: string) {
   const client = supabaseForToken(accessToken);
 
   const { data: proyecto, error: projError } = await client
@@ -433,29 +518,20 @@ export async function cancelMyProject(accessToken: string, userId: string, proje
   }
   const estadoActual = proyecto.estado?.nombre;
   if (estadoActual === "cerrado" || estadoActual === "cancelado") {
-    throw new ApiError(409, "Este proyecto ya está cerrado o cancelado");
+    throw new ApiError(409, "No se puede pausar un proyecto cerrado o cancelado");
+  }
+  if (estadoActual === "pausado") {
+    throw new ApiError(409, "El proyecto ya está pausado");
   }
 
-  const estadoId = await getEstadoProyectoId(client, "cancelado");
+  const estadoId = await getEstadoProyectoId(client, "pausado");
   const { data, error } = await client
     .from("proyecto")
-    .update({ id_estado: estadoId })
+    .update({ id_estado: estadoId, fecha_cierre: null })
     .eq("id", projectId)
     .select("id, estado:estado_proyecto(nombre)")
     .single();
   if (error) throw new ApiError(400, error.message);
-
-  const destinatarios = await getOfertaRecipients(client, projectId, [
-    "adjudicada",
-    "enviada",
-    "en_revision",
-  ]);
-  await crearNotificaciones(
-    accessToken,
-    destinatarios,
-    MENSAJES_NOTIFICACION.proyectoEliminado(proyecto.titulo),
-      TIPO_POR_MENSAJE.proyectoEliminado,
-  );
 
   return data;
 }

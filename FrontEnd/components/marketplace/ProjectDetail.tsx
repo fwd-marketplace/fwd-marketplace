@@ -45,6 +45,7 @@ const STATE_LABELS: Record<ProjectState, string> = {
   en_desarrollo:  "En desarrollo",
   cerrado:        "Cerrado",
   cancelado:      "Cancelado",
+  pausado:        "Pausado",
 };
 
 const STATE_CLASS: Partial<Record<ProjectState, string>> = {

@@ -1,4 +1,4 @@
-import { supabaseForToken } from "../config/supabase";
+import { supabaseForToken, supabaseAdmin } from "../config/supabase";
 import { ApiError } from "../utils/ApiError";
 import { parseBody } from "../utils/parseBody";
 import { uploadImage, destroyImageByUrl } from "./upload.service";
@@ -61,11 +61,41 @@ async function syncStudentSkills(
   const { data: catalog, error } = await client.from("skills").select("id, nombre");
   if (error) throw new ApiError(500, error.message);
 
-  const idByName = new Map((catalog ?? []).map((skill) => [skill.nombre.toLowerCase(), skill]));
-  const matched = new Map<string, string>();
+  const catalogByLower = new Map((catalog ?? []).map((s) => [s.nombre.toLowerCase(), s]));
+  const matched = new Map<string, string>(); // id → display name
+  const toCreate: string[] = [];
+  const seenKeys = new Set<string>();
+
   for (const name of names) {
-    const hit = idByName.get(name.trim().toLowerCase());
-    if (hit) matched.set(hit.id, hit.nombre);
+    const normalized = name.trim().toLowerCase();
+    if (!normalized || seenKeys.has(normalized)) continue;
+    seenKeys.add(normalized);
+    const existing = catalogByLower.get(normalized);
+    if (existing) {
+      matched.set(existing.id, existing.nombre);
+    } else {
+      toCreate.push(normalized);
+    }
+  }
+
+  // Insertar skills nuevas en el catálogo usando service role (el catálogo es
+  // una tabla de sistema; el token del usuario no tiene permiso de INSERT en ella).
+  if (toCreate.length > 0) {
+    const admin = supabaseAdmin();
+    const { data: created, error: createError } = await admin
+      .from("skills")
+      .insert(toCreate.map((nombre) => ({ nombre, tipo: "tecnologia" as const })))
+      .select("id, nombre");
+    if (createError) {
+      // Race condition: otro request ya insertó la misma skill; la buscamos.
+      const { data: fetched } = await admin
+        .from("skills")
+        .select("id, nombre")
+        .in("nombre", toCreate);
+      for (const s of fetched ?? []) matched.set(s.id, s.nombre);
+    } else {
+      for (const s of created ?? []) matched.set(s.id, s.nombre);
+    }
   }
 
   const { error: deleteError } = await client
@@ -389,6 +419,124 @@ export async function removeMyAvatar(accessToken: string, userId: string): Promi
   if (error) throw new ApiError(400, error.message);
 
   if (previo?.url_avatar) destroyImageByUrl(previo.url_avatar);
+}
+
+// ── Portafolio de proyectos del estudiante ────────────────────────────────────
+
+const PORTAFOLIO_SELECT = "id, titulo, descripcion, tecnologias, url_demo, url_repositorio, visibilidad, fecha";
+
+async function getEstudianteId(client: Client, userId: string): Promise<string> {
+  const { data, error } = await client
+    .from("estudiante")
+    .select("id")
+    .eq("id_usuario", userId)
+    .maybeSingle();
+  if (error) throw new ApiError(500, error.message);
+  if (!data) throw new ApiError(404, "No tenés un perfil de estudiante");
+  return data.id;
+}
+
+export async function getMyPortafolio(accessToken: string, userId: string) {
+  const client = supabaseForToken(accessToken);
+  const estudianteId = await getEstudianteId(client, userId);
+  const { data, error } = await client
+    .from("portafolio_proyecto")
+    .select(PORTAFOLIO_SELECT)
+    .eq("id_estudiante", estudianteId)
+    .order("fecha", { ascending: false });
+  if (error) throw new ApiError(500, error.message);
+  return data ?? [];
+}
+
+export async function createPortafolioItem(
+  accessToken: string,
+  userId: string,
+  body: unknown,
+) {
+  const input = parsePortafolioBody(body);
+  const client = supabaseForToken(accessToken);
+  const estudianteId = await getEstudianteId(client, userId);
+  if (!input.titulo) throw new ApiError(400, "titulo requerido");
+  const { data, error } = await client
+    .from("portafolio_proyecto")
+    .insert({
+      id_estudiante: estudianteId,
+      titulo: input.titulo,
+      descripcion: input.descripcion ?? null,
+      tecnologias: input.tecnologias ? JSON.stringify(input.tecnologias) : null,
+      url_demo: input.url_demo ?? null,
+      url_repositorio: input.url_repositorio ?? null,
+      visibilidad: "publico",
+      fecha: new Date().toISOString().slice(0, 10),
+    })
+    .select(PORTAFOLIO_SELECT)
+    .single();
+  if (error) throw new ApiError(400, error.message);
+  return data;
+}
+
+export async function updatePortafolioItem(
+  accessToken: string,
+  userId: string,
+  itemId: string,
+  body: unknown,
+) {
+  const input = parsePortafolioBody(body);
+  const client = supabaseForToken(accessToken);
+  const estudianteId = await getEstudianteId(client, userId);
+  type PortafolioUpdate = Database["public"]["Tables"]["portafolio_proyecto"]["Update"];
+  const updates: PortafolioUpdate = {};
+  if (input.titulo !== undefined) updates.titulo = input.titulo;
+  if (input.descripcion !== undefined) updates.descripcion = input.descripcion ?? null;
+  if (input.tecnologias !== undefined) updates.tecnologias = JSON.stringify(input.tecnologias);
+  if (input.url_demo !== undefined) updates.url_demo = input.url_demo ?? null;
+  if (input.url_repositorio !== undefined) updates.url_repositorio = input.url_repositorio ?? null;
+  const { data, error } = await client
+    .from("portafolio_proyecto")
+    .update(updates)
+    .eq("id", itemId)
+    .eq("id_estudiante", estudianteId)
+    .select(PORTAFOLIO_SELECT)
+    .single();
+  if (error) throw new ApiError(400, error.message);
+  if (!data) throw new ApiError(404, "Proyecto no encontrado");
+  return data;
+}
+
+export async function deletePortafolioItem(
+  accessToken: string,
+  userId: string,
+  itemId: string,
+) {
+  const client = supabaseForToken(accessToken);
+  const estudianteId = await getEstudianteId(client, userId);
+  const { error } = await client
+    .from("portafolio_proyecto")
+    .delete()
+    .eq("id", itemId)
+    .eq("id_estudiante", estudianteId);
+  if (error) throw new ApiError(400, error.message);
+}
+
+function parsePortafolioBody(body: unknown): {
+  titulo?: string;
+  descripcion?: string | null;
+  tecnologias?: string[];
+  url_demo?: string | null;
+  url_repositorio?: string | null;
+} {
+  if (typeof body !== "object" || body === null) throw new ApiError(400, "Cuerpo inválido");
+  const b = body as Record<string, unknown>;
+  const result: ReturnType<typeof parsePortafolioBody> = {};
+  if (b.titulo !== undefined) {
+    if (typeof b.titulo !== "string" || !b.titulo.trim()) throw new ApiError(400, "titulo requerido");
+    result.titulo = b.titulo.trim();
+  }
+  if (b.descripcion !== undefined) result.descripcion = typeof b.descripcion === "string" ? b.descripcion.trim() || null : null;
+  if (b.tecnologias !== undefined) result.tecnologias = Array.isArray(b.tecnologias) ? (b.tecnologias as string[]).filter(Boolean) : [];
+  if (b.url_demo !== undefined) result.url_demo = typeof b.url_demo === "string" ? b.url_demo.trim() || null : null;
+  if (b.url_repositorio !== undefined) result.url_repositorio = typeof b.url_repositorio === "string" ? b.url_repositorio.trim() || null : null;
+  return result;
 }
 
 export async function updateMyAvatar(

@@ -2,8 +2,10 @@
 
 import { useState, useRef, useEffect, type ReactNode } from "react";
 import { useLocale, useTranslations } from "next-intl";
+import { ProjectMatchPanel } from "@/components/gestion/ProjectMatchPanel";
 import {
   ArrowLeft,
+  Ban,
   Calendar,
   Check,
   CheckCircle2,
@@ -17,6 +19,7 @@ import {
   Loader2,
   Lock,
   MessageSquare,
+  PauseCircle,
   Pencil,
   Plus,
   Send,
@@ -32,11 +35,14 @@ import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
 import {
   getCatalogsAction,
+  cancelProjectAction,
   createProjectAction,
   updateProjectAction,
   deleteProjectAction,
   getProjectByIdAction,
   getProjectOffersAction,
+  pauseProjectAction,
+  resumeProjectAction,
   submitOfferAction,
   reviewOfferAction,
   calificarOfertaAction,
@@ -49,6 +55,9 @@ import {
 import { generateProposalAction, suggestStackAction } from "@/lib/actions/ai";
 import { streamAssistant } from "@/lib/api/ai-client";
 import { getProjectMensajesAction, sendMensajeAction, getMyConversacionesAction } from "@/lib/actions/mensajes";
+import { MejorarMensajeButton } from "@/components/gestion/MejorarMensajeButton";
+import { ReportarMensajeButton } from "@/components/gestion/ReportarMensajeButton";
+import { ProjectChatbot } from "@/components/marketplace/ProjectChatbot";
 import type {
   AiChatMessage,
   ApiMensaje,
@@ -68,7 +77,7 @@ import type {
 
 // ── Types ─────────────────────────────────────────────────────────────────────
 
-type Section = "info" | "chat" | "proceso";
+type Section = "info" | "chat" | "proceso" | "matches";
 
 type ProposalStatus =
   | "nuevo" | "editando" | "enviada" | "revision"
@@ -285,16 +294,16 @@ function buildEmpresaStudents(
 
 // ── Main component ────────────────────────────────────────────────────────────
 
-interface Props { role: ApiRoleName | null; userId: string | null; initialProjectId?: string | null; disponible?: boolean }
+interface Props { role: ApiRoleName | null; userId: string | null; initialProjectId?: string | null; disponible?: boolean; initialOffers?: MyOffer[]; initialProject?: ApiProject | null }
 
-export function GestionPage({ role, userId, initialProjectId, disponible = true }: Props) {
+export function GestionPage({ role, userId, initialProjectId, disponible = true, initialOffers = [], initialProject = null }: Props) {
   const t      = useTranslations("gestion_page");
   const locale = useLocale();
   const isEmpresa = role === "company";
 
   // Sidebar data — starts empty, replaced by real API data on mount
   const [sidebarProjects, setSidebarProjects] = useState<ApiProject[]>([]);
-  const [myOffers, setMyOffers] = useState<MyOffer[]>([]);
+  const [myOffers, setMyOffers] = useState<MyOffer[]>(initialOffers);
   const [myConversaciones, setMyConversaciones] = useState<ConversacionItem[]>([]);
 
   // Catalogs for create/edit form (empresa only)
@@ -309,16 +318,25 @@ export function GestionPage({ role, userId, initialProjectId, disponible = true 
   const [deleting, setDeleting] = useState(false);
   const [deleteError, setDeleteError] = useState<string | null>(null);
 
+  // Pause / cancel project action
+  type ProjectActionKind = "resume" | "pause" | "cancel-step1" | "cancel-step2";
+  const [projectActionKind, setProjectActionKind] = useState<ProjectActionKind | null>(null);
+  const [projectActionPending, setProjectActionPending] = useState(false);
+  const [projectActionError, setProjectActionError] = useState<string | null>(null);
+
   // Pending navigation when form has unsaved changes
   type PendingNav = { type: "select"; id: string } | { type: "back" } | { type: "create" };
   const [pendingNav, setPendingNav] = useState<PendingNav | null>(null);
 
   // Selection state
   const [selectedId, setSelectedId]         = useState<string | null>(initialProjectId ?? null);
-  const [selectedProject, setSelectedProject] = useState<ApiProject | null>(null);
+  const [selectedProject, setSelectedProject] = useState<ApiProject | null>(initialProject);
   const [selectedOffers, setSelectedOffers]   = useState<MyOffer[]>([]);
+  const [projectLoading, setProjectLoading]   = useState<boolean>(false);
+  const [projectError, setProjectError]       = useState<string | null>(null);
   const [projectOffers, setProjectOffers]     = useState<ProjectOffer[]>([]);
-  const [section, setSection]               = useState<Section>("info");
+  const initialSection: Section = (!isEmpresa && !!initialProjectId) ? "proceso" : "info";
+  const [section, setSection]               = useState<Section>(initialSection);
 
   // Clean ?proyecto= from URL once used to pre-select
   useEffect(() => {
@@ -350,16 +368,25 @@ export function GestionPage({ role, userId, initialProjectId, disponible = true 
     return () => { active = false; };
   }, [isEmpresa]);
 
-  // ── Load project detail when selectedId changes ─────────────────────────────
+  // ── Load project detail when selectedId changes (empresa only) ──────────────
+  // Students get project info from myOffers embed; they don't call getProjectByIdAction.
+  // We do NOT clear selectedProject before loading so that server-preloaded data (or the
+  // previous project) stays visible while the fresh fetch runs — avoiding blank/spinner flashes.
   useEffect(() => {
-    if (!selectedId) return;
+    if (!selectedId || !isEmpresa) return;
     let active = true;
+    setProjectError(null);
+    setProjectLoading(true);
     (async () => {
       const r = await getProjectByIdAction(selectedId);
-      if (active && r.ok) setSelectedProject(r.data);
+      if (active) {
+        if (r.ok) setSelectedProject(r.data);
+        else setProjectError(r.error);
+        setProjectLoading(false);
+      }
     })();
     return () => { active = false; };
-  }, [selectedId]);
+  }, [selectedId, isEmpresa]);
 
   // ── Load section-specific data when selectedId or myOffers change ───────────
   useEffect(() => {
@@ -454,6 +481,60 @@ export function GestionPage({ role, userId, initialProjectId, disponible = true 
     setPendingNav(null);
   };
 
+  const handleResumeProject = async () => {
+    if (!selectedId) return;
+    setProjectActionPending(true);
+    setProjectActionError(null);
+    const r = await resumeProjectAction(selectedId);
+    setProjectActionPending(false);
+    if (r.ok) {
+      setSidebarProjects((prev) =>
+        prev.map((p) => p.id === selectedId ? { ...p, estado: { ...p.estado, nombre: "en_recepcion" as const } } : p),
+      );
+      setSelectedProject((prev) =>
+        prev ? { ...prev, estado: { ...prev.estado, nombre: "en_recepcion" as const } } : prev,
+      );
+      setProjectActionKind(null);
+    } else {
+      setProjectActionError(r.error);
+    }
+  };
+
+  const handlePauseProject = async () => {
+    if (!selectedId) return;
+    setProjectActionPending(true);
+    setProjectActionError(null);
+    const r = await pauseProjectAction(selectedId);
+    setProjectActionPending(false);
+    if (r.ok) {
+      setSidebarProjects((prev) =>
+        prev.map((p) => p.id === selectedId ? { ...p, estado: { ...p.estado, nombre: "pausado" as const } } : p),
+      );
+      setSelectedProject((prev) =>
+        prev ? { ...prev, estado: { ...prev.estado, nombre: "pausado" as const } } : prev,
+      );
+      setProjectActionKind(null);
+    } else {
+      setProjectActionError(r.error);
+    }
+  };
+
+  const handleCancelProject = async () => {
+    if (!selectedId) return;
+    setProjectActionPending(true);
+    setProjectActionError(null);
+    const r = await cancelProjectAction(selectedId);
+    setProjectActionPending(false);
+    if (r.ok) {
+      setSidebarProjects((prev) => prev.filter((p) => p.id !== selectedId));
+      setSelectedId(null);
+      setSelectedProject(null);
+      setProjectActionKind(null);
+    } else {
+      setProjectActionError(r.error);
+    }
+  };
+
   return (
     <div className="flex h-[calc(100vh-4rem)] overflow-hidden">
 
@@ -495,55 +576,11 @@ export function GestionPage({ role, userId, initialProjectId, disponible = true 
               {isEmpresa ? (
                 (() => {
                   const convSet = new Map(myConversaciones.map((c) => [c.proyecto.id, c.n_participantes]));
-                  const mainProjects = sidebarProjects.filter((p) => (p.n_ofertas ?? 0) > 0 || !convSet.has(p.id));
-                  const chatProjects = sidebarProjects.filter((p) => (p.n_ofertas ?? 0) === 0 && convSet.has(p.id));
-                  const renderEmpresaItem = (proyecto: (typeof sidebarProjects)[0], openChat = false) => {
-                    const isSelected = proyecto.id === selectedId;
-                    const count  = isSelected ? projectOffers.length : (proyecto.n_ofertas ?? 0);
-                    const hasAdj = isSelected && projectOffers.some((o) => o.estado.nombre === "adjudicada");
-                    const nChats = convSet.get(proyecto.id) ?? 0;
-                    return (
-                      <li key={proyecto.id}>
-                        <div className="group flex items-center gap-1 rounded-xl hover:bg-white/10 transition-colors duration-[var(--duration-fast)] ease-[var(--ease-out)]">
-                          <button
-                            onClick={() => handleSelect(proyecto.id, openChat ? "chat" : "info")}
-                            className="flex flex-1 items-center gap-3 px-3 py-3 text-left"
-                          >
-                            <div className="min-w-0 flex-1">
-                              <p className="truncate font-heading text-sm font-bold text-white">{proyecto.titulo}</p>
-                              <p className="mt-0.5 font-body text-xs text-white/50">
-                                {count > 0 && t("proposals_count", { count })}
-                                {count > 0 && nChats > 0 && " · "}
-                                {nChats > 0 && (
-                                  <span className="inline-flex items-center gap-0.5">
-                                    <MessageSquare className="size-2.5 inline" aria-hidden="true" />
-                                    {t("chat_n_chats", { count: nChats })}
-                                  </span>
-                                )}
-                                {count === 0 && nChats === 0 && t("proposals_count", { count: 0 })}
-                              </p>
-                            </div>
-                            {hasAdj && <CheckCircle2 className="size-4 shrink-0 text-accent" aria-hidden="true" />}
-                            <ChevronRight className="size-4 shrink-0 text-white/30 transition-colors group-hover:text-white/60" aria-hidden="true" />
-                          </button>
-                          {proyecto.estado.nombre === "borrador" && (
-                            <button
-                              type="button"
-                              onClick={(e) => { e.stopPropagation(); setDeleteTarget(proyecto.id); }}
-                              aria-label="Eliminar proyecto"
-                              className="mr-2 hidden size-7 shrink-0 items-center justify-center rounded-full text-white/30 transition-colors hover:bg-magenta/20 hover:text-magenta group-hover:flex"
-                            >
-                              <Trash2 className="size-3.5" aria-hidden="true" />
-                            </button>
-                          )}
-                        </div>
-                      </li>
-                    );
-                  };
-                  if (mainProjects.length === 0 && chatProjects.length === 0) {
+                  if (sidebarProjects.length === 0) {
                     return <SidebarEmpty text={t("empty_empresa")} />;
                   }
                   return (
+<<<<<<< HEAD
                     <>
                       {mainProjects.length > 0 && (
                         <ul className="flex flex-col gap-0.5">
@@ -565,6 +602,53 @@ export function GestionPage({ role, userId, initialProjectId, disponible = true 
                         </>
                       )}
                     </>
+=======
+                    <ul className="flex flex-col gap-0.5">
+                      {sidebarProjects.map((proyecto) => {
+                        const isSelected = proyecto.id === selectedId;
+                        const count  = isSelected ? projectOffers.length : (proyecto.n_ofertas ?? 0);
+                        const hasAdj = isSelected && projectOffers.some((o) => o.estado.nombre === "adjudicada");
+                        const nChats = convSet.get(proyecto.id) ?? 0;
+                        return (
+                          <li key={proyecto.id}>
+                            <div className="group flex items-center gap-1 rounded-xl hover:bg-white/10 transition-colors duration-[var(--duration-fast)] ease-[var(--ease-out)]">
+                              <button
+                                onClick={() => handleSelect(proyecto.id, "info")}
+                                className="flex flex-1 items-center gap-3 px-3 py-3 text-left"
+                              >
+                                <div className="min-w-0 flex-1">
+                                  <p className="truncate font-heading text-sm font-bold text-white">{proyecto.titulo}</p>
+                                  <p className="mt-0.5 font-body text-xs text-white/50">
+                                    {count > 0 && t("proposals_count", { count })}
+                                    {count > 0 && nChats > 0 && " · "}
+                                    {nChats > 0 && (
+                                      <span className="inline-flex items-center gap-0.5">
+                                        <MessageSquare className="size-2.5 inline" aria-hidden="true" />
+                                        {t("chat_n_chats", { count: nChats })}
+                                      </span>
+                                    )}
+                                    {count === 0 && nChats === 0 && t("proposals_count", { count: 0 })}
+                                  </p>
+                                </div>
+                                {hasAdj && <CheckCircle2 className="size-4 shrink-0 text-accent" aria-hidden="true" />}
+                                <ChevronRight className="size-4 shrink-0 text-white/30 transition-colors group-hover:text-white/60" aria-hidden="true" />
+                              </button>
+                              {proyecto.estado.nombre === "borrador" && (
+                                <button
+                                  type="button"
+                                  onClick={(e) => { e.stopPropagation(); setDeleteTarget(proyecto.id); }}
+                                  aria-label="Eliminar proyecto"
+                                  className="mr-2 hidden size-7 shrink-0 items-center justify-center rounded-full text-white/30 transition-colors hover:bg-magenta/20 hover:text-magenta group-hover:flex"
+                                >
+                                  <Trash2 className="size-3.5" aria-hidden="true" />
+                                </button>
+                              )}
+                            </div>
+                          </li>
+                        );
+                      })}
+                    </ul>
+>>>>>>> eb34129fb0681ae33cce2870141185427c16d44c
                   );
                 })()
               ) : (
@@ -657,7 +741,7 @@ export function GestionPage({ role, userId, initialProjectId, disponible = true 
                 {t("all_projects")}
               </button>
               <h2 className="font-heading text-sm font-extrabold leading-snug tracking-tight text-white">
-                {selectedProject?.titulo ?? ""}<span className="text-highlight" aria-hidden="true">.</span>
+                {selectedProject?.titulo ?? myOffers.find((o) => o.proyecto?.id === selectedId)?.proyecto?.titulo ?? ""}<span className="text-highlight" aria-hidden="true">.</span>
               </h2>
               {selectedProject?.area && (
                 <p className="mt-1 font-body text-xs font-semibold uppercase tracking-wider text-white/50">
@@ -683,6 +767,18 @@ export function GestionPage({ role, userId, initialProjectId, disponible = true 
                   </button>
                 );
               })}
+              {isEmpresa && (
+                <button
+                  onClick={() => setSection("matches")}
+                  className={cn(
+                    "flex items-center gap-3 rounded-xl px-3 py-3 font-body text-sm font-semibold transition-colors duration-[var(--duration-fast)] ease-[var(--ease-out)]",
+                    section === "matches" ? "bg-white/15 text-white" : "text-white/55 hover:bg-white/10 hover:text-white",
+                  )}
+                >
+                  <Sparkles className="size-4 shrink-0" aria-hidden="true" />
+                  {t("section_matches")}
+                </button>
+              )}
             </nav>
           </>
         )}
@@ -708,10 +804,16 @@ export function GestionPage({ role, userId, initialProjectId, disponible = true 
           <WelcomePanel
             isEmpresa={isEmpresa}
             hasProjects={sidebarProjects.length > 0}
+            projects={sidebarProjects}
             t={t}
             locale={locale}
             onCreateProject={() => setFormMode("create")}
+            onSelectProject={(id) => handleSelect(id, "info")}
           />
+        ) : projectLoading && !selectedProject ? (
+          <div className="flex flex-1 items-center justify-center py-20">
+            <Loader2 className="size-7 animate-spin text-primary" aria-label="Cargando proyecto" />
+          </div>
         ) : (
           <>
             <div className="sticky top-0 z-10 flex items-center gap-3 border-b border-border bg-canvas/95 px-4 py-3 backdrop-blur-sm md:hidden">
@@ -723,9 +825,23 @@ export function GestionPage({ role, userId, initialProjectId, disponible = true 
                 {t("all_projects")}
               </button>
               <span className="flex-1 truncate font-heading text-sm font-bold text-ink-strong">
-                {selectedProject?.titulo}
+                {selectedProject?.titulo ?? myOffers.find((o) => o.proyecto?.id === selectedId)?.proyecto?.titulo}
               </span>
             </div>
+            {!selectedProject && projectError && (
+              <div className="flex flex-col items-center gap-3 px-6 py-20 text-center">
+                <FolderOpen className="size-10 text-ink-muted/30" aria-hidden="true" />
+                <p className="font-body text-sm text-ink-muted">No se pudo cargar el proyecto.</p>
+                <p className="font-body text-xs text-magenta">{projectError}</p>
+                <button
+                  type="button"
+                  onClick={handleBack}
+                  className="font-body text-sm font-semibold text-primary hover:underline"
+                >
+                  Volver a mis proyectos
+                </button>
+              </div>
+            )}
             {section === "info" && (
               <InfoPanel
                 project={selectedProject}
@@ -733,7 +849,9 @@ export function GestionPage({ role, userId, initialProjectId, disponible = true 
                 t={t}
                 isEmpresa={isEmpresa}
                 onEdit={() => setFormMode("edit")}
-                onDelete={() => setDeleteTarget(selectedId)}
+                onResume={() => setProjectActionKind("resume")}
+                onPause={() => setProjectActionKind("pause")}
+                onCancel={() => setProjectActionKind("cancel-step1")}
               />
             )}
             {section === "chat" && (
@@ -755,6 +873,15 @@ export function GestionPage({ role, userId, initialProjectId, disponible = true 
                 t={t}
                 userId={userId}
                 disponible={disponible}
+              />
+            )}
+            {section === "matches" && isEmpresa && (
+              <ProjectMatchPanel
+                project={selectedProject}
+                inviteLabel={t("matches_invite_btn")}
+                invitedLabel={t("matches_invited_btn")}
+                emptyText={t("matches_empty")}
+                toastInvitedTemplate={t("matches_toast_invited", { name: "{name}" })}
               />
             )}
           </>
@@ -779,6 +906,21 @@ export function GestionPage({ role, userId, initialProjectId, disponible = true 
           onCancel={() => setPendingNav(null)}
         />
       )}
+
+      {/* ── Resume / pause / cancel project dialog ── */}
+      {projectActionKind !== null && (
+        <ProjectActionDialog
+          kind={projectActionKind}
+          pending={projectActionPending}
+          error={projectActionError}
+          t={t}
+          onResume={() => void handleResumeProject()}
+          onPause={() => void handlePauseProject()}
+          onCancel={() => void handleCancelProject()}
+          onAdvanceToFinal={() => { setProjectActionError(null); setProjectActionKind("cancel-step2"); }}
+          onClose={() => { setProjectActionKind(null); setProjectActionError(null); }}
+        />
+      )}
     </div>
   );
 }
@@ -792,18 +934,116 @@ type T = ReturnType<typeof useTranslations<"gestion_page">>;
 function WelcomePanel({
   isEmpresa,
   hasProjects,
+  projects = [],
   t,
   locale,
   onCreateProject,
+  onSelectProject,
 }: {
   isEmpresa: boolean;
   hasProjects: boolean;
+  projects?: ApiProject[];
   t: T;
   locale: string;
   onCreateProject: () => void;
+  onSelectProject: (id: string) => void;
 }) {
+  // ── Empresa dashboard ────────────────────────────────────────────────────────
+  if (isEmpresa && hasProjects) {
+    const totalPropuestas = projects.reduce((acc, p) => acc + (p.n_ofertas ?? 0), 0);
+    const activos = projects.filter(
+      (p) => p.estado.nombre !== "cerrado" && p.estado.nombre !== "cancelado",
+    ).length;
+    const cerrados = projects.filter((p) => p.estado.nombre === "cerrado").length;
+
+    const estadoColor: Record<string, string> = {
+      borrador:      "bg-ink-muted/15 text-ink-muted",
+      en_recepcion:  "bg-primary/10 text-primary",
+      en_evaluacion: "bg-warning/10 text-warning",
+      adjudicado:    "bg-accent/10 text-accent",
+      en_desarrollo: "bg-accent/10 text-accent",
+      cerrado:       "bg-border text-ink-muted",
+      cancelado:     "bg-magenta/10 text-magenta",
+      pausado:       "bg-warning/10 text-warning",
+    };
+
+    return (
+      <div className="h-full overflow-y-auto p-8">
+        {/* Header */}
+        <div className="mb-8">
+          <p className="mb-1 font-body text-xs font-bold uppercase tracking-wider text-primary">
+            {t("section_empresa")}
+          </p>
+          <h1 className="font-heading text-3xl font-extrabold tracking-tight text-ink-strong">
+            {t("title")}<span className="text-primary" aria-hidden="true">.</span>
+          </h1>
+        </div>
+
+        {/* Analíticas */}
+        <div className="mb-8 grid grid-cols-3 gap-4">
+          <div className="rounded-xl border border-border bg-surface p-5 text-center shadow-[var(--shadow-soft)]">
+            <p className="font-heading text-4xl font-black text-secondary">{projects.length}</p>
+            <p className="mt-1 font-body text-xs font-semibold text-ink-muted">{t("analytics_projects")}</p>
+          </div>
+          <div className="rounded-xl border border-border bg-surface p-5 text-center shadow-[var(--shadow-soft)]">
+            <p className="font-heading text-4xl font-black text-primary">{totalPropuestas}</p>
+            <p className="mt-1 font-body text-xs font-semibold text-ink-muted">{t("analytics_proposals")}</p>
+          </div>
+          <div className="rounded-xl border border-border bg-surface p-5 text-center shadow-[var(--shadow-soft)]">
+            <p className="font-heading text-4xl font-black text-accent">{activos}</p>
+            <p className="mt-1 font-body text-xs font-semibold text-ink-muted">{t("analytics_active")}</p>
+          </div>
+        </div>
+
+        {/* Lista de proyectos */}
+        <div className="space-y-3">
+          <div className="flex items-center justify-between">
+            <h2 className="font-body text-xs font-bold uppercase tracking-widest text-ink-muted">
+              {t("analytics_projects_list")}
+            </h2>
+            <button
+              type="button"
+              onClick={onCreateProject}
+              className="flex items-center gap-1 rounded-full border border-primary/30 px-3 py-1 font-body text-xs font-semibold text-primary transition-colors hover:bg-primary/5"
+            >
+              <Plus className="size-3" aria-hidden="true" />
+              {t("welcome_cta_empresa")}
+            </button>
+          </div>
+          {projects.map((p) => (
+            <button
+              key={p.id}
+              type="button"
+              onClick={() => onSelectProject(p.id)}
+              className="group flex w-full items-center gap-4 rounded-xl border border-border bg-surface p-4 text-left shadow-[var(--shadow-soft)] transition-all duration-[var(--duration-fast)] hover:border-primary/30 hover:shadow-[var(--shadow-elevated)]"
+            >
+              <div className="min-w-0 flex-1">
+                <p className="truncate font-heading text-sm font-bold text-ink-strong group-hover:text-primary">
+                  {p.titulo}
+                </p>
+                <p className="mt-0.5 font-body text-xs text-ink-muted">
+                  {p.area?.nombre ?? "—"} · {p.n_ofertas ?? 0} {t("proposals_count", { count: p.n_ofertas ?? 0 }).replace(/^\d+ /, "")}
+                </p>
+              </div>
+              <span className={cn("shrink-0 rounded-full px-2.5 py-1 font-body text-[10px] font-bold", estadoColor[p.estado.nombre] ?? estadoColor.en_recepcion)}>
+                {p.estado.nombre === "en_recepcion" ? t("welcome_state_published") : p.estado.nombre.replace(/_/g, " ")}
+              </span>
+              <ChevronRight className="size-4 shrink-0 text-ink-muted/40 transition-colors group-hover:text-primary" aria-hidden="true" />
+            </button>
+          ))}
+          {cerrados > 0 && (
+            <p className="pt-1 text-center font-body text-xs text-ink-muted">
+              {t("analytics_closed", { count: cerrados })}
+            </p>
+          )}
+        </div>
+      </div>
+    );
+  }
+
+  // ── Estado vacío / junior ────────────────────────────────────────────────────
   const desc = isEmpresa
-    ? hasProjects ? t("welcome_desc_empresa") : t("welcome_desc_empresa_empty")
+    ? t("welcome_desc_empresa_empty")
     : hasProjects ? t("welcome_desc_junior") : t("welcome_desc_junior_empty");
 
   return (
@@ -817,28 +1057,26 @@ function WelcomePanel({
       <p className="mt-3 max-w-sm font-body text-base leading-relaxed text-ink-muted">
         {desc}
       </p>
-      {!hasProjects && (
-        <div className="mt-6">
-          {isEmpresa ? (
-            <button
-              type="button"
-              onClick={onCreateProject}
-              className="inline-flex items-center gap-2 rounded-full bg-primary px-5 py-2.5 font-body text-sm font-semibold text-white transition-colors duration-[var(--duration-fast)] ease-[var(--ease-out)] hover:bg-secondary"
-            >
-              <Plus className="size-4" aria-hidden="true" />
-              {t("welcome_cta_empresa")}
-            </button>
-          ) : (
-            <a
-              href={`/${locale}/marketplace`}
-              className="inline-flex items-center gap-2 rounded-full bg-primary px-5 py-2.5 font-body text-sm font-semibold text-white transition-colors duration-[var(--duration-fast)] ease-[var(--ease-out)] hover:bg-secondary"
-            >
-              <ExternalLink className="size-4" aria-hidden="true" />
-              {t("welcome_cta_junior")}
-            </a>
-          )}
-        </div>
-      )}
+      <div className="mt-6">
+        {isEmpresa ? (
+          <button
+            type="button"
+            onClick={onCreateProject}
+            className="inline-flex items-center gap-2 rounded-full bg-primary px-5 py-2.5 font-body text-sm font-semibold text-white transition-colors duration-[var(--duration-fast)] ease-[var(--ease-out)] hover:bg-secondary"
+          >
+            <Plus className="size-4" aria-hidden="true" />
+            {t("welcome_cta_empresa")}
+          </button>
+        ) : (
+          <a
+            href={`/${locale}/marketplace`}
+            className="inline-flex items-center gap-2 rounded-full bg-primary px-5 py-2.5 font-body text-sm font-semibold text-white transition-colors duration-[var(--duration-fast)] ease-[var(--ease-out)] hover:bg-secondary"
+          >
+            <ExternalLink className="size-4" aria-hidden="true" />
+            {t("welcome_cta_junior")}
+          </a>
+        )}
+      </div>
     </div>
   );
 }
@@ -855,19 +1093,25 @@ function SidebarEmpty({ text }: { text: string }) {
 // ── Info panel ────────────────────────────────────────────────────────────────
 
 function InfoPanel({
-  project, locale, t, isEmpresa, onEdit, onDelete,
+  project, locale, t, isEmpresa, onEdit, onResume, onPause, onCancel,
 }: {
   project: ApiProject | null;
   locale: string;
   t: T;
   isEmpresa: boolean;
   onEdit: () => void;
-  onDelete: () => void;
+  onResume: () => void;
+  onPause: () => void;
+  onCancel: () => void;
 }) {
   if (!project) return null;
   const skills = project.skills.filter((s) => s.skill != null);
   const canEdit = isEmpresa && (project.estado.nombre === "borrador" || project.estado.nombre === "en_recepcion");
-  const canDelete = isEmpresa;
+  const isFinal = project.estado.nombre === "cerrado" || project.estado.nombre === "cancelado";
+  const isPaused = project.estado.nombre === "pausado";
+  const canResume = isEmpresa && isPaused;
+  const canPause = isEmpresa && !isFinal && !isPaused;
+  const canCancel = isEmpresa && !isFinal;
   return (
     <div className="px-6 py-10 md:px-10">
       <div className="mb-6">
@@ -892,16 +1136,39 @@ function InfoPanel({
                   <Pencil className="size-3.5" aria-hidden="true" />
                 </button>
               )}
-              <button
-                type="button"
-                onClick={onDelete}
-                disabled={!canDelete}
-                aria-label={canDelete ? "Eliminar proyecto" : "Solo se pueden eliminar proyectos en borrador"}
-                title={canDelete ? undefined : "Solo se pueden eliminar proyectos en borrador"}
-                className="flex size-8 items-center justify-center rounded-full border border-border text-ink-muted transition-colors duration-[var(--duration-fast)] ease-[var(--ease-out)] hover:border-magenta/30 hover:text-magenta disabled:cursor-not-allowed disabled:opacity-30"
-              >
-                <Trash2 className="size-3.5" aria-hidden="true" />
-              </button>
+              {canResume && (
+                <button
+                  type="button"
+                  onClick={onResume}
+                  aria-label={t("action_resume_btn")}
+                  title={t("action_resume_btn")}
+                  className="flex size-8 items-center justify-center rounded-full border border-border text-ink-muted transition-colors duration-[var(--duration-fast)] ease-[var(--ease-out)] hover:border-accent/40 hover:text-accent"
+                >
+                  <Zap className="size-3.5" aria-hidden="true" />
+                </button>
+              )}
+              {canPause && (
+                <button
+                  type="button"
+                  onClick={onPause}
+                  aria-label={t("action_pause_btn")}
+                  title={t("action_pause_btn")}
+                  className="flex size-8 items-center justify-center rounded-full border border-border text-ink-muted transition-colors duration-[var(--duration-fast)] ease-[var(--ease-out)] hover:border-warning/40 hover:text-warning"
+                >
+                  <PauseCircle className="size-3.5" aria-hidden="true" />
+                </button>
+              )}
+              {canCancel && (
+                <button
+                  type="button"
+                  onClick={onCancel}
+                  aria-label={t("action_cancel_btn")}
+                  title={t("action_cancel_btn")}
+                  className="flex size-8 items-center justify-center rounded-full border border-border text-ink-muted transition-colors duration-[var(--duration-fast)] ease-[var(--ease-out)] hover:border-magenta/40 hover:text-magenta"
+                >
+                  <Ban className="size-3.5" aria-hidden="true" />
+                </button>
+              )}
             </div>
           )}
         </div>
@@ -931,6 +1198,22 @@ function InfoPanel({
         <p className="mb-3 font-body text-xs font-bold uppercase tracking-wider text-ink-muted">{t("description_label")}</p>
         <p className="font-body text-base leading-relaxed text-ink">{project.descripcion}</p>
       </div>
+      {/* Chatbot del proyecto (Nivel 0): el junior resuelve dudas antes de postular */}
+      {!isEmpresa && (
+        <div className="mb-4">
+          <ProjectChatbot projectId={project.id} projectTitulo={project.titulo} />
+        </div>
+      )}
+      {project.condiciones && project.condiciones.trim() && (
+        <div className="mb-4 rounded-2xl border border-border bg-surface p-5">
+          <p className="mb-3 font-body text-xs font-bold uppercase tracking-wider text-ink-muted">
+            Condiciones y preguntas frecuentes
+          </p>
+          <p className="whitespace-pre-line font-body text-base leading-relaxed text-ink">
+            {project.condiciones}
+          </p>
+        </div>
+      )}
       {skills.length > 0 && (
         <div className="rounded-2xl border border-border bg-surface p-5">
           <p className="mb-3 font-body text-xs font-bold uppercase tracking-wider text-ink-muted">{t("skills_label")}</p>
@@ -1180,7 +1463,10 @@ function ChatPanel({
                       >
                         {msg.contenido}
                       </div>
-                      <span className="px-1 font-body text-[11px] text-ink-muted">{formatChatTime(msg.fecha_envio)}</span>
+                      <span className="flex items-center gap-1.5 px-1 font-body text-[11px] text-ink-muted">
+                        {formatChatTime(msg.fecha_envio)}
+                        {!isMine && <ReportarMensajeButton mensajeId={msg.id} />}
+                      </span>
                     </div>
                   </div>
                 );
@@ -1218,6 +1504,10 @@ function ChatPanel({
               <Send className="size-4" aria-hidden="true" />
             </button>
           </div>
+          {/* Empresa: reescribir el borrador con IA antes de enviarlo (Nivel 2) */}
+          {isEmpresa && project && (
+            <MejorarMensajeButton draft={draft} projectId={project.id} onReplace={setDraft} />
+          )}
           <p className="mt-1.5 px-1 font-body text-[11px] text-ink-muted">{t("chat_hint")}</p>
         </div>
       )}
@@ -2599,6 +2889,7 @@ function AiAssistant({ onApply }: { onApply: (proposal: ProjectProposal) => void
 interface FormData {
   titulo: string;
   descripcion: string;
+  condiciones: string;
   id_area_negocio: string;
   plazo_dias: string;
   usa_ia: boolean;
@@ -2625,6 +2916,7 @@ function ProjectFormContent({
   const [form, setForm] = useState<FormData>(() => ({
     titulo: project?.titulo ?? "",
     descripcion: project?.descripcion ?? "",
+    condiciones: project?.condiciones ?? "",
     id_area_negocio: project?.area?.id ?? "",
     plazo_dias: project ? String(project.plazo_dias) : "10",
     usa_ia: project?.usa_ia ?? false,
@@ -2709,6 +3001,7 @@ function ProjectFormContent({
         usa_ia: form.usa_ia,
         skills: form.skills,
         ...(form.tecnologias_extra.length > 0 ? { tecnologias_extra: form.tecnologias_extra } : {}),
+        ...(form.condiciones.trim() ? { condiciones: form.condiciones.trim() } : {}),
         publicar: form.publicar,
       } satisfies CreateProjectInput);
     } else {
@@ -2720,6 +3013,7 @@ function ProjectFormContent({
         usa_ia: form.usa_ia,
         skills: form.skills,
         ...(form.tecnologias_extra.length > 0 ? { tecnologias_extra: form.tecnologias_extra } : {}),
+        ...(form.condiciones.trim() ? { condiciones: form.condiciones.trim() } : {}),
       } satisfies UpdateProjectInput);
     }
   }
@@ -2791,6 +3085,23 @@ function ProjectFormContent({
               placeholder="Describí el proyecto, objetivos y entregables esperados"
               className="min-h-28 w-full resize-none rounded-xl border border-border bg-surface-sunken px-3.5 py-2 font-body text-sm text-ink-strong outline-none focus:ring-2 focus:ring-primary/20"
             />
+          </div>
+
+          <div className="space-y-1">
+            <label htmlFor="pf-condiciones" className="block font-body text-xs font-bold uppercase tracking-wider text-ink-muted">
+              Condiciones y preguntas frecuentes
+            </label>
+            <textarea
+              id="pf-condiciones"
+              rows={4}
+              value={form.condiciones}
+              onChange={(e) => setForm((p) => ({ ...p, condiciones: e.target.value }))}
+              placeholder="Opcional: aclaraciones, expectativas y dudas comunes del proyecto. El asistente del proyecto las usa para responderle a los juniors."
+              className="min-h-24 w-full resize-none rounded-xl border border-border bg-surface-sunken px-3.5 py-2 font-body text-sm text-ink-strong outline-none focus:ring-2 focus:ring-primary/20"
+            />
+            <p className="font-body text-[11px] text-ink-muted">
+              No incluyas el método de pago entre la empresa y el estudiante (no aplica en esta etapa).
+            </p>
           </div>
 
           <div className="grid gap-4 md:grid-cols-2">
@@ -2981,6 +3292,187 @@ function UnsavedChangesDialog({
             Salir sin guardar
           </button>
         </div>
+      </div>
+    </>
+  );
+}
+
+// ── Project action dialog (resume / pause / cancel) ──────────────────────────
+
+type ProjectActionKindProp = "resume" | "pause" | "cancel-step1" | "cancel-step2";
+
+function ProjectActionDialog({
+  kind,
+  pending,
+  error,
+  t,
+  onResume,
+  onPause,
+  onCancel,
+  onAdvanceToFinal,
+  onClose,
+}: {
+  kind: ProjectActionKindProp;
+  pending: boolean;
+  error: string | null;
+  t: T;
+  onResume: () => void;
+  onPause: () => void;
+  onCancel: () => void;
+  onAdvanceToFinal: () => void;
+  onClose: () => void;
+}) {
+  return (
+    <>
+      <div
+        className="fixed inset-0 z-40 bg-ink-strong/50 backdrop-blur-sm"
+        aria-hidden="true"
+        onClick={!pending ? onClose : undefined}
+      />
+      <div
+        role="dialog"
+        aria-modal="true"
+        className="fixed left-1/2 top-1/2 z-50 w-full max-w-sm -translate-x-1/2 -translate-y-1/2 rounded-2xl border border-border bg-canvas p-6 shadow-[var(--shadow-elevated)]"
+      >
+        {kind === "resume" && (
+          <>
+            <div className="mb-1 flex size-10 items-center justify-center rounded-full bg-accent/10">
+              <Zap className="size-5 text-accent" aria-hidden="true" />
+            </div>
+            <h3 className="mt-3 font-heading text-lg font-extrabold tracking-tight text-ink-strong">
+              {t("resume_dialog_title")}<span className="text-accent" aria-hidden="true">.</span>
+            </h3>
+            <p className="mt-1 font-body text-sm text-ink-muted">{t("resume_dialog_body")}</p>
+            {error && (
+              <p className="mt-3 rounded-xl bg-magenta/10 px-3 py-2 font-body text-sm font-semibold text-magenta">{error}</p>
+            )}
+            <div className="mt-5 flex gap-3">
+              <button
+                type="button"
+                onClick={onClose}
+                disabled={pending}
+                className="flex-1 rounded-full border border-border px-4 py-2.5 font-body text-sm font-semibold text-ink-muted transition-colors hover:bg-surface-sunken disabled:opacity-50"
+              >
+                {t("resume_dialog_back")}
+              </button>
+              <button
+                type="button"
+                onClick={onResume}
+                disabled={pending}
+                className="flex-1 rounded-full bg-accent px-4 py-2.5 font-body text-sm font-semibold text-white transition-colors hover:bg-accent/80 disabled:opacity-60"
+              >
+                {pending ? <Loader2 className="mx-auto size-4 animate-spin" /> : t("resume_dialog_confirm")}
+              </button>
+            </div>
+          </>
+        )}
+
+        {kind === "pause" && (
+          <>
+            <div className="mb-1 flex size-10 items-center justify-center rounded-full bg-warning/10">
+              <PauseCircle className="size-5 text-warning" aria-hidden="true" />
+            </div>
+            <h3 className="mt-3 font-heading text-lg font-extrabold tracking-tight text-ink-strong">
+              {t("pause_dialog_title")}<span className="text-warning" aria-hidden="true">.</span>
+            </h3>
+            <p className="mt-1 font-body text-sm text-ink-muted">{t("pause_dialog_body")}</p>
+            {error && (
+              <p className="mt-3 rounded-xl bg-magenta/10 px-3 py-2 font-body text-sm font-semibold text-magenta">{error}</p>
+            )}
+            <div className="mt-5 flex gap-3">
+              <button
+                type="button"
+                onClick={onClose}
+                disabled={pending}
+                className="flex-1 rounded-full border border-border px-4 py-2.5 font-body text-sm font-semibold text-ink-muted transition-colors hover:bg-surface-sunken disabled:opacity-50"
+              >
+                {t("pause_dialog_back")}
+              </button>
+              <button
+                type="button"
+                onClick={onPause}
+                disabled={pending}
+                className="flex-1 rounded-full bg-warning px-4 py-2.5 font-body text-sm font-semibold text-white transition-colors hover:bg-warning/80 disabled:opacity-60"
+              >
+                {pending ? <Loader2 className="mx-auto size-4 animate-spin" /> : t("pause_dialog_confirm")}
+              </button>
+            </div>
+          </>
+        )}
+
+        {kind === "cancel-step1" && (
+          <>
+            <div className="mb-1 flex size-10 items-center justify-center rounded-full bg-warning/10">
+              <Ban className="size-5 text-warning" aria-hidden="true" />
+            </div>
+            <h3 className="mt-3 font-heading text-lg font-extrabold tracking-tight text-ink-strong">
+              {t("cancel_step1_title")}<span className="text-warning" aria-hidden="true">.</span>
+            </h3>
+            <p className="mt-1 font-body text-sm text-ink-muted">{t("cancel_step1_body")}</p>
+            {error && (
+              <p className="mt-3 rounded-xl bg-magenta/10 px-3 py-2 font-body text-sm font-semibold text-magenta">{error}</p>
+            )}
+            <div className="mt-5 flex flex-col gap-2">
+              <button
+                type="button"
+                onClick={onPause}
+                disabled={pending}
+                className="w-full rounded-full bg-warning px-4 py-2.5 font-body text-sm font-semibold text-white transition-colors hover:bg-warning/80 disabled:opacity-60"
+              >
+                {pending ? <Loader2 className="mx-auto size-4 animate-spin" /> : t("cancel_step1_pause")}
+              </button>
+              <button
+                type="button"
+                onClick={onAdvanceToFinal}
+                disabled={pending}
+                className="w-full rounded-full border border-magenta/40 px-4 py-2.5 font-body text-sm font-semibold text-magenta transition-colors hover:bg-magenta/5 disabled:opacity-50"
+              >
+                {t("cancel_step1_cancel")}
+              </button>
+              <button
+                type="button"
+                onClick={onClose}
+                disabled={pending}
+                className="w-full rounded-full border border-border px-4 py-2.5 font-body text-sm font-semibold text-ink-muted transition-colors hover:bg-surface-sunken disabled:opacity-50"
+              >
+                {t("cancel_step1_back")}
+              </button>
+            </div>
+          </>
+        )}
+
+        {kind === "cancel-step2" && (
+          <>
+            <div className="mb-1 flex size-10 items-center justify-center rounded-full bg-magenta/10">
+              <Ban className="size-5 text-magenta" aria-hidden="true" />
+            </div>
+            <h3 className="mt-3 font-heading text-lg font-extrabold tracking-tight text-ink-strong">
+              {t("cancel_step2_title")}<span className="text-magenta" aria-hidden="true">.</span>
+            </h3>
+            <p className="mt-1 font-body text-sm text-ink-muted">{t("cancel_step2_body")}</p>
+            {error && (
+              <p className="mt-3 rounded-xl bg-magenta/10 px-3 py-2 font-body text-sm font-semibold text-magenta">{error}</p>
+            )}
+            <div className="mt-5 flex gap-3">
+              <button
+                type="button"
+                onClick={onClose}
+                disabled={pending}
+                className="flex-1 rounded-full border border-border px-4 py-2.5 font-body text-sm font-semibold text-ink-muted transition-colors hover:bg-surface-sunken disabled:opacity-50"
+              >
+                {t("cancel_step2_back")}
+              </button>
+              <button
+                type="button"
+                onClick={onCancel}
+                disabled={pending}
+                className="flex-1 rounded-full bg-magenta px-4 py-2.5 font-body text-sm font-semibold text-white transition-colors hover:bg-magenta/80 disabled:opacity-60"
+              >
+                {pending ? <Loader2 className="mx-auto size-4 animate-spin" /> : t("cancel_step2_confirm")}
+              </button>
+            </div>
+          </>
+        )}
       </div>
     </>
   );

@@ -45,6 +45,7 @@ export interface Activity {
 
 export interface Application {
   id: string;
+  projectId: string;
   projectName: string;
   companyName: string;
   status: "enviada" | "vista" | "en_proceso" | "aceptada" | "rechazada";

@@ -668,6 +668,7 @@
     },
     "page_title": "Mis proyectos",
     "create_btn": "Crear proyecto",
+    "ir_a_gestion": "Ir a gestión",
     "back_btn": "Volver",
     "no_projects_title": "Aún no tenés proyectos",
     "no_projects_desc": "Creá tu primer proyecto para empezar a recibir postulaciones de juniors.",
@@ -683,8 +684,13 @@
     "tabs": {
       "project": "Proyecto",
       "entregables": "Entregables",
-      "applications": "Postulaciones"
+      "applications": "Postulaciones",
+      "matches": "Matches"
     },
+    "matches_invite_btn": "Invitar",
+    "matches_invited_btn": "Invitado",
+    "matches_toast_invited": "{name} fue invitado al proyecto.",
+    "matches_empty": "Aún no hay juniors que coincidan con este proyecto.",
     "objective_title": "Objetivo del Proyecto",
     "scope_title": "Alcance y Requerimientos",
     "deliverables_title": "Entregables Esperados",
@@ -784,6 +790,7 @@
       "search_placeholder": "Buscar por título...",
       "status_label": "Estado",
       "status_all": "Todos los estados",
+      "status_published": "Publicado",
       "status_active": "Activos",
       "status_paused": "Pausados",
       "modality_label": "Modalidad",
@@ -799,7 +806,13 @@
       "skill_label": "Tecnología",
       "skill_all": "Todas las tecnologías"
     },
-    "edit_blocked": "No se puede editar: el proyecto ya tiene una oferta adjudicada"
+    "edit_blocked": "No se puede editar: el proyecto ya tiene una oferta adjudicada",
+    "analytics": {
+      "total": "Postulantes",
+      "received": "En recepción",
+      "awarded": "Adjudicado",
+      "rejected": "Rechazados"
+    }
   },
   "app_header": {
     "notifications": "Notificaciones",
@@ -906,10 +919,12 @@
       "reputation_label": "reputación acumulada"
     },
     "calificaciones": {
-      "title": "Calificaciones recibidas",
+      "title": "Proyectos realizados",
+      "subtitle": "Los proyectos completados y las calificaciones que recibiste de las empresas.",
       "empty": "Aún no tenés calificaciones de empresas.",
+      "comment_label": "Comentario de la empresa",
       "your_reply": "Tu réplica",
-      "reply_btn": "Responder",
+      "reply_btn": "Responder a esta calificación",
       "reply_placeholder": "Escribí tu réplica a esta calificación...",
       "reply_send": "Enviar réplica",
       "reply_sending": "Enviando...",
@@ -958,12 +973,16 @@
     "stack": {
       "title": "Mi Stack Tecnológico",
       "add": "Agregar",
-      "placeholder": "Ej. Node.js, GraphQL, PostgreSQL...",
+      "placeholder": "Busca o escribe una tecnología...",
       "add_btn": "Añadir",
       "cancel_btn": "Cancelar",
       "remove_skill": "Quitar {skill}",
       "empty": "No hay tecnologías agregadas aún.",
-      "catalog_hint": "Solo se guardan las tecnologías reconocidas en nuestro catálogo."
+      "catalog_hint": "Las tecnologías del catálogo se destacan en azul. Las personalizadas en amarillo.",
+      "catalog_label": "Catálogo",
+      "add_custom": "Agregar nueva",
+      "legend_catalog": "Del catálogo",
+      "legend_custom": "Personalizada"
     },
     "knowledge": {
       "title": "Conocimientos adicionales",
@@ -1003,37 +1022,44 @@
     },
     "applications_sidebar": {
       "title": "Postulaciones",
-      "manage": "Gestionar postulaciones"
+      "manage": "Gestionar postulaciones",
+      "empty": "Aún no te has postulado a ningún proyecto."
     },
     "work": {
-      "title": "Mi PORTAFOLIOS",
+      "title": "Mi portafolio",
       "description": "Gestioná y exhibí tus desarrollos más impactantes. Visualizá tus productos terminados y añadí nuevas piezas a tu portafolio profesional.",
       "badge_product": "Product",
-      "add_title": "Agregar PORTAFOLIO",
+      "add_title": "Agregar proyecto",
       "add_formats": "Formatos soportados: Link, Figma, GitHub",
-      "add_project": "Agregar PORTAFOLIO",
-      "my_projects": "Mis PORTAFOLIOS",
+      "add_project": "Agregar proyecto",
+      "my_projects": "Mis proyectos",
       "my_projects_help": "Gestioná y exhibí tus desarrollos más impactantes.",
       "preview_btn": "Vista previa",
       "open_btn": "Abrir",
+      "edit_btn": "Editar",
+      "save_btn": "Guardar",
       "preview_modal_title": "Vista previa",
       "open_in_new_tab": "Abrir en nueva pestaña",
       "close": "Cerrar",
       "iframe_error": "Este sitio no permite ser embebido. Podés abrirlo directamente.",
-      "no_projects": "Todavía no hay PORTAFOLIOS en tu portfolio.",
-      "add_modal_title": "Agregar nuevo PORTAFOLIO",
+      "no_projects": "Todavía no hay proyectos en tu portafolio.",
+      "show_more": "Ver {count} más",
+      "show_less": "Ver menos",
+      "add_modal_title": "Agregar nuevo proyecto",
+      "edit_modal_title": "Editar proyecto",
       "fields": {
-        "name": "Nombre del PORTAFOLIO",
-        "url": "URL / Enlace",
+        "name": "Nombre del proyecto",
+        "url": "URL demo / Enlace",
+        "repo_url": "URL repositorio (opcional)",
         "description": "Descripción breve",
-        "techs": "Tecnologías (separadas por comas)",
+        "techs": "Tecnologías",
         "techs_placeholder": "Ej. React, Tailwind, Next.js"
       },
       "create": "Crear proyecto",
       "cancel": "Cancelar",
       "errors": {
-        "name_required": "El nombre del PORTAFOLIO es obligatorio.",
-        "url_required": "La URL del PORTAFOLIO es obligatoria."
+        "name_required": "El nombre del proyecto es obligatorio.",
+        "url_required": "La URL del proyecto es obligatoria."
       },
       "confirm_delete": {
         "title": "Eliminar proyecto",
@@ -1042,16 +1068,20 @@
         "confirm": "Eliminar"
       },
       "work": {
-        "add_modal_title": "Agregar nuevo PORTAFOLIO",
+        "add_modal_title": "Agregar nuevo proyecto",
         "fields": {
-          "name": "Nombre del PORTAFOLIO",
+          "name": "Nombre del proyecto",
           "url": "URL / Enlace",
           "description": "Descripción breve",
-          "techs": "Tecnologías (separadas por comas)",
+          "techs": "Tecnologías",
           "techs_placeholder": "Ej. React, Tailwind, Next.js"
         },
-        "create": "Crear PORTAFOLIO",
-        "cancel": "Cancelar"
+        "create": "Crear proyecto",
+        "cancel": "Cancelar",
+        "errors": {
+          "name_required": "El nombre del proyecto es obligatorio.",
+          "url_required": "La URL del proyecto es obligatoria."
+        }
       }
     },
     "applications": {
@@ -1070,8 +1100,16 @@
       "stats": {
         "active": "Postulaciones Activas",
         "interviews": "Entrevistas Programadas",
-        "compatibility": "Índice de Compatibilidad"
+        "compatibility": "Índice de Compatibilidad",
+        "in_progress": "Proyectos en proceso",
+        "awarded": "Proyectos adjudicados"
       },
+      "go_to_marketplace": "Ir a gestión",
+      "saved_title": "Proyectos guardados",
+      "saved_empty": "No tenés proyectos guardados. Usa el botón guardar en el marketplace para agregarlos aquí.",
+      "saved_expired": "Vencido",
+      "saved_view": "Ver proyecto",
+      "saved_remove": "Quitar de guardados",
       "opportunities_title": "Otras oportunidades para ti",
       "opportunities_description": "Proyectos que podrían encajar con tu trayectoria profesional.",
       "view_details": "Ver detalles",
@@ -1311,7 +1349,12 @@
     "empty_no_candidates_desc": "Ajustá los filtros o reducí el nivel de match mínimo.",
     "toast_invited": "Se ha invitado a {name} a postularse al proyecto.",
     "toast_cleared": "Se han limpiado los filtros de búsqueda.",
-    "toast_profile_edit": "Funcionalidad de edición de perfil en desarrollo (Fase 3)."
+    "toast_profile_edit": "Funcionalidad de edición de perfil en desarrollo (Fase 3).",
+    "invite_modal_title": "Invitar a proyecto",
+    "invite_modal_desc": "Elegí a qué proyecto querés invitar a {name}.",
+    "invite_modal_cancel": "Cancelar",
+    "invite_modal_confirm": "Invitar",
+    "invite_modal_no_projects": "No tenés proyectos activos para invitar."
   },
   "prototipo_preview": {
     "button": "Vista previa",
@@ -1319,6 +1362,25 @@
     "open_in_new_tab": "Abrir en pestaña nueva",
     "close": "Cerrar",
     "iframe_error": "No se pudo mostrar la vista previa embebida. Abrí el prototipo en una pestaña nueva."
+  },
+  "talento": {
+    "title": "Buscar talento",
+    "subtitle": "Encontrá estudiantes verificados de FWD para tus proyectos.",
+    "filters_title": "Filtros",
+    "clear_btn": "Limpiar",
+    "search_placeholder": "Buscar por nombre...",
+    "specialty_label": "Especialidad",
+    "modality_label": "Modalidad",
+    "skill_label": "Tecnología",
+    "skill_all": "Todas",
+    "only_available": "Solo disponibles",
+    "available_badge": "Disponible",
+    "busy_badge": "Ocupado",
+    "verified": "Verificado",
+    "empty": "No hay estudiantes que coincidan con los filtros.",
+    "results_count": "{count, plural, =0 {Sin resultados} one {# estudiante} other {# estudiantes}}",
+    "specialty": { "frontend": "Frontend", "backend": "Backend", "fullstack": "Fullstack", "ia": "IA & Data" },
+    "modality": { "remote": "Remoto", "hybrid": "Híbrido", "onsite": "Presencial" }
   },
   "postulaciones_empresa": {
     "select_for_award": "Seleccionar esta propuesta para adjudicar",
@@ -1471,7 +1533,9 @@
       "delete": "Eliminar logo",
       "invalid_type": "El archivo debe ser una imagen.",
       "too_large": "La imagen supera el máximo de 5 MB.",
-      "upload_error": "No se pudo subir el logo. Intentá de nuevo."
+      "upload_error": "No se pudo subir el logo. Intentá de nuevo.",
+      "section_title": "Logo de la empresa",
+      "upload_hint": "Subí o cambiá el logo de tu empresa. Formatos aceptados: JPG, PNG, WebP. Máximo 5 MB."
     },
     "contacts": {
       "add_btn": "Reclutador",
@@ -1852,7 +1916,13 @@
     "select_project_prompt": "Seleccioná un proyecto para comenzar",
     "welcome_desc_empresa": "Seleccioná un proyecto de la lista para ver las propuestas recibidas y gestionar el proceso.",
     "welcome_desc_empresa_empty": "Publicá tu primer proyecto y empezá a recibir propuestas de juniors.",
-    "welcome_cta_empresa": "Crear primer proyecto",
+    "welcome_cta_empresa": "Nuevo proyecto",
+    "welcome_state_published": "Publicado",
+    "analytics_projects": "Proyectos",
+    "analytics_proposals": "Propuestas recibidas",
+    "analytics_active": "Proyectos activos",
+    "analytics_closed": "{count} cerrados",
+    "analytics_projects_list": "Todos los proyectos",
     "welcome_desc_junior": "Seleccioná un proyecto de la lista para ver el estado de tu postulación y seguir el proceso.",
     "welcome_desc_junior_empty": "Explorá el marketplace, encontrá un proyecto que te interese y enviá tu propuesta.",
     "welcome_cta_junior": "Explorar marketplace",
@@ -2470,6 +2540,84 @@
       "submit_edit": "Guardar rol"
     },
     "save": "Guardar cambios",
-    "saved": "Cambios guardados"
+    "saved": "Cambios guardados",
+    "chat_overview_empty": "Aún no hay mensajes en este proyecto",
+    "action_pause_btn": "Pausar proyecto",
+    "action_cancel_btn": "Cancelar proyecto",
+    "pause_dialog_title": "Pausar proyecto",
+    "pause_dialog_body": "El proyecto dejará de aparecer en el marketplace. El plazo queda congelado hasta que lo retomes.",
+    "pause_dialog_confirm": "Pausar",
+    "pause_dialog_back": "Volver",
+    "cancel_step1_title": "¿Pausar en lugar de cancelar?",
+    "cancel_step1_body": "Pausar oculta el proyecto temporalmente sin notificar a nadie. Cancelar es definitivo y notifica a todos los participantes.",
+    "cancel_step1_pause": "Pausar temporalmente",
+    "cancel_step1_cancel": "Cancelar definitivamente",
+    "cancel_step1_back": "Volver",
+    "cancel_step2_title": "Esta acción es irreversible",
+    "cancel_step2_body": "¿Seguro que querés cancelar el proyecto? Se notificará a todos los juniors que participaron.",
+    "cancel_step2_confirm": "Sí, cancelar proyecto",
+    "cancel_step2_back": "Volver",
+    "state_pausado": "Pausado",
+    "action_resume_btn": "Reactivar proyecto",
+    "resume_dialog_title": "Reactivar proyecto",
+    "resume_dialog_body": "El proyecto volverá a aparecer en el marketplace en estado de recepción de postulantes.",
+    "resume_dialog_confirm": "Reactivar",
+    "resume_dialog_back": "Volver",
+    "state_en_recepcion": "En recepción",
+    "section_matches": "Matches",
+    "matches_empty": "Aún no hay juniors que coincidan con este proyecto. El algoritmo de matching estará disponible pronto.",
+    "matches_invite_btn": "Invitar",
+    "matches_invited_btn": "Invitado",
+    "matches_toast_invited": "{name} fue invitado al proyecto."
+  },
+  "project_chatbot": {
+    "title": "Asistente del proyecto",
+    "subtitle": "Resolvé tus dudas antes de postular",
+    "header_hint": "Responde según este proyecto",
+    "close": "Cerrar",
+    "empty_title": "¿Tenés dudas sobre el proyecto?",
+    "empty_hint": "Por ejemplo: ¿qué tecnologías necesito?, ¿es web o app?, ¿qué incluye el alcance?",
+    "thinking": "Pensando…",
+    "input_placeholder": "Escribí tu pregunta…",
+    "send": "Enviar",
+    "prefer_human": "¿Preferís hablar con la empresa?",
+    "talk_to_company": "Hablar con la empresa",
+    "escalate_title": "Escribile a la empresa",
+    "escalate_desc": "La empresa lo verá y te responderá en el chat del proyecto.",
+    "escalate_placeholder": "Escribí tu mensaje para la empresa…",
+    "escalate_send": "Enviar a la empresa",
+    "escalate_sending": "Enviando…",
+    "escalate_sent_title": "Mensaje enviado",
+    "escalate_sent_desc": "La empresa lo verá en el chat del proyecto y te responderá ahí.",
+    "go_to_chat": "Ir al chat",
+    "cancel": "Cancelar",
+    "error_generic": "Algo salió mal. Probá de nuevo.",
+    "escalate_default_draft": "Hola, tengo una consulta sobre el proyecto «{titulo}»: "
+  },
+  "mejorar_mensaje": {
+    "button": "Mejorar con IA",
+    "loading": "Mejorando…",
+    "undo": "Deshacer",
+    "error": "No se pudo mejorar. Probá de nuevo."
+  },
+  "reportar_mensaje": {
+    "button": "Reportar mensaje",
+    "title": "Reportar mensaje",
+    "subtitle": "El equipo de moderación revisará este mensaje.",
+    "close": "Cerrar",
+    "motivo_label": "Motivo",
+    "motivo_falta_respeto": "Falta de respeto",
+    "motivo_spam": "Spam",
+    "motivo_contenido_inapropiado": "Contenido inapropiado",
+    "motivo_fuera_de_lugar": "Fuera de lugar",
+    "motivo_otro": "Otro",
+    "detalle_label": "Detalle (opcional)",
+    "detalle_placeholder": "Contanos qué pasó…",
+    "submit": "Enviar reporte",
+    "sending": "Enviando…",
+    "cancel": "Cancelar",
+    "sent_title": "Reporte enviado",
+    "sent_desc": "Gracias. El equipo de moderación lo revisará.",
+    "error": "No se pudo enviar el reporte. Probá de nuevo."
   }
 }

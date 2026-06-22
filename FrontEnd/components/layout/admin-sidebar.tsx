@@ -12,6 +12,7 @@ import {
   ClipboardList,
   FolderKanban,
   BarChart2,
+  ShieldAlert,
   Settings,
   LogOut,
 } from "lucide-react";
@@ -25,6 +26,7 @@ const NAV_ITEMS = [
   { label: "Empresas", href: "/admin/empresas", icon: Building2 },
   { label: "Solicitudes", href: "/admin/solicitudes", icon: ClipboardList },
   { label: "Proyectos", href: "/admin/proyectos", icon: FolderKanban },
+  { label: "Moderación", href: "/admin/moderacion", icon: ShieldAlert },
   { label: "Reportes", href: "/admin/reportes", icon: BarChart2 },
   { label: "Configuración", href: "/admin/configuracion", icon: Settings },
 ] as const;

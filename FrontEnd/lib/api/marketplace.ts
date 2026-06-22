@@ -20,6 +20,8 @@ import type {
   RankingResponse,
   ReplicaInput,
   ReviewOfferInput,
+  SavedProjectIdsResponse,
+  SavedProjectsResponse,
   SubmitEntregableInput,
   SubmitOfferInput,
   UpdateProjectInput,
@@ -213,9 +215,45 @@ export function cancelProject(projectId: string): Promise<Result<void>> {
   });
 }
 
+/** Pausa temporalmente el proyecto propio: congela el plazo y lo oculta del marketplace. */
+export function pauseProject(projectId: string): Promise<Result<void>> {
+  return asResult(async () => {
+    await apiAuth(`/projects/${projectId}/pausar`, { method: "PATCH" });
+  });
+}
+
+/** Reactiva un proyecto pausado, volviéndolo al estado en_recepcion. */
+export function resumeProject(projectId: string): Promise<Result<void>> {
+  return asResult(async () => {
+    await apiAuth(`/projects/${projectId}/reactivar`, { method: "PATCH" });
+  });
+}
+
 /** Elimina definitivamente (hard) el proyecto propio. No se puede deshacer. */
 export function deleteProject(projectId: string): Promise<Result<void>> {
   return asResult(async () => {
     await apiAuth(`/projects/${projectId}`, { method: "DELETE" });
+  });
+}
+
+// ── Proyectos guardados ───────────────────────────────────────────────────────
+
+export function getSavedProjects(): Promise<Result<SavedProjectsResponse>> {
+  return asResult(() => apiAuth<SavedProjectsResponse>("/guardados"));
+}
+
+export function getSavedProjectIds(): Promise<Result<SavedProjectIdsResponse>> {
+  return asResult(() => apiAuth<SavedProjectIdsResponse>("/guardados/ids"));
+}
+
+export function saveProject(proyectoId: string): Promise<Result<void>> {
+  return asResult(async () => {
+    await apiAuth(`/guardados/${proyectoId}`, { method: "POST" });
+  });
+}
+
+export function unsaveProject(proyectoId: string): Promise<Result<void>> {
+  return asResult(async () => {
+    await apiAuth(`/guardados/${proyectoId}`, { method: "DELETE" });
   });
 }
