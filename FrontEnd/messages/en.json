@@ -53,13 +53,6 @@
       "cta_projects": "View projects",
       "cta_register": "Create free account"
     },
-    "featured_projects": {
-      "eyebrow": "Projects",
-      "title": "Available opportunities",
-      "badge_featured": "Featured",
-      "duration": "weeks",
-      "link_all": "See all"
-    },
     "value_prop": {
       "talents_title": "For talents",
       "talents_items": {
@@ -1648,5 +1641,33 @@
     "empty": "No notifications",
     "view_all": "View all activity",
     "preferences": "Preferences"
+  },
+  "cosmos_profesional": {
+    "screen_label": "Important points constellation",
+    "eyebrow": "FWD constellation",
+    "title": "Students are the stars",
+    "description": "Here you get a glimpse of everything you'll find on the platform. Hover over each star to see how FWD connects you with real projects.",
+    "stars": {
+      "0": {
+        "title": "Real projects",
+        "desc": "Work on company challenges, not practice exercises."
+      },
+      "1": {
+        "title": "Companies publish",
+        "desc": "Upload projects and briefs designed for junior talent."
+      },
+      "2": {
+        "title": "Match your skills",
+        "desc": "We show you opportunities based on what you know how to do."
+      },
+      "3": {
+        "title": "Notifications",
+        "desc": "Find out as soon as a project that fits you opens."
+      },
+      "4": {
+        "title": "Publish yourself",
+        "desc": "Make yourself visible like a star in the sky."
+      }
+    }
   }
 }
