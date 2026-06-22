@@ -1,5 +1,5 @@
 -- ─────────────────────────────────────────────────────────────────────────────
--- 0036_proyecto_condiciones.sql
+-- 0037_proyecto_condiciones.sql
 -- "Condiciones y preguntas frecuentes" del proyecto: texto libre y OPCIONAL que la empresa
 -- redacta al crear/editar el proyecto (alcance, expectativas, dudas comunes). Lo usa el chatbot
 -- del proyecto para responderle al junior con informacion real de la empresa, sin inventar.

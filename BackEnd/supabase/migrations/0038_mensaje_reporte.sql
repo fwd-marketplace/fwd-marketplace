@@ -1,5 +1,5 @@
 -- ─────────────────────────────────────────────────────────────────────────────
--- 0037_mensaje_reporte.sql
+-- 0038_mensaje_reporte.sql
 -- Reportes de mensajes del chat directo (moderacion). Cualquier participante (junior o empresa)
 -- puede reportar un mensaje que considere una falta de respeto o fuera de lugar; el admin los
 -- revisa en el panel de Moderacion y actua (suspender cuenta / cancelar proyecto con las acciones
