@@ -906,10 +906,12 @@
       "reputation_label": "accumulated reputation"
     },
     "calificaciones": {
-      "title": "Received ratings",
+      "title": "Completed projects",
+      "subtitle": "Completed projects and the ratings you received from companies.",
       "empty": "You have no company ratings yet.",
+      "comment_label": "Company comment",
       "your_reply": "Your reply",
-      "reply_btn": "Reply",
+      "reply_btn": "Reply to this rating",
       "reply_placeholder": "Write your reply to this rating...",
       "reply_send": "Send reply",
       "reply_sending": "Sending...",
@@ -958,12 +960,16 @@
     "stack": {
       "title": "My Tech Stack",
       "add": "Add",
-      "placeholder": "e.g. Node.js, GraphQL, PostgreSQL...",
+      "placeholder": "Search or type a technology...",
       "add_btn": "Add",
       "cancel_btn": "Cancel",
       "remove_skill": "Remove {skill}",
       "empty": "No technologies added yet.",
-      "catalog_hint": "Only technologies recognized in our catalog are saved."
+      "catalog_hint": "Catalog technologies are highlighted in blue. Custom ones in yellow.",
+      "catalog_label": "Catalog",
+      "add_custom": "Add new",
+      "legend_catalog": "From catalog",
+      "legend_custom": "Custom"
     },
     "knowledge": {
       "title": "Additional knowledge",
@@ -1003,37 +1009,44 @@
     },
     "applications_sidebar": {
       "title": "Applications",
-      "manage": "Manage applications"
+      "manage": "Manage applications",
+      "empty": "You haven't applied to any project yet."
     },
     "work": {
-      "title": "My work",
+      "title": "My portfolio",
       "description": "Manage and showcase your most impactful developments. Visualize your finished products and add new pieces to your professional portfolio.",
       "badge_product": "Product",
       "add_title": "Add project",
       "add_formats": "Supported formats: Link, Figma, GitHub",
+      "add_project": "Add project",
+      "my_projects": "My projects",
+      "my_projects_help": "Manage and showcase your most impactful developments.",
       "preview_btn": "Preview",
       "open_btn": "Open",
+      "edit_btn": "Edit",
+      "save_btn": "Save",
       "preview_modal_title": "Preview",
       "open_in_new_tab": "Open in new tab",
       "close": "Close",
       "iframe_error": "This site does not allow embedding. You can open it directly.",
       "no_projects": "There are no projects in your portfolio yet.",
-      "add_project": "Add portfolio",
-      "my_projects": "My portfolios",
-      "my_projects_help": "Manage and showcase your most impactful work.",
-      "add_modal_title": "Add new portfolio",
+      "show_more": "See {count} more",
+      "show_less": "See less",
+      "add_modal_title": "Add new project",
+      "edit_modal_title": "Edit project",
       "fields": {
-        "name": "Portfolio name",
-        "url": "URL / Link",
-        "description": "Short description",
-        "techs": "Technologies (comma-separated)",
+        "name": "Project name",
+        "url": "Demo URL / Link",
+        "repo_url": "Repository URL (optional)",
+        "description": "Brief description",
+        "techs": "Technologies",
         "techs_placeholder": "e.g. React, Tailwind, Next.js"
       },
       "create": "Create project",
       "cancel": "Cancel",
       "errors": {
-        "name_required": "The portfolio name is required.",
-        "url_required": "The portfolio URL is required."
+        "name_required": "Project name is required.",
+        "url_required": "Project URL is required."
       },
       "confirm_delete": {
         "title": "Delete project",
@@ -1042,16 +1055,20 @@
         "confirm": "Delete"
       },
       "work": {
-        "add_modal_title": "Add new portfolio",
+        "add_modal_title": "Add new project",
         "fields": {
-          "name": "Portfolio name",
+          "name": "Project name",
           "url": "URL / Link",
-          "description": "Short description",
-          "techs": "Technologies (comma-separated)",
+          "description": "Brief description",
+          "techs": "Technologies",
           "techs_placeholder": "e.g. React, Tailwind, Next.js"
         },
-        "create": "Create portfolio",
-        "cancel": "Cancel"
+        "create": "Create project",
+        "cancel": "Cancel",
+        "errors": {
+          "name_required": "Project name is required.",
+          "url_required": "Project URL is required."
+        }
       }
     },
     "applications": {
@@ -1070,8 +1087,16 @@
       "stats": {
         "active": "Active Applications",
         "interviews": "Scheduled Interviews",
-        "compatibility": "Compatibility Index"
+        "compatibility": "Compatibility Index",
+        "in_progress": "Projects in progress",
+        "awarded": "Awarded projects"
       },
+      "go_to_marketplace": "Go to management",
+      "saved_title": "Saved projects",
+      "saved_empty": "You have no saved projects. Use the save button on the marketplace to add them here.",
+      "saved_expired": "Expired",
+      "saved_view": "View project",
+      "saved_remove": "Remove from saved",
       "opportunities_title": "Other opportunities for you",
       "opportunities_description": "Projects that might fit your professional journey.",
       "view_details": "View details",

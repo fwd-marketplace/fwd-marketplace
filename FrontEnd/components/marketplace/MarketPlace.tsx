@@ -30,6 +30,7 @@ import { buildSparklePoints } from '@/lib/logo-constellation';
 
 const CONTENT_SPARKLE_POINTS = buildSparklePoints(12, 12, 12);
 import { Button } from '@/components/ui/button';
+import { saveProjectAction, unsaveProjectAction } from '@/lib/actions/marketplace';
 import type { ApiProject, ApiRoleName, CatalogsResponse } from '@/lib/api/types';
 
 const PAGE_SIZE = 9;
@@ -64,6 +65,7 @@ interface Props {
     catalogs: CatalogsResponse;
     role?: ApiRoleName | null;
     appliedProjectIds?: string[];
+    initialSavedIds?: string[];
 }
 
 function isExpired(fechaCierre: string | null): boolean {
@@ -162,7 +164,7 @@ function FilterDropdown({
     );
 }
 
-export default function MarketPlace({ initialProjects, catalogs, role = 'student', appliedProjectIds = [] }: Props) {
+export default function MarketPlace({ initialProjects, catalogs, role = 'student', appliedProjectIds = [], initialSavedIds = [] }: Props) {
     const t = useTranslations('marketplace_page');
     const locale = useLocale();
 
@@ -176,7 +178,7 @@ export default function MarketPlace({ initialProjects, catalogs, role = 'student
     const [showAiOnly, setShowAiOnly] = useState(false);
     const [sortOrder, setSortOrder] = useState<SortOrder>('sort_recent_desc');
     const [currentPage, setCurrentPage] = useState(1);
-    const [savedProjectIds, setSavedProjectIds] = useState<ReadonlySet<string>>(new Set());
+    const [savedProjectIds, setSavedProjectIds] = useState<ReadonlySet<string>>(new Set(initialSavedIds));
 
     const areaOptions: FilterOption[] = activeCatalogs.areas.map((a) => ({ value: a.id, label: a.nombre }));
     const skillOptions: FilterOption[] = activeCatalogs.skills
@@ -252,16 +254,36 @@ export default function MarketPlace({ initialProjects, catalogs, role = 'student
         resetToFirstPage();
     }
 
-    function toggleSaved(projectId: string) {
+    async function toggleSaved(projectId: string) {
+        const wasSaved = savedProjectIds.has(projectId);
+        // Optimistic update — apply immediately before API call
         setSavedProjectIds((current) => {
             const next = new Set(current);
-            if (next.has(projectId)) {
+            if (wasSaved) {
                 next.delete(projectId);
             } else {
                 next.add(projectId);
             }
             return next;
         });
+        try {
+            if (wasSaved) {
+                await unsaveProjectAction(projectId);
+            } else {
+                await saveProjectAction(projectId);
+            }
+        } catch {
+            // Rollback on failure
+            setSavedProjectIds((current) => {
+                const next = new Set(current);
+                if (wasSaved) {
+                    next.add(projectId);
+                } else {
+                    next.delete(projectId);
+                }
+                return next;
+            });
+        }
     }
 
     return (

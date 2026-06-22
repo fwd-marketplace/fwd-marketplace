@@ -9,6 +9,10 @@ import {
   uploadMyLogo,
   deleteMyLogo,
   savePreferenciasNotificacion,
+  getMyPortafolio,
+  createPortafolioItem,
+  updatePortafolioItem,
+  deletePortafolioItem,
 } from "../services/perfil.service";
 
 /** Token + id del usuario autenticado (los inyecta `authenticate`). */
@@ -70,6 +74,38 @@ export async function uploadLogo(req: Request, res: Response) {
   }
   const result = await uploadMyLogo(token, userId, req.file.buffer, req.file.size);
   res.status(200).json(result);
+}
+
+/** GET /api/users/me/perfil/portafolio */
+export async function listPortafolio(req: Request, res: Response) {
+  const { token, userId } = requireAuth(req);
+  const items = await getMyPortafolio(token, userId);
+  res.status(200).json({ items });
+}
+
+/** POST /api/users/me/perfil/portafolio */
+export async function addPortafolioItem(req: Request, res: Response) {
+  const { token, userId } = requireAuth(req);
+  const item = await createPortafolioItem(token, userId, req.body);
+  res.status(201).json({ item });
+}
+
+/** PATCH /api/users/me/perfil/portafolio/:id */
+export async function editPortafolioItem(req: Request, res: Response) {
+  const { token, userId } = requireAuth(req);
+  const id = req.params["id"] as string;
+  if (!id) throw new ApiError(400, "id requerido");
+  const item = await updatePortafolioItem(token, userId, id, req.body);
+  res.status(200).json({ item });
+}
+
+/** DELETE /api/users/me/perfil/portafolio/:id */
+export async function removePortafolioItem(req: Request, res: Response) {
+  const { token, userId } = requireAuth(req);
+  const id = req.params["id"] as string;
+  if (!id) throw new ApiError(400, "id requerido");
+  await deletePortafolioItem(token, userId, id);
+  res.status(204).send();
 }
 
 const preferenciasSchema = z.record(z.string(), z.boolean());

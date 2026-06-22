@@ -55,6 +55,24 @@ export type Database = {
           },
         ]
       }
+      proyecto_guardado: {
+        Row: {
+          id_usuario: string
+          id_proyecto: string
+          fecha_guardado: string
+        }
+        Insert: {
+          id_usuario: string
+          id_proyecto: string
+          fecha_guardado?: string
+        }
+        Update: {
+          id_usuario?: string
+          id_proyecto?: string
+          fecha_guardado?: string
+        }
+        Relationships: []
+      }
       ai_propuesta_ejemplo: {
         Row: {
           fecha: string

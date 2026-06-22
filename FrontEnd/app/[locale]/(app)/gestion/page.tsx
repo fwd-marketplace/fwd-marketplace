@@ -1,7 +1,8 @@
 import { setRequestLocale } from "next-intl/server";
 import { getMe } from "@/lib/api/profile";
+import { getMyOffers, getProjectById } from "@/lib/api/marketplace";
 import { GestionPage } from "@/components/gestion/GestionPage";
-import type { ApiRoleName } from "@/lib/api/types";
+import type { ApiProject, ApiRoleName, MyOffer } from "@/lib/api/types";
 
 interface Props {
   params: Promise<{ locale: string }>;
@@ -24,8 +25,31 @@ export default async function GestionRoute({ params, searchParams }: Props) {
 
   const role   = demoRole ?? authRole;
   const userId = profile?.id ?? null;
-  // El estudiante con un proyecto activo no puede postular (lo fuerza el BackEnd).
   const disponible = profile?.estudiante?.disponible ?? true;
 
-  return <GestionPage role={role} userId={userId} initialProjectId={proyecto ?? null} disponible={disponible} />;
+  const isStudent = role === "student" || demoRole === "student";
+
+  // Pre-load offers and project server-side so GestionPage has them immediately.
+  let initialOffers: MyOffer[] = [];
+  let initialProject: ApiProject | null = null;
+
+  if (isStudent) {
+    const [offersResult, projectResult] = await Promise.all([
+      getMyOffers(),
+      proyecto ? getProjectById(proyecto) : Promise.resolve(null),
+    ]);
+    if (offersResult.ok) initialOffers = offersResult.data.ofertas;
+    if (projectResult && projectResult.ok) initialProject = projectResult.data;
+  }
+
+  return (
+    <GestionPage
+      role={role}
+      userId={userId}
+      initialProjectId={proyecto ?? null}
+      disponible={disponible}
+      initialOffers={initialOffers}
+      initialProject={initialProject}
+    />
+  );
 }
