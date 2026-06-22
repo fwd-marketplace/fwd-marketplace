@@ -668,6 +668,7 @@
     },
     "page_title": "My Projects",
     "create_btn": "Create project",
+    "ir_a_gestion": "Go to management",
     "back_btn": "Back",
     "no_projects_title": "No projects yet",
     "no_projects_desc": "Create your first project to start receiving applications from juniors.",
@@ -683,8 +684,13 @@
     "tabs": {
       "project": "Project",
       "entregables": "Deliverables",
-      "applications": "Applications"
+      "applications": "Applications",
+      "matches": "Matches"
     },
+    "matches_invite_btn": "Invite",
+    "matches_invited_btn": "Invited",
+    "matches_toast_invited": "{name} was invited to the project.",
+    "matches_empty": "No juniors match this project yet.",
     "objective_title": "Project Objective",
     "scope_title": "Scope and Requirements",
     "deliverables_title": "Expected Deliverables",
@@ -784,6 +790,7 @@
       "search_placeholder": "Search by title...",
       "status_label": "Status",
       "status_all": "All statuses",
+      "status_published": "Published",
       "status_active": "Active",
       "status_paused": "Paused",
       "modality_label": "Modality",
@@ -799,7 +806,13 @@
       "skill_label": "Technology",
       "skill_all": "All technologies"
     },
-    "edit_blocked": "Cannot edit: the project already has an awarded offer"
+    "edit_blocked": "Cannot edit: the project already has an awarded offer",
+    "analytics": {
+      "total": "Applicants",
+      "received": "In reception",
+      "awarded": "Awarded",
+      "rejected": "Rejected"
+    }
   },
   "app_header": {
     "notifications": "Notifications",
@@ -1336,7 +1349,12 @@
     "empty_no_candidates_desc": "Adjust the filters or lower the minimum match level.",
     "toast_invited": "{name} has been invited to apply to the project.",
     "toast_cleared": "Search filters have been cleared.",
-    "toast_profile_edit": "Profile editing feature in development (Phase 3)."
+    "toast_profile_edit": "Profile editing feature in development (Phase 3).",
+    "invite_modal_title": "Invite to project",
+    "invite_modal_desc": "Choose which project you want to invite {name} to.",
+    "invite_modal_cancel": "Cancel",
+    "invite_modal_confirm": "Invite",
+    "invite_modal_no_projects": "You have no active projects to invite to."
   },
   "prototipo_preview": {
     "button": "Preview",
@@ -1344,6 +1362,25 @@
     "open_in_new_tab": "Open in new tab",
     "close": "Close",
     "iframe_error": "The embedded preview could not be shown. Open the prototype in a new tab."
+  },
+  "talento": {
+    "title": "Find talent",
+    "subtitle": "Discover verified FWD students for your projects.",
+    "filters_title": "Filters",
+    "clear_btn": "Clear",
+    "search_placeholder": "Search by name...",
+    "specialty_label": "Specialty",
+    "modality_label": "Work mode",
+    "skill_label": "Technology",
+    "skill_all": "All",
+    "only_available": "Available only",
+    "available_badge": "Available",
+    "busy_badge": "Busy",
+    "verified": "Verified",
+    "empty": "No students match the filters.",
+    "results_count": "{count, plural, =0 {No results} one {# student} other {# students}}",
+    "specialty": { "frontend": "Frontend", "backend": "Backend", "fullstack": "Fullstack", "ia": "AI & Data" },
+    "modality": { "remote": "Remote", "hybrid": "Hybrid", "onsite": "On-site" }
   },
   "postulaciones_empresa": {
     "select_for_award": "Select this proposal to award",
@@ -1496,7 +1533,9 @@
       "delete": "Delete logo",
       "invalid_type": "File must be an image.",
       "too_large": "Image exceeds the 5 MB limit.",
-      "upload_error": "Could not upload logo. Please try again."
+      "upload_error": "Could not upload logo. Please try again.",
+      "section_title": "Company logo",
+      "upload_hint": "Upload or change your company logo. Accepted formats: JPG, PNG, WebP. Maximum 5 MB."
     },
     "contacts": {
       "add_btn": "Recruiter",
@@ -1877,7 +1916,13 @@
     "select_project_prompt": "Select a project to get started",
     "welcome_desc_empresa": "Select a project from the list to review incoming proposals and manage the process.",
     "welcome_desc_empresa_empty": "Publish your first project and start receiving proposals from juniors.",
-    "welcome_cta_empresa": "Create first project",
+    "welcome_cta_empresa": "New project",
+    "welcome_state_published": "Published",
+    "analytics_projects": "Projects",
+    "analytics_proposals": "Proposals received",
+    "analytics_active": "Active projects",
+    "analytics_closed": "{count} closed",
+    "analytics_projects_list": "All projects",
     "welcome_desc_junior": "Select a project from the list to check your application status and follow the process.",
     "welcome_desc_junior_empty": "Explore the marketplace, find a project you like and send your proposal.",
     "welcome_cta_junior": "Explore marketplace",
@@ -1979,7 +2024,33 @@
     "chat_sin_conversaciones": "No conversations yet",
     "sidebar_chats_label": "Chats",
     "chat_n_chats": "{count, plural, one {# chat} other {# chats}}",
-    "chat_overview_empty": "No messages in this project yet"
+    "chat_overview_empty": "No messages in this project yet",
+    "action_pause_btn": "Pause project",
+    "action_cancel_btn": "Cancel project",
+    "pause_dialog_title": "Pause project",
+    "pause_dialog_body": "The project will stop appearing in the marketplace. The deadline is frozen until you resume it.",
+    "pause_dialog_confirm": "Pause",
+    "pause_dialog_back": "Go back",
+    "cancel_step1_title": "Pause instead of cancel?",
+    "cancel_step1_body": "Pausing hides the project temporarily without notifying anyone. Cancelling is final and notifies all participants.",
+    "cancel_step1_pause": "Pause temporarily",
+    "cancel_step1_cancel": "Cancel definitively",
+    "cancel_step1_back": "Go back",
+    "cancel_step2_title": "This action is irreversible",
+    "cancel_step2_body": "Are you sure you want to cancel the project? All juniors who participated will be notified.",
+    "cancel_step2_confirm": "Yes, cancel project",
+    "cancel_step2_back": "Go back",
+    "state_pausado": "Paused",
+    "action_resume_btn": "Reactivate project",
+    "resume_dialog_title": "Reactivate project",
+    "resume_dialog_body": "The project will reappear in the marketplace and start receiving applications again.",
+    "resume_dialog_confirm": "Reactivate",
+    "resume_dialog_back": "Go back",
+    "section_matches": "Matches",
+    "matches_empty": "No juniors match this project yet. The matching algorithm will be available soon.",
+    "matches_invite_btn": "Invite",
+    "matches_invited_btn": "Invited",
+    "matches_toast_invited": "{name} was invited to the project."
   },
   "project_chatbot": {
     "title": "Project assistant",

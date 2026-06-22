@@ -27,6 +27,7 @@ const STATE_META: Record<ProjectState, { label: string; tone: string }> = {
   en_desarrollo: { label: "En desarrollo", tone: "bg-primary/10 text-primary" },
   cerrado: { label: "Cerrado", tone: "bg-accent/10 text-accent" },
   cancelado: { label: "Cancelado", tone: "bg-magenta/10 text-magenta" },
+  pausado: { label: "Pausado", tone: "bg-warning/10 text-warning" },
 };
 
 const ACTIVE_STATES: ProjectState[] = ["en_recepcion", "en_evaluacion", "adjudicado", "en_desarrollo"];

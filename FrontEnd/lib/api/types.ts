@@ -9,7 +9,8 @@ export type ProjectState =
   | "adjudicado"
   | "en_desarrollo"
   | "cerrado"
-  | "cancelado";
+  | "cancelado"
+  | "pausado";
 
 export type CompanyProjectState = Exclude<ProjectState, "borrador" | "cancelado">;
 
@@ -324,6 +325,8 @@ export type AdminPendingUser = {
   estado_cuenta: AccountState;
   fecha_registro: string;
   role: { nombre: ApiRoleName } | null;
+  /** Para usuarios 'company': distingue empresa de emprendedor. */
+  empresario?: { tipo: "empresa" | "emprendedor" } | null;
 };
 
 export type AdminPendingUsersResponse = {
@@ -554,6 +557,36 @@ export type ApiNotificacion = {
 
 export type NotificacionesResponse = {
   notificaciones: ApiNotificacion[];
+};
+
+// ── Directorio de talento (búsqueda de estudiantes para empresa) ────────────────
+
+export type TalentStudent = {
+  id: string;
+  especialidad: string | null;
+  modalidad_preferida: string | null;
+  disponibilidad: string | null;
+  titulo_fwd: string | null;
+  estado_verificacion: StudentVerification;
+  reputacion: number | null;
+  url_avatar: string | null;
+  usuario: { id: string; nombre: string; apellido1: string | null } | null;
+  skills: string[];
+  /** false si el estudiante ya tiene un proyecto activo (ocupado). */
+  disponible: boolean;
+};
+
+export type TalentSearchParams = {
+  q?: string;
+  especialidad?: StudentSpecialty;
+  disponibilidad?: StudentAvailability;
+  skill?: string;
+  modalidad?: string;
+  solo_disponibles?: boolean;
+};
+
+export type TalentSearchResponse = {
+  students: TalentStudent[];
 };
 
 

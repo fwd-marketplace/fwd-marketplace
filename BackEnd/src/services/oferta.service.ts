@@ -26,7 +26,7 @@ const ESTADOS_PROYECTO_INACTIVOS = ["cerrado", "cancelado"];
  * Un estudiante ocupado no puede postular ni ser adjudicado por otra empresa; se
  * libera cuando su proyecto pasa a 'cerrado'/'cancelado'.
  */
-async function estudiantesOcupados(client: Client, userIds: string[]): Promise<Set<string>> {
+export async function estudiantesOcupados(client: Client, userIds: string[]): Promise<Set<string>> {
   const ocupados = new Set<string>();
   if (userIds.length === 0) return ocupados;
 

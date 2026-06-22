@@ -20,6 +20,7 @@ const STATE_LABEL: Record<ProjectState, string> = {
   en_desarrollo: "En desarrollo",
   cerrado: "Cerrado",
   cancelado: "Cancelado",
+  pausado: "Pausado",
 };
 
 interface Company {

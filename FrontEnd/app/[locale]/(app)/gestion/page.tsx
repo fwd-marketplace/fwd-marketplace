@@ -40,6 +40,9 @@ export default async function GestionRoute({ params, searchParams }: Props) {
     ]);
     if (offersResult.ok) initialOffers = offersResult.data.ofertas;
     if (projectResult && projectResult.ok) initialProject = projectResult.data;
+  } else if (proyecto) {
+    const projectResult = await getProjectById(proyecto);
+    if (projectResult.ok) initialProject = projectResult.data;
   }
 
   return (
