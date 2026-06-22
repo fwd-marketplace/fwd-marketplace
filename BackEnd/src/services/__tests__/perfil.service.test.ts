@@ -31,6 +31,21 @@ vi.mock("../../config/supabase", () => ({
     });
     return builder;
   },
+  // Cliente service-role: solo lo usa syncStudentSkills para crear skills nuevas
+  // en el catálogo. Resuelve la respuesta dedicada `skills_creadas`.
+  supabaseAdmin: () => {
+    const builder: Record<string, unknown> = {};
+    const chain = () => builder;
+    Object.assign(builder, {
+      from: chain,
+      select: chain,
+      insert: chain,
+      in: chain,
+      then: (resolve: (value: unknown) => unknown) =>
+        resolve(responses["skills_creadas"] ?? { data: [], error: null }),
+    });
+    return builder;
+  },
 }));
 
 import { getMyPerfil, updateMyPerfil } from "../perfil.service";
@@ -98,7 +113,7 @@ describe("updateMyPerfil", () => {
     expect(perfil).toMatchObject({ id: "est-1", descripcion: "Hola" });
   });
 
-  it("sincroniza skills contra el catálogo y devuelve solo las que matchean", async () => {
+  it("sincroniza skills: vincula las del catálogo y crea las nuevas", async () => {
     responses["users"] = { data: { role: { nombre: "student" } }, error: null };
     responses["estudiante"] = { data: { id: "est-1", descripcion: null }, error: null };
     responses["skills"] = {
@@ -109,9 +124,12 @@ describe("updateMyPerfil", () => {
       error: null,
     };
     responses["student_skills"] = { data: null, error: null };
+    // "GraphQL" no está en el catálogo: syncStudentSkills la crea con el cliente
+    // service-role y la incluye en el resultado.
+    responses["skills_creadas"] = { data: [{ id: "s3", nombre: "GraphQL" }], error: null };
 
     const perfil = await updateMyPerfil(TOKEN, USER, { skills: ["react", "GraphQL"] });
-    expect(perfil).toMatchObject({ id: "est-1", skills: ["React"] });
+    expect(perfil).toMatchObject({ id: "est-1", skills: ["React", "GraphQL"] });
   });
 
   it("guarda los conocimientos tal cual (incluye libres), normaliza y deduplica", async () => {
