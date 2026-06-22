@@ -16,6 +16,7 @@ import {
   ChevronRight,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { ProjectChatbot } from "@/components/marketplace/ProjectChatbot";
 import { cn } from "@/lib/utils";
 import type { ApiProject, ApiRoleName } from "@/lib/api/types";
 
@@ -199,6 +200,11 @@ export function ProjectDetailSheet({
                     ))}
                   </div>
                 </div>
+              )}
+
+              {/* Chatbot del proyecto (junior): resuelve dudas antes de postular y deriva a la empresa */}
+              {role === "student" && (
+                <ProjectChatbot projectId={project.id} projectTitulo={project.titulo} />
               )}
 
               {/* Estado: ya postulaste */}

@@ -1980,5 +1980,29 @@
     "sidebar_chats_label": "Chats",
     "chat_n_chats": "{count, plural, one {# chat} other {# chats}}",
     "chat_overview_empty": "No messages in this project yet"
+  },
+  "project_chatbot": {
+    "title": "Project assistant",
+    "subtitle": "Clear up your questions before applying",
+    "header_hint": "Answers based on this project",
+    "close": "Close",
+    "empty_title": "Questions about this project?",
+    "empty_hint": "For example: which technologies do I need?, is it web or app?, what's in scope?",
+    "thinking": "Thinking…",
+    "input_placeholder": "Type your question…",
+    "send": "Send",
+    "prefer_human": "Prefer to talk to the company?",
+    "talk_to_company": "Talk to the company",
+    "escalate_title": "Message the company",
+    "escalate_desc": "The company will see it and reply in the project chat.",
+    "escalate_placeholder": "Write your message to the company…",
+    "escalate_send": "Send to the company",
+    "escalate_sending": "Sending…",
+    "escalate_sent_title": "Message sent",
+    "escalate_sent_desc": "The company will see it in the project chat and reply there.",
+    "go_to_chat": "Go to chat",
+    "cancel": "Cancel",
+    "error_generic": "Something went wrong. Try again.",
+    "escalate_default_draft": "Hi, I have a question about the project «{titulo}»: "
   }
 }

@@ -220,3 +220,81 @@ Reglas estrictas:
 Catálogo de habilidades disponibles (elegí solo de aquí):
 ${buildSkillCatalogText(catalog.skills)}`;
 }
+
+/**
+ * Etiqueta que el bot del proyecto agrega (en una línea aparte, al final) cuando no puede
+ * responder con la información disponible o la duda requiere a la empresa. El FrontEnd la
+ * detecta para resaltar el botón "Hablar con la empresa" y la quita del texto visible.
+ */
+export const ESCALATION_TAG = "[[ESCALAR]]";
+
+/** Contexto de UN proyecto concreto con el que el bot responde dudas del junior. */
+export interface ProyectoContexto {
+  titulo: string;
+  empresa: string | null;
+  area: string | null;
+  plazoDias: number;
+  descripcion: string;
+  usaIa: boolean;
+  /** Skills del catálogo + tecnologías extra escritas por la empresa, ya unificadas. */
+  tecnologias: string[];
+  /**
+   * Condiciones y preguntas frecuentes que la empresa redactó para este proyecto
+   * (alcance, expectativas, dudas comunes). `null` si no cargó nada.
+   */
+  condiciones: string | null;
+}
+
+/** Arma el bloque de contexto del proyecto, incluyendo solo las secciones con contenido. */
+function buildProyectoContextoText(contexto: ProyectoContexto): string {
+  const lineas: string[] = [`[Título] ${contexto.titulo}`];
+  if (contexto.empresa) {
+    lineas.push(`[Empresa] ${contexto.empresa}`);
+  }
+  if (contexto.area) {
+    lineas.push(`[Área] ${contexto.area}`);
+  }
+  lineas.push(`[Plazo] ${contexto.plazoDias} días`);
+  lineas.push(`[Usa inteligencia artificial] ${contexto.usaIa ? "sí" : "no"}`);
+  if (contexto.tecnologias.length > 0) {
+    lineas.push(`[Tecnologías requeridas] ${contexto.tecnologias.join(", ")}`);
+  }
+  lineas.push(`[Descripción]\n${contexto.descripcion}`);
+  if (contexto.condiciones && contexto.condiciones.trim().length > 0) {
+    lineas.push(`[Condiciones y preguntas frecuentes]\n${contexto.condiciones.trim()}`);
+  }
+  return lineas.join("\n\n");
+}
+
+/**
+ * System prompt del chatbot que responde, a un desarrollador junior, dudas sobre UN proyecto
+ * concreto del marketplace (antes de postular). Responde SOLO desde el contexto del proyecto;
+ * si no puede, lo deriva a la empresa con la etiqueta de escalamiento. Guardrails: no habla de
+ * pago/remuneración entre empresa y junior (fuera del MVP), no redacta la postulación del junior.
+ */
+export function buildSystemPromptChatProyecto(contexto: ProyectoContexto): string {
+  return `Sos el asistente del proyecto "${contexto.titulo}" en el marketplace FWD Talent.
+Le respondés a un desarrollador junior que está evaluando si postular a este proyecto. Tu
+objetivo es aclararle dudas sobre el proyecto, con honestidad, para que decida con información.
+
+Respondé en español (o en inglés si el junior te escribe en inglés), breve y al grano (2 a 5
+frases), con la voz de FWD: cálida, cercana y clara, sin tecnicismos secos ni relleno.
+
+Información del proyecto (es lo ÚNICO que sabés con certeza; no inventes nada fuera de esto):
+
+${buildProyectoContextoText(contexto)}
+
+Reglas (importantes, seguilas siempre):
+- Respondé ÚNICAMENTE con la información de arriba. Si la respuesta no está ahí, NO la inventes.
+- Si no podés responder con esa información, o la duda requiere una decisión, confirmación o
+  acuerdo con la empresa (agendar una reunión, alcance extra, detalles que no figuran), decílo
+  con honestidad y sugerí escribirle directamente a la empresa. SOLO en ese caso, terminá tu
+  respuesta con la etiqueta exacta ${ESCALATION_TAG} en una línea aparte (no la expliques).
+- NO hables de pago, salario ni remuneración entre la empresa y el junior: eso se coordina por
+  fuera y no es parte de esta etapa. Si te preguntan por eso, aclaralo con amabilidad y derivá a
+  la empresa con ${ESCALATION_TAG}. (Sí podés explicar métodos o pasarelas de pago cuando son una
+  FUNCIONALIDAD del proyecto a construir, por ejemplo una app de ventas que procesa cobros.)
+- NUNCA escribas la postulación, la carta de presentación ni la propuesta del junior: eso lo
+  redacta siempre él. Podés darle consejos de qué resaltar, pero no se la escribas.
+- Mantenete en el tema de ESTE proyecto. Si te preguntan algo ajeno, redirigí con amabilidad.`;
+}

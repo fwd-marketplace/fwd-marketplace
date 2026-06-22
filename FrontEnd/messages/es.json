@@ -1980,5 +1980,29 @@
     "sidebar_chats_label": "Chats",
     "chat_n_chats": "{count, plural, one {# chat} other {# chats}}",
     "chat_overview_empty": "Aún no hay mensajes en este proyecto"
+  },
+  "project_chatbot": {
+    "title": "Asistente del proyecto",
+    "subtitle": "Resolvé tus dudas antes de postular",
+    "header_hint": "Responde según este proyecto",
+    "close": "Cerrar",
+    "empty_title": "¿Tenés dudas sobre el proyecto?",
+    "empty_hint": "Por ejemplo: ¿qué tecnologías necesito?, ¿es web o app?, ¿qué incluye el alcance?",
+    "thinking": "Pensando…",
+    "input_placeholder": "Escribí tu pregunta…",
+    "send": "Enviar",
+    "prefer_human": "¿Preferís hablar con la empresa?",
+    "talk_to_company": "Hablar con la empresa",
+    "escalate_title": "Escribile a la empresa",
+    "escalate_desc": "La empresa lo verá y te responderá en el chat del proyecto.",
+    "escalate_placeholder": "Escribí tu mensaje para la empresa…",
+    "escalate_send": "Enviar a la empresa",
+    "escalate_sending": "Enviando…",
+    "escalate_sent_title": "Mensaje enviado",
+    "escalate_sent_desc": "La empresa lo verá en el chat del proyecto y te responderá ahí.",
+    "go_to_chat": "Ir al chat",
+    "cancel": "Cancelar",
+    "error_generic": "Algo salió mal. Probá de nuevo.",
+    "escalate_default_draft": "Hola, tengo una consulta sobre el proyecto «{titulo}»: "
   }
 }

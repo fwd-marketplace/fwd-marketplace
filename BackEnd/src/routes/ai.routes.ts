@@ -2,7 +2,12 @@ import { Router } from "express";
 import { authenticate } from "../middlewares/auth.middleware";
 import { rateLimit } from "../middlewares/rateLimit.middleware";
 import { asyncHandler } from "../utils/asyncHandler";
-import { asistenteProyecto, generarPropuesta, sugerirStack } from "../controllers/ai.controller";
+import {
+  asistenteProyecto,
+  chatProyecto,
+  generarPropuesta,
+  sugerirStack,
+} from "../controllers/ai.controller";
 
 const MINUTE = 60 * 1000;
 
@@ -21,6 +26,7 @@ const aiLimiter = rateLimit({
 const router = Router();
 
 router.post("/asistente-proyecto", authenticate, aiLimiter, asyncHandler(asistenteProyecto));
+router.post("/chat-proyecto/:id", authenticate, aiLimiter, asyncHandler(chatProyecto));
 router.post("/generar-propuesta", authenticate, aiLimiter, asyncHandler(generarPropuesta));
 router.post("/sugerir-stack", authenticate, aiLimiter, asyncHandler(sugerirStack));
 
