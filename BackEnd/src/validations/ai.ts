@@ -53,6 +53,17 @@ export const SugerirStackRequestSchema = z.object({
 
 export type SugerirStackInput = z.infer<typeof SugerirStackRequestSchema>;
 
+/**
+ * Cuerpo de `POST /ai/mejorar-mensaje`: el borrador que la empresa va a enviar en el chat y,
+ * opcionalmente, el proyecto al que pertenece la conversación (para precisar el contexto técnico).
+ */
+export const MejorarMensajeRequestSchema = z.object({
+  borrador: z.string().min(1).max(5000),
+  proyecto_id: z.string().uuid().optional(),
+});
+
+export type MejorarMensajeInput = z.infer<typeof MejorarMensajeRequestSchema>;
+
 /** Validación del JSON que devuelve el modelo para la sugerencia de stack. */
 export const StackRawSchema = z.object({
   habilidades: z.array(z.union([z.string(), z.object({ nombre: z.string() })])).optional(),

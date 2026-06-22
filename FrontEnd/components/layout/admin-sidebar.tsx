@@ -7,10 +7,12 @@ import { useLocale } from "next-intl";
 import {
   LayoutDashboard,
   Users,
+  UserCog,
   Building2,
   ClipboardList,
   FolderKanban,
   BarChart2,
+  ShieldAlert,
   Settings,
   LogOut,
 } from "lucide-react";
@@ -20,9 +22,11 @@ import { cn } from "@/lib/utils";
 const NAV_ITEMS = [
   { label: "Dashboard", href: "/admin/dashboard", icon: LayoutDashboard },
   { label: "Talento", href: "/admin/talento", icon: Users },
+  { label: "Usuarios", href: "/admin/usuarios", icon: UserCog },
   { label: "Empresas", href: "/admin/empresas", icon: Building2 },
   { label: "Solicitudes", href: "/admin/solicitudes", icon: ClipboardList },
   { label: "Proyectos", href: "/admin/proyectos", icon: FolderKanban },
+  { label: "Moderación", href: "/admin/moderacion", icon: ShieldAlert },
   { label: "Reportes", href: "/admin/reportes", icon: BarChart2 },
   { label: "Configuración", href: "/admin/configuracion", icon: Settings },
 ] as const;

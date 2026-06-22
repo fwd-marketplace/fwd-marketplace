@@ -1,9 +1,9 @@
 import type { AiChatMessage } from "@/lib/api/types";
 
 /**
- * Cliente del asistente para componentes de cliente (no usa `next/headers`).
- * Llama al route handler `/api/ai/asistente` (mismo origen, envía la cookie de
- * sesión automáticamente) y parsea el streaming SSE, emitiendo cada fragmento.
+ * Cliente de IA para componentes de cliente (no usa `next/headers`). Llama a los route handlers
+ * locales (mismo origen, envían la cookie de sesión automáticamente) y parsea el streaming SSE,
+ * emitiendo cada fragmento. Cubre el asistente de creación de proyectos y el chatbot del proyecto.
  */
 
 export type AiStreamEvent =
@@ -13,6 +13,13 @@ export type AiStreamEvent =
 
 const ASSISTANT_ENDPOINT = "/api/ai/asistente";
 const DEFAULT_ERROR = "No se pudo contactar al asistente de IA.";
+
+/**
+ * Etiqueta que el chatbot del proyecto agrega al final cuando recomienda derivar a la empresa.
+ * El widget la detecta para resaltar el botón "Hablar con la empresa" y la quita del texto visible.
+ * Debe coincidir con `ESCALATION_TAG` del BackEnd (`services/ai/prompts.ts`).
+ */
+export const ESCALATION_TAG = "[[ESCALAR]]";
 
 /** Parsea un bloque de evento SSE en { event, data }. */
 function parseSseEvent(raw: string): { event: string; data: string } {
@@ -57,18 +64,19 @@ function emitFromSse(raw: string, onEvent: (event: AiStreamEvent) => void): void
 }
 
 /**
- * Envía el historial al asistente y va emitiendo los fragmentos de texto.
- * Resuelve cuando el stream termina. Nunca lanza por errores del proveedor:
- * los reporta como un evento `error` para que la UI degrade al formulario.
+ * POST a un route handler de IA con streaming y emisión de fragmentos. Resuelve cuando el stream
+ * termina. Nunca lanza por errores del proveedor: los reporta como un evento `error` para que la
+ * UI degrade con elegancia.
  */
-export async function streamAssistant(
+async function streamFromEndpoint(
+  endpoint: string,
   history: AiChatMessage[],
   onEvent: (event: AiStreamEvent) => void,
   signal?: AbortSignal,
 ): Promise<void> {
   let response: Response;
   try {
-    response = await fetch(ASSISTANT_ENDPOINT, {
+    response = await fetch(endpoint, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ history }),
@@ -118,4 +126,28 @@ export async function streamAssistant(
   } finally {
     reader.releaseLock();
   }
+}
+
+/**
+ * Envía el historial al asistente de creación de proyectos y va emitiendo los fragmentos de texto.
+ */
+export function streamAssistant(
+  history: AiChatMessage[],
+  onEvent: (event: AiStreamEvent) => void,
+  signal?: AbortSignal,
+): Promise<void> {
+  return streamFromEndpoint(ASSISTANT_ENDPOINT, history, onEvent, signal);
+}
+
+/**
+ * Envía el historial al chatbot de un proyecto concreto (dudas del junior antes de postular) y va
+ * emitiendo los fragmentos. El BackEnd ancla las respuestas al proyecto `projectId`.
+ */
+export function streamProjectChatbot(
+  projectId: string,
+  history: AiChatMessage[],
+  onEvent: (event: AiStreamEvent) => void,
+  signal?: AbortSignal,
+): Promise<void> {
+  return streamFromEndpoint(`/api/ai/chat-proyecto/${projectId}`, history, onEvent, signal);
 }

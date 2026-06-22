@@ -2,6 +2,12 @@
 @import "tw-animate-css";
 @import "shadcn/tailwind.css";
 
+/* Reset global margins to avoid unexpected white gaps */
+html, body {
+  margin: 0;
+  padding: 0;
+}
+
 @custom-variant dark (&:is(.dark *));
 
 :root {
@@ -373,13 +379,42 @@ select {
   }
 }
 
+/* ---- Cosmos profesional: anillos que laten y meteoros (solo tokens) ---- */
+@keyframes cosmos-ring-pulse {
+  0% {
+    transform: scale(0.45);
+    opacity: 0.65;
+  }
+  70% {
+    opacity: 0.12;
+  }
+  100% {
+    transform: scale(2.5);
+    opacity: 0;
+  }
+}
+@keyframes cosmos-meteor-fall {
+  0% {
+    transform: translate(0, 0);
+    opacity: 0;
+  }
+  8% {
+    opacity: 1;
+  }
+  100% {
+    transform: translate(-1500px, 700px);
+    opacity: 0;
+  }
+}
+
 /* Respeto a quienes prefieren menos movimiento: estado final, sin animar. */
 @media (prefers-reduced-motion: reduce) {
   .constellation-starfield span,
   .dark-starfield span,
   .constellation-scene.is-twinkling .constellation-star-pt .constellation-core,
   .constellation-scene.is-twinkling .constellation-star-tip,
-  .constellation-sparkles .constellation-spark.is-in {
+  .constellation-sparkles .constellation-spark.is-in,
+  .cosmos-star-ring {
     animation: none !important;
   }
   .constellation-edge {

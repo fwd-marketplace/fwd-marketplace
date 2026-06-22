@@ -55,6 +55,9 @@ import {
 import { generateProposalAction, suggestStackAction } from "@/lib/actions/ai";
 import { streamAssistant } from "@/lib/api/ai-client";
 import { getProjectMensajesAction, sendMensajeAction, getMyConversacionesAction } from "@/lib/actions/mensajes";
+import { MejorarMensajeButton } from "@/components/gestion/MejorarMensajeButton";
+import { ReportarMensajeButton } from "@/components/gestion/ReportarMensajeButton";
+import { ProjectChatbot } from "@/components/marketplace/ProjectChatbot";
 import type {
   AiChatMessage,
   ApiMensaje,
@@ -577,6 +580,29 @@ export function GestionPage({ role, userId, initialProjectId, disponible = true,
                     return <SidebarEmpty text={t("empty_empresa")} />;
                   }
                   return (
+<<<<<<< HEAD
+                    <>
+                      {mainProjects.length > 0 && (
+                        <ul className="flex flex-col gap-0.5">
+                          {mainProjects.map((p) => renderEmpresaItem(p))}
+                        </ul>
+                      )}
+                      {chatProjects.length > 0 && (
+                        <>
+                          <div className="my-3 flex items-center gap-2 px-3">
+                            <div className="h-px flex-1 bg-white/10" />
+                            <span className="font-body text-[10px] font-bold uppercase tracking-widest text-white/30">
+                              {t("sidebar_chats_label")}
+                            </span>
+                            <div className="h-px flex-1 bg-white/10" />
+                          </div>
+                          <ul className="flex flex-col gap-0.5">
+                            {chatProjects.map((p) => renderEmpresaItem(p, true))}
+                          </ul>
+                        </>
+                      )}
+                    </>
+=======
                     <ul className="flex flex-col gap-0.5">
                       {sidebarProjects.map((proyecto) => {
                         const isSelected = proyecto.id === selectedId;
@@ -622,6 +648,7 @@ export function GestionPage({ role, userId, initialProjectId, disponible = true,
                         );
                       })}
                     </ul>
+>>>>>>> eb34129fb0681ae33cce2870141185427c16d44c
                   );
                 })()
               ) : (
@@ -825,6 +852,7 @@ export function GestionPage({ role, userId, initialProjectId, disponible = true,
                 onResume={() => setProjectActionKind("resume")}
                 onPause={() => setProjectActionKind("pause")}
                 onCancel={() => setProjectActionKind("cancel-step1")}
+                onGoToChat={() => setSection("chat")}
               />
             )}
             {section === "chat" && (
@@ -1066,7 +1094,7 @@ function SidebarEmpty({ text }: { text: string }) {
 // ── Info panel ────────────────────────────────────────────────────────────────
 
 function InfoPanel({
-  project, locale, t, isEmpresa, onEdit, onResume, onPause, onCancel,
+  project, locale, t, isEmpresa, onEdit, onResume, onPause, onCancel, onGoToChat,
 }: {
   project: ApiProject | null;
   locale: string;
@@ -1076,6 +1104,7 @@ function InfoPanel({
   onResume: () => void;
   onPause: () => void;
   onCancel: () => void;
+  onGoToChat: () => void;
 }) {
   if (!project) return null;
   const skills = project.skills.filter((s) => s.skill != null);
@@ -1171,6 +1200,26 @@ function InfoPanel({
         <p className="mb-3 font-body text-xs font-bold uppercase tracking-wider text-ink-muted">{t("description_label")}</p>
         <p className="font-body text-base leading-relaxed text-ink">{project.descripcion}</p>
       </div>
+      {/* Chatbot del proyecto (Nivel 0): el junior resuelve dudas antes de postular */}
+      {!isEmpresa && (
+        <div className="mb-4">
+          <ProjectChatbot
+            projectId={project.id}
+            projectTitulo={project.titulo}
+            onGoToChat={onGoToChat}
+          />
+        </div>
+      )}
+      {project.condiciones && project.condiciones.trim() && (
+        <div className="mb-4 rounded-2xl border border-border bg-surface p-5">
+          <p className="mb-3 font-body text-xs font-bold uppercase tracking-wider text-ink-muted">
+            Condiciones y preguntas frecuentes
+          </p>
+          <p className="whitespace-pre-line font-body text-base leading-relaxed text-ink">
+            {project.condiciones}
+          </p>
+        </div>
+      )}
       {skills.length > 0 && (
         <div className="rounded-2xl border border-border bg-surface p-5">
           <p className="mb-3 font-body text-xs font-bold uppercase tracking-wider text-ink-muted">{t("skills_label")}</p>
@@ -1420,7 +1469,10 @@ function ChatPanel({
                       >
                         {msg.contenido}
                       </div>
-                      <span className="px-1 font-body text-[11px] text-ink-muted">{formatChatTime(msg.fecha_envio)}</span>
+                      <span className="flex items-center gap-1.5 px-1 font-body text-[11px] text-ink-muted">
+                        {formatChatTime(msg.fecha_envio)}
+                        {!isMine && <ReportarMensajeButton mensajeId={msg.id} />}
+                      </span>
                     </div>
                   </div>
                 );
@@ -1440,9 +1492,9 @@ function ChatPanel({
               onChange={(e) => setDraft(e.target.value)}
               onKeyDown={handleKey}
               placeholder={t("chat_placeholder")}
-              rows={1}
-              className="min-h-[42px] flex-1 resize-none rounded-xl border border-border bg-canvas px-4 py-2.5 font-body text-sm text-ink placeholder:text-ink-muted/60 focus:border-secondary focus:outline-none focus:ring-2 focus:ring-secondary/20"
-              style={{ maxHeight: 120, overflowY: "auto" }}
+              rows={2}
+              className="min-h-[64px] flex-1 resize-none rounded-xl border border-border bg-canvas px-4 py-3 font-body text-sm leading-relaxed text-ink placeholder:text-ink-muted/60 focus:border-secondary focus:outline-none focus:ring-2 focus:ring-secondary/20"
+              style={{ maxHeight: 200, overflowY: "auto" }}
             />
             <button
               onClick={() => { void send(); }}
@@ -1458,6 +1510,10 @@ function ChatPanel({
               <Send className="size-4" aria-hidden="true" />
             </button>
           </div>
+          {/* Junior y empresa: reescribir el borrador con IA antes de enviarlo (Nivel 2) */}
+          {project && (
+            <MejorarMensajeButton draft={draft} projectId={project.id} onReplace={setDraft} />
+          )}
           <p className="mt-1.5 px-1 font-body text-[11px] text-ink-muted">{t("chat_hint")}</p>
         </div>
       )}
@@ -2839,6 +2895,7 @@ function AiAssistant({ onApply }: { onApply: (proposal: ProjectProposal) => void
 interface FormData {
   titulo: string;
   descripcion: string;
+  condiciones: string;
   id_area_negocio: string;
   plazo_dias: string;
   usa_ia: boolean;
@@ -2865,6 +2922,7 @@ function ProjectFormContent({
   const [form, setForm] = useState<FormData>(() => ({
     titulo: project?.titulo ?? "",
     descripcion: project?.descripcion ?? "",
+    condiciones: project?.condiciones ?? "",
     id_area_negocio: project?.area?.id ?? "",
     plazo_dias: project ? String(project.plazo_dias) : "10",
     usa_ia: project?.usa_ia ?? false,
@@ -2949,6 +3007,7 @@ function ProjectFormContent({
         usa_ia: form.usa_ia,
         skills: form.skills,
         ...(form.tecnologias_extra.length > 0 ? { tecnologias_extra: form.tecnologias_extra } : {}),
+        ...(form.condiciones.trim() ? { condiciones: form.condiciones.trim() } : {}),
         publicar: form.publicar,
       } satisfies CreateProjectInput);
     } else {
@@ -2960,6 +3019,7 @@ function ProjectFormContent({
         usa_ia: form.usa_ia,
         skills: form.skills,
         ...(form.tecnologias_extra.length > 0 ? { tecnologias_extra: form.tecnologias_extra } : {}),
+        ...(form.condiciones.trim() ? { condiciones: form.condiciones.trim() } : {}),
       } satisfies UpdateProjectInput);
     }
   }
@@ -3031,6 +3091,23 @@ function ProjectFormContent({
               placeholder="Describí el proyecto, objetivos y entregables esperados"
               className="min-h-28 w-full resize-none rounded-xl border border-border bg-surface-sunken px-3.5 py-2 font-body text-sm text-ink-strong outline-none focus:ring-2 focus:ring-primary/20"
             />
+          </div>
+
+          <div className="space-y-1">
+            <label htmlFor="pf-condiciones" className="block font-body text-xs font-bold uppercase tracking-wider text-ink-muted">
+              Condiciones y preguntas frecuentes
+            </label>
+            <textarea
+              id="pf-condiciones"
+              rows={4}
+              value={form.condiciones}
+              onChange={(e) => setForm((p) => ({ ...p, condiciones: e.target.value }))}
+              placeholder="Opcional: aclaraciones, expectativas y dudas comunes del proyecto. El asistente del proyecto las usa para responderle a los juniors."
+              className="min-h-24 w-full resize-none rounded-xl border border-border bg-surface-sunken px-3.5 py-2 font-body text-sm text-ink-strong outline-none focus:ring-2 focus:ring-primary/20"
+            />
+            <p className="font-body text-[11px] text-ink-muted">
+              No incluyas el método de pago entre la empresa y el estudiante (no aplica en esta etapa).
+            </p>
           </div>
 
           <div className="grid gap-4 md:grid-cols-2">

@@ -6,6 +6,7 @@ export default async function PublicLayout({
 }: {
   children: React.ReactNode;
 }) {
+<<<<<<< HEAD
   const meResult = await getMe();
   const profile = meResult.ok ? meResult.data.profile : null;
   const userName = profile
@@ -18,6 +19,11 @@ export default async function PublicLayout({
     <div className="flex min-h-[100dvh] flex-col bg-canvas">
       <AppHeader userName={userName} avatarUrl={avatarUrl} {...(role !== undefined ? { role } : {})} />
       <main className="flex-1">{children}</main>
+=======
+  return (
+    <div className="bg-secondary min-h-screen">
+      {children}
+>>>>>>> cbc5783a949bfd93bbf5bd117333bf550ed5dcd3
     </div>
   );
 }

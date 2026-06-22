@@ -70,13 +70,6 @@
       "cta_projects": "View projects",
       "cta_register": "Create free account"
     },
-    "featured_projects": {
-      "eyebrow": "Projects",
-      "title": "Available opportunities",
-      "badge_featured": "Featured",
-      "duration": "weeks",
-      "link_all": "See all"
-    },
     "value_prop": {
       "talents_title": "For talents",
       "talents_items": {
@@ -317,7 +310,26 @@
         "linkedin_label": "LinkedIn",
         "linkedin_placeholder": "https://linkedin.com/in/your-username",
         "portfolio_label": "Portfolio",
-        "portfolio_placeholder": "https://your-site.com"
+        "portfolio_placeholder": "https://your-site.com",
+        "perfil_junior": {
+          "work": {
+            "add_modal_title": "Add new project",
+            "fields": {
+              "name": "Project name",
+              "url": "URL / Link",
+              "description": "Short description",
+              "techs": "Technologies (comma-separated)",
+              "techs_placeholder": "e.g. React, Node.js"
+            },
+            "create": "Create project",
+            "cancel": "Cancel",
+            "preview_btn": "Preview",
+            "errors": {
+              "name_required": "The project name is required.",
+              "url_required": "The project URL is required."
+            }
+          }
+        }
       },
       "step7": {
         "eyebrow": "Optional",
@@ -1351,6 +1363,121 @@
     "close": "Close",
     "iframe_error": "The embedded preview could not be shown. Open the prototype in a new tab."
   },
+  "talento": {
+    "title": "Find talent",
+    "subtitle": "Discover verified FWD students for your projects.",
+    "filters_title": "Filters",
+    "clear_btn": "Clear",
+    "search_placeholder": "Search by name...",
+    "specialty_label": "Specialty",
+    "modality_label": "Work mode",
+    "skill_label": "Technology",
+    "skill_all": "All",
+    "only_available": "Available only",
+    "available_badge": "Available",
+    "busy_badge": "Busy",
+    "verified": "Verified",
+    "empty": "No students match the filters.",
+    "results_count": "{count, plural, =0 {No results} one {# student} other {# students}}",
+    "specialty": { "frontend": "Frontend", "backend": "Backend", "fullstack": "Fullstack", "ia": "AI & Data" },
+    "modality": { "remote": "Remote", "hybrid": "Hybrid", "onsite": "On-site" }
+  },
+  "terms": {
+    "title": "Terms and Conditions",
+    "download": "Download as PDF",
+    "sections": [
+      { "title": "1. Introduction and Acceptance", "paragraphs": ["Welcome to the FWD Talent Freelance Projects Marketplace, an initiative of Fundación Forward Costa Rica. This document constitutes a legally binding agreement between you (the \"User\") and Fundación Forward Costa Rica (\"the Foundation\"). By using this platform, you fully accept these Terms and Conditions."] },
+      { "title": "2. Nature of the Service", "paragraphs": ["Our platform operates solely as a technological intermediation space. Its purpose is to connect graduates of the Foundation (\"FWD Juniors\") with companies or clients (\"Companies\") seeking talent for short-term projects."] },
+      { "title": "3. Registration and Eligibility", "paragraphs": ["To register as a Junior, it is a strict requirement to be a certified graduate of the training programs of Fundación Forward Costa Rica. Companies may register after a commercial validation process. Use of the platform is restricted to adults."] },
+      { "title": "4. User Accounts and Security", "paragraphs": ["The User is solely responsible for safeguarding the confidentiality of their credentials. Sharing accounts, transferring them, or creating fake profiles is strictly prohibited. All activity carried out from an account will be considered the responsibility of its holder."] },
+      { "title": "5. Role of FWD Juniors", "paragraphs": ["Juniors use the platform to access their first paid or pro-bono professional opportunities (as specified in each project), build experience, and expand their portfolio. They must always act with professionalism, honesty, and diligence."] },
+      { "title": "6. Role of Companies", "paragraphs": ["Companies gain access to emerging talent at competitive costs. They commit to providing an environment of respect, clear communication, and constructive feedback, acknowledging that they are working with profiles in a formative or junior stage."] },
+      { "title": "7. Project Publishing Rules", "paragraphs": ["Every project must have clear requirements, defined deadlines, and realistic expectations. The publication of illegal, offensive, or discriminatory projects, or those involving the development of malicious software, is not allowed."] },
+      { "title": "8. Application Rules", "paragraphs": ["Juniors must apply only to projects for which they have the required skills and the necessary time availability. Unjustified abandonment of a project will negatively impact their reputation on the platform."] },
+      { "title": "9. Prohibition of Artificial Intelligence in Applications", "note": "All communication and cover letters must be of human authorship. The exclusive use of Artificial Intelligence (ChatGPT, Claude, etc.) to generate automated messages is prohibited. We value authenticity over machine-generated syntactic perfection." },
+      { "title": "10. Selection and Awarding Process", "paragraphs": ["The Company is solely responsible for evaluating and selecting the right candidate. The Foundation offers \"matching\" tools, but does not guarantee an award, nor does it require the Company to select a specific Junior."] },
+      { "title": "11. Project Development and Execution", "paragraphs": ["Once the project has started, both parties agree to work under agile methodologies or the agreed-upon standards. The Foundation does not supervise or audit the code generated by Juniors or the guidelines of Companies."] },
+      { "title": "12. Communication", "paragraphs": ["Users are encouraged to keep preliminary communication within the platform for security and transparency. The Foundation reserves the right to audit communications within the ecosystem in the event of reported disputes."] },
+      { "title": "13. Payments and Compensation", "paragraphs": ["The platform does not act as a payment processor. Every economic agreement is negotiated, invoiced, and settled externally between the Company and the Junior. The Foundation does not charge transactional commissions for the awarding of projects."] },
+      { "title": "14. Employment Relationship", "paragraphs": ["At no point is an employment relationship (employer-employee) established between the Foundation and the Junior, nor inherently between the Company and the Junior (unless they sign a formal employment contract outside the platform). The default nature of projects is freelance or independent professional services."] },
+      { "title": "15. Intellectual Property of Deliverables", "paragraphs": ["As a general rule, once the agreed payment is settled, the economic rights over the code and the developed product are transferred to the Company. The author's moral rights are inalienable under applicable law."] },
+      { "title": "16. Portfolio Rights", "paragraphs": ["Unless explicitly prohibited via an NDA (Non-Disclosure Agreement), Juniors retain the right to mention the project, describe the architecture, and show screenshots of the public interface in their professional portfolios for the purpose of career promotion."] },
+      { "title": "17. Confidentiality and NDAs", "paragraphs": ["Companies may require the signing of a Non-Disclosure Agreement (NDA) before sharing sensitive details. It is the Junior's responsibility to read, understand, and comply with the restrictions of any legal contract signed externally."] },
+      { "title": "18. Conduct and Code of Conduct", "paragraphs": ["Zero tolerance for harassment, discrimination, extortion, abusive language, or fraudulent practices. Any violation of the code of conduct will result in the immediate expulsion of the offender from the FWD Talent ecosystem."] },
+      { "title": "19. Liability and Limitations (Disclaimer)", "paragraphs": ["The Foundation provides the platform \"as is\" without implied warranties. We will not be liable for indirect damages, loss of profits, loss of data, or business interruptions arising from the use of the platform or the outcome of freelance projects."] },
+      { "title": "20. Privacy and Data Processing", "paragraphs": ["All collection and processing of personal data is governed by our Privacy Policy, aligned with the relevant national regulations. Information is used exclusively for \"matching\" purposes and platform operation."] },
+      { "title": "21. Dispute Resolution", "paragraphs": ["Differences between a Company and a Junior must be resolved by mutual agreement. The Foundation does not offer legal mediation or arbitration services and is exempt from participating in any litigation arising from project execution."] },
+      { "title": "22. Changes to the Terms", "paragraphs": ["We reserve the right to modify these Terms at any time. Any update will be notified through the platform. Continued use implies acceptance of the new terms."] }
+    ]
+  },
+  "privacy_policy": {
+    "title": "Privacy Policy",
+    "download": "Download as PDF",
+    "sections": [
+      {
+        "title": "1. General Information and Data Controller",
+        "paragraphs": ["At Fundación Forward Costa Rica and the FWD Talent ecosystem, we value and respect your privacy. This Privacy Policy describes how we collect, use, store, share, and protect your personal information when you use our Freelance Projects Marketplace. The data controller is Fundación Forward Costa Rica."]
+      },
+      {
+        "title": "2. Data We Collect",
+        "paragraphs": ["We collect information to provide and improve our services. This includes:"],
+        "items": [
+          "Registration data: Name, email, password (encrypted), and role (Junior or Company).",
+          "Professional information (FWD Juniors): Technical skills, portfolio links (GitHub, LinkedIn, Behance), educational history at the Foundation, and experience.",
+          "Business information (Companies): Company name, description, business contact details, and details of published projects.",
+          "Usage data: Information about how you interact with the platform, access logs, and applications."
+        ]
+      },
+      {
+        "title": "3. How We Use Information",
+        "paragraphs": ["We use your personal data exclusively to:"],
+        "items": [
+          "Enable the creation and management of your account on the platform.",
+          "Power the \"matching\" tool, connecting FWD Junior profiles with the technical requirements of the projects published by Companies.",
+          "Enable initial communication and applications to projects.",
+          "Send important notifications about the status of your projects, platform updates, or changes to our policies.",
+          "Improve the performance, security, and user experience of the marketplace."
+        ]
+      },
+      {
+        "title": "4. Sharing and Disclosure of Data",
+        "paragraphs": ["The marketplace's core premise is to connect talent with opportunities. Therefore:"],
+        "items": [
+          "For FWD Juniors: When you apply to a project or make your profile public, registered Companies can see your name, skills, project history, and portfolio.",
+          "For Companies: Your company's general information and the details of published projects will be visible to registered Juniors."
+        ],
+        "note": "Commitment: Fundación Forward Costa Rica does not sell, rent, or trade your personal information with third parties outside the FWD Talent ecosystem under any circumstances."
+      },
+      {
+        "title": "5. Data Retention",
+        "paragraphs": ["We will retain your personal information while your account remains active or as needed to provide you with the platform's services. If you decide to delete your account, your personal data will be deleted or anonymized from our systems, except for data we must retain due to legal obligations or for dispute resolution."]
+      },
+      {
+        "title": "6. Information Security",
+        "paragraphs": ["We implement technical and organizational security measures to protect your information against unauthorized access, loss, or alteration. This includes the use of encryption for passwords and secure communications. However, no system on the internet is 100% secure, so we urge you to use strong passwords and keep your credentials confidential."]
+      },
+      {
+        "title": "7. Your Rights",
+        "paragraphs": ["You have the right to access, rectify, update, or request the deletion of your personal information at any time. You can manage most of your data directly from the \"Profile\" section on the platform. If you wish to exercise any additional right or request the complete deletion of your account, you can contact us."]
+      },
+      {
+        "title": "8. Cookies and Similar Technologies",
+        "paragraphs": ["We use essential cookies to keep your session active and ensure safe browsing. We may also use analytics cookies on an anonymized basis to understand how the platform is used and improve our services. You can configure your browser to reject cookies, although this may affect how the site works."]
+      },
+      {
+        "title": "9. Third-Party Services and AI",
+        "paragraphs": ["For the platform's operation and compatibility analysis (matching), we use third-party APIs (such as AI services to process skill matches). The data sent to these services is limited to strictly necessary information and is processed under strict confidentiality and privacy agreements."]
+      },
+      {
+        "title": "10. Changes to This Policy",
+        "paragraphs": ["We reserve the right to update this Privacy Policy periodically to reflect changes in our practices or due to legal requirements. We will notify you of significant updates through a notice on the platform or by email."]
+      },
+      {
+        "title": "11. Contact",
+        "paragraphs": ["If you have questions, queries, or concerns regarding the handling of your personal data or this Privacy Policy, please do not hesitate to contact the technical support team at Fundación Forward Costa Rica."]
+      }
+    ]
+  },
   "postulaciones_empresa": {
     "select_for_award": "Select this proposal to award",
     "award_selected": "Award selected ({count})",
@@ -1787,6 +1914,45 @@
     "view_all": "View all activity",
     "preferences": "Preferences"
   },
+  "cosmos_profesional": {
+    "screen_label": "Important points constellation",
+    "eyebrow": "FWD constellation",
+    "title": "Students are the stars",
+    "description": "Here you get a glimpse of everything you'll find on the platform. Hover over each star to see how FWD connects you with real projects.",
+    "controls": {
+      "style_aria": "Star style",
+      "style_diamante": "◆ Diamond",
+      "style_circulo": "● Circle",
+      "style_punta4": "✦ 4 points",
+      "style_punta6": "✶ 6 points",
+      "style_destello": "✧ Sparkle",
+      "style_anillo": "◌ Ring",
+      "toggle_aria": "Show or hide paths",
+      "trazos": "Paths"
+    },
+    "stars": {
+      "0": {
+        "title": "Real projects",
+        "desc": "Work on company challenges, not practice exercises."
+      },
+      "1": {
+        "title": "Companies publish",
+        "desc": "Upload projects and briefs designed for junior talent."
+      },
+      "2": {
+        "title": "Match your skills",
+        "desc": "We show you opportunities based on what you know how to do."
+      },
+      "3": {
+        "title": "Notifications",
+        "desc": "Find out as soon as a project that fits you opens."
+      },
+      "4": {
+        "title": "Publish yourself",
+        "desc": "Make yourself visible like a star in the sky."
+      }
+    }
+  },
   "proceso_page": {
     "back": "Back to marketplace",
     "tab_info": "Info",
@@ -1954,6 +2120,523 @@
     "chat_sin_conversaciones": "No conversations yet",
     "sidebar_chats_label": "Chats",
     "chat_n_chats": "{count, plural, one {# chat} other {# chats}}",
+    "chat_overview_empty": "No messages in this project yet"
+  },
+  "gestion_usuarios": {
+    "eyebrow": "Administration",
+    "title": "User management",
+    "description": "Manage every account on the platform: create, edit, suspend or delete users from a single place.",
+    "create_user": "Create user",
+    "stats": {
+      "total": "Total users",
+      "active": "Active",
+      "suspended": "Suspended",
+      "pending": "Pending"
+    },
+    "filters": {
+      "title": "Filters",
+      "search_placeholder": "Search by name or email...",
+      "role_all": "Role: All",
+      "status_all": "Status: All"
+    },
+    "roles": {
+      "student": "Junior",
+      "company": "Company",
+      "admin": "Administrator"
+    },
+    "statuses": {
+      "activa": "Active",
+      "pendiente": "Pending",
+      "suspendida": "Suspended",
+      "rechazada": "Rejected"
+    },
+    "table": {
+      "user": "User",
+      "role": "Role",
+      "status": "Status",
+      "joined": "Joined",
+      "actions": "Actions",
+      "empty": "No users match the applied filters."
+    },
+    "row_actions": {
+      "view": "View",
+      "edit": "Edit",
+      "suspend": "Suspend",
+      "reactivate": "Reactivate",
+      "delete": "Delete"
+    },
+    "pagination_summary": "Showing {start}-{end} of {total} users",
+    "detail_modal": {
+      "title": "User information",
+      "subtitle": "Account detail",
+      "close": "Close",
+      "loading": "Loading information...",
+      "field_email": "Email",
+      "field_role": "Role",
+      "field_status": "Status",
+      "field_joined": "Joined on",
+      "field_cedula": "ID number",
+      "section_profile": "Profile",
+      "no_profile": "This user has not completed onboarding yet.",
+      "student_especialidad": "Specialization",
+      "student_titulo": "FWD title",
+      "student_disponibilidad": "Availability",
+      "student_reputacion": "Reputation",
+      "student_verificacion": "Verification",
+      "student_skills": "Skills",
+      "student_bio": "Description",
+      "student_github": "GitHub",
+      "student_linkedin": "LinkedIn",
+      "student_portfolio": "Portfolio",
+      "company_tipo": "Type",
+      "company_nombre": "Trade name",
+      "company_sector": "Sector",
+      "company_etapa": "Stage",
+      "company_sitio": "Website",
+      "company_bio": "Description"
+    },
+    "form_modal": {
+      "create_title": "Create new user",
+      "edit_title": "Edit user",
+      "create_subtitle": "Only the account and role are created. The user completes their profile during onboarding.",
+      "edit_subtitle": "Update the information of the selected account.",
+      "field_name": "First name",
+      "field_name_placeholder": "e.g. Ana",
+      "field_lastname": "Last name",
+      "field_lastname_placeholder": "e.g. Rodriguez",
+      "field_email": "Email",
+      "field_email_placeholder": "name@email.com",
+      "field_password": "Temporary password",
+      "field_password_placeholder": "At least 8 characters",
+      "field_role": "Role",
+      "field_status": "Status",
+      "cancel": "Cancel",
+      "save": "Save changes",
+      "create": "Create user",
+      "creating": "Creating...",
+      "saving": "Saving...",
+      "errors": {
+        "name_required": "The name is required",
+        "email_invalid": "The email is not valid",
+        "password_min": "The password must be at least 8 characters"
+      }
+    },
+    "confirm_suspend": {
+      "title": "Suspend account",
+      "message": "Are you sure you want to suspend this account? The user will not be able to sign in until you reactivate it.",
+      "confirm": "Suspend",
+      "cancel": "Cancel",
+      "working": "Suspending..."
+    },
+    "confirm_delete": {
+      "title": "Delete user",
+      "message": "This permanently deletes the account and its entire profile. It cannot be undone.",
+      "confirm": "Delete",
+      "cancel": "Cancel",
+      "working": "Deleting..."
+    },
+    "messages": {
+      "created": "User created",
+      "updated": "User updated",
+      "deleted": "User deleted",
+      "suspended": "Account suspended",
+      "reactivated": "Account reactivated",
+      "error": "The action could not be completed"
+    }
+  },
+  "admin_dashboard": {
+    "title": "Dashboard",
+    "subtitle": "Operational overview of the FWD Talent ecosystem with live data.",
+    "states": {
+      "borrador": "Draft",
+      "en_recepcion": "Receiving",
+      "en_evaluacion": "Under evaluation",
+      "adjudicado": "Awarded",
+      "en_desarrollo": "In development",
+      "cerrado": "Closed",
+      "cancelado": "Cancelled"
+    },
+    "stats": {
+      "companies_label": "Companies",
+      "companies_caption": "Pending approval",
+      "talent_label": "Talent",
+      "talent_caption": "Pending verification",
+      "projects_label": "Projects",
+      "projects_caption": "Total in the system",
+      "active_label": "Active",
+      "active_caption": "In progress",
+      "requests_label": "Requests",
+      "requests_caption": "Pending review",
+      "cancelled_label": "Cancelled",
+      "cancelled_caption": "Cancelled projects"
+    },
+    "admissions": {
+      "title": "Admission requests",
+      "search_placeholder": "Search...",
+      "view_all": "View all",
+      "th_candidate": "Candidate",
+      "th_type": "Type",
+      "th_date": "Date",
+      "th_status": "Status",
+      "th_action": "Action",
+      "empty": "No pending requests.",
+      "type_company": "Company",
+      "type_student": "Talent",
+      "type_account": "Account",
+      "pending": "Pending",
+      "approve_aria": "Approve request"
+    },
+    "moderation": {
+      "title": "Project moderation",
+      "active_count": "{count} active",
+      "th_project": "Project",
+      "th_company": "Company",
+      "th_status": "Status",
+      "th_actions": "Actions",
+      "empty": "No projects to moderate.",
+      "cancel": "Cancel",
+      "hide": "Hide"
+    },
+    "modules": {
+      "talento_title": "Talent",
+      "talento_desc": "Profile and skill management",
+      "empresas_title": "Companies",
+      "empresas_desc": "Corporate partners and contracts",
+      "proyectos_title": "Projects",
+      "proyectos_desc": "Milestones, payments and moderation",
+      "solicitudes_title": "Requests",
+      "solicitudes_desc": "Admissions and verifications",
+      "reportes_title": "Reports",
+      "reportes_desc": "Advanced statistics and KPIs",
+      "config_title": "Settings",
+      "config_desc": "Global system parameters",
+      "view_module": "View module"
+    },
+    "summary": {
+      "title": "Summary",
+      "pending_requests": "Pending requests",
+      "total_projects": "Total projects",
+      "to_moderate": "To moderate",
+      "pending_companies": "Pending companies",
+      "pending_talent": "Pending talent"
+    },
+    "quick": {
+      "title": "Quick access",
+      "review_requests": "Review requests",
+      "moderate_projects": "Moderate projects",
+      "view_reports": "View reports"
+    },
+    "messages": {
+      "approve_error": "Could not approve",
+      "approved": "Request approved",
+      "cancel_error": "Could not cancel",
+      "cancelled": "Project cancelled",
+      "hidden": "Project hidden"
+    }
+  },
+  "admin_egresados": {
+    "eyebrow": "Administration",
+    "title": "Graduates",
+    "description": "Manage and track FWD graduates: verify, edit or delete student accounts.",
+    "create_student": "Create student",
+    "stats": {
+      "total": "Total graduates",
+      "verified": "Verified",
+      "pending": "Pending verification",
+      "avg_reputation": "Average reputation"
+    },
+    "distribution": {
+      "title": "Verification breakdown",
+      "verificado": "Verified",
+      "pendiente": "Pending",
+      "rechazado": "Rejected"
+    },
+    "filters": {
+      "search_placeholder": "Search by name or email...",
+      "status_all": "Status: All",
+      "specialty_all": "Specialization: All",
+      "skill_all": "Strength: All",
+      "modality_all": "Modality: All",
+      "only_pending": "Only pending verification",
+      "clear": "Clear"
+    },
+    "verification": {
+      "verificado": "Verified",
+      "pendiente": "Pending",
+      "rechazado": "Rejected"
+    },
+    "table": {
+      "profile": "Profile",
+      "titulo": "FWD title",
+      "specialty": "Specialization",
+      "strengths": "Strengths",
+      "modality": "Modality",
+      "availability": "Availability",
+      "status": "Status",
+      "actions": "Actions",
+      "empty": "No graduates match the applied filters.",
+      "summary": "Showing {shown} of {total} graduates",
+      "no_skills": "No skills"
+    },
+    "row_actions": {
+      "view": "View",
+      "edit": "Edit",
+      "verify": "Verify",
+      "reject": "Reject",
+      "delete": "Delete"
+    },
+    "detail_modal": {
+      "title": "Graduate information",
+      "subtitle": "Student detail",
+      "close": "Close",
+      "loading": "Loading information...",
+      "field_email": "Email",
+      "field_status": "Account status",
+      "field_joined": "Joined on",
+      "field_cedula": "ID number",
+      "field_verification": "Verification",
+      "field_especialidad": "Specialization",
+      "field_titulo": "FWD title",
+      "field_disponibilidad": "Availability",
+      "field_modalidad": "Preferred modality",
+      "field_reputacion": "Reputation",
+      "field_skills": "Skills",
+      "field_bio": "Description",
+      "field_github": "GitHub",
+      "field_linkedin": "LinkedIn",
+      "field_portfolio": "Portfolio",
+      "no_profile": "This graduate has not completed onboarding yet."
+    },
+    "form_modal": {
+      "create_title": "Create new student",
+      "edit_title": "Edit student",
+      "create_subtitle": "Only the account with student role is created. The graduate completes their profile during onboarding.",
+      "edit_subtitle": "Update the account data. The academic profile is managed by the student.",
+      "field_name": "First name",
+      "field_name_placeholder": "e.g. Ana",
+      "field_lastname": "Last name",
+      "field_lastname_placeholder": "e.g. Rodriguez",
+      "field_email": "Email",
+      "field_email_placeholder": "name@email.com",
+      "field_password": "Temporary password",
+      "field_password_placeholder": "At least 8 characters",
+      "cancel": "Cancel",
+      "create": "Create student",
+      "save": "Save changes",
+      "creating": "Creating...",
+      "saving": "Saving...",
+      "errors": {
+        "name_required": "The name is required",
+        "email_invalid": "The email is not valid",
+        "password_min": "The password must be at least 8 characters"
+      }
+    },
+    "confirm_delete": {
+      "title": "Delete student",
+      "message": "This permanently deletes the graduate's account and entire profile. It cannot be undone.",
+      "confirm": "Delete",
+      "cancel": "Cancel",
+      "working": "Deleting..."
+    },
+    "messages": {
+      "created": "Student created",
+      "updated": "Student updated",
+      "deleted": "Student deleted",
+      "verified": "Graduate verified",
+      "rejected": "Verification rejected",
+      "error": "The action could not be completed"
+    }
+  },
+  "admin_empresas": {
+    "eyebrow": "Administration",
+    "title": "Companies",
+    "description": "Manage companies and entrepreneurs: create, edit, delete or view their information.",
+    "create_company": "Create company",
+    "stats": {
+      "total": "Total companies",
+      "empresa": "Companies",
+      "emprendedor": "Entrepreneurs",
+      "active": "Active accounts"
+    },
+    "types": {
+      "empresa": "Company",
+      "emprendedor": "Entrepreneur"
+    },
+    "account_states": {
+      "activa": "Active",
+      "pendiente": "Pending",
+      "suspendida": "Suspended",
+      "rechazada": "Rejected"
+    },
+    "filters": {
+      "title": "Filters",
+      "search_placeholder": "Search by name, contact or email...",
+      "type_all": "Type: All",
+      "sector_all": "Sector: All",
+      "stage_all": "Stage: All",
+      "status_all": "Status: All",
+      "clear": "Clear"
+    },
+    "table": {
+      "company": "Company",
+      "type": "Type",
+      "sector": "Sector",
+      "stage": "Stage",
+      "status": "Status",
+      "actions": "Actions",
+      "empty": "No companies match the applied filters.",
+      "summary": "Showing {shown} of {total} companies",
+      "no_name": "No trade name"
+    },
+    "row_actions": {
+      "view": "View",
+      "edit": "Edit",
+      "delete": "Delete"
+    },
+    "detail_modal": {
+      "title": "Company information",
+      "subtitle": "Profile detail",
+      "close": "Close",
+      "field_type": "Type",
+      "field_sector": "Sector",
+      "field_stage": "Stage",
+      "field_employees": "Employees",
+      "field_website": "Website",
+      "field_address": "Address",
+      "field_modality": "Modalities",
+      "field_budget": "Budget",
+      "field_description": "Description",
+      "section_account": "Contact account",
+      "field_contact": "Contact",
+      "field_email": "Email",
+      "field_account_status": "Account status",
+      "field_joined": "Joined on"
+    },
+    "form_modal": {
+      "create_title": "Create new company",
+      "edit_title": "Edit company",
+      "create_subtitle": "The company account and a minimal profile are created. The rest is completed by the company during onboarding.",
+      "edit_subtitle": "Update the company profile data.",
+      "field_contact_name": "Contact name",
+      "field_contact_name_placeholder": "e.g. Ana Rodriguez",
+      "field_email": "Email",
+      "field_email_placeholder": "company@email.com",
+      "field_password": "Temporary password",
+      "field_password_placeholder": "At least 8 characters",
+      "field_type": "Type",
+      "field_commercial_name": "Trade name",
+      "field_commercial_name_placeholder": "e.g. Estudio Norte",
+      "field_sector": "Sector",
+      "field_sector_placeholder": "e.g. Technology",
+      "field_stage": "Stage",
+      "field_stage_placeholder": "e.g. Growth",
+      "field_employees": "Number of employees",
+      "field_employees_placeholder": "e.g. 11-50",
+      "field_website": "Website",
+      "field_website_placeholder": "https://...",
+      "field_address": "Address",
+      "field_address_placeholder": "City, country",
+      "field_description": "Description",
+      "field_description_placeholder": "Brief description of the company",
+      "cancel": "Cancel",
+      "create": "Create company",
+      "save": "Save changes",
+      "creating": "Creating...",
+      "saving": "Saving...",
+      "errors": {
+        "name_required": "The contact name is required",
+        "commercial_required": "The trade name is required",
+        "email_invalid": "The email is not valid",
+        "password_min": "The password must be at least 8 characters"
+      }
+    },
+    "confirm_delete": {
+      "title": "Delete company",
+      "message": "This permanently deletes the company account and entire profile. It cannot be undone.",
+      "confirm": "Delete",
+      "cancel": "Cancel",
+      "working": "Deleting..."
+    },
+    "messages": {
+      "created": "Company created",
+      "updated": "Company updated",
+      "deleted": "Company deleted",
+      "error": "The action could not be completed"
+    }
+  },
+  "admin_proyectos": {
+    "view": "View",
+    "detail": {
+      "title": "Project detail",
+      "subtitle": "Full project information",
+      "loading": "Loading project...",
+      "close": "Close",
+      "company": "Company",
+      "type": "Type",
+      "area": "Business area",
+      "description": "Description",
+      "deadline": "Deadline",
+      "deadline_days": "{days, plural, one {# day} other {# days}}",
+      "uses_ai": "Uses AI",
+      "yes": "Yes",
+      "no": "No",
+      "extra_tech": "Extra technologies",
+      "skills": "Skills / Stack",
+      "state": "Status",
+      "published": "Published",
+      "closing": "Closing",
+      "id": "ID",
+      "none": "—",
+      "unpublished": "Unpublished",
+      "no_description": "No description."
+    }
+  },
+  "admin_config": {
+    "eyebrow": "Administration",
+    "title": "Settings",
+    "description": "Manage the general parameters of the FWD Talent ecosystem and personalize your experience.",
+    "appearance": {
+      "title": "Appearance and preferences",
+      "dark_mode": "Dark mode",
+      "dark_mode_desc": "Switch between light and dark theme. The preference is saved in this browser.",
+      "language": "Language",
+      "language_desc": "Choose the interface language.",
+      "spanish": "Español",
+      "english": "English"
+    },
+    "marketplace": {
+      "title": "Marketplace",
+      "registros_label": "Allow sign-ups",
+      "registros_desc": "Enables the creation of new talent accounts.",
+      "empresas_label": "Allow companies",
+      "empresas_desc": "Allows onboarding of corporate profiles.",
+      "postulaciones_label": "Allow applications",
+      "postulaciones_desc": "Enables the apply button on active projects.",
+      "matching_label": "Enable matching",
+      "matching_desc": "Automatic talent suggestion algorithm."
+    },
+    "roles": {
+      "title": "Roles and permissions",
+      "create": "Create role",
+      "th_role": "Role",
+      "th_description": "Description",
+      "th_users": "Users",
+      "th_actions": "Actions",
+      "empty": "No roles defined. Create one with “Create role”.",
+      "users_count": "{count, plural, one {# user} other {# users}}",
+      "edit_aria": "Edit role",
+      "delete_aria": "Delete role",
+      "modal_create_title": "Create role",
+      "modal_edit_title": "Edit role",
+      "field_name": "Role name",
+      "field_description": "Description",
+      "field_users": "Users",
+      "cancel": "Cancel",
+      "submit_create": "Create role",
+      "submit_edit": "Save role"
+    },
+    "save": "Save changes",
+    "saved": "Changes saved",
     "chat_overview_empty": "No messages in this project yet",
     "action_pause_btn": "Pause project",
     "action_cancel_btn": "Cancel project",
@@ -1982,6 +2665,7 @@
     "matches_invited_btn": "Invited",
     "matches_toast_invited": "{name} was invited to the project."
   },
+<<<<<<< HEAD
   "cosmos_profesional": {
     "screen_label": "Important points constellation",
     "controls": {
@@ -2066,5 +2750,56 @@
     "disponibilidad_two_weeks": "Available in 2 weeks",
     "disponibilidad_one_month": "Available in 1 month",
     "disponibilidad_unavailable": "Not available"
+=======
+  "project_chatbot": {
+    "title": "Project assistant",
+    "subtitle": "Clear up your questions before applying",
+    "header_hint": "Answers based on this project",
+    "close": "Close",
+    "empty_title": "Questions about this project?",
+    "empty_hint": "For example: which technologies do I need?, is it web or app?, what's in scope?",
+    "thinking": "Thinking…",
+    "input_placeholder": "Type your question…",
+    "send": "Send",
+    "prefer_human": "Prefer to talk to the company?",
+    "talk_to_company": "Talk to the company",
+    "escalate_title": "Message the company",
+    "escalate_desc": "The company will see it and reply in the project chat.",
+    "escalate_placeholder": "Write your message to the company…",
+    "escalate_send": "Send to the company",
+    "escalate_sending": "Sending…",
+    "escalate_sent_title": "Message sent",
+    "escalate_sent_desc": "The company will see it in the project chat and reply there.",
+    "go_to_chat": "Go to chat",
+    "cancel": "Cancel",
+    "error_generic": "Something went wrong. Try again.",
+    "escalate_default_draft": "Hi, I have a question about the project «{titulo}»: "
+  },
+  "mejorar_mensaje": {
+    "button": "Improve with AI",
+    "loading": "Improving…",
+    "undo": "Undo",
+    "error": "Couldn't improve it. Try again."
+  },
+  "reportar_mensaje": {
+    "button": "Report message",
+    "title": "Report message",
+    "subtitle": "The moderation team will review this message.",
+    "close": "Close",
+    "motivo_label": "Reason",
+    "motivo_falta_respeto": "Disrespect",
+    "motivo_spam": "Spam",
+    "motivo_contenido_inapropiado": "Inappropriate content",
+    "motivo_fuera_de_lugar": "Out of place",
+    "motivo_otro": "Other",
+    "detalle_label": "Details (optional)",
+    "detalle_placeholder": "Tell us what happened…",
+    "submit": "Send report",
+    "sending": "Sending…",
+    "cancel": "Cancel",
+    "sent_title": "Report sent",
+    "sent_desc": "Thanks. The moderation team will review it.",
+    "error": "Couldn't send the report. Try again."
+>>>>>>> cbc5783a949bfd93bbf5bd117333bf550ed5dcd3
   }
 }

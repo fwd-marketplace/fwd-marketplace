@@ -32,12 +32,12 @@ export function HeroJourneyBadge({ stage, label, cta, achievedCta, achieved = fa
         <div className={`inline-flex items-center gap-2.5 rounded-full border px-3 py-1.5 backdrop-blur-sm transition-all duration-[var(--duration-base)] ease-[var(--ease-out)] ${
             achieved
                 ? `${bgClass} ${borderClass}`
-                : 'border-white/20 bg-white/5'
+                : 'border-transparent bg-transparent'
         }`}>
             <div className={`flex size-7 shrink-0 items-center justify-center rounded-full border transition-all duration-[var(--duration-base)] ${
                 achieved
                     ? `${bgClass} ${borderClass} ${colorClass}`
-                    : 'border-white/30 text-white/50'
+                    : 'border-transparent text-white/60'
             }`}>
                 <Icon className="w-3.5 h-3.5" />
             </div>
