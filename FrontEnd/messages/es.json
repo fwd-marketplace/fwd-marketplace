@@ -1345,6 +1345,25 @@
     "close": "Cerrar",
     "iframe_error": "No se pudo mostrar la vista previa embebida. Abrí el prototipo en una pestaña nueva."
   },
+  "talento": {
+    "title": "Buscar talento",
+    "subtitle": "Encontrá estudiantes verificados de FWD para tus proyectos.",
+    "filters_title": "Filtros",
+    "clear_btn": "Limpiar",
+    "search_placeholder": "Buscar por nombre...",
+    "specialty_label": "Especialidad",
+    "modality_label": "Modalidad",
+    "skill_label": "Tecnología",
+    "skill_all": "Todas",
+    "only_available": "Solo disponibles",
+    "available_badge": "Disponible",
+    "busy_badge": "Ocupado",
+    "verified": "Verificado",
+    "empty": "No hay estudiantes que coincidan con los filtros.",
+    "results_count": "{count, plural, =0 {Sin resultados} one {# estudiante} other {# estudiantes}}",
+    "specialty": { "frontend": "Frontend", "backend": "Backend", "fullstack": "Fullstack", "ia": "IA & Data" },
+    "modality": { "remote": "Remoto", "hybrid": "Híbrido", "onsite": "Presencial" }
+  },
   "postulaciones_empresa": {
     "select_for_award": "Seleccionar esta propuesta para adjudicar",
     "award_selected": "Adjudicar seleccionadas ({count})",
