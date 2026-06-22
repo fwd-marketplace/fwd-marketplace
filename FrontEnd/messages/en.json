@@ -1345,6 +1345,25 @@
     "close": "Close",
     "iframe_error": "The embedded preview could not be shown. Open the prototype in a new tab."
   },
+  "talento": {
+    "title": "Find talent",
+    "subtitle": "Discover verified FWD students for your projects.",
+    "filters_title": "Filters",
+    "clear_btn": "Clear",
+    "search_placeholder": "Search by name...",
+    "specialty_label": "Specialty",
+    "modality_label": "Work mode",
+    "skill_label": "Technology",
+    "skill_all": "All",
+    "only_available": "Available only",
+    "available_badge": "Available",
+    "busy_badge": "Busy",
+    "verified": "Verified",
+    "empty": "No students match the filters.",
+    "results_count": "{count, plural, =0 {No results} one {# student} other {# students}}",
+    "specialty": { "frontend": "Frontend", "backend": "Backend", "fullstack": "Fullstack", "ia": "AI & Data" },
+    "modality": { "remote": "Remote", "hybrid": "Hybrid", "onsite": "On-site" }
+  },
   "postulaciones_empresa": {
     "select_for_award": "Select this proposal to award",
     "award_selected": "Award selected ({count})",
