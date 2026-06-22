@@ -9,7 +9,9 @@ export async function listPendingUsers(accessToken: string) {
   const client = supabaseForToken(accessToken);
   const { data, error } = await client
     .from("users")
-    .select("id, nombre, apellido1, correo, estado_cuenta, fecha_registro, role:roles(nombre)")
+    .select(
+      "id, nombre, apellido1, correo, estado_cuenta, fecha_registro, role:roles(nombre), empresario:empresario(tipo)",
+    )
     .eq("estado_cuenta", "pendiente")
     .order("fecha_registro", { ascending: true });
 

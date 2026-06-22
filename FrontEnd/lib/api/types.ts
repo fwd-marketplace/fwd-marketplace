@@ -325,6 +325,8 @@ export type AdminPendingUser = {
   estado_cuenta: AccountState;
   fecha_registro: string;
   role: { nombre: ApiRoleName } | null;
+  /** Para usuarios 'company': distingue empresa de emprendedor. */
+  empresario?: { tipo: "empresa" | "emprendedor" } | null;
 };
 
 export type AdminPendingUsersResponse = {
