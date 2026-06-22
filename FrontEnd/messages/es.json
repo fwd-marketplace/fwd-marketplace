@@ -70,13 +70,6 @@
       "cta_projects": "Ver proyectos",
       "cta_register": "Crear cuenta gratis"
     },
-    "featured_projects": {
-      "eyebrow": "Proyectos",
-      "title": "Oportunidades disponibles",
-      "badge_featured": "Destacado",
-      "duration": "semanas",
-      "link_all": "Ver todos"
-    },
     "value_prop": {
       "talents_title": "Para talentos",
       "talents_items": {
@@ -1370,6 +1363,25 @@
     "close": "Cerrar",
     "iframe_error": "No se pudo mostrar la vista previa embebida. Abrí el prototipo en una pestaña nueva."
   },
+  "talento": {
+    "title": "Buscar talento",
+    "subtitle": "Encontrá estudiantes verificados de FWD para tus proyectos.",
+    "filters_title": "Filtros",
+    "clear_btn": "Limpiar",
+    "search_placeholder": "Buscar por nombre...",
+    "specialty_label": "Especialidad",
+    "modality_label": "Modalidad",
+    "skill_label": "Tecnología",
+    "skill_all": "Todas",
+    "only_available": "Solo disponibles",
+    "available_badge": "Disponible",
+    "busy_badge": "Ocupado",
+    "verified": "Verificado",
+    "empty": "No hay estudiantes que coincidan con los filtros.",
+    "results_count": "{count, plural, =0 {Sin resultados} one {# estudiante} other {# estudiantes}}",
+    "specialty": { "frontend": "Frontend", "backend": "Backend", "fullstack": "Fullstack", "ia": "IA & Data" },
+    "modality": { "remote": "Remoto", "hybrid": "Híbrido", "onsite": "Presencial" }
+  },
   "postulaciones_empresa": {
     "select_for_award": "Seleccionar esta propuesta para adjudicar",
     "award_selected": "Adjudicar seleccionadas ({count})",
@@ -1806,6 +1818,45 @@
     "view_all": "Ver toda la actividad",
     "preferences": "Preferencias"
   },
+  "cosmos_profesional": {
+    "screen_label": "Constelación de puntos importantes",
+    "eyebrow": "Constelación FWD",
+    "title": "Los estudiantes son las estrellas",
+    "description": "Acá ves un poco de todo lo que vas a encontrar en la plataforma. Pasá por cada estrella y descubrí cómo FWD te conecta con proyectos reales.",
+    "controls": {
+      "style_aria": "Estilo de estrella",
+      "style_diamante": "◆ Diamante",
+      "style_circulo": "● Círculo",
+      "style_punta4": "✦ 4 puntas",
+      "style_punta6": "✶ 6 puntas",
+      "style_destello": "✧ Destello",
+      "style_anillo": "◌ Anillo",
+      "toggle_aria": "Mostrar u ocultar trazos",
+      "trazos": "Trazos"
+    },
+    "stars": {
+      "0": {
+        "title": "Proyectos reales",
+        "desc": "Trabajá en retos de empresas, no en ejercicios de práctica."
+      },
+      "1": {
+        "title": "Las empresas publican",
+        "desc": "Suben proyectos y briefs pensados para talento junior."
+      },
+      "2": {
+        "title": "Match con tus skills",
+        "desc": "Te mostramos oportunidades según lo que sabés hacer."
+      },
+      "3": {
+        "title": "Notificaciones",
+        "desc": "Enterate apenas se abre un proyecto que encaja con vos."
+      },
+      "4": {
+        "title": "Publicate",
+        "desc": "Hacete visible como una estrella del cielo."
+      }
+    }
+  },
   "proceso_page": {
     "back": "Volver al marketplace",
     "tab_info": "Info",
@@ -2002,40 +2053,54 @@
     "matches_invited_btn": "Invitado",
     "matches_toast_invited": "{name} fue invitado al proyecto."
   },
-  "cosmos_profesional": {
-    "screen_label": "Constelación de puntos importantes",
-    "controls": {
-      "style_aria": "Estilo de estrella",
-      "style_diamante": "◆ Diamante",
-      "style_circulo": "● Círculo",
-      "style_punta4": "✦ 4 puntas",
-      "style_punta6": "✶ 6 puntas",
-      "style_destello": "✧ Destello",
-      "style_anillo": "◌ Anillo",
-      "toggle_aria": "Mostrar u ocultar trazos",
-      "trazos": "Trazos"
-    },
-    "stars": {
-      "0": {
-        "title": "Proyectos reales",
-        "desc": "Trabajá en retos de empresas, no en ejercicios de práctica."
-      },
-      "1": {
-        "title": "Las empresas publican",
-        "desc": "Suben proyectos y briefs pensados para talento junior."
-      },
-      "2": {
-        "title": "Match con tus skills",
-        "desc": "Te mostramos oportunidades según lo que sabés hacer."
-      },
-      "3": {
-        "title": "Notificaciones",
-        "desc": "Enterate apenas se abre un proyecto que encaja con vos."
-      },
-      "4": {
-        "title": "Publicate",
-        "desc": "Hacete visible como una estrella del cielo."
-      }
-    }
+  "project_chatbot": {
+    "title": "Asistente del proyecto",
+    "subtitle": "Resolvé tus dudas antes de postular",
+    "header_hint": "Responde según este proyecto",
+    "close": "Cerrar",
+    "empty_title": "¿Tenés dudas sobre el proyecto?",
+    "empty_hint": "Por ejemplo: ¿qué tecnologías necesito?, ¿es web o app?, ¿qué incluye el alcance?",
+    "thinking": "Pensando…",
+    "input_placeholder": "Escribí tu pregunta…",
+    "send": "Enviar",
+    "prefer_human": "¿Preferís hablar con la empresa?",
+    "talk_to_company": "Hablar con la empresa",
+    "escalate_title": "Escribile a la empresa",
+    "escalate_desc": "La empresa lo verá y te responderá en el chat del proyecto.",
+    "escalate_placeholder": "Escribí tu mensaje para la empresa…",
+    "escalate_send": "Enviar a la empresa",
+    "escalate_sending": "Enviando…",
+    "escalate_sent_title": "Mensaje enviado",
+    "escalate_sent_desc": "La empresa lo verá en el chat del proyecto y te responderá ahí.",
+    "go_to_chat": "Ir al chat",
+    "cancel": "Cancelar",
+    "error_generic": "Algo salió mal. Probá de nuevo.",
+    "escalate_default_draft": "Hola, tengo una consulta sobre el proyecto «{titulo}»: "
+  },
+  "mejorar_mensaje": {
+    "button": "Mejorar con IA",
+    "loading": "Mejorando…",
+    "undo": "Deshacer",
+    "error": "No se pudo mejorar. Probá de nuevo."
+  },
+  "reportar_mensaje": {
+    "button": "Reportar mensaje",
+    "title": "Reportar mensaje",
+    "subtitle": "El equipo de moderación revisará este mensaje.",
+    "close": "Cerrar",
+    "motivo_label": "Motivo",
+    "motivo_falta_respeto": "Falta de respeto",
+    "motivo_spam": "Spam",
+    "motivo_contenido_inapropiado": "Contenido inapropiado",
+    "motivo_fuera_de_lugar": "Fuera de lugar",
+    "motivo_otro": "Otro",
+    "detalle_label": "Detalle (opcional)",
+    "detalle_placeholder": "Contanos qué pasó…",
+    "submit": "Enviar reporte",
+    "sending": "Enviando…",
+    "cancel": "Cancelar",
+    "sent_title": "Reporte enviado",
+    "sent_desc": "Gracias. El equipo de moderación lo revisará.",
+    "error": "No se pudo enviar el reporte. Probá de nuevo."
   }
 }

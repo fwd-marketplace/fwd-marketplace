@@ -3,6 +3,7 @@ import { err, ok, type Result } from "@/lib/result";
 import type {
   AdminPendingUsersResponse,
   AdminProjectsResponse,
+  AdminReportesResponse,
   AdminStudentsResponse,
 } from "@/lib/api/types";
 
@@ -47,5 +48,21 @@ export function suspendAdminUser(userId: string): Promise<Result<void>> {
 export function cancelAdminProject(projectId: string): Promise<Result<void>> {
   return asResult(async () => {
     await apiAuth(`/admin/projects/${projectId}/cancelar`, { method: "PATCH" });
+  });
+}
+
+export function getReportes(): Promise<Result<AdminReportesResponse>> {
+  return asResult(() => apiAuth<AdminReportesResponse>("/admin/reportes"));
+}
+
+export function resolverReporte(
+  reporteId: string,
+  estado: "revisado" | "desestimado",
+): Promise<Result<void>> {
+  return asResult(async () => {
+    await apiAuth(`/admin/reportes/${reporteId}/resolver`, {
+      method: "PATCH",
+      body: JSON.stringify({ estado }),
+    });
   });
 }

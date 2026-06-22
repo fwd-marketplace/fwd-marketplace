@@ -14,6 +14,7 @@ import {
   verifyEgresado,
   rejectEgresado,
 } from "../controllers/admin.controller";
+import { listReportes, resolverReporte } from "../controllers/reporte.controller";
 
 const router = Router();
 
@@ -29,5 +30,8 @@ router.get("/students", authenticate, requireAdmin, asyncHandler(listStudents));
 router.get("/students/pending", authenticate, requireAdmin, asyncHandler(listPendingEgresados));
 router.patch("/students/:id/verificar", authenticate, requireAdmin, asyncHandler(verifyEgresado));
 router.patch("/students/:id/rechazar", authenticate, requireAdmin, asyncHandler(rejectEgresado));
+// Moderación de mensajes reportados.
+router.get("/reportes", authenticate, requireAdmin, asyncHandler(listReportes));
+router.patch("/reportes/:id/resolver", authenticate, requireAdmin, asyncHandler(resolverReporte));
 
 export default router;

@@ -4,6 +4,8 @@ import { z } from "zod";
 export const CreateProjectSchema = z.object({
   titulo: z.string().min(1).max(255),
   descripcion: z.string().min(1),
+  // Condiciones y preguntas frecuentes (texto libre opcional). Contexto del chatbot del proyecto.
+  condiciones: z.string().max(5000).optional(),
   id_area_negocio: z.string().uuid(),
   plazo_dias: z.number().int().min(5).max(15),
   usa_ia: z.boolean().optional(),
@@ -41,6 +43,7 @@ export type ChangeProjectStateInput = z.infer<typeof ChangeProjectStateSchema>;
 export const UpdateProjectSchema = z.object({
   titulo: z.string().min(1).max(255).optional(),
   descripcion: z.string().min(1).optional(),
+  condiciones: z.string().max(5000).optional(),
   id_area_negocio: z.string().uuid().optional(),
   plazo_dias: z.number().int().min(5).max(15).optional(),
   usa_ia: z.boolean().optional(),

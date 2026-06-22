@@ -55,6 +55,8 @@ import {
 import { generateProposalAction, suggestStackAction } from "@/lib/actions/ai";
 import { streamAssistant } from "@/lib/api/ai-client";
 import { getProjectMensajesAction, sendMensajeAction, getMyConversacionesAction } from "@/lib/actions/mensajes";
+import { MejorarMensajeButton } from "@/components/gestion/MejorarMensajeButton";
+import { ReportarMensajeButton } from "@/components/gestion/ReportarMensajeButton";
 import type {
   AiChatMessage,
   ApiMensaje,
@@ -1420,7 +1422,10 @@ function ChatPanel({
                       >
                         {msg.contenido}
                       </div>
-                      <span className="px-1 font-body text-[11px] text-ink-muted">{formatChatTime(msg.fecha_envio)}</span>
+                      <span className="flex items-center gap-1.5 px-1 font-body text-[11px] text-ink-muted">
+                        {formatChatTime(msg.fecha_envio)}
+                        {!isMine && <ReportarMensajeButton mensajeId={msg.id} />}
+                      </span>
                     </div>
                   </div>
                 );
@@ -1458,6 +1463,10 @@ function ChatPanel({
               <Send className="size-4" aria-hidden="true" />
             </button>
           </div>
+          {/* Empresa: reescribir el borrador con IA antes de enviarlo (Nivel 2) */}
+          {isEmpresa && project && (
+            <MejorarMensajeButton draft={draft} projectId={project.id} onReplace={setDraft} />
+          )}
           <p className="mt-1.5 px-1 font-body text-[11px] text-ink-muted">{t("chat_hint")}</p>
         </div>
       )}
@@ -2839,6 +2848,7 @@ function AiAssistant({ onApply }: { onApply: (proposal: ProjectProposal) => void
 interface FormData {
   titulo: string;
   descripcion: string;
+  condiciones: string;
   id_area_negocio: string;
   plazo_dias: string;
   usa_ia: boolean;
@@ -2865,6 +2875,7 @@ function ProjectFormContent({
   const [form, setForm] = useState<FormData>(() => ({
     titulo: project?.titulo ?? "",
     descripcion: project?.descripcion ?? "",
+    condiciones: project?.condiciones ?? "",
     id_area_negocio: project?.area?.id ?? "",
     plazo_dias: project ? String(project.plazo_dias) : "10",
     usa_ia: project?.usa_ia ?? false,
@@ -2949,6 +2960,7 @@ function ProjectFormContent({
         usa_ia: form.usa_ia,
         skills: form.skills,
         ...(form.tecnologias_extra.length > 0 ? { tecnologias_extra: form.tecnologias_extra } : {}),
+        ...(form.condiciones.trim() ? { condiciones: form.condiciones.trim() } : {}),
         publicar: form.publicar,
       } satisfies CreateProjectInput);
     } else {
@@ -2960,6 +2972,7 @@ function ProjectFormContent({
         usa_ia: form.usa_ia,
         skills: form.skills,
         ...(form.tecnologias_extra.length > 0 ? { tecnologias_extra: form.tecnologias_extra } : {}),
+        ...(form.condiciones.trim() ? { condiciones: form.condiciones.trim() } : {}),
       } satisfies UpdateProjectInput);
     }
   }
@@ -3031,6 +3044,23 @@ function ProjectFormContent({
               placeholder="Describí el proyecto, objetivos y entregables esperados"
               className="min-h-28 w-full resize-none rounded-xl border border-border bg-surface-sunken px-3.5 py-2 font-body text-sm text-ink-strong outline-none focus:ring-2 focus:ring-primary/20"
             />
+          </div>
+
+          <div className="space-y-1">
+            <label htmlFor="pf-condiciones" className="block font-body text-xs font-bold uppercase tracking-wider text-ink-muted">
+              Condiciones y preguntas frecuentes
+            </label>
+            <textarea
+              id="pf-condiciones"
+              rows={4}
+              value={form.condiciones}
+              onChange={(e) => setForm((p) => ({ ...p, condiciones: e.target.value }))}
+              placeholder="Opcional: aclaraciones, expectativas y dudas comunes del proyecto. El asistente del proyecto las usa para responderle a los juniors."
+              className="min-h-24 w-full resize-none rounded-xl border border-border bg-surface-sunken px-3.5 py-2 font-body text-sm text-ink-strong outline-none focus:ring-2 focus:ring-primary/20"
+            />
+            <p className="font-body text-[11px] text-ink-muted">
+              No incluyas el método de pago entre la empresa y el estudiante (no aplica en esta etapa).
+            </p>
           </div>
 
           <div className="grid gap-4 md:grid-cols-2">

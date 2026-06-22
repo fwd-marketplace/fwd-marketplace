@@ -70,13 +70,6 @@
       "cta_projects": "View projects",
       "cta_register": "Create free account"
     },
-    "featured_projects": {
-      "eyebrow": "Projects",
-      "title": "Available opportunities",
-      "badge_featured": "Featured",
-      "duration": "weeks",
-      "link_all": "See all"
-    },
     "value_prop": {
       "talents_title": "For talents",
       "talents_items": {
@@ -317,7 +310,26 @@
         "linkedin_label": "LinkedIn",
         "linkedin_placeholder": "https://linkedin.com/in/your-username",
         "portfolio_label": "Portfolio",
-        "portfolio_placeholder": "https://your-site.com"
+        "portfolio_placeholder": "https://your-site.com",
+        "perfil_junior": {
+          "work": {
+            "add_modal_title": "Add new project",
+            "fields": {
+              "name": "Project name",
+              "url": "URL / Link",
+              "description": "Short description",
+              "techs": "Technologies (comma-separated)",
+              "techs_placeholder": "e.g. React, Node.js"
+            },
+            "create": "Create project",
+            "cancel": "Cancel",
+            "preview_btn": "Preview",
+            "errors": {
+              "name_required": "The project name is required.",
+              "url_required": "The project URL is required."
+            }
+          }
+        }
       },
       "step7": {
         "eyebrow": "Optional",
@@ -1351,6 +1363,25 @@
     "close": "Close",
     "iframe_error": "The embedded preview could not be shown. Open the prototype in a new tab."
   },
+  "talento": {
+    "title": "Find talent",
+    "subtitle": "Discover verified FWD students for your projects.",
+    "filters_title": "Filters",
+    "clear_btn": "Clear",
+    "search_placeholder": "Search by name...",
+    "specialty_label": "Specialty",
+    "modality_label": "Work mode",
+    "skill_label": "Technology",
+    "skill_all": "All",
+    "only_available": "Available only",
+    "available_badge": "Available",
+    "busy_badge": "Busy",
+    "verified": "Verified",
+    "empty": "No students match the filters.",
+    "results_count": "{count, plural, =0 {No results} one {# student} other {# students}}",
+    "specialty": { "frontend": "Frontend", "backend": "Backend", "fullstack": "Fullstack", "ia": "AI & Data" },
+    "modality": { "remote": "Remote", "hybrid": "Hybrid", "onsite": "On-site" }
+  },
   "postulaciones_empresa": {
     "select_for_award": "Select this proposal to award",
     "award_selected": "Award selected ({count})",
@@ -1787,6 +1818,45 @@
     "view_all": "View all activity",
     "preferences": "Preferences"
   },
+  "cosmos_profesional": {
+    "screen_label": "Important points constellation",
+    "eyebrow": "FWD constellation",
+    "title": "Students are the stars",
+    "description": "Here you get a glimpse of everything you'll find on the platform. Hover over each star to see how FWD connects you with real projects.",
+    "controls": {
+      "style_aria": "Star style",
+      "style_diamante": "◆ Diamond",
+      "style_circulo": "● Circle",
+      "style_punta4": "✦ 4 points",
+      "style_punta6": "✶ 6 points",
+      "style_destello": "✧ Sparkle",
+      "style_anillo": "◌ Ring",
+      "toggle_aria": "Show or hide paths",
+      "trazos": "Paths"
+    },
+    "stars": {
+      "0": {
+        "title": "Real projects",
+        "desc": "Work on company challenges, not practice exercises."
+      },
+      "1": {
+        "title": "Companies publish",
+        "desc": "Upload projects and briefs designed for junior talent."
+      },
+      "2": {
+        "title": "Match your skills",
+        "desc": "We show you opportunities based on what you know how to do."
+      },
+      "3": {
+        "title": "Notifications",
+        "desc": "Find out as soon as a project that fits you opens."
+      },
+      "4": {
+        "title": "Publish yourself",
+        "desc": "Make yourself visible like a star in the sky."
+      }
+    }
+  },
   "proceso_page": {
     "back": "Back to marketplace",
     "tab_info": "Info",
@@ -1982,40 +2052,54 @@
     "matches_invited_btn": "Invited",
     "matches_toast_invited": "{name} was invited to the project."
   },
-  "cosmos_profesional": {
-    "screen_label": "Important points constellation",
-    "controls": {
-      "style_aria": "Star style",
-      "style_diamante": "◆ Diamond",
-      "style_circulo": "● Circle",
-      "style_punta4": "✦ 4 points",
-      "style_punta6": "✶ 6 points",
-      "style_destello": "✧ Sparkle",
-      "style_anillo": "◌ Ring",
-      "toggle_aria": "Show or hide paths",
-      "trazos": "Paths"
-    },
-    "stars": {
-      "0": {
-        "title": "Real projects",
-        "desc": "Work on company challenges, not practice exercises."
-      },
-      "1": {
-        "title": "Companies publish",
-        "desc": "Upload projects and briefs designed for junior talent."
-      },
-      "2": {
-        "title": "Match your skills",
-        "desc": "We show you opportunities based on what you know how to do."
-      },
-      "3": {
-        "title": "Notifications",
-        "desc": "Find out as soon as a project that fits you opens."
-      },
-      "4": {
-        "title": "Publish yourself",
-        "desc": "Make yourself visible like a star in the sky."
-      }
-    }
+  "project_chatbot": {
+    "title": "Project assistant",
+    "subtitle": "Clear up your questions before applying",
+    "header_hint": "Answers based on this project",
+    "close": "Close",
+    "empty_title": "Questions about this project?",
+    "empty_hint": "For example: which technologies do I need?, is it web or app?, what's in scope?",
+    "thinking": "Thinking…",
+    "input_placeholder": "Type your question…",
+    "send": "Send",
+    "prefer_human": "Prefer to talk to the company?",
+    "talk_to_company": "Talk to the company",
+    "escalate_title": "Message the company",
+    "escalate_desc": "The company will see it and reply in the project chat.",
+    "escalate_placeholder": "Write your message to the company…",
+    "escalate_send": "Send to the company",
+    "escalate_sending": "Sending…",
+    "escalate_sent_title": "Message sent",
+    "escalate_sent_desc": "The company will see it in the project chat and reply there.",
+    "go_to_chat": "Go to chat",
+    "cancel": "Cancel",
+    "error_generic": "Something went wrong. Try again.",
+    "escalate_default_draft": "Hi, I have a question about the project «{titulo}»: "
+  },
+  "mejorar_mensaje": {
+    "button": "Improve with AI",
+    "loading": "Improving…",
+    "undo": "Undo",
+    "error": "Couldn't improve it. Try again."
+  },
+  "reportar_mensaje": {
+    "button": "Report message",
+    "title": "Report message",
+    "subtitle": "The moderation team will review this message.",
+    "close": "Close",
+    "motivo_label": "Reason",
+    "motivo_falta_respeto": "Disrespect",
+    "motivo_spam": "Spam",
+    "motivo_contenido_inapropiado": "Inappropriate content",
+    "motivo_fuera_de_lugar": "Out of place",
+    "motivo_otro": "Other",
+    "detalle_label": "Details (optional)",
+    "detalle_placeholder": "Tell us what happened…",
+    "submit": "Send report",
+    "sending": "Sending…",
+    "cancel": "Cancel",
+    "sent_title": "Report sent",
+    "sent_desc": "Thanks. The moderation team will review it.",
+    "error": "Couldn't send the report. Try again."
   }
 }

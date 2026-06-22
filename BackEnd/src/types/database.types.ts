@@ -708,6 +708,87 @@ export type Database = {
           },
         ]
       }
+      mensaje_reporte: {
+        Row: {
+          contenido_snapshot: string
+          detalle: string | null
+          estado: string
+          fecha: string
+          fecha_resolucion: string | null
+          id: string
+          id_admin: string | null
+          id_mensaje: string
+          id_proyecto: string | null
+          id_reportado: string | null
+          id_reportante: string
+          motivo: string
+        }
+        Insert: {
+          contenido_snapshot: string
+          detalle?: string | null
+          estado?: string
+          fecha?: string
+          fecha_resolucion?: string | null
+          id?: string
+          id_admin?: string | null
+          id_mensaje: string
+          id_proyecto?: string | null
+          id_reportado?: string | null
+          id_reportante: string
+          motivo: string
+        }
+        Update: {
+          contenido_snapshot?: string
+          detalle?: string | null
+          estado?: string
+          fecha?: string
+          fecha_resolucion?: string | null
+          id?: string
+          id_admin?: string | null
+          id_mensaje?: string
+          id_proyecto?: string | null
+          id_reportado?: string | null
+          id_reportante?: string
+          motivo?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "mensaje_reporte_id_admin_fkey"
+            columns: ["id_admin"]
+            isOneToOne: false
+            referencedRelation: "users"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "mensaje_reporte_id_mensaje_fkey"
+            columns: ["id_mensaje"]
+            isOneToOne: false
+            referencedRelation: "mensaje"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "mensaje_reporte_id_proyecto_fkey"
+            columns: ["id_proyecto"]
+            isOneToOne: false
+            referencedRelation: "proyecto"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "mensaje_reporte_id_reportado_fkey"
+            columns: ["id_reportado"]
+            isOneToOne: false
+            referencedRelation: "users"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "mensaje_reporte_id_reportante_fkey"
+            columns: ["id_reportante"]
+            isOneToOne: false
+            referencedRelation: "users"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       notificacion: {
         Row: {
           fecha: string
@@ -895,6 +976,7 @@ export type Database = {
       }
       proyecto: {
         Row: {
+          condiciones: string
           descripcion: string
           fecha_cierre: string | null
           fecha_publicacion: string | null
@@ -908,6 +990,7 @@ export type Database = {
           usa_ia: boolean
         }
         Insert: {
+          condiciones?: string
           descripcion: string
           fecha_cierre?: string | null
           fecha_publicacion?: string | null
@@ -921,6 +1004,7 @@ export type Database = {
           usa_ia?: boolean
         }
         Update: {
+          condiciones?: string
           descripcion?: string
           fecha_cierre?: string | null
           fecha_publicacion?: string | null
