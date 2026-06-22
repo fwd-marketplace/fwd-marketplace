@@ -3,7 +3,7 @@ import multer from "multer";
 import { authenticate } from "../middlewares/auth.middleware";
 import { asyncHandler } from "../utils/asyncHandler";
 import { ApiError } from "../utils/ApiError";
-import { getMe, updateMe, updateAvatar, removeAvatar, uploadLogo, removeLogo, updatePreferenciasNotificacion } from "../controllers/perfil.controller";
+import { getMe, updateMe, updateAvatar, removeAvatar, uploadLogo, removeLogo, updatePreferenciasNotificacion, listPortafolio, addPortafolioItem, editPortafolioItem, removePortafolioItem } from "../controllers/perfil.controller";
 
 const router = Router();
 
@@ -29,5 +29,10 @@ router.delete("/avatar", authenticate, asyncHandler(removeAvatar));
 router.post("/logo", authenticate, upload.single("file"), asyncHandler(uploadLogo));
 router.delete("/logo", authenticate, asyncHandler(removeLogo));
 router.patch("/preferencias-notificacion", authenticate, asyncHandler(updatePreferenciasNotificacion));
+
+router.get("/portafolio", authenticate, asyncHandler(listPortafolio));
+router.post("/portafolio", authenticate, asyncHandler(addPortafolioItem));
+router.patch("/portafolio/:id", authenticate, asyncHandler(editPortafolioItem));
+router.delete("/portafolio/:id", authenticate, asyncHandler(removePortafolioItem));
 
 export default router;

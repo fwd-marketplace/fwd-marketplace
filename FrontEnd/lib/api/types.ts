@@ -181,6 +181,14 @@ export type MyOffersResponse = {
   ofertas: MyOffer[];
 };
 
+export type SavedProjectsResponse = {
+  proyectos: ApiProject[];
+};
+
+export type SavedProjectIdsResponse = {
+  ids: string[];
+};
+
 export type ApiEstudianteDetail = {
   descripcion: string | null;
   especialidad: string | null;
@@ -292,6 +300,17 @@ export type ApiMeProfile = {
 export type MeResponse = {
   user: unknown;
   profile: ApiMeProfile | null;
+};
+
+export type PortafolioItem = {
+  id: string;
+  titulo: string;
+  descripcion: string | null;
+  tecnologias: string | null;
+  url_demo: string | null;
+  url_repositorio: string | null;
+  visibilidad: string;
+  fecha: string | null;
 };
 
 export type AdminPendingUser = {
