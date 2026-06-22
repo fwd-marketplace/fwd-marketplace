@@ -51,6 +51,7 @@ import { streamAssistant } from "@/lib/api/ai-client";
 import { getProjectMensajesAction, sendMensajeAction, getMyConversacionesAction } from "@/lib/actions/mensajes";
 import { MejorarMensajeButton } from "@/components/gestion/MejorarMensajeButton";
 import { ReportarMensajeButton } from "@/components/gestion/ReportarMensajeButton";
+import { ProjectChatbot } from "@/components/marketplace/ProjectChatbot";
 import type {
   AiChatMessage,
   ApiMensaje,
@@ -966,6 +967,16 @@ function InfoPanel({
         <p className="mb-3 font-body text-xs font-bold uppercase tracking-wider text-ink-muted">{t("description_label")}</p>
         <p className="font-body text-base leading-relaxed text-ink">{project.descripcion}</p>
       </div>
+      {project.condiciones && project.condiciones.trim() && (
+        <div className="mb-4 rounded-2xl border border-border bg-surface p-5">
+          <p className="mb-3 font-body text-xs font-bold uppercase tracking-wider text-ink-muted">
+            Condiciones y preguntas frecuentes
+          </p>
+          <p className="whitespace-pre-line font-body text-base leading-relaxed text-ink">
+            {project.condiciones}
+          </p>
+        </div>
+      )}
       {skills.length > 0 && (
         <div className="rounded-2xl border border-border bg-surface p-5">
           <p className="mb-3 font-body text-xs font-bold uppercase tracking-wider text-ink-muted">{t("skills_label")}</p>
@@ -976,6 +987,12 @@ function InfoPanel({
               </span>
             ))}
           </div>
+        </div>
+      )}
+      {/* Chatbot del proyecto (Nivel 0): el junior resuelve dudas antes de postular */}
+      {!isEmpresa && (
+        <div className="mt-4">
+          <ProjectChatbot projectId={project.id} projectTitulo={project.titulo} />
         </div>
       )}
     </div>
