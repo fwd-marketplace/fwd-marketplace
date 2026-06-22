@@ -58,7 +58,7 @@ async function skillsDeEstudiantes(client: Client, ids: string[]): Promise<Map<s
 /**
  * Directorio de talento para empresas/emprendedores: lista estudiantes
  * VERIFICADOS con filtros. El RLS (estudiante_ver_perfil + users_company_ve_
- * verificados de la 0036) garantiza que solo un company/admin reciba datos y
+ * verificados de la 0039) garantiza que solo un company/admin reciba datos y
  * solo de estudiantes verificados. Filtros de especialidad/disponibilidad/skill
  * van server-side; nombre/modalidad/disponibilidad-real se afinan en memoria.
  */

@@ -1,4 +1,4 @@
--- 0036_company_ve_estudiantes_verificados.sql
+-- 0039_company_ve_estudiantes_verificados.sql
 -- Habilita el DIRECTORIO DE TALENTO: que una empresa/emprendedor pueda buscar y
 -- filtrar estudiantes VERIFICADOS (no solo a sus postulantes).
 --
