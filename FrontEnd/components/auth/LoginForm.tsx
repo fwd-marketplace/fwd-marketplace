@@ -6,6 +6,7 @@ import Link from "next/link";
 import { useTranslations } from "next-intl";
 import { Eye, EyeOff } from "lucide-react";
 import { FwdGeoBackdrop } from "@/components/ui/fwd-geo-backdrop";
+import { CosmicBackdrop } from "@/components/ui/cosmic-backdrop";
 import { loginUser, startOAuth, verifyLoginOtp } from "@/lib/actions/auth";
 
 function GoogleIcon() {
@@ -136,11 +137,12 @@ export function LoginForm() {
   }
 
   return (
-    <div className="bg-secondary">
+    <div className="bg-secondary relative overflow-hidden min-h-screen w-full">
       <FwdGeoBackdrop />
+      <CosmicBackdrop />
 
       <div className="relative flex min-h-[100dvh] flex-col items-center justify-center px-4 py-10">
-        <div className="w-full max-w-md rounded-[2rem] bg-surface px-6 py-8 shadow-elevated sm:px-10 sm:py-12">
+      <div className="w-full max-w-md rounded-[2rem] bg-surface px-6 py-8 shadow-elevated sm:px-10 sm:py-12">
           <p className="mb-3 text-center font-heading text-[0.65rem] font-bold uppercase tracking-[0.2em] text-ink-muted">
             {t("eyebrow")}
           </p>

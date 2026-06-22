@@ -2,6 +2,12 @@
 @import "tw-animate-css";
 @import "shadcn/tailwind.css";
 
+/* Reset global margins to avoid unexpected white gaps */
+html, body {
+  margin: 0;
+  padding: 0;
+}
+
 @custom-variant dark (&:is(.dark *));
 
 :root {
