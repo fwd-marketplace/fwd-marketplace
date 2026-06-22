@@ -52,6 +52,7 @@ export type ApiProject = {
   id: string;
   titulo: string;
   descripcion: string;
+  condiciones?: string;
   usa_ia: boolean;
   plazo_dias: number;
   tecnologias_extra?: string[];
@@ -71,6 +72,7 @@ export type ProjectsResponse = {
 export type CreateProjectInput = {
   titulo: string;
   descripcion: string;
+  condiciones?: string;
   id_area_negocio: string;
   plazo_dias: number;
   usa_ia: boolean;
@@ -115,6 +117,7 @@ export type GenerateProposalResponse = {
 export type UpdateProjectInput = {
   titulo?: string;
   descripcion?: string;
+  condiciones?: string;
   id_area_negocio?: string;
   plazo_dias?: number;
   usa_ia?: boolean;

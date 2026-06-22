@@ -59,6 +59,7 @@ const PARAMS: ChatProyectoParams = {
 const PROYECTO_VISIBLE = {
   titulo: "Tienda online para panadería",
   descripcion: "Una web donde los clientes compran panes y pagan en línea.",
+  condiciones: "Reuniones de seguimiento los lunes. Entregas por GitHub.",
   usa_ia: false,
   plazo_dias: 10,
   tecnologias_extra: ["Figma"],
@@ -110,6 +111,8 @@ describe("streamChatProyecto", () => {
     expect(system?.content).toContain("React");
     expect(system?.content).toContain("Figma");
     expect(system?.content).toContain("Panadería La Espiga");
+    // Las condiciones / preguntas frecuentes que cargó la empresa entran al contexto.
+    expect(system?.content).toContain("Reuniones de seguimiento los lunes");
     // El historial del junior se mantiene después del system prompt.
     expect(providerState.lastMessages.at(-1)).toMatchObject({ role: "user" });
   });

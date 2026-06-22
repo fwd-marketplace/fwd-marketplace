@@ -183,6 +183,18 @@ export function ProjectDetailSheet({
                 </p>
               </div>
 
+              {/* Condiciones y preguntas frecuentes (si la empresa las cargó) */}
+              {project.condiciones && project.condiciones.trim() && (
+                <div className="rounded-2xl border border-border bg-surface p-5 shadow-[var(--shadow-soft)]">
+                  <h3 className="mb-3 font-heading text-xs font-bold uppercase tracking-wider text-ink-muted">
+                    Condiciones y preguntas frecuentes
+                  </h3>
+                  <p className="whitespace-pre-line font-body text-sm leading-relaxed text-ink">
+                    {project.condiciones}
+                  </p>
+                </div>
+              )}
+
               {/* Skills */}
               {skills.length > 0 && (
                 <div className="rounded-2xl border border-border bg-surface p-5 shadow-[var(--shadow-soft)]">

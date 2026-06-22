@@ -39,7 +39,7 @@ async function loadProyectoContexto(
   const { data, error } = await client
     .from("proyecto")
     .select(
-      `titulo, descripcion, usa_ia, plazo_dias, tecnologias_extra,
+      `titulo, descripcion, condiciones, usa_ia, plazo_dias, tecnologias_extra,
        area:area_negocio(nombre),
        empresa:empresario(nombre_comercial),
        skills:project_skills(skill:skills(nombre))`,
@@ -62,8 +62,8 @@ async function loadProyectoContexto(
     descripcion: data.descripcion,
     usaIa: data.usa_ia,
     tecnologias,
-    // Se completará con la columna `condiciones` (FAQ) una vez aplicada su migración.
-    condiciones: null,
+    // "Condiciones y preguntas frecuentes" que cargó la empresa (vacío -> null para omitir del prompt).
+    condiciones: data.condiciones.trim() ? data.condiciones : null,
   };
 }
 

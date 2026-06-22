@@ -64,6 +64,7 @@ export const PROJECT_SELECT = `
   id,
   titulo,
   descripcion,
+  condiciones,
   usa_ia,
   plazo_dias,
   tecnologias_extra,
@@ -264,6 +265,7 @@ export async function createProject(
       id_estado: estado.id,
       titulo: input.titulo,
       descripcion: input.descripcion,
+      condiciones: input.condiciones ?? "",
       usa_ia: input.usa_ia ?? false,
       plazo_dias: input.plazo_dias,
       tecnologias_extra: input.tecnologias_extra ?? [],
@@ -372,6 +374,7 @@ export async function updateProject(
   const updatePayload: ProyectoUpdate = {};
   if (input.titulo !== undefined) updatePayload.titulo = input.titulo;
   if (input.descripcion !== undefined) updatePayload.descripcion = input.descripcion;
+  if (input.condiciones !== undefined) updatePayload.condiciones = input.condiciones;
   if (input.id_area_negocio !== undefined) updatePayload.id_area_negocio = input.id_area_negocio;
   if (input.plazo_dias !== undefined) updatePayload.plazo_dias = input.plazo_dias;
   if (input.usa_ia !== undefined) updatePayload.usa_ia = input.usa_ia;
