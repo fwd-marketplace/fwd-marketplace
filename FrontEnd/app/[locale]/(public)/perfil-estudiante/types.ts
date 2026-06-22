@@ -34,10 +34,13 @@ export function fullName(profile: Pick<StudentProfile, "firstName" | "lastName1"
   return [profile.firstName, profile.lastName1, profile.lastName2].filter(Boolean).join(" ");
 }
 
+export type ActivityTipo = "adjudicacion" | "cambio_estado" | "nuevo_mensaje" | "entregable_subido" | "propia";
+
 export interface Activity {
   id: string;
   description: string;
   timestamp: string;
+  tipo: ActivityTipo;
 }
 
 export interface Application {

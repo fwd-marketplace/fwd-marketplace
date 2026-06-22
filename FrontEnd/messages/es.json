@@ -925,6 +925,7 @@
     "avatar": {
       "alt": "Foto de perfil",
       "change": "Cambiar foto de perfil",
+      "delete": "Eliminar foto de perfil",
       "invalid_type": "El archivo debe ser una imagen.",
       "too_large": "La imagen supera el máximo de 5 MB."
     },
@@ -998,6 +999,8 @@
     "activity": {
       "title": "Actividad Reciente",
       "view_all": "Ver todo el historial",
+      "ver_notificaciones": "Ver todas las notificaciones",
+      "empty": "Aún no hay actividad registrada.",
       "just_now": "Hace un momento",
       "updated_personal": "Actualizó su información personal de contacto",
       "removed_skill": "Eliminó la habilidad '{skill}' de su stack",
@@ -1082,8 +1085,14 @@
       "explore_routes": "Explora nuevas rutas"
     },
     "notifications": {
-      "activity_title": "Actividad Reciente",
+      "activity_title": "Notificaciones",
       "mark_all_read": "Marcar todas como leídas",
+      "mark_read": "Marcar como leída",
+      "unread": "sin leer",
+      "empty": "No tenés notificaciones por el momento.",
+      "page_info": "Mostrando {from}–{to} de {total}",
+      "prev": "Anterior",
+      "next": "Siguiente",
       "today": "Hoy",
       "yesterday": "Ayer",
       "older_empty": "No hay notificaciones más antiguas."

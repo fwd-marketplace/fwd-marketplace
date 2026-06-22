@@ -91,6 +91,26 @@ export async function deleteEmpresarioLogo(): Promise<Result<void>> {
   }
 }
 
+export async function deleteStudentAvatar(): Promise<Result<void>> {
+  const jar = await cookies();
+  const token = jar.get(SESSION_COOKIE)?.value;
+  if (!token) return err("No autenticado");
+
+  try {
+    const res = await fetch(`${BASE_URL}/users/me/perfil/avatar`, {
+      method: "DELETE",
+      headers: { Authorization: `Bearer ${token}` },
+    });
+    if (!res.ok) {
+      const body = (await res.json().catch(() => ({}))) as { error?: string };
+      return err(body.error ?? "No se pudo eliminar la imagen");
+    }
+    return ok(undefined);
+  } catch {
+    return err("Error de conexión");
+  }
+}
+
 export async function uploadStudentAvatar(
   formData: FormData,
 ): Promise<Result<{ url_avatar: string }>> {

@@ -906,6 +906,7 @@
     "avatar": {
       "alt": "Profile photo",
       "change": "Change profile photo",
+      "delete": "Remove profile photo",
       "invalid_type": "The file must be an image.",
       "too_large": "The image exceeds the 5 MB limit."
     },
@@ -979,6 +980,8 @@
     "activity": {
       "title": "Recent Activity",
       "view_all": "View full history",
+      "ver_notificaciones": "View all notifications",
+      "empty": "No activity recorded yet.",
       "just_now": "Just now",
       "updated_personal": "Updated personal contact information",
       "removed_skill": "Removed skill '{skill}' from their stack",
@@ -1028,8 +1031,14 @@
       "explore_routes": "Explore new paths"
     },
     "notifications": {
-      "activity_title": "Recent Activity",
+      "activity_title": "Notifications",
       "mark_all_read": "Mark all as read",
+      "mark_read": "Mark as read",
+      "unread": "unread",
+      "empty": "You have no notifications at the moment.",
+      "page_info": "Showing {from}–{to} of {total}",
+      "prev": "Previous",
+      "next": "Next",
       "today": "Today",
       "yesterday": "Yesterday",
       "older_empty": "No older notifications."
