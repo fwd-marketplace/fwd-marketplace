@@ -770,6 +770,7 @@ export function GestionPage({ role, userId, initialProjectId, disponible = true,
                 isEmpresa={isEmpresa}
                 onEdit={() => setFormMode("edit")}
                 onDelete={() => setDeleteTarget(selectedId)}
+                onGoToChat={() => setSection("chat")}
               />
             )}
             {section === "chat" && (
@@ -891,7 +892,7 @@ function SidebarEmpty({ text }: { text: string }) {
 // ── Info panel ────────────────────────────────────────────────────────────────
 
 function InfoPanel({
-  project, locale, t, isEmpresa, onEdit, onDelete,
+  project, locale, t, isEmpresa, onEdit, onDelete, onGoToChat,
 }: {
   project: ApiProject | null;
   locale: string;
@@ -899,6 +900,7 @@ function InfoPanel({
   isEmpresa: boolean;
   onEdit: () => void;
   onDelete: () => void;
+  onGoToChat: () => void;
 }) {
   if (!project) return null;
   const skills = project.skills.filter((s) => s.skill != null);
@@ -970,7 +972,11 @@ function InfoPanel({
       {/* Chatbot del proyecto (Nivel 0): el junior resuelve dudas antes de postular */}
       {!isEmpresa && (
         <div className="mb-4">
-          <ProjectChatbot projectId={project.id} projectTitulo={project.titulo} />
+          <ProjectChatbot
+            projectId={project.id}
+            projectTitulo={project.titulo}
+            onGoToChat={onGoToChat}
+          />
         </div>
       )}
       {project.condiciones && project.condiciones.trim() && (
@@ -1255,9 +1261,9 @@ function ChatPanel({
               onChange={(e) => setDraft(e.target.value)}
               onKeyDown={handleKey}
               placeholder={t("chat_placeholder")}
-              rows={1}
-              className="min-h-[42px] flex-1 resize-none rounded-xl border border-border bg-canvas px-4 py-2.5 font-body text-sm text-ink placeholder:text-ink-muted/60 focus:border-secondary focus:outline-none focus:ring-2 focus:ring-secondary/20"
-              style={{ maxHeight: 120, overflowY: "auto" }}
+              rows={2}
+              className="min-h-[64px] flex-1 resize-none rounded-xl border border-border bg-canvas px-4 py-3 font-body text-sm leading-relaxed text-ink placeholder:text-ink-muted/60 focus:border-secondary focus:outline-none focus:ring-2 focus:ring-secondary/20"
+              style={{ maxHeight: 200, overflowY: "auto" }}
             />
             <button
               onClick={() => { void send(); }}
@@ -1273,8 +1279,8 @@ function ChatPanel({
               <Send className="size-4" aria-hidden="true" />
             </button>
           </div>
-          {/* Empresa: reescribir el borrador con IA antes de enviarlo (Nivel 2) */}
-          {isEmpresa && project && (
+          {/* Junior y empresa: reescribir el borrador con IA antes de enviarlo (Nivel 2) */}
+          {project && (
             <MejorarMensajeButton draft={draft} projectId={project.id} onReplace={setDraft} />
           )}
           <p className="mt-1.5 px-1 font-body text-[11px] text-ink-muted">{t("chat_hint")}</p>
