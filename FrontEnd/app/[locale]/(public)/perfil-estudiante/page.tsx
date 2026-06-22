@@ -11,6 +11,7 @@ import {
 } from "@/app/[locale]/(public)/perfil-estudiante/types";
 import { getCatalogs, getMyCalificaciones, getMyOffers } from "@/lib/api/marketplace";
 import { getMe } from "@/lib/api/profile";
+import { SiteFooter } from "@/components/layout/site-footer";
 import { getNotificaciones } from "@/lib/api/notificaciones";
 import { parseJsonStringArray } from "@/lib/api/safe-json";
 import type { ApiCalificacion, ApiMeProfile, ApiNotificacion, MyOffer, OfferState } from "@/lib/api/types";
@@ -198,6 +199,7 @@ export default async function EstudianteProfile({ params }: Props) {
         stats={buildStats(applications)}
         knowledgeSuggestions={knowledgeSuggestions}
       />
+      <SiteFooter />
     </div>
   );
 }

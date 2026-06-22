@@ -2033,18 +2033,6 @@ export default function PerfilUsuario({
         )}
 
       </main>
-
-      {/* FOOTER */}
-      <footer className="border-t border-border mt-16 bg-surface">
-        <div className="w-full max-w-7xl mx-auto px-6 py-8 md:px-10 md:flex md:justify-between md:items-center text-xs text-ink-muted space-y-4 md:space-y-0">
-          <p className="text-center md:text-left">{t("footer.copyright")}</p>
-          <div className="flex justify-center gap-6">
-            <a href="#" className="hover:text-primary transition-colors">{t("footer.terms")}</a>
-            <a href="#" className="hover:text-primary transition-colors">{t("footer.privacy")}</a>
-            <a href="#" className="hover:text-primary transition-colors">{t("footer.support")}</a>
-          </div>
-        </div>
-      </footer>
     </div>
   );
 }
