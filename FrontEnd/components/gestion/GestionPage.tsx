@@ -49,6 +49,7 @@ import {
 import { generateProposalAction, suggestStackAction } from "@/lib/actions/ai";
 import { streamAssistant } from "@/lib/api/ai-client";
 import { getProjectMensajesAction, sendMensajeAction, getMyConversacionesAction } from "@/lib/actions/mensajes";
+import { MejorarMensajeButton } from "@/components/gestion/MejorarMensajeButton";
 import type {
   AiChatMessage,
   ApiMensaje,
@@ -1251,6 +1252,10 @@ function ChatPanel({
               <Send className="size-4" aria-hidden="true" />
             </button>
           </div>
+          {/* Empresa: reescribir el borrador con IA antes de enviarlo (Nivel 2) */}
+          {isEmpresa && project && (
+            <MejorarMensajeButton draft={draft} projectId={project.id} onReplace={setDraft} />
+          )}
           <p className="mt-1.5 px-1 font-body text-[11px] text-ink-muted">{t("chat_hint")}</p>
         </div>
       )}

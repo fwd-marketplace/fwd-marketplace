@@ -3,13 +3,18 @@ import { z } from "zod";
 import { ApiError } from "../utils/ApiError";
 import { logger } from "../utils/logger";
 import { parseBody } from "../utils/parseBody";
-import { AsistenteRequestSchema, SugerirStackRequestSchema } from "../validations/ai";
+import {
+  AsistenteRequestSchema,
+  MejorarMensajeRequestSchema,
+  SugerirStackRequestSchema,
+} from "../validations/ai";
 import {
   streamAsistente,
   generarPropuesta as generarPropuestaService,
   sugerirStack as sugerirStackService,
 } from "../services/ai/asistente.service";
 import { streamChatProyecto } from "../services/ai/chat-proyecto.service";
+import { mejorarMensaje as mejorarMensajeService } from "../services/ai/mejorar-mensaje.service";
 
 const idParamSchema = z.string().uuid();
 
@@ -185,4 +190,27 @@ export async function sugerirStack(req: Request, res: Response): Promise<void> {
   });
 
   res.status(200).json({ sugerencia });
+}
+
+/**
+ * POST /api/ai/mejorar-mensaje
+ *
+ * Reescribe el borrador que la empresa va a enviarle a un junior en el chat (más claro y
+ * profesional, sin cambiar el significado). Devuelve el texto sugerido para que la empresa lo
+ * revise y edite antes de enviar; nunca lo envía por su cuenta.
+ */
+export async function mejorarMensaje(req: Request, res: Response): Promise<void> {
+  if (!req.user || !req.accessToken) {
+    throw new ApiError(401, "No autenticado");
+  }
+  const input = parseBody(MejorarMensajeRequestSchema, req.body);
+
+  const mejorado = await mejorarMensajeService({
+    borrador: input.borrador,
+    proyectoId: input.proyecto_id,
+    userId: req.user.id,
+    accessToken: req.accessToken,
+  });
+
+  res.status(200).json({ mejorado });
 }

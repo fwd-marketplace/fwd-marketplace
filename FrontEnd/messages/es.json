@@ -2004,5 +2004,11 @@
     "cancel": "Cancelar",
     "error_generic": "Algo salió mal. Probá de nuevo.",
     "escalate_default_draft": "Hola, tengo una consulta sobre el proyecto «{titulo}»: "
+  },
+  "mejorar_mensaje": {
+    "button": "Mejorar con IA",
+    "loading": "Mejorando…",
+    "undo": "Deshacer",
+    "error": "No se pudo mejorar. Probá de nuevo."
   }
 }

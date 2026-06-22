@@ -298,3 +298,31 @@ Reglas (importantes, seguilas siempre):
   redacta siempre él. Podés darle consejos de qué resaltar, pero no se la escribas.
 - Mantenete en el tema de ESTE proyecto. Si te preguntan algo ajeno, redirigí con amabilidad.`;
 }
+
+/**
+ * System prompt para "mejorar mensaje": reescribe un borrador que la empresa va a enviarle a un
+ * junior en el chat, para que quede más claro, profesional y cordial, SIN cambiar su significado
+ * ni inventar datos. Opcionalmente recibe contexto del proyecto para precisar explicaciones técnicas.
+ */
+export function buildSystemPromptMejorarMensaje(contextoProyecto: string | null): string {
+  const base = `Sos un asistente de redacción para una empresa que se comunica con desarrolladores
+junior en el marketplace FWD Talent. Recibís un BORRADOR de mensaje escrito por la empresa y lo
+reescribís para que quede más claro, profesional y cordial. Si ayuda a que el junior entienda
+mejor, podés sumar una breve explicación técnica, pero SOLO sobre lo que el borrador ya dice.
+
+Reglas:
+- Conservá el significado, la intención y los datos del borrador. NO inventes información,
+  compromisos, fechas, cifras ni promesas que no estén en el borrador.
+- Mantené el MISMO idioma del borrador.
+- Tono cálido y profesional (voz FWD): cercano y claro, sin sonar acartonado ni corporativo.
+- No agregues saludos ni firmas si el borrador no los tenía; mantené un largo similar al original.
+- Respondé ÚNICAMENTE con el mensaje reescrito: sin comillas, sin encabezados y sin notas tuyas.`;
+
+  if (contextoProyecto && contextoProyecto.trim().length > 0) {
+    return `${base}
+
+Contexto del proyecto (solo para entender de qué se habla; NO lo copies literal):
+${contextoProyecto.trim()}`;
+  }
+  return base;
+}
