@@ -1382,6 +1382,74 @@
     "specialty": { "frontend": "Frontend", "backend": "Backend", "fullstack": "Fullstack", "ia": "AI & Data" },
     "modality": { "remote": "Remote", "hybrid": "Hybrid", "onsite": "On-site" }
   },
+  "privacy_policy": {
+    "title": "Privacy Policy",
+    "download": "Download as PDF",
+    "sections": [
+      {
+        "title": "1. General Information and Data Controller",
+        "paragraphs": ["At Fundación Forward Costa Rica and the FWD Talent ecosystem, we value and respect your privacy. This Privacy Policy describes how we collect, use, store, share, and protect your personal information when you use our Freelance Projects Marketplace. The data controller is Fundación Forward Costa Rica."]
+      },
+      {
+        "title": "2. Data We Collect",
+        "paragraphs": ["We collect information to provide and improve our services. This includes:"],
+        "items": [
+          "Registration data: Name, email, password (encrypted), and role (Junior or Company).",
+          "Professional information (FWD Juniors): Technical skills, portfolio links (GitHub, LinkedIn, Behance), educational history at the Foundation, and experience.",
+          "Business information (Companies): Company name, description, business contact details, and details of published projects.",
+          "Usage data: Information about how you interact with the platform, access logs, and applications."
+        ]
+      },
+      {
+        "title": "3. How We Use Information",
+        "paragraphs": ["We use your personal data exclusively to:"],
+        "items": [
+          "Enable the creation and management of your account on the platform.",
+          "Power the \"matching\" tool, connecting FWD Junior profiles with the technical requirements of the projects published by Companies.",
+          "Enable initial communication and applications to projects.",
+          "Send important notifications about the status of your projects, platform updates, or changes to our policies.",
+          "Improve the performance, security, and user experience of the marketplace."
+        ]
+      },
+      {
+        "title": "4. Sharing and Disclosure of Data",
+        "paragraphs": ["The marketplace's core premise is to connect talent with opportunities. Therefore:"],
+        "items": [
+          "For FWD Juniors: When you apply to a project or make your profile public, registered Companies can see your name, skills, project history, and portfolio.",
+          "For Companies: Your company's general information and the details of published projects will be visible to registered Juniors."
+        ],
+        "note": "Commitment: Fundación Forward Costa Rica does not sell, rent, or trade your personal information with third parties outside the FWD Talent ecosystem under any circumstances."
+      },
+      {
+        "title": "5. Data Retention",
+        "paragraphs": ["We will retain your personal information while your account remains active or as needed to provide you with the platform's services. If you decide to delete your account, your personal data will be deleted or anonymized from our systems, except for data we must retain due to legal obligations or for dispute resolution."]
+      },
+      {
+        "title": "6. Information Security",
+        "paragraphs": ["We implement technical and organizational security measures to protect your information against unauthorized access, loss, or alteration. This includes the use of encryption for passwords and secure communications. However, no system on the internet is 100% secure, so we urge you to use strong passwords and keep your credentials confidential."]
+      },
+      {
+        "title": "7. Your Rights",
+        "paragraphs": ["You have the right to access, rectify, update, or request the deletion of your personal information at any time. You can manage most of your data directly from the \"Profile\" section on the platform. If you wish to exercise any additional right or request the complete deletion of your account, you can contact us."]
+      },
+      {
+        "title": "8. Cookies and Similar Technologies",
+        "paragraphs": ["We use essential cookies to keep your session active and ensure safe browsing. We may also use analytics cookies on an anonymized basis to understand how the platform is used and improve our services. You can configure your browser to reject cookies, although this may affect how the site works."]
+      },
+      {
+        "title": "9. Third-Party Services and AI",
+        "paragraphs": ["For the platform's operation and compatibility analysis (matching), we use third-party APIs (such as AI services to process skill matches). The data sent to these services is limited to strictly necessary information and is processed under strict confidentiality and privacy agreements."]
+      },
+      {
+        "title": "10. Changes to This Policy",
+        "paragraphs": ["We reserve the right to update this Privacy Policy periodically to reflect changes in our practices or due to legal requirements. We will notify you of significant updates through a notice on the platform or by email."]
+      },
+      {
+        "title": "11. Contact",
+        "paragraphs": ["If you have questions, queries, or concerns regarding the handling of your personal data or this Privacy Policy, please do not hesitate to contact the technical support team at Fundación Forward Costa Rica."]
+      }
+    ]
+  },
   "postulaciones_empresa": {
     "select_for_award": "Select this proposal to award",
     "award_selected": "Award selected ({count})",
