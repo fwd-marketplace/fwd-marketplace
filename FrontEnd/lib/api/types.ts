@@ -514,4 +514,34 @@ export type NotificacionesResponse = {
   notificaciones: ApiNotificacion[];
 };
 
+// ── Directorio de talento (búsqueda de estudiantes para empresa) ────────────────
+
+export type TalentStudent = {
+  id: string;
+  especialidad: string | null;
+  modalidad_preferida: string | null;
+  disponibilidad: string | null;
+  titulo_fwd: string | null;
+  estado_verificacion: StudentVerification;
+  reputacion: number | null;
+  url_avatar: string | null;
+  usuario: { id: string; nombre: string; apellido1: string | null } | null;
+  skills: string[];
+  /** false si el estudiante ya tiene un proyecto activo (ocupado). */
+  disponible: boolean;
+};
+
+export type TalentSearchParams = {
+  q?: string;
+  especialidad?: StudentSpecialty;
+  disponibilidad?: StudentAvailability;
+  skill?: string;
+  modalidad?: string;
+  solo_disponibles?: boolean;
+};
+
+export type TalentSearchResponse = {
+  students: TalentStudent[];
+};
+
 
