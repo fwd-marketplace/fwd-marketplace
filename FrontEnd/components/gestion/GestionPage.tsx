@@ -1174,6 +1174,12 @@ function InfoPanel({
         <p className="mb-3 font-body text-xs font-bold uppercase tracking-wider text-ink-muted">{t("description_label")}</p>
         <p className="font-body text-base leading-relaxed text-ink">{project.descripcion}</p>
       </div>
+      {/* Chatbot del proyecto (Nivel 0): el junior resuelve dudas antes de postular */}
+      {!isEmpresa && (
+        <div className="mb-4">
+          <ProjectChatbot projectId={project.id} projectTitulo={project.titulo} />
+        </div>
+      )}
       {project.condiciones && project.condiciones.trim() && (
         <div className="mb-4 rounded-2xl border border-border bg-surface p-5">
           <p className="mb-3 font-body text-xs font-bold uppercase tracking-wider text-ink-muted">
@@ -1194,12 +1200,6 @@ function InfoPanel({
               </span>
             ))}
           </div>
-        </div>
-      )}
-      {/* Chatbot del proyecto (Nivel 0): el junior resuelve dudas antes de postular */}
-      {!isEmpresa && (
-        <div className="mt-4">
-          <ProjectChatbot projectId={project.id} projectTitulo={project.titulo} />
         </div>
       )}
     </div>
