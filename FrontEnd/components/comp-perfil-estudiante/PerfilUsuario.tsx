@@ -268,6 +268,16 @@ export interface PerfilUsuarioProps {
   catalogSkills: string[];
 }
 
+/**
+ * Servicio de captura (sin API key) para la miniatura de la tarjeta del portafolio.
+ * mShots de WordPress.com renderiza la web destino y devuelve un PNG, evitando el
+ * bloqueo de X-Frame-Options que tendría un <iframe> embebido. Si en el futuro se
+ * necesita más fiabilidad/volumen, se cambia esta base por un servicio con key
+ * (microlink, urlbox) sin tocar el resto del componente.
+ */
+const PREVIEW_SCREENSHOT_BASE = "https://s.wordpress.com/mshots/v1/";
+const PREVIEW_SCREENSHOT_WIDTH = 1200;
+
   function ProjectCard({
   project,
   onPreview,
@@ -280,8 +290,18 @@ export interface PerfilUsuarioProps {
   onDelete?: (id: string) => void;
 }) {
   const t = useTranslations("perfil_junior.work");
+  const [previewFailed, setPreviewFailed] = useState(false);
   const hostname = (() => {
     try { return new URL(project.netlifyUrl).hostname; } catch { return project.netlifyUrl || "—"; }
+  })();
+  const screenshotUrl = (() => {
+    try {
+      const parsed = new URL(project.netlifyUrl);
+      if (parsed.protocol !== "http:" && parsed.protocol !== "https:") return null;
+      return `${PREVIEW_SCREENSHOT_BASE}${encodeURIComponent(project.netlifyUrl)}?w=${PREVIEW_SCREENSHOT_WIDTH}`;
+    } catch {
+      return null;
+    }
   })();
   return (
     <div className="rounded-2xl border border-border bg-surface shadow-soft overflow-hidden flex flex-col transition-all hover:shadow-md">
@@ -296,10 +316,21 @@ export interface PerfilUsuarioProps {
           {hostname}
         </div>
       </div>
-      {/* Preview area */}
+      {/* Preview area: el degradado + grilla + icono quedan de fondo de carga/fallback;
+          la captura de la web se superpone cuando hay URL válida y no ha fallado. */}
       <div className="h-44 bg-gradient-to-tr from-primary/8 to-secondary/8 relative overflow-hidden flex items-center justify-center">
         <div className="absolute inset-0 opacity-20" style={{ backgroundImage: "repeating-linear-gradient(0deg, transparent, transparent 28px, var(--border) 28px, var(--border) 29px), repeating-linear-gradient(90deg, transparent, transparent 28px, var(--border) 28px, var(--border) 29px)" }} />
         <Monitor className="w-12 h-12 text-primary/30" />
+        {screenshotUrl && !previewFailed && (
+          // eslint-disable-next-line @next/next/no-img-element -- captura externa (mShots), no optimizable por next/image
+          <img
+            src={screenshotUrl}
+            alt={project.title}
+            loading="lazy"
+            onError={() => setPreviewFailed(true)}
+            className="absolute inset-0 w-full h-full object-cover object-top"
+          />
+        )}
       </div>
       {/* Content */}
       <div className="p-5 flex flex-col gap-3 flex-grow">

@@ -6,6 +6,8 @@ import Link from "next/link";
 import { useTranslations } from "next-intl";
 import { Lock, RotateCcwKey } from "lucide-react";
 import { resetPassword } from "@/lib/actions/auth";
+import { FwdGeoBackdrop } from "@/components/ui/fwd-geo-backdrop";
+import { CosmicBackdrop } from "@/components/ui/cosmic-backdrop";
 
 const EMAIL_PATTERN = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 
@@ -43,25 +45,27 @@ export function ResetPasswordForm() {
   }
 
   return (
-    <div className="flex min-h-[100dvh] flex-col bg-canvas">
+    <div className="relative flex min-h-[100dvh] flex-col overflow-hidden bg-secondary">
+      <FwdGeoBackdrop />
+      <CosmicBackdrop />
       {/* Header */}
-      <header className="flex items-center justify-between px-6 py-6 md:px-10">
+      <header className="relative flex items-center justify-between px-6 py-6 md:px-10">
         <Link
           href={`/${locale}/login`}
-          className="font-heading text-xl font-bold tracking-tight text-primary"
+          className="font-heading text-xl font-bold tracking-tight text-secondary-foreground"
         >
           {t("brand")}
         </Link>
         <Link
           href={`/${locale}/login`}
-          className="font-body text-sm text-ink-muted transition-colors duration-[--duration-fast] hover:text-ink-strong"
+          className="font-body text-sm text-white/60 transition-colors duration-[--duration-fast] hover:text-white"
         >
           {t("back_to_login")}
         </Link>
       </header>
 
       {/* Main card */}
-      <main className="flex flex-grow items-start justify-center px-4 py-8 md:py-12">
+      <main className="relative flex flex-grow items-start justify-center px-4 py-8 md:py-12">
         <div className="w-full max-w-lg rounded-3xl bg-surface px-6 py-10 shadow-soft sm:px-12">
           <div className="mx-auto mb-6 flex size-14 items-center justify-center rounded-full bg-primary/10">
             <RotateCcwKey className="size-7 text-primary" aria-hidden="true" />
@@ -141,29 +145,29 @@ export function ResetPasswordForm() {
       </main>
 
       {/* Footer */}
-      <footer className="px-6 py-10 text-center md:px-10">
-        <p className="mb-3 font-heading text-sm font-bold text-ink-strong">{t("brand")}</p>
-        <nav className="mb-3 flex flex-wrap items-center justify-center gap-x-6 gap-y-2 font-body text-sm text-ink-muted">
+      <footer className="relative px-6 py-10 text-center md:px-10">
+        <p className="mb-3 font-heading text-sm font-bold text-white/80">{t("brand")}</p>
+        <nav className="mb-3 flex flex-wrap items-center justify-center gap-x-6 gap-y-2 font-body text-sm text-white/60">
           <Link
             href={`/${locale}/politicas-de-privacidad`}
-            className="transition-colors duration-[--duration-fast] hover:text-ink-strong"
+            className="transition-colors duration-[--duration-fast] hover:text-white"
           >
             {t("footer_privacy")}
           </Link>
           <Link
             href={`/${locale}/terminos-y-condiciones`}
-            className="transition-colors duration-[--duration-fast] hover:text-ink-strong"
+            className="transition-colors duration-[--duration-fast] hover:text-white"
           >
             {t("footer_terms")}
           </Link>
           <Link
             href={`/${locale}/login`}
-            className="transition-colors duration-[--duration-fast] hover:text-ink-strong"
+            className="transition-colors duration-[--duration-fast] hover:text-white"
           >
             {t("footer_security")}
           </Link>
         </nav>
-        <p className="font-body text-xs text-ink-subtle">{t("footer_copyright")}</p>
+        <p className="font-body text-xs text-white/40">{t("footer_copyright")}</p>
       </footer>
     </div>
   );

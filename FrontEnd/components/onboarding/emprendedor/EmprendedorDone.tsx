@@ -2,6 +2,7 @@ import Link from "next/link";
 import { getTranslations } from "next-intl/server";
 import { Clock } from "lucide-react";
 import { FwdGeoBackdrop } from "@/components/ui/fwd-geo-backdrop";
+import { CosmicBackdrop } from "@/components/ui/cosmic-backdrop";
 
 interface EmprendedorDoneProps {
   locale: string;
@@ -13,6 +14,7 @@ export async function EmprendedorDone({ locale }: EmprendedorDoneProps) {
   return (
     <div className="relative flex min-h-[100dvh] flex-col bg-secondary">
       <FwdGeoBackdrop />
+      <CosmicBackdrop />
 
       <header className="relative flex items-center px-4 py-5 sm:px-8 sm:py-6">
         <span className="font-heading text-base font-extrabold text-secondary-foreground">

@@ -9,9 +9,10 @@ export default async function AppLayout({
   params: Promise<{ locale: string }>;
 }) {
   const { locale } = await params;
-  // Juniors con cuenta aprobada; los admin también pueden ver el área (p. ej. la
-  // página de bienvenida desde el botón "Página principal" del panel).
-  const profile = await requireActiveAccount(locale, ["student", "admin"]);
+  // Junior, empresa y admin con cuenta aprobada. La empresa entra a /gestion (incluida en
+  // este grupo) para ver las postulaciones y chatear con los estudiantes; el admin accede a
+  // la bienvenida desde el botón "Página principal" del panel.
+  const profile = await requireActiveAccount(locale, ["student", "company", "admin"]);
   const userName = `${profile.nombre}${profile.apellido1 ? ` ${profile.apellido1}` : ""}`;
   const avatarUrl = profile.estudiante?.url_avatar ?? "";
   const role = profile.role.nombre;
