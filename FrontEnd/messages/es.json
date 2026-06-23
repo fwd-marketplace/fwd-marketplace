@@ -2668,6 +2668,92 @@
     "matches_invited_btn": "Invitado",
     "matches_toast_invited": "{name} fue invitado al proyecto."
   },
+<<<<<<< HEAD
+  "cosmos_profesional": {
+    "screen_label": "Constelación de puntos importantes",
+    "controls": {
+      "style_aria": "Estilo de estrella",
+      "style_diamante": "◆ Diamante",
+      "style_circulo": "● Círculo",
+      "style_punta4": "✦ 4 puntas",
+      "style_punta6": "✶ 6 puntas",
+      "style_destello": "✧ Destello",
+      "style_anillo": "◌ Anillo",
+      "toggle_aria": "Mostrar u ocultar trazos",
+      "trazos": "Trazos"
+    },
+    "stars": {
+      "0": {
+        "title": "Proyectos reales",
+        "desc": "Trabajá en retos de empresas, no en ejercicios de práctica."
+      },
+      "1": {
+        "title": "Las empresas publican",
+        "desc": "Suben proyectos y briefs pensados para talento junior."
+      },
+      "2": {
+        "title": "Match con tus skills",
+        "desc": "Te mostramos oportunidades según lo que sabés hacer."
+      },
+      "3": {
+        "title": "Notificaciones",
+        "desc": "Enterate apenas se abre un proyecto que encaja con vos."
+      },
+      "4": {
+        "title": "Publicate",
+        "desc": "Hacete visible como una estrella del cielo."
+      }
+    }
+  },
+  "project_preview_modal": {
+    "close": "Cerrar",
+    "days": "días",
+    "uses_ia": "Con IA",
+    "company_type_empresa": "Empresa",
+    "company_type_emprendedor": "Emprendedor",
+    "view_company_profile": "Ver perfil",
+    "go_to_gestion": "Ir a gestión"
+  },
+  "public_empresa_profile": {
+    "not_found": "Perfil de empresa no encontrado.",
+    "back_to_marketplace": "Volver al marketplace",
+    "type_empresa": "Empresa",
+    "type_emprendedor": "Emprendedor",
+    "etapa_idea": "Idea",
+    "etapa_mvp": "MVP",
+    "etapa_validating": "En validación",
+    "etapa_scaling": "En crecimiento",
+    "no_name": "Empresa",
+    "website": "Sitio web",
+    "about": "Sobre nosotros",
+    "sectors": "Sectores",
+    "mission_vision": "Misión y visión",
+    "mission": "MISIÓN",
+    "vision": "VISIÓN",
+    "culture": "Cultura",
+    "modalities": "Modalidades",
+    "schedule": "Horario"
+  },
+  "public_junior_profile": {
+    "not_found": "Perfil de junior no encontrado.",
+    "back": "Volver",
+    "about": "Sobre mí",
+    "skills": "Habilidades técnicas",
+    "knowledge": "Conocimientos adicionales",
+    "availability": "Disponibilidad",
+    "availability_label": "DISPONIBILIDAD",
+    "modality_label": "MODALIDAD",
+    "portfolio_link": "Portafolio",
+    "portfolio": "Portafolio de proyectos",
+    "especialidad_frontend": "Frontend",
+    "especialidad_backend": "Backend",
+    "especialidad_fullstack": "Fullstack",
+    "especialidad_ia": "IA",
+    "disponibilidad_immediate": "Disponible ahora",
+    "disponibilidad_two_weeks": "Disponible en 2 semanas",
+    "disponibilidad_one_month": "Disponible en 1 mes",
+    "disponibilidad_unavailable": "No disponible"
+=======
   "project_chatbot": {
     "title": "Asistente del proyecto",
     "subtitle": "Resolvé tus dudas antes de postular",
@@ -2717,5 +2803,6 @@
     "sent_title": "Reporte enviado",
     "sent_desc": "Gracias. El equipo de moderación lo revisará.",
     "error": "No se pudo enviar el reporte. Probá de nuevo."
+>>>>>>> cbc5783a949bfd93bbf5bd117333bf550ed5dcd3
   }
 }

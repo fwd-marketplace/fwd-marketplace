@@ -317,6 +317,50 @@ export type PortafolioItem = {
   fecha: string | null;
 };
 
+// ── Perfiles públicos ─────────────────────────────────────────────────────────
+
+export type PublicEmpresaProfile = {
+  id: string;
+  tipo: "empresa" | "emprendedor";
+  nombre_comercial: string | null;
+  descripcion: string | null;
+  sector: string | null;
+  url_sitio_web: string | null;
+  etapa: "idea" | "mvp" | "validating" | "scaling" | null;
+  tipos_proyecto: string | null;
+  apoyo_tecnico_necesario: string | null;
+  presupuesto: "under_500" | "range_500_1000" | "range_1000_2500" | "flexible" | null;
+  mision: string | null;
+  vision: string | null;
+  cultura: string | null;
+  valores: string | null;
+  contactos: string | null;
+  cantidad_empleados: string | null;
+  modalidades: string | null;
+  horario: string | null;
+  direccion: string | null;
+  url_logo: string | null;
+};
+
+export type PublicJuniorProfile = {
+  id: string;
+  nombre: string;
+  apellido1: string | null;
+  apellido2: string | null;
+  descripcion: string | null;
+  especialidad: string | null;
+  modalidad_preferida: string | null;
+  disponibilidad: string | null;
+  titulo_fwd: string | null;
+  url_avatar: string | null;
+  url_github: string | null;
+  url_linkedin: string | null;
+  url_portfolio: string | null;
+  skills: string[];
+  conocimientos: string[];
+  portafolio: PortafolioItem[];
+};
+
 export type AdminPendingUser = {
   id: string;
   nombre: string;

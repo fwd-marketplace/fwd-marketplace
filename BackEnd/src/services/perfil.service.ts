@@ -539,6 +539,129 @@ function parsePortafolioBody(body: unknown): {
   return result;
 }
 
+// ── Perfiles públicos (sin autenticación) ─────────────────────────────────────
+
+/** Devuelve el perfil público completo de una empresa/emprendedor por empresario.id (PK). */
+export async function getPublicEmpresaProfile(empresarioId: string) {
+  const admin = supabaseAdmin();
+
+  const { data: empresario, error } = await admin
+    .from("empresario")
+    .select(EMPRESARIO_SELECT)
+    .eq("id", empresarioId)
+    .maybeSingle();
+  if (error) throw new ApiError(500, error.message);
+  if (!empresario) throw new ApiError(404, "Perfil de empresa no encontrado");
+
+  const { data: logoFile } = await admin
+    .from("files")
+    .select("storage_path")
+    .eq("id_empresario", empresarioId)
+    .eq("tipo", "logo")
+    .maybeSingle();
+
+  return { ...empresario, url_logo: logoFile?.storage_path ?? null };
+}
+
+/** Devuelve los proyectos publicados de una empresa para su perfil público. */
+export async function getPublicEmpresaProjects(empresarioId: string) {
+  const admin = supabaseAdmin();
+
+  const { data: estadosBorrador } = await admin
+    .from("estado_proyecto")
+    .select("id")
+    .in("nombre", ["borrador", "cancelado"]);
+
+  const excludeIds = (estadosBorrador ?? []).map((e: { id: string }) => e.id);
+
+  const query = admin
+    .from("proyecto")
+    .select(`
+      id,
+      titulo,
+      descripcion,
+      usa_ia,
+      plazo_dias,
+      tecnologias_extra,
+      fecha_publicacion,
+      fecha_cierre,
+      estado:estado_proyecto(id, nombre),
+      area:area_negocio(id, nombre),
+      empresa:empresario(id, nombre_comercial, tipo),
+      skills:project_skills(skill:skills(id, nombre, tipo, categoria))
+    `)
+    .eq("id_empresario", empresarioId)
+    .not("fecha_publicacion", "is", null)
+    .order("fecha_publicacion", { ascending: false });
+
+  const { data, error } = excludeIds.length > 0
+    ? await query.not("id_estado", "in", `(${excludeIds.join(",")})`)
+    : await query;
+
+  if (error) throw new ApiError(500, error.message);
+  return data ?? [];
+}
+
+/**
+ * Devuelve el perfil público de un junior por users.id.
+ * Solo incluye items de portafolio con visibilidad = 'publico'.
+ */
+export async function getPublicJuniorProfile(userId: string) {
+  const admin = supabaseAdmin();
+
+  const { data: user, error: userError } = await admin
+    .from("users")
+    .select("nombre, apellido1, apellido2")
+    .eq("id", userId)
+    .maybeSingle();
+  if (userError) throw new ApiError(500, userError.message);
+  if (!user) throw new ApiError(404, "Usuario no encontrado");
+
+  const { data: estudiante, error: estError } = await admin
+    .from("estudiante")
+    .select(ESTUDIANTE_SELECT)
+    .eq("id_usuario", userId)
+    .maybeSingle();
+  if (estError) throw new ApiError(500, estError.message);
+  if (!estudiante) throw new ApiError(404, "Perfil de junior no encontrado");
+
+  const { data: skillLinks } = await admin
+    .from("student_skills")
+    .select("id_skill")
+    .eq("id_estudiante", estudiante.id);
+  const skillIds = (skillLinks ?? []).map((l) => l.id_skill);
+  let skills: string[] = [];
+  if (skillIds.length > 0) {
+    const { data: skillRows } = await admin.from("skills").select("nombre").in("id", skillIds);
+    skills = (skillRows ?? []).map((s) => s.nombre);
+  }
+
+  const { data: conocRows } = await admin
+    .from("estudiante_conocimiento")
+    .select("nombre")
+    .eq("id_estudiante", estudiante.id);
+  const conocimientos = (conocRows ?? []).map((r) => r.nombre);
+
+  const { data: portafolio } = await admin
+    .from("portafolio_proyecto")
+    .select(PORTAFOLIO_SELECT)
+    .eq("id_estudiante", estudiante.id)
+    .eq("visibilidad", "publico")
+    .order("fecha", { ascending: false });
+
+  const { id: _estudianteId, ...estudianteFields } = estudiante;
+  return {
+    id: userId,
+    nombre: user.nombre,
+    apellido1: user.apellido1,
+    apellido2: user.apellido2,
+    ...estudianteFields,
+    skills,
+    conocimientos,
+    portafolio: portafolio ?? [],
+  };
+}
+
 export async function updateMyAvatar(
   accessToken: string,
   userId: string,
