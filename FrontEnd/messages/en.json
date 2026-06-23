@@ -2736,42 +2736,6 @@
     "matches_toast_invited": "{name} was invited to the project.",
     "state_en_recepcion": "Receiving"
   },
-  "cosmos_profesional": {
-    "screen_label": "Important points constellation",
-    "controls": {
-      "style_aria": "Star style",
-      "style_diamante": "◆ Diamond",
-      "style_circulo": "● Circle",
-      "style_punta4": "✦ 4 points",
-      "style_punta6": "✶ 6 points",
-      "style_destello": "✧ Sparkle",
-      "style_anillo": "◌ Ring",
-      "toggle_aria": "Show or hide paths",
-      "trazos": "Paths"
-    },
-    "stars": {
-      "0": {
-        "title": "Real projects",
-        "desc": "Work on company challenges, not practice exercises."
-      },
-      "1": {
-        "title": "Companies publish",
-        "desc": "Upload projects and briefs designed for junior talent."
-      },
-      "2": {
-        "title": "Match your skills",
-        "desc": "We show you opportunities based on what you know how to do."
-      },
-      "3": {
-        "title": "Notifications",
-        "desc": "Find out as soon as a project that fits you opens."
-      },
-      "4": {
-        "title": "Publish yourself",
-        "desc": "Make yourself visible like a star in the sky."
-      }
-    }
-  },
   "project_preview_modal": {
     "close": "Close",
     "days": "days",
