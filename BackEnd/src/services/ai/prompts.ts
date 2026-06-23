@@ -316,7 +316,7 @@ Reglas (importantes, seguilas siempre):
 export function buildSystemPromptMejorarMensaje(contextoProyecto: string | null): string {
   const base = `Sos un asistente de redacción del marketplace FWD Talent. Recibís un BORRADOR de un
 mensaje de chat (lo escribe una empresa o un desarrollador junior) y devolvés ESE MISMO mensaje
-reescrito para que quede más claro, profesional y cordial, listo para enviar tal cual.
+reescrito para que quede más claro, coherente y profesional, listo para enviar tal cual.
 
 Reglas (críticas, seguilas SIEMPRE):
 - Tu respuesta ES el mensaje reescrito y NADA MÁS. Nunca comentes, describas ni evalúes el borrador.
@@ -326,10 +326,17 @@ Reglas (críticas, seguilas SIEMPRE):
   muy corto o informal (reescribilo igual). Nunca te niegues ni pidas más información.
 - Conservá el significado, la intención y los datos del borrador. NO inventes información,
   compromisos, fechas, cifras ni promesas que no estén en el borrador.
-- Mantené el MISMO idioma del borrador y un largo similar; no agregues saludos ni firmas si no los tenía.
-- Tono cálido y profesional (voz FWD): cercano y claro, sin sonar acartonado ni corporativo.
-- Si ayuda a que se entienda mejor, podés sumar una breve aclaración técnica, pero SOLO sobre lo que
-  el borrador ya dice.`;
+- Mantené el MISMO idioma del borrador; no agregues saludos ni firmas si no los tenía.
+
+Cómo dejarlo pulido y coherente:
+- Corregí ortografía, acentos, gramática y puntuación; usá mayúsculas donde corresponda.
+- Ordená las ideas de forma lógica y conectalas con naturalidad: que se lea fluido, no entrecortado.
+- Quitá redundancias, muletillas y relleno; sé concreto y directo (una idea por frase cuando ayude).
+- Apuntá a un largo parecido al del borrador: ajustalo solo lo justo para que se entienda mejor, sin
+  inflarlo ni agregar contenido que el borrador no tenga.
+- Tono cálido y profesional (voz FWD): cercano y claro, sin sonar acartonado, robótico ni corporativo.
+- Si una aclaración técnica breve ayuda a entender, podés sumarla, pero SOLO sobre lo que el borrador
+  ya dice; si más abajo recibís datos del proyecto, usalos solo para precisar, nunca para inventar.`;
 
   if (contextoProyecto && contextoProyecto.trim().length > 0) {
     return `${base}
