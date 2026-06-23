@@ -23,7 +23,7 @@ import {
 } from "lucide-react";
 import { PageTitle } from "@/components/ui/page-title";
 import { Button } from "@/components/ui/button";
-import { FilterSelect, Pagination, EmptyRow } from "@/components/comp-administrador/admin-controls";
+import { FilterSelect, Pagination, EmptyRow, ProfileAvatar } from "@/components/comp-administrador/admin-controls";
 import {
   createAdminUserAction,
   deleteAdminUserAction,
@@ -157,9 +157,7 @@ function StudentDetailModal({ userId, locale, onClose }: { userId: string; local
     <ModalShell titleId={titleId} onClose={onClose}>
       <div className="flex items-start justify-between gap-4 border-b border-border bg-surface-sunken p-6">
         <div className="flex min-w-0 items-center gap-4">
-          <span className="flex size-14 shrink-0 items-center justify-center rounded-full bg-secondary/10 font-body text-base font-bold text-secondary">
-            {detail ? buildInitials(detail.nombre, detail.apellido1) : "--"}
-          </span>
+          <ProfileAvatar photoUrl={detail?.url_foto ?? null} fallback={detail ? buildInitials(detail.nombre, detail.apellido1) : "--"} name={fullName} size="lg" tone="secondary" />
           <div className="min-w-0">
             <h2 id={titleId} className="truncate font-heading text-xl font-bold tracking-tight text-ink-strong">
               {detail ? fullName : t("detail_modal.title")}
@@ -639,9 +637,7 @@ export function EgresadosView({ initialStudents, locale }: { initialStudents: Ad
                     <tr key={student.id} className="font-body text-sm transition-colors duration-[var(--duration-fast)] ease-[var(--ease-out)] hover:bg-surface-sunken/40">
                       <td className="px-6 py-4">
                         <div className="flex items-center gap-3">
-                          <span className="flex size-10 shrink-0 items-center justify-center rounded-full bg-secondary/10 font-body text-xs font-bold text-secondary">
-                            {buildInitials(student.usuario?.nombre ?? "", student.usuario?.apellido1 ?? null)}
-                          </span>
+                          <ProfileAvatar photoUrl={student.url_avatar} fallback={buildInitials(student.usuario?.nombre ?? "", student.usuario?.apellido1 ?? null)} name={fullName} size="md" tone="secondary" />
                           <div className="min-w-0">
                             <p className="truncate font-semibold text-ink-strong">{fullName}</p>
                             <p className="truncate text-xs text-ink-muted">{student.usuario?.correo ?? EMPTY_VALUE}</p>

@@ -383,6 +383,8 @@ export type AdminPendingUser = {
   estado_cuenta: AccountState;
   fecha_registro: string;
   role: { nombre: ApiRoleName } | null;
+  /** Avatar del estudiante o logo de la empresa; null para admins o sin foto. */
+  url_foto: string | null;
   /** Para usuarios 'company': distingue empresa de emprendedor. */
   empresario?: { tipo: "empresa" | "emprendedor" } | null;
 };
@@ -396,7 +398,7 @@ export type AdminProject = {
   titulo: string;
   fecha_publicacion: string | null;
   estado: { nombre: ProjectState };
-  empresa: { nombre_comercial: string; tipo: "empresa" | "emprendedor" } | null;
+  empresa: { id?: string; url_logo: string | null; nombre_comercial: string; tipo: "empresa" | "emprendedor" } | null;
 };
 
 export type AdminProjectsResponse = {
@@ -453,6 +455,8 @@ export type AdminUser = {
   estado_cuenta: AccountState;
   fecha_registro: string;
   role: { nombre: ApiRoleName } | null;
+  /** Avatar del estudiante o logo de la empresa; null para admins o sin foto. */
+  url_foto: string | null;
 };
 
 export type AdminUsersResponse = {
@@ -497,6 +501,8 @@ export type AdminUserDetail = {
   estado_cuenta: AccountState;
   fecha_registro: string;
   role: { nombre: ApiRoleName } | null;
+  /** Avatar del estudiante o logo de la empresa; null para admins o sin foto. */
+  url_foto: string | null;
   estudiante: AdminUserStudentProfile | null;
   empresario: AdminUserCompanyProfile | null;
 };
@@ -527,6 +533,7 @@ export type CompanyType = "empresa" | "emprendedor";
 export type AdminCompany = {
   id: string;
   tipo: CompanyType;
+  url_logo: string | null;
   nombre_comercial: string | null;
   sector: string | null;
   etapa: string | null;

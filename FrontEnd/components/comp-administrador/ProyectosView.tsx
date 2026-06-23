@@ -305,7 +305,14 @@ export function ProyectosView({ initialProjects }: { initialProjects: AdminProje
             return (
               <article key={project.id} className="rounded-2xl bg-surface p-5 shadow-soft ring-1 ring-border">
                 <div className="flex flex-wrap items-center gap-4">
-                  <span className="flex size-14 shrink-0 items-center justify-center rounded-xl bg-ink-strong font-heading text-sm font-bold text-white">{initials(company)}</span>
+                  {project.empresa?.url_logo ? (
+                    <span className="flex size-14 shrink-0 items-center justify-center overflow-hidden rounded-xl ring-1 ring-border">
+                      {/* eslint-disable-next-line @next/next/no-img-element */}
+                      <img src={project.empresa.url_logo} alt={company} className="size-full object-cover" />
+                    </span>
+                  ) : (
+                    <span className="flex size-14 shrink-0 items-center justify-center rounded-xl bg-ink-strong font-heading text-sm font-bold text-white">{initials(company)}</span>
+                  )}
                   <div className="min-w-0 flex-1">
                     <div className="flex items-center gap-2">
                       <h3 className="truncate font-heading text-base font-bold text-ink-strong">{project.titulo}</h3>

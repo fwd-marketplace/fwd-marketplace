@@ -4,13 +4,24 @@ import { describe, it, expect, beforeEach, vi } from "vitest";
  * Estado compartido del mock: la respuesta del `maybeSingle()` terminal y el
  * payload capturado del `update()` (para verificar el estado_cuenta enviado).
  */
-const { state } = vi.hoisted(() => ({
+const { state, adminState } = vi.hoisted(() => ({
   state: {
     response: { data: null as unknown, error: null as unknown },
     byTable: {} as Record<string, { data: unknown; error: unknown }>,
     lastUpdate: null as Record<string, unknown> | null,
   },
+  // Estado del cliente service_role (createUser/createCompany): respuestas por tabla,
+  // tablas en las que se llamó `insert()` y cuántas veces se borró el auth user (rollback).
+  adminState: {
+    byTable: {} as Record<string, { data: unknown; error: unknown }>,
+    insertedTables: [] as string[],
+    createUserError: null as unknown,
+    createdUserId: "new-user-id",
+    deleteUserCalls: 0,
+  },
 }));
+
+vi.mock("../../config/env", () => ({ env: { supabaseServiceKey: "service-key" } }));
 
 vi.mock("../../config/supabase", () => ({
   supabaseForToken: () => {
@@ -36,12 +47,49 @@ vi.mock("../../config/supabase", () => ({
     });
     return builder;
   },
+  supabaseAdmin: () => {
+    let table = "";
+    const builder: Record<string, unknown> = {};
+    const chain = () => builder;
+    const resolve = () => Promise.resolve(adminState.byTable[table] ?? { data: null, error: null });
+    Object.assign(builder, {
+      auth: {
+        admin: {
+          createUser: () =>
+            Promise.resolve(
+              adminState.createUserError
+                ? { data: { user: null }, error: adminState.createUserError }
+                : { data: { user: { id: adminState.createdUserId } }, error: null },
+            ),
+          deleteUser: () => {
+            adminState.deleteUserCalls += 1;
+            return Promise.resolve({ data: null, error: null });
+          },
+        },
+      },
+      from: (t: string) => {
+        table = t;
+        return builder;
+      },
+      insert: () => {
+        adminState.insertedTables.push(table);
+        return builder;
+      },
+      select: chain,
+      eq: chain,
+      maybeSingle: resolve,
+      then: (onFulfilled: (value: unknown) => unknown) =>
+        onFulfilled(adminState.byTable[table] ?? { data: null, error: null }),
+    });
+    return builder;
+  },
 }));
 
 import {
   approveUser,
   rejectUser,
   suspendUser,
+  createUser,
   listAllStudents,
   listPendingStudents,
   verifyStudent,
@@ -55,6 +103,11 @@ beforeEach(() => {
   state.response = { data: null, error: null };
   state.byTable = {};
   state.lastUpdate = null;
+  adminState.byTable = {};
+  adminState.insertedTables = [];
+  adminState.createUserError = null;
+  adminState.createdUserId = "new-user-id";
+  adminState.deleteUserCalls = 0;
 });
 
 describe("admin.service — cambios de estado de cuenta", () => {
@@ -146,5 +199,47 @@ describe("admin.service — verificación de egresados FWD", () => {
   it("lanza 404 si el estudiante no existe", async () => {
     state.response = { data: null, error: null };
     await expect(verifyStudent(TOKEN, ESTUDIANTE)).rejects.toMatchObject({ statusCode: 404 });
+  });
+});
+
+describe("admin.service — creación de usuarios", () => {
+  const BASE_INPUT = { correo: "nuevo@x.com", password: "supersecreta", nombre: "Nuevo" };
+
+  function seedSuccessfulCreate() {
+    adminState.byTable["roles"] = { data: { id: "role-id" }, error: null };
+    adminState.byTable["users"] = {
+      data: { id: "new-user-id", nombre: "Nuevo", correo: "nuevo@x.com" },
+      error: null,
+    };
+  }
+
+  it("crea también la fila `estudiante` cuando el rol es student", async () => {
+    seedSuccessfulCreate();
+    adminState.byTable["estudiante"] = { data: null, error: null };
+
+    const row = await createUser({ ...BASE_INPUT, rol: "student" });
+
+    expect(adminState.insertedTables).toContain("users");
+    expect(adminState.insertedTables).toContain("estudiante");
+    expect(adminState.deleteUserCalls).toBe(0);
+    expect(row).toMatchObject({ id: "new-user-id" });
+  });
+
+  it("hace rollback del auth user si falla el insert de `estudiante`", async () => {
+    seedSuccessfulCreate();
+    adminState.byTable["estudiante"] = { data: null, error: { message: "rls" } };
+
+    await expect(createUser({ ...BASE_INPUT, rol: "student" })).rejects.toMatchObject({ statusCode: 400 });
+    expect(adminState.deleteUserCalls).toBe(1);
+  });
+
+  it("no crea fila `estudiante` para roles que no son student", async () => {
+    seedSuccessfulCreate();
+
+    await createUser({ ...BASE_INPUT, rol: "admin" });
+
+    expect(adminState.insertedTables).toContain("users");
+    expect(adminState.insertedTables).not.toContain("estudiante");
+    expect(adminState.deleteUserCalls).toBe(0);
   });
 });

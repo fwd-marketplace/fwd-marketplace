@@ -103,12 +103,20 @@
     "how_it_works": {
       "eyebrow": "How it works",
       "title": "In 3 simple steps",
+      "audience_juniors": "For students",
+      "audience_empresas": "For companies",
       "step1_title": "Create your profile",
       "step1_desc": "Complete your profile with your skills, tech stack and availability.",
       "step2_title": "Find projects",
       "step2_desc": "Explore real projects from companies looking for exactly your profile.",
       "step3_title": "Deliver and get paid",
-      "step3_desc": "Work on the project, deliver on time and receive your secure payment."
+      "step3_desc": "Work on the project, deliver on time and receive your secure payment.",
+      "empresa_step1_title": "Post your project",
+      "empresa_step1_desc": "Describe your project, the stack you need and your available budget.",
+      "empresa_step2_title": "Receive applications",
+      "empresa_step2_desc": "Students with the right profile will send you their cover letter and portfolio.",
+      "empresa_step3_title": "Hire and pay",
+      "empresa_step3_desc": "Pick the best candidate, receive the delivery and pay securely."
     }
   },
   "login": {
@@ -260,7 +268,7 @@
         "label_apellido2": "Second surname",
         "placeholder_apellido2": "e.g. López",
         "label_cedula": "ID number",
-        "placeholder_cedula": "e.g. 1-1234-5678"
+        "placeholder_cedula": "Your ID number (e.g. 1-1234-5678)"
       },
       "step2": {
         "eyebrow": "Your specialization",

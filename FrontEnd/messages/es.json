@@ -103,12 +103,20 @@
     "how_it_works": {
       "eyebrow": "Cómo funciona",
       "title": "En 3 pasos simples",
+      "audience_juniors": "Para estudiantes",
+      "audience_empresas": "Para empresas",
       "step1_title": "Crea tu perfil",
       "step1_desc": "Completa tu perfil con tus habilidades, stack tecnológico y disponibilidad.",
       "step2_title": "Encuentra proyectos",
       "step2_desc": "Explora proyectos reales de empresas que buscan exactamente tu perfil.",
       "step3_title": "Entrega y cobra",
-      "step3_desc": "Trabaja en el proyecto, entrega a tiempo y recibe tu pago seguro."
+      "step3_desc": "Trabaja en el proyecto, entrega a tiempo y recibe tu pago seguro.",
+      "empresa_step1_title": "Publica tu proyecto",
+      "empresa_step1_desc": "Describe tu proyecto, el stack que necesitas y el presupuesto disponible.",
+      "empresa_step2_title": "Recibe postulaciones",
+      "empresa_step2_desc": "Estudiantes con el perfil correcto te enviarán su carta y portafolio.",
+      "empresa_step3_title": "Contrata y paga",
+      "empresa_step3_desc": "Elige al mejor candidato, recibe la entrega y paga de forma segura."
     }
   },
   "login": {
@@ -260,7 +268,7 @@
         "label_apellido2": "Segundo apellido",
         "placeholder_apellido2": "Ej. López",
         "label_cedula": "Número de cédula",
-        "placeholder_cedula": "Ej. 1-1234-5678"
+        "placeholder_cedula": "Tu número de cédula (ej. 1-1234-5678)"
       },
       "step2": {
         "eyebrow": "Tu especialización",
