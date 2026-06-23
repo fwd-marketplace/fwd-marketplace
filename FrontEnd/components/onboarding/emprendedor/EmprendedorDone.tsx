@@ -40,7 +40,7 @@ export async function EmprendedorDone({ locale }: EmprendedorDoneProps) {
           </p>
 
           <Link
-            href={`/${locale}/dashboard`}
+            href={`/${locale}/home`}
             className="inline-flex items-center justify-center rounded-full border border-border bg-surface px-8 py-3 font-body text-sm font-semibold text-ink transition-colors duration-[--duration-fast] hover:bg-surface-sunken"
           >
             {t("emprendedor.done.cta")}

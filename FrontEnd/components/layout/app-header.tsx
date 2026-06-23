@@ -207,16 +207,20 @@ export function AppHeader({
               dark={dark}
             />
           )}
-          <UserMenu
-            isAuthenticated={isAuthenticated}
-            {...(role !== undefined ? { role } : {})}
-            userName={userName}
-            avatarUrl={avatarUrl}
-            navLinks={navLinks}
-            menuLinks={menuLinks}
-            onOpenNotifications={() => setNotifOpen(true)}
-            dark={dark}
-          />
+          {/* El admin solo visita esta área (p. ej. bienvenida) desde su panel; su
+              perfil aquí no aporta info, así que se oculta el menú de perfil. */}
+          {role !== "admin" && (
+            <UserMenu
+              isAuthenticated={isAuthenticated}
+              {...(role !== undefined ? { role } : {})}
+              userName={userName}
+              avatarUrl={avatarUrl}
+              navLinks={navLinks}
+              menuLinks={menuLinks}
+              onOpenNotifications={() => setNotifOpen(true)}
+              dark={dark}
+            />
+          )}
           {/* Botón de salida (puerta) siempre visible a la par del perfil */}
           {isAuthenticated && <LogoutButton className="hidden md:inline-flex" dark={dark} />}
         </div>

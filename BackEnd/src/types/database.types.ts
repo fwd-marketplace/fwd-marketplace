@@ -14,6 +14,33 @@ export type Database = {
   }
   public: {
     Tables: {
+      app_settings: {
+        Row: {
+          allow_applications: boolean
+          allow_companies: boolean
+          allow_signups: boolean
+          enable_matching: boolean
+          id: number
+          updated_at: string
+        }
+        Insert: {
+          allow_applications?: boolean
+          allow_companies?: boolean
+          allow_signups?: boolean
+          enable_matching?: boolean
+          id?: number
+          updated_at?: string
+        }
+        Update: {
+          allow_applications?: boolean
+          allow_companies?: boolean
+          allow_signups?: boolean
+          enable_matching?: boolean
+          id?: number
+          updated_at?: string
+        }
+        Relationships: []
+      }
       ai_logs: {
         Row: {
           duracion_ms: number | null

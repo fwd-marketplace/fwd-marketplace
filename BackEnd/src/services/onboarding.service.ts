@@ -1,5 +1,6 @@
 import { supabaseForToken } from "../config/supabase";
 import { ApiError } from "../utils/ApiError";
+import { readAppSettings } from "./settings.service";
 import type {
   JuniorOnboarding,
   EmpresaOnboarding,
@@ -43,6 +44,10 @@ export async function onboardJunior(
   correo: string,
   input: JuniorOnboarding,
 ): Promise<OnboardingResult> {
+  const settings = await readAppSettings();
+  if (!settings.allow_signups) {
+    throw new ApiError(403, "Los registros de talento están deshabilitados temporalmente.");
+  }
   const client = supabaseForToken(accessToken);
   const { error } = await client.rpc("onboard_junior", {
     p_user_id: userId,
@@ -72,6 +77,10 @@ export async function onboardEmpresa(
   correo: string,
   input: EmpresaOnboarding,
 ): Promise<OnboardingResult> {
+  const settings = await readAppSettings();
+  if (!settings.allow_companies) {
+    throw new ApiError(403, "El registro de empresas está deshabilitado temporalmente.");
+  }
   const client = supabaseForToken(accessToken);
   const { error } = await client.rpc("onboard_empresa", {
     p_user_id: userId,
@@ -95,6 +104,10 @@ export async function onboardEmprendedor(
   correo: string,
   input: EmprendedorOnboarding,
 ): Promise<OnboardingResult> {
+  const settings = await readAppSettings();
+  if (!settings.allow_companies) {
+    throw new ApiError(403, "El registro de empresas está deshabilitado temporalmente.");
+  }
   const client = supabaseForToken(accessToken);
   const { error } = await client.rpc("onboard_emprendedor", {
     p_user_id: userId,

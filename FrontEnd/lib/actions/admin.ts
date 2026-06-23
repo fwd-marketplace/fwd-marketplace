@@ -13,6 +13,7 @@ import {
   resolverReporte,
   suspendAdminUser,
   updateAdminCompany,
+  updateAdminSettings,
   updateAdminUser,
   verifyAdminStudent,
 } from "@/lib/api/admin";
@@ -21,8 +22,15 @@ import type {
   CreateAdminCompanyInput,
   CreateAdminUserInput,
   UpdateAdminCompanyInput,
+  UpdateAdminSettingsInput,
   UpdateAdminUserInput,
 } from "@/lib/api/types";
+
+export async function updateAdminSettingsAction(input: UpdateAdminSettingsInput) {
+  const result = await updateAdminSettings(input);
+  if (result.ok) revalidatePath("/");
+  return result;
+}
 
 export async function approveAdminUserAction(userId: string) {
   const result = await approveAdminUser(userId);

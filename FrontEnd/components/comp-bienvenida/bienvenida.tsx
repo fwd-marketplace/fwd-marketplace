@@ -13,8 +13,6 @@ import {
   LineChart,
   GraduationCap,
   BarChart,
-  Flag,
-  Check,
   Compass,
   BookOpen,
   Mountain,
@@ -26,6 +24,7 @@ import {
 } from 'lucide-react';
 import { FwdGeoBackdrop } from '@/components/ui/fwd-geo-backdrop';
 import { Button } from '@/components/ui/button';
+import { EstrellaProceso } from '@/components/comp-bienvenida/EstrellaProceso';
 
 // TODO: replace with real API data once backend integration is complete
 const recommendedProjects = [
@@ -393,52 +392,7 @@ export function BienvenidaDashboard() {
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
           <div className="lg:col-span-2">
             <h2 className="text-xl font-bold text-ink-strong mb-4">{t('progress.title')}</h2>
-            <div className="bg-surface rounded-xl p-6 shadow-soft border border-border flex flex-col md:flex-row gap-8 items-center">
-
-              <div className="flex-1 relative pl-6">
-                <div className="absolute left-2.5 top-2 bottom-6 w-0.5 bg-border z-0"></div>
-                <div className="absolute left-2.5 top-2 h-1/2 w-0.5 bg-accent z-0"></div>
-
-                {[1, 2, 3, 4, 5].map((step) => {
-                  const isCompleted = step <= 3;
-                  const isActive = step === 4;
-                  return (
-                    <div key={step} className="relative z-10 flex items-start gap-4 mb-6 last:mb-0">
-                      <div className={`flex h-6 w-6 shrink-0 items-center justify-center rounded-full text-xs font-bold ${isCompleted ? 'bg-accent text-white' : isActive ? 'bg-canvas border-2 border-secondary text-secondary' : 'bg-canvas border-2 border-border text-ink-muted'}`}>
-                        {isCompleted ? <Check className="h-3 w-3" /> : step}
-                      </div>
-                      <div>
-                        <div className={`font-bold text-sm ${isCompleted ? 'text-ink-strong' : isActive ? 'text-ink-strong' : 'text-ink-muted'}`}>
-                          {t(`progress.step${step}_title`)}
-                        </div>
-                        <div className="text-xs text-ink-muted mt-0.5">
-                          {t(`progress.step${step}_desc`)}
-                        </div>
-                      </div>
-                    </div>
-                  );
-                })}
-              </div>
-
-              <div className="w-full md:w-64 bg-canvas/50 rounded-xl p-6 text-center border border-border/50">
-                <div className="mx-auto flex h-16 w-16 items-center justify-center rounded-2xl bg-secondary/10 text-secondary mb-4">
-                  <Flag className="h-8 w-8" />
-                </div>
-                <h3 className="font-heading font-bold text-secondary mb-2">
-                  {t('progress.card_title')}
-                </h3>
-                <p className="text-xs text-ink-muted mb-4">
-                  {t('progress.card_desc')}
-                </p>
-                <Link
-                  href={`/${locale}/perfil-estudiante`}
-                  className="inline-flex h-9 w-full items-center justify-center rounded-full border-2 border-secondary font-semibold text-secondary hover:bg-secondary/5 transition-colors"
-                >
-                  {t('progress.btn_profile')}
-                </Link>
-              </div>
-
-            </div>
+            <EstrellaProceso />
           </div>
 
           <div>
