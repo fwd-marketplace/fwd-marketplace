@@ -1,4 +1,4 @@
--- 0040: Traducción bilingüe (es/en) del contenido de proyectos.
+-- 0041: Traducción bilingüe (es/en) del contenido de proyectos.
 --
 -- "Traducir al escribir, guardar ambos idiomas": cuando una empresa crea o edita un proyecto,
 -- el BackEnd traduce el contenido al idioma opuesto y lo guarda aquí. El FrontEnd muestra el

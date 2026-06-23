@@ -1,4 +1,4 @@
--- 0041: Traducción bilingüe (es/en) de los mensajes del chat humano empresa<->estudiante.
+-- 0042: Traducción bilingüe (es/en) de los mensajes del chat humano empresa<->estudiante.
 --
 -- "Traducir al enviar, guardar ambos idiomas": al enviar un mensaje, el BackEnd traduce el
 -- contenido al idioma opuesto y lo guarda aquí. El FrontEnd muestra el ORIGINAL y, con un botón
