@@ -89,6 +89,9 @@ export type AiChatMessage = {
   content: string;
 };
 
+/** Idioma en el que debe responder la IA (coincide con los locales de next-intl). */
+export type AiLocale = "es" | "en";
+
 export type ProposalSkill = {
   id: string;
   nombre: string;

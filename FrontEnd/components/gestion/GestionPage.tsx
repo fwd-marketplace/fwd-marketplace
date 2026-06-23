@@ -53,7 +53,7 @@ import {
   uploadDocumentoAction,
 } from "@/lib/actions/marketplace";
 import { generateProposalAction, suggestStackAction } from "@/lib/actions/ai";
-import { streamAssistant } from "@/lib/api/ai-client";
+import { streamAssistant, toAiLocale } from "@/lib/api/ai-client";
 import { getProjectMensajesAction, sendMensajeAction, getMyConversacionesAction } from "@/lib/actions/mensajes";
 import { MejorarMensajeButton } from "@/components/gestion/MejorarMensajeButton";
 import { ReportarMensajeButton } from "@/components/gestion/ReportarMensajeButton";
@@ -2648,6 +2648,7 @@ function TypingIndicator({ label }: { label: string }) {
 }
 
 function AiAssistant({ onApply }: { onApply: (proposal: ProjectProposal) => void }) {
+  const locale = useLocale();
   const [idea, setIdea] = useState("");
   const [messages, setMessages] = useState<AiChatMessage[]>([]);
   const [streamingText, setStreamingText] = useState("");
@@ -2681,6 +2682,7 @@ function AiAssistant({ onApply }: { onApply: (proposal: ProjectProposal) => void
     let failed = false;
     await streamAssistant(
       history,
+      toAiLocale(locale),
       (event) => {
         if (event.type === "delta") {
           accumulated += event.text;

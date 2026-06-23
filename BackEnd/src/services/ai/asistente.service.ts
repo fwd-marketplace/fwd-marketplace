@@ -5,6 +5,7 @@ import type { Json } from "../../types/database.types";
 import {
   ProposalRawSchema,
   StackRawSchema,
+  type AppLocale,
   type ProposalRaw,
   type StackRaw,
 } from "../../validations/ai";
@@ -64,6 +65,8 @@ export interface AsistenteParams {
   history: ChatMessage[];
   userId: string;
   accessToken: string;
+  /** Idioma en el que debe responder la IA (locale del usuario). */
+  locale: AppLocale;
   signal?: AbortSignal;
 }
 
@@ -387,7 +390,7 @@ async function storeExample(
 export async function* streamAsistente(params: AsistenteParams): AsyncGenerator<StreamChunk> {
   const catalog = await loadProjectCatalog(params.accessToken);
   const messages: ChatMessage[] = [
-    { role: "system", content: buildSystemPromptConversacion(catalog) },
+    { role: "system", content: buildSystemPromptConversacion(catalog, params.locale) },
     ...params.history,
   ];
 
@@ -430,7 +433,7 @@ export async function generarPropuesta(params: AsistenteParams): Promise<Project
   }
 
   const messages: ChatMessage[] = [
-    { role: "system", content: buildSystemPromptPropuesta(catalog) },
+    { role: "system", content: buildSystemPromptPropuesta(catalog, params.locale) },
     ...(ejemplos ? [{ role: "system" as const, content: ejemplos }] : []),
     ...params.history,
     { role: "user", content: "Generá ahora la propuesta final en el JSON pedido, sin texto adicional." },
@@ -484,6 +487,8 @@ export interface SugerirStackParams {
   areaId?: string;
   userId: string;
   accessToken: string;
+  /** Idioma en el que debe responder la IA (locale del usuario). */
+  locale: AppLocale;
   signal?: AbortSignal;
 }
 
@@ -527,7 +532,7 @@ export async function sugerirStack(params: SugerirStackParams): Promise<StackSug
     .join("\n");
 
   const messages: ChatMessage[] = [
-    { role: "system", content: buildSystemPromptStack(catalog) },
+    { role: "system", content: buildSystemPromptStack(catalog, params.locale) },
     { role: "user", content: `${contexto}\n\nRecomendá el stack en el JSON pedido.` },
   ];
 

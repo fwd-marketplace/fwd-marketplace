@@ -38,7 +38,7 @@ export async function asistenteProyecto(req: Request, res: Response): Promise<vo
   // Capturamos antes de abrir el stream: la validación puede lanzar 400 (JSON).
   const userId = req.user.id;
   const accessToken = req.accessToken;
-  const { history } = parseBody(AsistenteRequestSchema, req.body);
+  const { history, locale } = parseBody(AsistenteRequestSchema, req.body);
 
   // A partir de aquí ya no se puede responder con JSON: todo va por SSE.
   res.status(200);
@@ -58,6 +58,7 @@ export async function asistenteProyecto(req: Request, res: Response): Promise<vo
       history,
       userId,
       accessToken,
+      locale,
       signal: abortController.signal,
     })) {
       if (chunk.type === "delta") {
@@ -103,7 +104,7 @@ export async function chatProyecto(req: Request, res: Response): Promise<void> {
   const userId = req.user.id;
   const accessToken = req.accessToken;
   const proyectoId = idParsed.data;
-  const { history } = parseBody(AsistenteRequestSchema, req.body);
+  const { history, locale } = parseBody(AsistenteRequestSchema, req.body);
 
   // A partir de aquí ya no se puede responder con JSON: todo va por SSE.
   res.status(200);
@@ -122,6 +123,7 @@ export async function chatProyecto(req: Request, res: Response): Promise<void> {
       history,
       userId,
       accessToken,
+      locale,
       signal: abortController.signal,
     })) {
       if (chunk.type === "delta") {
@@ -158,12 +160,13 @@ export async function generarPropuesta(req: Request, res: Response): Promise<voi
   if (!req.user || !req.accessToken) {
     throw new ApiError(401, "No autenticado");
   }
-  const { history } = parseBody(AsistenteRequestSchema, req.body);
+  const { history, locale } = parseBody(AsistenteRequestSchema, req.body);
 
   const propuesta = await generarPropuestaService({
     history,
     userId: req.user.id,
     accessToken: req.accessToken,
+    locale,
   });
 
   res.status(200).json({ propuesta });
@@ -187,6 +190,7 @@ export async function sugerirStack(req: Request, res: Response): Promise<void> {
     areaId: input.id_area_negocio,
     userId: req.user.id,
     accessToken: req.accessToken,
+    locale: input.locale,
   });
 
   res.status(200).json({ sugerencia });
