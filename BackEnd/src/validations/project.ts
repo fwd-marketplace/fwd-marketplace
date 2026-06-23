@@ -1,4 +1,5 @@
 import { z } from "zod";
+import { LocaleSchema } from "./ai";
 
 /** Cuerpo para crear un proyecto (empresa). Nombres alineados con la BD. */
 export const CreateProjectSchema = z.object({
@@ -15,6 +16,8 @@ export const CreateProjectSchema = z.object({
   tecnologias_extra: z.array(z.string().trim().min(1).max(50)).max(20).optional(),
   // true -> se publica (en_recepcion); false/omitido -> queda en borrador.
   publicar: z.boolean().optional(),
+  // Idioma en que la empresa escribió el proyecto; define idioma_original y el destino de traducción.
+  locale: LocaleSchema.default("es"),
 });
 
 export type CreateProjectInput = z.infer<typeof CreateProjectSchema>;
@@ -49,6 +52,8 @@ export const UpdateProjectSchema = z.object({
   usa_ia: z.boolean().optional(),
   skills: z.array(z.string().uuid()).optional(),
   tecnologias_extra: z.array(z.string().trim().min(1).max(50)).max(20).optional(),
+  // Idioma del editor; si cambia el texto, se re-traduce al idioma opuesto.
+  locale: LocaleSchema.default("es"),
 });
 
 export type UpdateProjectInput = z.infer<typeof UpdateProjectSchema>;

@@ -2,12 +2,8 @@
 
 import { getLocale } from "next-intl/server";
 import { generateProposal, mejorarMensaje, suggestStack } from "@/lib/api/ai";
-import type { AiChatMessage, AiLocale, SuggestStackInput } from "@/lib/api/types";
-
-/** Reduce el locale de next-intl (string) al idioma soportado por la IA. */
-function toAiLocale(locale: string): AiLocale {
-  return locale === "en" ? "en" : "es";
-}
+import { toAiLocale } from "@/lib/api/ai-client";
+import type { AiChatMessage, SuggestStackInput } from "@/lib/api/types";
 
 /**
  * Genera la propuesta del asistente a partir del historial conversacional.

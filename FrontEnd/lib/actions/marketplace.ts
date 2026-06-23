@@ -2,7 +2,9 @@
 
 import { revalidatePath } from "next/cache";
 import { cookies } from "next/headers";
+import { getLocale } from "next-intl/server";
 import { BASE_URL, SESSION_COOKIE } from "@/lib/api-client";
+import { toAiLocale } from "@/lib/api/ai-client";
 import type { Result } from "@/lib/result";
 import {
   calificarOferta,
@@ -50,7 +52,8 @@ export async function getCatalogsAction() {
 }
 
 export async function createProjectAction(input: CreateProjectInput) {
-  const result = await createProject(input);
+  const locale = await getLocale();
+  const result = await createProject(input, toAiLocale(locale));
   if (result.ok) {
     revalidatePath("/");
   }
@@ -58,7 +61,8 @@ export async function createProjectAction(input: CreateProjectInput) {
 }
 
 export async function updateProjectAction(projectId: string, input: UpdateProjectInput) {
-  const result = await updateProject(projectId, input);
+  const locale = await getLocale();
+  const result = await updateProject(projectId, input, toAiLocale(locale));
   if (result.ok) {
     revalidatePath("/");
   }

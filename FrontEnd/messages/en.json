@@ -1,4 +1,8 @@
 {
+  "traduccion": {
+    "ver_traduccion": "View translation",
+    "ver_original": "View original"
+  },
   "hero_journey": {
     "llamado_label": "The Call",
     "llamado_cta": "Take your first step toward your career.",

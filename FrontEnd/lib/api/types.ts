@@ -49,6 +49,13 @@ export type CatalogsResponse = {
   conocimientos: CatalogKnowledge[];
 };
 
+/** Contenido del proyecto traducido al idioma opuesto al original (para "ver traducción"). */
+export type ProjectTranslation = {
+  titulo: string;
+  descripcion: string;
+  condiciones: string;
+};
+
 export type ApiProject = {
   id: string;
   titulo: string;
@@ -57,6 +64,10 @@ export type ApiProject = {
   usa_ia: boolean;
   plazo_dias: number;
   tecnologias_extra?: string[];
+  /** Idioma en que la empresa escribió el proyecto. */
+  idioma_original?: AiLocale;
+  /** Traducción al idioma opuesto; null/ausente si no está disponible. */
+  traduccion?: ProjectTranslation | null;
   fecha_publicacion: string | null;
   fecha_cierre: string | null;
   estado: { id?: string; nombre: ProjectState };
@@ -634,6 +645,10 @@ export type ApiMensajeUser = { id: string; nombre: string; apellido1: string | n
 export type ApiMensaje = {
   id: string;
   contenido: string;
+  /** Idioma original del mensaje. */
+  idioma_original?: AiLocale;
+  /** Contenido traducido al idioma opuesto; null/ausente si no está disponible. */
+  contenido_traducido?: string | null;
   fecha_envio: string;
   es_publico: boolean;
   remitente: ApiMensajeUser | null;
