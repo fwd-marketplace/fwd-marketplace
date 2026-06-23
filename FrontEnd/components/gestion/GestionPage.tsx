@@ -136,11 +136,11 @@ const OFFER_STATE_CONFIG: Record<
   OfferState,
   { label: string; dot: string; badge: string; step: number }
 > = {
-  enviada:           { label: "Enviada",            dot: "bg-primary",  badge: "bg-primary/10 text-primary border-primary/20",   step: 0 },
-  en_revision:       { label: "En revisión",        dot: "bg-warning",  badge: "bg-warning/10 text-warning border-warning/20",   step: 1 },
-  solicitar_cambios: { label: "Cambios solicitados",dot: "bg-magenta",  badge: "bg-magenta/10 text-magenta border-magenta/20",   step: 1 },
-  adjudicada:        { label: "Adjudicada",         dot: "bg-accent",   badge: "bg-accent/10 text-accent border-accent/20",      step: 2 },
-  no_seleccionada:   { label: "No seleccionada",    dot: "bg-magenta",  badge: "bg-magenta/10 text-magenta border-magenta/20",   step: 2 },
+  enviada: { label: "Enviada", dot: "bg-primary", badge: "bg-primary/10 text-primary border-primary/20", step: 0 },
+  en_revision: { label: "En revisión", dot: "bg-warning", badge: "bg-warning/10 text-warning border-warning/20", step: 1 },
+  solicitar_cambios: { label: "Cambios solicitados", dot: "bg-magenta", badge: "bg-magenta/10 text-magenta border-magenta/20", step: 1 },
+  adjudicada: { label: "Adjudicada", dot: "bg-accent", badge: "bg-accent/10 text-accent border-accent/20", step: 2 },
+  no_seleccionada: { label: "No seleccionada", dot: "bg-magenta", badge: "bg-magenta/10 text-magenta border-magenta/20", step: 2 },
 };
 
 function juniorCircle(status: ProposalStatus): { bg: string; icon: ReactNode } {
@@ -176,10 +176,10 @@ function empresaCircle(status: EmpresaStatus): { bg: string; icon: ReactNode } {
 }
 
 const EMPRESA_BADGE: Record<EmpresaStatus, string> = {
-  enviada:        "bg-primary/10 text-primary border-primary/20",
-  revision:       "bg-warning/10 text-warning border-warning/20",
-  cambios:        "bg-magenta/10 text-magenta border-magenta/20",
-  adjudicada:     "bg-accent/10 text-accent border-accent/20",
+  enviada: "bg-primary/10 text-primary border-primary/20",
+  revision: "bg-warning/10 text-warning border-warning/20",
+  cambios: "bg-magenta/10 text-magenta border-magenta/20",
+  adjudicada: "bg-accent/10 text-accent border-accent/20",
   noseleccionada: "bg-ink-muted/10 text-ink-muted border-border",
 };
 
@@ -233,7 +233,7 @@ function buildEmpresaStudents(
   };
 
   const title = project?.titulo ?? "Propuesta";
-  const area  = project?.area?.nombre ?? "Proyecto";
+  const area = project?.area?.nombre ?? "Proyecto";
 
   // Group all offers by junior.id — one student row per junior
   const byJunior = new Map<string, ProjectOffer[]>();
@@ -297,7 +297,7 @@ function buildEmpresaStudents(
 interface Props { role: ApiRoleName | null; userId: string | null; initialProjectId?: string | null; disponible?: boolean; initialOffers?: MyOffer[]; initialProject?: ApiProject | null }
 
 export function GestionPage({ role, userId, initialProjectId, disponible = true, initialOffers = [], initialProject = null }: Props) {
-  const t      = useTranslations("gestion_page");
+  const t = useTranslations("gestion_page");
   const locale = useLocale();
   const isEmpresa = role === "company";
 
@@ -329,21 +329,21 @@ export function GestionPage({ role, userId, initialProjectId, disponible = true,
   const [pendingNav, setPendingNav] = useState<PendingNav | null>(null);
 
   // Selection state
-  const [selectedId, setSelectedId]         = useState<string | null>(initialProjectId ?? null);
+  const [selectedId, setSelectedId] = useState<string | null>(initialProjectId ?? null);
   const [selectedProject, setSelectedProject] = useState<ApiProject | null>(initialProject);
-  const [selectedOffers, setSelectedOffers]   = useState<MyOffer[]>([]);
-  const [projectLoading, setProjectLoading]   = useState<boolean>(false);
-  const [projectError, setProjectError]       = useState<string | null>(null);
-  const [projectOffers, setProjectOffers]     = useState<ProjectOffer[]>([]);
+  const [selectedOffers, setSelectedOffers] = useState<MyOffer[]>([]);
+  const [projectLoading, setProjectLoading] = useState<boolean>(false);
+  const [projectError, setProjectError] = useState<string | null>(null);
+  const [projectOffers, setProjectOffers] = useState<ProjectOffer[]>([]);
   const initialSection: Section = (!isEmpresa && !!initialProjectId) ? "proceso" : "info";
-  const [section, setSection]               = useState<Section>(initialSection);
+  const [section, setSection] = useState<Section>(initialSection);
 
   // Clean ?proyecto= from URL once used to pre-select
   useEffect(() => {
     if (initialProjectId) {
       window.history.replaceState(null, "", window.location.pathname);
     }
-  // eslint-disable-next-line react-hooks/exhaustive-deps
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   // ── Load sidebar on mount ───────────────────────────────────────────────────
@@ -580,33 +580,10 @@ export function GestionPage({ role, userId, initialProjectId, disponible = true,
                     return <SidebarEmpty text={t("empty_empresa")} />;
                   }
                   return (
-<<<<<<< HEAD
-                    <>
-                      {mainProjects.length > 0 && (
-                        <ul className="flex flex-col gap-0.5">
-                          {mainProjects.map((p) => renderEmpresaItem(p))}
-                        </ul>
-                      )}
-                      {chatProjects.length > 0 && (
-                        <>
-                          <div className="my-3 flex items-center gap-2 px-3">
-                            <div className="h-px flex-1 bg-white/10" />
-                            <span className="font-body text-[10px] font-bold uppercase tracking-widest text-white/30">
-                              {t("sidebar_chats_label")}
-                            </span>
-                            <div className="h-px flex-1 bg-white/10" />
-                          </div>
-                          <ul className="flex flex-col gap-0.5">
-                            {chatProjects.map((p) => renderEmpresaItem(p, true))}
-                          </ul>
-                        </>
-                      )}
-                    </>
-=======
                     <ul className="flex flex-col gap-0.5">
                       {sidebarProjects.map((proyecto) => {
                         const isSelected = proyecto.id === selectedId;
-                        const count  = isSelected ? projectOffers.length : (proyecto.n_ofertas ?? 0);
+                        const count = isSelected ? projectOffers.length : (proyecto.n_ofertas ?? 0);
                         const hasAdj = isSelected && projectOffers.some((o) => o.estado.nombre === "adjudicada");
                         const nChats = convSet.get(proyecto.id) ?? 0;
                         return (
@@ -648,7 +625,6 @@ export function GestionPage({ role, userId, initialProjectId, disponible = true,
                         );
                       })}
                     </ul>
->>>>>>> eb34129fb0681ae33cce2870141185427c16d44c
                   );
                 })()
               ) : (
@@ -751,7 +727,7 @@ export function GestionPage({ role, userId, initialProjectId, disponible = true,
             </div>
             <nav className="flex flex-col gap-0.5 p-3" aria-label="Secciones del proyecto">
               {(["info", "chat", "proceso"] as const).map((key) => {
-                const Icon  = key === "info" ? FileText : key === "chat" ? MessageSquare : GitBranch;
+                const Icon = key === "info" ? FileText : key === "chat" ? MessageSquare : GitBranch;
                 const label = key === "info" ? t("section_info") : key === "chat" ? t("section_chat") : t("section_proceso");
                 return (
                   <button
@@ -958,14 +934,14 @@ function WelcomePanel({
     const cerrados = projects.filter((p) => p.estado.nombre === "cerrado").length;
 
     const estadoColor: Record<string, string> = {
-      borrador:      "bg-ink-muted/15 text-ink-muted",
-      en_recepcion:  "bg-primary/10 text-primary",
+      borrador: "bg-ink-muted/15 text-ink-muted",
+      en_recepcion: "bg-primary/10 text-primary",
       en_evaluacion: "bg-warning/10 text-warning",
-      adjudicado:    "bg-accent/10 text-accent",
+      adjudicado: "bg-accent/10 text-accent",
       en_desarrollo: "bg-accent/10 text-accent",
-      cerrado:       "bg-border text-ink-muted",
-      cancelado:     "bg-magenta/10 text-magenta",
-      pausado:       "bg-warning/10 text-warning",
+      cerrado: "bg-border text-ink-muted",
+      cancelado: "bg-magenta/10 text-magenta",
+      pausado: "bg-warning/10 text-warning",
     };
 
     return (
@@ -1255,9 +1231,9 @@ function ChatPanel({
   t: T;
   userId: string | null;
 }) {
-  const [rawMsgs, setRawMsgs]       = useState<ApiMensaje[]>([]);
-  const [draft, setDraft]           = useState("");
-  const [sending, setSending]       = useState(false);
+  const [rawMsgs, setRawMsgs] = useState<ApiMensaje[]>([]);
+  const [draft, setDraft] = useState("");
+  const [sending, setSending] = useState(false);
   const [selectedJuniorId, setSelectedJuniorId] = useState<string | null>(null);
   const bottomRef = useRef<HTMLDivElement>(null);
 
@@ -1300,11 +1276,11 @@ function ChatPanel({
   // Filter messages for the selected junior (empresa) or all (junior)
   const visibleMsgs = isEmpresa && selectedJuniorId
     ? rawMsgs.filter((m) => {
-        const isMine = m.remitente?.id === userId;
-        return isMine
-          ? m.destinatario_info?.id === selectedJuniorId
-          : m.remitente?.id === selectedJuniorId;
-      })
+      const isMine = m.remitente?.id === userId;
+      return isMine
+        ? m.destinatario_info?.id === selectedJuniorId
+        : m.remitente?.id === selectedJuniorId;
+    })
     : rawMsgs;
 
   useEffect(() => {
@@ -1312,7 +1288,7 @@ function ChatPanel({
   }, [visibleMsgs]);
 
   // Header display info
-  const otherName    = isEmpresa
+  const otherName = isEmpresa
     ? (selectedJuniorId ? juniorDisplayName(juniors.find((j) => j.id === selectedJuniorId)) : t("chat_label_junior"))
     : (project?.empresa?.nombre_comercial ?? t("chat_label_empresa"));
   const otherInitial = isEmpresa
@@ -1611,7 +1587,7 @@ function JuniorProcesoView({
   const latestOfferId = offers[offers.length - 1]?.id;
   useEffect(() => {
     setProposals(initJuniorProposals(offers, project));
-  // eslint-disable-next-line react-hooks/exhaustive-deps
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [offers.length, latestOfferId]);
 
   // ── State helpers ────────────────────────────────────────────────────────
@@ -1619,8 +1595,8 @@ function JuniorProcesoView({
     setProposals((prev) => prev.map((x, idx) => idx === i ? { ...x, ...p } : x));
 
   const startCreate = (i: number) => patch(i, { status: "editando", expanded: true });
-  const toggle      = (i: number) => { const c = proposals[i]; if (c) patch(i, { expanded: !c.expanded }); };
-  const setField    = (i: number, k: keyof JuniorProposal, v: string) => patch(i, { [k]: v } as Partial<JuniorProposal>);
+  const toggle = (i: number) => { const c = proposals[i]; if (c) patch(i, { expanded: !c.expanded }); };
+  const setField = (i: number, k: keyof JuniorProposal, v: string) => patch(i, { [k]: v } as Partial<JuniorProposal>);
 
   const [withdrawConfirmIdx, setWithdrawConfirmIdx] = useState<number | null>(null);
   const [isUploading, setIsUploading] = useState(false);
@@ -1732,17 +1708,17 @@ function JuniorProcesoView({
   };
 
   // ── Derived values ───────────────────────────────────────────────────────
-  const latest  = proposals[proposals.length - 1];
+  const latest = proposals[proposals.length - 1];
   const hasSent = proposals.some((p) => !["nuevo", "editando"].includes(p.status));
-  const isNew   = !latest || latest.status === "nuevo" || latest.status === "editando";
+  const isNew = !latest || latest.status === "nuevo" || latest.status === "editando";
 
   const propMeta = (status: ProposalStatus): { label: string; cls: string } | null => {
     switch (status) {
-      case "enviada":        return { label: t("proceso_badge_enviada"),  cls: "bg-primary/10 text-primary border-primary/20" };
-      case "revision":       return { label: t("proceso_badge_revision"), cls: "bg-warning/10 text-warning border-warning/20" };
-      case "cambios":        return { label: t("proceso_badge_cambios"),  cls: "bg-magenta/10 text-magenta border-magenta/20" };
-      case "aceptada":       return { label: t("proceso_badge_aceptada"), cls: "bg-accent/10 text-accent border-accent/20" };
-      case "noseleccionada": return { label: t("proceso_badge_nosel"),    cls: "bg-ink-muted/10 text-ink-muted border-border" };
+      case "enviada": return { label: t("proceso_badge_enviada"), cls: "bg-primary/10 text-primary border-primary/20" };
+      case "revision": return { label: t("proceso_badge_revision"), cls: "bg-warning/10 text-warning border-warning/20" };
+      case "cambios": return { label: t("proceso_badge_cambios"), cls: "bg-magenta/10 text-magenta border-magenta/20" };
+      case "aceptada": return { label: t("proceso_badge_aceptada"), cls: "bg-accent/10 text-accent border-accent/20" };
+      case "noseleccionada": return { label: t("proceso_badge_nosel"), cls: "bg-ink-muted/10 text-ink-muted border-border" };
       default: return null;
     }
   };
@@ -1752,13 +1728,13 @@ function JuniorProcesoView({
   if (!isNew && latest) {
     const m = propMeta(latest.status);
     bannerLabel = m?.label ?? t("proceso_badge_pendiente");
-    bannerCls   = m?.cls  ?? "bg-ink/5 text-ink-muted border-border";
+    bannerCls = m?.cls ?? "bg-ink/5 text-ink-muted border-border";
   } else if (hasSent) {
     bannerLabel = t("proceso_badge_esperando");
-    bannerCls   = "bg-ink/5 text-ink-muted border-border";
+    bannerCls = "bg-ink/5 text-ink-muted border-border";
   } else {
     bannerLabel = t("proceso_badge_pendiente");
-    bannerCls   = "bg-ink/5 text-ink-muted border-border";
+    bannerCls = "bg-ink/5 text-ink-muted border-border";
   }
 
   const lastReal = proposals[proposals.length - 1];
@@ -1794,12 +1770,12 @@ function JuniorProcesoView({
         )}
 
         {proposals.map((p, i) => {
-          const c        = juniorCircle(p.status);
-          const isSent   = ["enviada","revision","cambios","aceptada","noseleccionada"].includes(p.status);
+          const c = juniorCircle(p.status);
+          const isSent = ["enviada", "revision", "cambios", "aceptada", "noseleccionada"].includes(p.status);
           const isEditing = p.status === "editando";
-          const pm        = propMeta(p.status);
-          const submitOk  = p.desc.trim().length > 0;
-          const showLine  = i < proposals.length - 1 || !closed;
+          const pm = propMeta(p.status);
+          const submitOk = p.desc.trim().length > 0;
+          const showLine = i < proposals.length - 1 || !closed;
 
           return (
             <div key={p.v} className="flex gap-[18px] items-stretch">
@@ -2213,8 +2189,8 @@ function EmpresaProcesoView({
     if (!proposal) return;
 
     const accionMap: Partial<Record<EmpresaStatus, "solicitar_cambios" | "aceptar" | "rechazar">> = {
-      cambios:        "solicitar_cambios",
-      adjudicada:     "aceptar",
+      cambios: "solicitar_cambios",
+      adjudicada: "aceptar",
       noseleccionada: "rechazar",
     };
     const accion = accionMap[proposal.status];
@@ -2342,11 +2318,11 @@ function EmpresaProcesoView({
       ) : (
         <div className="divide-y divide-border border-t border-border">
           {students.map((s) => {
-            const ov    = overall(s.proposals);
-            const m     = EMPRESA_BADGE[ov];
+            const ov = overall(s.proposals);
+            const m = EMPRESA_BADGE[ov];
             const isAdj = ov === "adjudicada";
             const isRej = ov === "noseleccionada";
-            const nVer  = s.proposals.length;
+            const nVer = s.proposals.length;
 
             return (
               <div
@@ -2380,11 +2356,11 @@ function EmpresaProcesoView({
                     <p className="mt-1 font-body text-sm text-ink-muted">{s.date}</p>
                   </div>
                   <span className={cn("inline-flex items-center rounded-full border px-[18px] py-2 font-body text-sm font-bold whitespace-nowrap", m)}>
-                    {ov === "enviada"        ? t("proceso_badge_enviada")
-                      : ov === "revision"   ? t("proceso_badge_revision")
-                      : ov === "cambios"    ? t("proceso_badge_cambios")
-                      : ov === "adjudicada" ? t("proceso_badge_adjudicada")
-                      : t("proceso_badge_nosel")}
+                    {ov === "enviada" ? t("proceso_badge_enviada")
+                      : ov === "revision" ? t("proceso_badge_revision")
+                        : ov === "cambios" ? t("proceso_badge_cambios")
+                          : ov === "adjudicada" ? t("proceso_badge_adjudicada")
+                            : t("proceso_badge_nosel")}
                   </span>
                   {isAdj && (
                     <CheckCircle2 className="size-[22px] shrink-0 text-accent" aria-hidden="true" />
@@ -2402,8 +2378,8 @@ function EmpresaProcesoView({
                     </p>
 
                     {s.proposals.map((p, pi) => {
-                      const c    = empresaCircle(p.status);
-                      const pm   = EMPRESA_BADGE[p.status];
+                      const c = empresaCircle(p.status);
+                      const pm = EMPRESA_BADGE[p.status];
                       const skey = `${s.id}-${p.v}`;
                       const isSavedHere = saved === skey;
 
@@ -2440,11 +2416,11 @@ function EmpresaProcesoView({
                                 <span className="font-body text-xs text-ink-muted">{p.expanded ? "▲" : "▼"}</span>
                               </div>
                               <span className={cn("inline-flex items-center rounded-full border px-[15px] py-1.5 font-body text-sm font-bold whitespace-nowrap", pm)}>
-                                {p.status === "enviada"        ? t("proceso_badge_enviada")
-                                  : p.status === "revision"   ? t("proceso_badge_revision")
-                                  : p.status === "cambios"    ? t("proceso_badge_cambios")
-                                  : p.status === "adjudicada" ? t("proceso_badge_adjudicada")
-                                  : t("proceso_badge_nosel")}
+                                {p.status === "enviada" ? t("proceso_badge_enviada")
+                                  : p.status === "revision" ? t("proceso_badge_revision")
+                                    : p.status === "cambios" ? t("proceso_badge_cambios")
+                                      : p.status === "adjudicada" ? t("proceso_badge_adjudicada")
+                                        : t("proceso_badge_nosel")}
                               </span>
                             </div>
 
@@ -2515,8 +2491,8 @@ function EmpresaProcesoView({
                                       {t("proceso_estado_version")}
                                     </label>
                                     <div className="flex flex-wrap gap-2.5">
-                                      <button onClick={() => setStatus(s.id, p.v, "cambios")}        className={btnCls("cambios")}>        {t("proceso_accion_cambios")}</button>
-                                      <button onClick={() => setStatus(s.id, p.v, "adjudicada")}     className={btnCls("adjudicada")}>     {t("proceso_accion_adjudicar")}</button>
+                                      <button onClick={() => setStatus(s.id, p.v, "cambios")} className={btnCls("cambios")}>        {t("proceso_accion_cambios")}</button>
+                                      <button onClick={() => setStatus(s.id, p.v, "adjudicada")} className={btnCls("adjudicada")}>     {t("proceso_accion_adjudicar")}</button>
                                       <button onClick={() => setStatus(s.id, p.v, "noseleccionada")} className={btnCls("noseleccionada")}> {t("proceso_accion_rechazar")}</button>
                                     </div>
 
@@ -2545,10 +2521,10 @@ function EmpresaProcesoView({
                                         {t("proceso_observacion_enviada")}
                                       </p>
                                       <span className={cn("inline-flex items-center rounded-full border px-4 py-1.5 font-body text-sm font-bold", pm)}>
-                                        {p.status === "revision"      ? t("proceso_badge_revision")
-                                          : p.status === "cambios"    ? t("proceso_badge_cambios")
-                                          : p.status === "adjudicada" ? t("proceso_badge_adjudicada")
-                                          : t("proceso_badge_nosel")}
+                                        {p.status === "revision" ? t("proceso_badge_revision")
+                                          : p.status === "cambios" ? t("proceso_badge_cambios")
+                                            : p.status === "adjudicada" ? t("proceso_badge_adjudicada")
+                                              : t("proceso_badge_nosel")}
                                       </span>
                                       {p.comment && (
                                         <p className="mt-3 font-body text-sm leading-relaxed text-ink">{p.comment}</p>
