@@ -813,14 +813,14 @@ export function GestionPage({ role, userId, initialProjectId, disponible = true,
             {!selectedProject && projectError && (
               <div className="flex flex-col items-center gap-3 px-6 py-20 text-center">
                 <FolderOpen className="size-10 text-ink-muted/30" aria-hidden="true" />
-                <p className="font-body text-sm text-ink-muted">No se pudo cargar el proyecto.</p>
+                <p className="font-body text-sm text-ink-muted">{t("project_load_failed")}</p>
                 <p className="font-body text-xs text-magenta">{projectError}</p>
                 <button
                   type="button"
                   onClick={handleBack}
                   className="font-body text-sm font-semibold text-primary hover:underline"
                 >
-                  Volver a mis proyectos
+                  {t("back_to_projects")}
                 </button>
               </div>
             )}
@@ -1199,7 +1199,7 @@ function InfoPanel({
       {project.condiciones && project.condiciones.trim() && (
         <div className="mb-4 rounded-2xl border border-border bg-surface p-5">
           <p className="mb-3 font-body text-xs font-bold uppercase tracking-wider text-ink-muted">
-            Condiciones y preguntas frecuentes
+            {t("conditions_faq_label")}
           </p>
           <p className="whitespace-pre-line font-body text-base leading-relaxed text-ink">
             {project.condiciones}
@@ -1244,6 +1244,7 @@ function ChatPanel({
   const [rawMsgs, setRawMsgs]       = useState<ApiMensaje[]>([]);
   const [draft, setDraft]           = useState("");
   const [sending, setSending]       = useState(false);
+  const [sendError, setSendError]   = useState("");
   const [selectedJuniorId, setSelectedJuniorId] = useState<string | null>(null);
   const bottomRef = useRef<HTMLDivElement>(null);
 
@@ -1316,16 +1317,23 @@ function ChatPanel({
     if (!project?.id || !userId) return;
     if (isEmpresa && !selectedJuniorId) return;
 
-    setDraft("");
     setSending(true);
-
-    await sendMensajeAction(project.id, text, isEmpresa ? (selectedJuniorId ?? undefined) : undefined);
-
-    // Reload to get server-confirmed message
-    const r = await getProjectMensajesAction(project.id);
-    if (r.ok) setRawMsgs(r.data);
-
-    setSending(false);
+    setSendError("");
+    try {
+      const r = await sendMensajeAction(project.id, text, isEmpresa ? (selectedJuniorId ?? undefined) : undefined);
+      if (r.ok) {
+        setDraft("");
+        // Reload to get server-confirmed message
+        const reload = await getProjectMensajesAction(project.id);
+        if (reload.ok) setRawMsgs(reload.data);
+      } else {
+        setSendError(t("chat_send_error"));
+      }
+    } catch {
+      setSendError(t("chat_send_error"));
+    } finally {
+      setSending(false);
+    }
   };
 
   const handleKey = (e: React.KeyboardEvent<HTMLTextAreaElement>) => {
@@ -1505,6 +1513,7 @@ function ChatPanel({
           {project && (
             <MejorarMensajeButton draft={draft} projectId={project.id} onReplace={setDraft} />
           )}
+          {sendError && <p className="mt-1.5 px-1 font-body text-[11px] text-magenta">{sendError}</p>}
           <p className="mt-1.5 px-1 font-body text-[11px] text-ink-muted">{t("chat_hint")}</p>
         </div>
       )}
@@ -1526,20 +1535,31 @@ function JuniorContactoPanel({
   userId: string | null;
   onConversationActivity?: () => void;
 }) {
-  const [rawMsgs, setRawMsgs] = useState<ApiMensaje[]>([]);
-  const [draft, setDraft]     = useState("");
-  const [sending, setSending] = useState(false);
+  const [rawMsgs, setRawMsgs]     = useState<ApiMensaje[]>([]);
+  const [draft, setDraft]         = useState("");
+  const [sending, setSending]     = useState(false);
+  const [sendError, setSendError] = useState("");
+  const [loaded, setLoaded]       = useState(false);
   const bottomRef = useRef<HTMLDivElement>(null);
+
+  // Guard de desmontaje (seguro para React Strict Mode: se re-activa en cada montaje).
+  const mounted = useRef(true);
+  useEffect(() => {
+    mounted.current = true;
+    return () => { mounted.current = false; };
+  }, []);
 
   const load = useCallback(async () => {
     if (!projectId || !userId) return;
     try {
       const r = await getProjectMensajesAction(projectId);
-      if (r.ok) setRawMsgs(r.data);
+      if (mounted.current && r.ok) setRawMsgs(r.data);
     } catch {
       // Ignora fallos transitorios del transporte de Server Actions (p. ej. durante Fast Refresh
       // en dev, cuando un poll queda en vuelo mientras Next recompila). El siguiente poll reintenta;
       // los errores de datos reales ya llegan como Result.err.
+    } finally {
+      if (mounted.current) setLoaded(true);
     }
   }, [projectId, userId]);
 
@@ -1548,6 +1568,7 @@ function JuniorContactoPanel({
     if (!projectId || !userId) return;
     let active = true;
     setRawMsgs([]);
+    setLoaded(false);
     void load();
     const timer = setInterval(() => { if (active) void load(); }, 4000);
     return () => { active = false; clearInterval(timer); };
@@ -1565,12 +1586,22 @@ function JuniorContactoPanel({
   const send = async () => {
     const text = draft.trim();
     if (!text || sending || !projectId || !userId) return;
-    setDraft("");
     setSending(true);
-    await sendMensajeAction(projectId, text);
-    await load();
-    onConversationActivity?.();
-    setSending(false);
+    setSendError("");
+    try {
+      const r = await sendMensajeAction(projectId, text);
+      if (r.ok) {
+        setDraft("");
+        await load();
+        onConversationActivity?.();
+      } else {
+        setSendError(t("chat_send_error"));
+      }
+    } catch {
+      setSendError(t("chat_send_error"));
+    } finally {
+      setSending(false);
+    }
   };
 
   const handleKey = (e: React.KeyboardEvent<HTMLTextAreaElement>) => {
@@ -1581,8 +1612,13 @@ function JuniorContactoPanel({
     <div className="flex h-full flex-col">
       {/* Vistas mutuamente excluyentes: mientras no haya conversación se muestra SOLO el asistente
           (Nivel 0, dudas técnicas). Cuando el bot escala y se crea el primer mensaje, se pasa a
-          mostrar SOLO el chat con la empresa (el asistente ya no ocupa la pantalla). */}
-      {hasConversacion ? (
+          mostrar SOLO el chat con la empresa (el asistente ya no ocupa la pantalla). El spinner
+          de la primera carga evita que el asistente parpadee antes de mostrar el hilo existente. */}
+      {!loaded ? (
+        <div className="flex flex-1 items-center justify-center">
+          <Loader2 className="size-6 animate-spin text-primary" aria-label={t("chat_loading")} />
+        </div>
+      ) : hasConversacion ? (
         <div className="flex min-h-0 flex-1 flex-col">
           <div className="shrink-0 flex items-center gap-3 border-b border-border bg-surface px-6 py-4">
             <div className="flex size-9 shrink-0 items-center justify-center rounded-full bg-secondary/15 font-heading text-sm font-bold text-secondary">
@@ -1654,6 +1690,7 @@ function JuniorContactoPanel({
             {projectId && (
               <MejorarMensajeButton draft={draft} projectId={projectId} onReplace={setDraft} />
             )}
+            {sendError && <p className="mt-1.5 px-1 font-body text-[11px] text-magenta">{sendError}</p>}
             <p className="mt-1.5 px-1 font-body text-[11px] text-ink-muted">{t("chat_hint")}</p>
           </div>
         </div>
