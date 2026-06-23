@@ -91,7 +91,7 @@ export function CosmicBackdrop() {
             left: `${Math.random() * 100}%`,
             width: `${Math.random() * 3 + 1}px`,
             height: `${Math.random() * 3 + 1}px`,
-            ['--duration' as any]: `${Math.random() * 4 + 2}s`,
+            ['--duration' as string]: `${Math.random() * 4 + 2}s`,
             animationDelay: `${Math.random() * 5}s`,
           }}
         />
@@ -103,8 +103,8 @@ export function CosmicBackdrop() {
           key={`meteor-${i}`}
           className="meteor"
           style={{
-            ['--start-x' as any]: `${Math.random() * 150 + 50}%`,
-            ['--duration' as any]: `${Math.random() * 3 + 2}s`,
+            ['--start-x' as string]: `${Math.random() * 150 + 50}%`,
+            ['--duration' as string]: `${Math.random() * 3 + 2}s`,
             animationDelay: `${Math.random() * 10}s`,
           }}
         />

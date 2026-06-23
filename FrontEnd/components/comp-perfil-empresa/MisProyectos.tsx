@@ -40,7 +40,7 @@ import {
   updateProjectAction,
 } from "@/lib/actions/marketplace";
 import { generateProposalAction, suggestStackAction } from "@/lib/actions/ai";
-import { streamAssistant } from "@/lib/api/ai-client";
+import { streamAssistant, toAiLocale } from "@/lib/api/ai-client";
 import { formatDateLabel } from "@/lib/api/safe-json";
 import type {
   AiChatMessage,
@@ -170,6 +170,7 @@ function TypingIndicator({ label }: { label: string }) {
  */
 function AiAssistant({ onApply }: { onApply: (proposal: ProjectProposal) => void }) {
   const t = useTranslations("empresa_dashboard.new_project_modal.ai");
+  const locale = useLocale();
   const [idea, setIdea] = useState("");
   const [messages, setMessages] = useState<AiChatMessage[]>([]);
   const [streamingText, setStreamingText] = useState("");
@@ -206,6 +207,7 @@ function AiAssistant({ onApply }: { onApply: (proposal: ProjectProposal) => void
     let failed = false;
     await streamAssistant(
       history,
+      toAiLocale(locale),
       (event) => {
         if (event.type === "delta") {
           accumulated += event.text;
@@ -973,6 +975,7 @@ export function MisProyectos({
             invitedLabel={t("matches_invited_btn")}
             emptyText={t("matches_empty")}
             toastInvitedTemplate={t("matches_toast_invited", { name: "{name}" })}
+            className=""
           />
         )}
 

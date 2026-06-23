@@ -1,6 +1,6 @@
 import { ApiError, apiAuth } from "@/lib/api-client";
 import { err, ok, type Result } from "@/lib/result";
-import type { ApiMensaje, ConversacionItem, ConversacionesResponse, MensajesResponse } from "@/lib/api/types";
+import type { AiLocale, ApiMensaje, ConversacionItem, ConversacionesResponse, MensajesResponse } from "@/lib/api/types";
 
 async function asResult<T>(operation: () => Promise<T>): Promise<Result<T>> {
   try {
@@ -20,10 +20,11 @@ export function getProjectMensajes(projectId: string): Promise<Result<ApiMensaje
 export function sendMensaje(
   projectId: string,
   contenido: string,
+  locale: AiLocale,
   idDestinatario?: string,
 ): Promise<Result<ApiMensaje>> {
   return asResult(async () => {
-    const body: Record<string, unknown> = { contenido };
+    const body: Record<string, unknown> = { contenido, locale };
     if (idDestinatario) body.id_destinatario = idDestinatario;
     const res = await apiAuth<{ mensaje: ApiMensaje }>(`/mensajes/proyecto/${projectId}`, {
       method: "POST",

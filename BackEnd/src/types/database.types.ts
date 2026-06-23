@@ -686,30 +686,36 @@ export type Database = {
       mensaje: {
         Row: {
           contenido: string
+          contenido_traducido: string | null
           es_publico: boolean
           fecha_envio: string
           id: string
           id_destinatario: string | null
           id_proyecto: string
           id_remitente: string
+          idioma_original: string
         }
         Insert: {
           contenido: string
+          contenido_traducido?: string | null
           es_publico?: boolean
           fecha_envio?: string
           id?: string
           id_destinatario?: string | null
           id_proyecto: string
           id_remitente: string
+          idioma_original?: string
         }
         Update: {
           contenido?: string
+          contenido_traducido?: string | null
           es_publico?: boolean
           fecha_envio?: string
           id?: string
           id_destinatario?: string | null
           id_proyecto?: string
           id_remitente?: string
+          idioma_original?: string
         }
         Relationships: [
           {
@@ -1011,9 +1017,11 @@ export type Database = {
           id_area_negocio: string
           id_empresario: string
           id_estado: string
+          idioma_original: string
           plazo_dias: number
           tecnologias_extra: string[]
           titulo: string
+          traduccion: Json | null
           usa_ia: boolean
         }
         Insert: {
@@ -1025,9 +1033,11 @@ export type Database = {
           id_area_negocio: string
           id_empresario: string
           id_estado: string
+          idioma_original?: string
           plazo_dias: number
           tecnologias_extra?: string[]
           titulo: string
+          traduccion?: Json | null
           usa_ia?: boolean
         }
         Update: {
@@ -1039,9 +1049,11 @@ export type Database = {
           id_area_negocio?: string
           id_empresario?: string
           id_estado?: string
+          idioma_original?: string
           plazo_dias?: number
           tecnologias_extra?: string[]
           titulo?: string
+          traduccion?: Json | null
           usa_ia?: boolean
         }
         Relationships: [

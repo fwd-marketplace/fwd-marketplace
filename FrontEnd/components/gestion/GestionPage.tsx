@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useRef, useEffect, type ReactNode } from "react";
+import { useState, useRef, useEffect, useCallback, type ReactNode } from "react";
 import { useLocale, useTranslations } from "next-intl";
 import { ProjectMatchPanel } from "@/components/gestion/ProjectMatchPanel";
 import {
@@ -53,7 +53,7 @@ import {
   uploadDocumentoAction,
 } from "@/lib/actions/marketplace";
 import { generateProposalAction, suggestStackAction } from "@/lib/actions/ai";
-import { streamAssistant } from "@/lib/api/ai-client";
+import { streamAssistant, toAiLocale } from "@/lib/api/ai-client";
 import { getProjectMensajesAction, sendMensajeAction, getMyConversacionesAction } from "@/lib/actions/mensajes";
 import { MejorarMensajeButton } from "@/components/gestion/MejorarMensajeButton";
 import { ReportarMensajeButton } from "@/components/gestion/ReportarMensajeButton";
@@ -368,12 +368,12 @@ export function GestionPage({ role, userId, initialProjectId, disponible = true,
     return () => { active = false; };
   }, [isEmpresa]);
 
-  // ── Load project detail when selectedId changes (empresa only) ──────────────
-  // Students get project info from myOffers embed; they don't call getProjectByIdAction.
-  // We do NOT clear selectedProject before loading so that server-preloaded data (or the
-  // previous project) stays visible while the fresh fetch runs — avoiding blank/spinner flashes.
+  // ── Load project detail when selectedId changes (empresa y junior) ──────────
+  // El RLS (proyecto_ver_publicados) deja ver cualquier proyecto no-borrador, así que el junior
+  // también trae el detalle completo (lo necesita el tab "Información"). Si fallara (caso borde),
+  // se queda con lo previo/embed sin error duro. No limpiamos selectedProject antes para evitar parpadeos.
   useEffect(() => {
-    if (!selectedId || !isEmpresa) return;
+    if (!selectedId) return;
     let active = true;
     setProjectError(null);
     setProjectLoading(true);
@@ -381,7 +381,7 @@ export function GestionPage({ role, userId, initialProjectId, disponible = true,
       const r = await getProjectByIdAction(selectedId);
       if (active) {
         if (r.ok) setSelectedProject(r.data);
-        else setProjectError(r.error);
+        else if (isEmpresa) setProjectError(r.error);
         setProjectLoading(false);
       }
     })();
@@ -405,6 +405,12 @@ export function GestionPage({ role, userId, initialProjectId, disponible = true,
     })();
     return () => { active = false; };
   }, [selectedId, isEmpresa, myOffers]);
+
+  // Refresca la lista de conversaciones del sidebar (para que un chat nuevo aparezca sin recargar).
+  const refreshConversaciones = useCallback(async () => {
+    const r = await getMyConversacionesAction();
+    if (r.ok) setMyConversaciones(r.data);
+  }, []);
 
   const handleSaveProject = async (data: CreateProjectInput | UpdateProjectInput) => {
     setFormSaving(true);
@@ -807,14 +813,14 @@ export function GestionPage({ role, userId, initialProjectId, disponible = true,
             {!selectedProject && projectError && (
               <div className="flex flex-col items-center gap-3 px-6 py-20 text-center">
                 <FolderOpen className="size-10 text-ink-muted/30" aria-hidden="true" />
-                <p className="font-body text-sm text-ink-muted">No se pudo cargar el proyecto.</p>
+                <p className="font-body text-sm text-ink-muted">{t("project_load_failed")}</p>
                 <p className="font-body text-xs text-magenta">{projectError}</p>
                 <button
                   type="button"
                   onClick={handleBack}
                   className="font-body text-sm font-semibold text-primary hover:underline"
                 >
-                  Volver a mis proyectos
+                  {t("back_to_projects")}
                 </button>
               </div>
             )}
@@ -831,12 +837,28 @@ export function GestionPage({ role, userId, initialProjectId, disponible = true,
               />
             )}
             {section === "chat" && (
-              <ChatPanel
-                isEmpresa={isEmpresa}
-                project={selectedProject}
-                t={t}
-                userId={userId}
-              />
+              isEmpresa ? (
+                <ChatPanel
+                  isEmpresa={isEmpresa}
+                  project={selectedProject}
+                  t={t}
+                  userId={userId}
+                />
+              ) : (
+                <JuniorContactoPanel
+                  projectId={selectedId}
+                  projectTitulo={
+                    selectedProject?.titulo
+                    ?? myOffers.find((o) => o.proyecto?.id === selectedId)?.proyecto?.titulo
+                    ?? myConversaciones.find((c) => c.proyecto.id === selectedId)?.proyecto.titulo
+                    ?? ""
+                  }
+                  empresaNombre={selectedProject?.empresa?.nombre_comercial ?? null}
+                  t={t}
+                  userId={userId}
+                  onConversationActivity={refreshConversaciones}
+                />
+              )
             )}
             {section === "proceso" && (
               <ProcesoPanel
@@ -1174,16 +1196,10 @@ function InfoPanel({
         <p className="mb-3 font-body text-xs font-bold uppercase tracking-wider text-ink-muted">{t("description_label")}</p>
         <p className="font-body text-base leading-relaxed text-ink">{project.descripcion}</p>
       </div>
-      {/* Chatbot del proyecto (Nivel 0): el junior resuelve dudas antes de postular */}
-      {!isEmpresa && (
-        <div className="mb-4">
-          <ProjectChatbot projectId={project.id} projectTitulo={project.titulo} />
-        </div>
-      )}
       {project.condiciones && project.condiciones.trim() && (
         <div className="mb-4 rounded-2xl border border-border bg-surface p-5">
           <p className="mb-3 font-body text-xs font-bold uppercase tracking-wider text-ink-muted">
-            Condiciones y preguntas frecuentes
+            {t("conditions_faq_label")}
           </p>
           <p className="whitespace-pre-line font-body text-base leading-relaxed text-ink">
             {project.condiciones}
@@ -1228,6 +1244,7 @@ function ChatPanel({
   const [rawMsgs, setRawMsgs]       = useState<ApiMensaje[]>([]);
   const [draft, setDraft]           = useState("");
   const [sending, setSending]       = useState(false);
+  const [sendError, setSendError]   = useState("");
   const [selectedJuniorId, setSelectedJuniorId] = useState<string | null>(null);
   const bottomRef = useRef<HTMLDivElement>(null);
 
@@ -1238,9 +1255,14 @@ function ChatPanel({
     setRawMsgs([]);
 
     const load = async () => {
-      const r = await getProjectMensajesAction(project.id);
-      if (!active) return;
-      if (r.ok) setRawMsgs(r.data);
+      try {
+        const r = await getProjectMensajesAction(project.id);
+        if (!active) return;
+        if (r.ok) setRawMsgs(r.data);
+      } catch {
+        // Ignora fallos transitorios del transporte de Server Actions (p. ej. durante Fast Refresh
+        // en dev). El siguiente poll reintenta; los errores reales ya llegan como Result.err.
+      }
     };
 
     void load();
@@ -1295,16 +1317,23 @@ function ChatPanel({
     if (!project?.id || !userId) return;
     if (isEmpresa && !selectedJuniorId) return;
 
-    setDraft("");
     setSending(true);
-
-    await sendMensajeAction(project.id, text, isEmpresa ? (selectedJuniorId ?? undefined) : undefined);
-
-    // Reload to get server-confirmed message
-    const r = await getProjectMensajesAction(project.id);
-    if (r.ok) setRawMsgs(r.data);
-
-    setSending(false);
+    setSendError("");
+    try {
+      const r = await sendMensajeAction(project.id, text, isEmpresa ? (selectedJuniorId ?? undefined) : undefined);
+      if (r.ok) {
+        setDraft("");
+        // Reload to get server-confirmed message
+        const reload = await getProjectMensajesAction(project.id);
+        if (reload.ok) setRawMsgs(reload.data);
+      } else {
+        setSendError(t("chat_send_error"));
+      }
+    } catch {
+      setSendError(t("chat_send_error"));
+    } finally {
+      setSending(false);
+    }
   };
 
   const handleKey = (e: React.KeyboardEvent<HTMLTextAreaElement>) => {
@@ -1462,9 +1491,9 @@ function ChatPanel({
               onChange={(e) => setDraft(e.target.value)}
               onKeyDown={handleKey}
               placeholder={t("chat_placeholder")}
-              rows={1}
-              className="min-h-[42px] flex-1 resize-none rounded-xl border border-border bg-canvas px-4 py-2.5 font-body text-sm text-ink placeholder:text-ink-muted/60 focus:border-secondary focus:outline-none focus:ring-2 focus:ring-secondary/20"
-              style={{ maxHeight: 120, overflowY: "auto" }}
+              rows={2}
+              className="min-h-[64px] flex-1 resize-none rounded-xl border border-border bg-canvas px-4 py-3 font-body text-sm leading-relaxed text-ink placeholder:text-ink-muted/60 focus:border-secondary focus:outline-none focus:ring-2 focus:ring-secondary/20"
+              style={{ maxHeight: 200, overflowY: "auto" }}
             />
             <button
               onClick={() => { void send(); }}
@@ -1480,11 +1509,203 @@ function ChatPanel({
               <Send className="size-4" aria-hidden="true" />
             </button>
           </div>
-          {/* Empresa: reescribir el borrador con IA antes de enviarlo (Nivel 2) */}
-          {isEmpresa && project && (
+          {/* Junior y empresa: reescribir el borrador con IA antes de enviarlo (Nivel 2) */}
+          {project && (
             <MejorarMensajeButton draft={draft} projectId={project.id} onReplace={setDraft} />
           )}
+          {sendError && <p className="mt-1.5 px-1 font-body text-[11px] text-magenta">{sendError}</p>}
           <p className="mt-1.5 px-1 font-body text-[11px] text-ink-muted">{t("chat_hint")}</p>
+        </div>
+      )}
+    </div>
+  );
+}
+
+// ── Junior: asistente del proyecto + chat humano gateado ────────────────────────
+// El junior entra siempre por el asistente (Nivel 0). El chat directo con la empresa solo aparece
+// una vez que existe conversación, que únicamente se abre cuando el bot escala (pregunta no técnica).
+
+function JuniorContactoPanel({
+  projectId, projectTitulo, empresaNombre, t, userId, onConversationActivity,
+}: {
+  projectId: string | null;
+  projectTitulo: string;
+  empresaNombre: string | null;
+  t: T;
+  userId: string | null;
+  onConversationActivity?: () => void;
+}) {
+  const [rawMsgs, setRawMsgs]     = useState<ApiMensaje[]>([]);
+  const [draft, setDraft]         = useState("");
+  const [sending, setSending]     = useState(false);
+  const [sendError, setSendError] = useState("");
+  const [loaded, setLoaded]       = useState(false);
+  const bottomRef = useRef<HTMLDivElement>(null);
+
+  // Guard de desmontaje (seguro para React Strict Mode: se re-activa en cada montaje).
+  const mounted = useRef(true);
+  useEffect(() => {
+    mounted.current = true;
+    return () => { mounted.current = false; };
+  }, []);
+
+  const load = useCallback(async () => {
+    if (!projectId || !userId) return;
+    try {
+      const r = await getProjectMensajesAction(projectId);
+      if (mounted.current && r.ok) setRawMsgs(r.data);
+    } catch {
+      // Ignora fallos transitorios del transporte de Server Actions (p. ej. durante Fast Refresh
+      // en dev, cuando un poll queda en vuelo mientras Next recompila). El siguiente poll reintenta;
+      // los errores de datos reales ya llegan como Result.err.
+    } finally {
+      if (mounted.current) setLoaded(true);
+    }
+  }, [projectId, userId]);
+
+  // Load + poll every 4 s (el hilo aparece solo cuando ya hay conversación)
+  useEffect(() => {
+    if (!projectId || !userId) return;
+    let active = true;
+    setRawMsgs([]);
+    setLoaded(false);
+    void load();
+    const timer = setInterval(() => { if (active) void load(); }, 4000);
+    return () => { active = false; clearInterval(timer); };
+  }, [projectId, userId, load]);
+
+  const hasConversacion = rawMsgs.length > 0;
+
+  useEffect(() => {
+    bottomRef.current?.scrollIntoView({ behavior: "smooth" });
+  }, [rawMsgs.length]);
+
+  const empresaName    = empresaNombre ?? t("chat_label_empresa");
+  const empresaInitial = empresaNombre?.[0]?.toUpperCase() ?? "E";
+
+  const send = async () => {
+    const text = draft.trim();
+    if (!text || sending || !projectId || !userId) return;
+    setSending(true);
+    setSendError("");
+    try {
+      const r = await sendMensajeAction(projectId, text);
+      if (r.ok) {
+        setDraft("");
+        await load();
+        onConversationActivity?.();
+      } else {
+        setSendError(t("chat_send_error"));
+      }
+    } catch {
+      setSendError(t("chat_send_error"));
+    } finally {
+      setSending(false);
+    }
+  };
+
+  const handleKey = (e: React.KeyboardEvent<HTMLTextAreaElement>) => {
+    if (e.key === "Enter" && !e.shiftKey) { e.preventDefault(); void send(); }
+  };
+
+  return (
+    <div className="flex h-full flex-col">
+      {/* Vistas mutuamente excluyentes: mientras no haya conversación se muestra SOLO el asistente
+          (Nivel 0, dudas técnicas). Cuando el bot escala y se crea el primer mensaje, se pasa a
+          mostrar SOLO el chat con la empresa (el asistente ya no ocupa la pantalla). El spinner
+          de la primera carga evita que el asistente parpadee antes de mostrar el hilo existente. */}
+      {!loaded ? (
+        <div className="flex flex-1 items-center justify-center">
+          <Loader2 className="size-6 animate-spin text-primary" aria-label={t("chat_loading")} />
+        </div>
+      ) : hasConversacion ? (
+        <div className="flex min-h-0 flex-1 flex-col">
+          <div className="shrink-0 flex items-center gap-3 border-b border-border bg-surface px-6 py-4">
+            <div className="flex size-9 shrink-0 items-center justify-center rounded-full bg-secondary/15 font-heading text-sm font-bold text-secondary">
+              {empresaInitial}
+            </div>
+            <div className="min-w-0">
+              <p className="truncate font-body text-sm font-bold text-ink-strong">{empresaName}</p>
+              <p className="font-body text-xs text-ink-muted">{projectTitulo}</p>
+            </div>
+          </div>
+          <div className="flex-1 overflow-y-auto px-6 py-6">
+            <div className="flex flex-col gap-5">
+              {rawMsgs.map((msg) => {
+                const isMine = msg.remitente?.id === userId;
+                return (
+                  <div key={msg.id} className={cn("flex items-end gap-2.5", isMine ? "flex-row-reverse" : "flex-row")}>
+                    {!isMine && (
+                      <div className="mb-1 flex size-8 shrink-0 items-center justify-center rounded-full bg-secondary/15 font-heading text-xs font-bold text-secondary">
+                        {empresaInitial}
+                      </div>
+                    )}
+                    <div className={cn("flex max-w-[72%] flex-col gap-1", isMine ? "items-end" : "items-start")}>
+                      <div
+                        className={cn(
+                          "rounded-2xl px-4 py-3 font-body text-sm leading-relaxed",
+                          isMine
+                            ? "rounded-br-sm bg-secondary text-white"
+                            : "rounded-bl-sm border border-border bg-surface text-ink",
+                        )}
+                      >
+                        {msg.contenido}
+                      </div>
+                      <span className="flex items-center gap-1.5 px-1 font-body text-[11px] text-ink-muted">
+                        {formatChatTime(msg.fecha_envio)}
+                        {!isMine && <ReportarMensajeButton mensajeId={msg.id} />}
+                      </span>
+                    </div>
+                  </div>
+                );
+              })}
+              <div ref={bottomRef} />
+            </div>
+          </div>
+          <div className="shrink-0 border-t border-border bg-surface px-4 py-3">
+            <div className="flex items-end gap-2">
+              <textarea
+                value={draft}
+                onChange={(e) => setDraft(e.target.value)}
+                onKeyDown={handleKey}
+                placeholder={t("chat_placeholder")}
+                rows={2}
+                className="min-h-[64px] flex-1 resize-none rounded-xl border border-border bg-canvas px-4 py-3 font-body text-sm leading-relaxed text-ink placeholder:text-ink-muted/60 focus:border-secondary focus:outline-none focus:ring-2 focus:ring-secondary/20"
+                style={{ maxHeight: 200, overflowY: "auto" }}
+              />
+              <button
+                onClick={() => { void send(); }}
+                disabled={!draft.trim() || sending}
+                aria-label={t("chat_send")}
+                className={cn(
+                  "flex size-[42px] shrink-0 items-center justify-center rounded-xl transition-colors duration-[var(--duration-fast)]",
+                  draft.trim() && !sending
+                    ? "bg-secondary text-white hover:bg-secondary/80"
+                    : "bg-border text-ink-muted cursor-not-allowed",
+                )}
+              >
+                <Send className="size-4" aria-hidden="true" />
+              </button>
+            </div>
+            {projectId && (
+              <MejorarMensajeButton draft={draft} projectId={projectId} onReplace={setDraft} />
+            )}
+            {sendError && <p className="mt-1.5 px-1 font-body text-[11px] text-magenta">{sendError}</p>}
+            <p className="mt-1.5 px-1 font-body text-[11px] text-ink-muted">{t("chat_hint")}</p>
+          </div>
+        </div>
+      ) : (
+        <div className="flex-1 overflow-y-auto p-4 md:p-6">
+          {projectId && (
+            <div className="mx-auto w-full max-w-3xl">
+              <ProjectChatbot
+                embedded
+                projectId={projectId}
+                projectTitulo={projectTitulo}
+                onEscalated={() => { void load(); onConversationActivity?.(); }}
+              />
+            </div>
+          )}
         </div>
       )}
     </div>
@@ -2642,6 +2863,7 @@ function TypingIndicator({ label }: { label: string }) {
 }
 
 function AiAssistant({ onApply }: { onApply: (proposal: ProjectProposal) => void }) {
+  const locale = useLocale();
   const [idea, setIdea] = useState("");
   const [messages, setMessages] = useState<AiChatMessage[]>([]);
   const [streamingText, setStreamingText] = useState("");
@@ -2675,6 +2897,7 @@ function AiAssistant({ onApply }: { onApply: (proposal: ProjectProposal) => void
     let failed = false;
     await streamAssistant(
       history,
+      toAiLocale(locale),
       (event) => {
         if (event.type === "delta") {
           accumulated += event.text;

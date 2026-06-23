@@ -12,9 +12,18 @@ export const ChatMessageSchema = z.object({
 
 export type ChatMessageInput = z.infer<typeof ChatMessageSchema>;
 
+/**
+ * Idioma en el que debe responder la IA. Llega del FrontEnd (el locale de la URL /es o /en).
+ * Por defecto español, para no romper clientes que aún no lo envíen.
+ */
+export const LocaleSchema = z.enum(["es", "en"]);
+
+export type AppLocale = z.infer<typeof LocaleSchema>;
+
 /** Cuerpo de `POST /ai/asistente-proyecto` y `POST /ai/generar-propuesta`. */
 export const AsistenteRequestSchema = z.object({
   history: z.array(ChatMessageSchema).min(1).max(40),
+  locale: LocaleSchema.default("es"),
 });
 
 export type AsistenteRequestInput = z.infer<typeof AsistenteRequestSchema>;
@@ -49,6 +58,7 @@ export const SugerirStackRequestSchema = z.object({
   titulo: z.string().max(255).optional(),
   descripcion: z.string().min(10).max(5000),
   id_area_negocio: z.string().uuid().optional(),
+  locale: LocaleSchema.default("es"),
 });
 
 export type SugerirStackInput = z.infer<typeof SugerirStackRequestSchema>;

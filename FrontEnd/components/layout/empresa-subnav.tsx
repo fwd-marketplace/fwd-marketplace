@@ -9,7 +9,7 @@ import { cn } from "@/lib/utils";
 const NAV_HREFS = [
   { key: "mi_empresa", href: "/perfil-empresa" },
   { key: "mis_proyectos", href: "/dashboard" },
-  { key: "matches", href: "/matches", badge: { count: 18, variant: "warning" } },
+  { key: "matches", href: "/matches" },
 ] as const;
 
 export function EmpresaSubnav({ actionSlot }: { actionSlot?: React.ReactNode }) {
@@ -39,16 +39,6 @@ export function EmpresaSubnav({ actionSlot }: { actionSlot?: React.ReactNode }) 
               )}
             >
               <span>{t(item.key)}</span>
-              {"badge" in item && item.badge && (
-                <span
-                  className={cn(
-                    "flex h-4 min-w-4 items-center justify-center rounded-full px-1 text-[10px] font-bold leading-none text-white",
-                    item.badge.variant === "warning" ? "bg-warning" : "bg-primary"
-                  )}
-                >
-                  {item.badge.count}
-                </span>
-              )}
             </Link>
           );
         })}

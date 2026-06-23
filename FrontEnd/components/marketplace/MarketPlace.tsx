@@ -27,6 +27,7 @@ import {
 import { MarketplaceHeroBackdrop } from '@/components/marketplace/MarketplaceHeroBackdrop';
 import { HeroJourneyBadge } from '@/components/ui/HeroJourneyBadge';
 import { buildSparklePoints } from '@/lib/logo-constellation';
+import { ProjectPreviewModal } from '@/components/marketplace/ProjectPreviewModal';
 
 const CONTENT_SPARKLE_POINTS = buildSparklePoints(12, 12, 12);
 import { Button } from '@/components/ui/button';
@@ -179,6 +180,7 @@ export default function MarketPlace({ initialProjects, catalogs, role = 'student
     const [sortOrder, setSortOrder] = useState<SortOrder>('sort_recent_desc');
     const [currentPage, setCurrentPage] = useState(1);
     const [savedProjectIds, setSavedProjectIds] = useState<ReadonlySet<string>>(new Set(initialSavedIds));
+    const [previewProject, setPreviewProject] = useState<ApiProject | null>(null);
 
     const areaOptions: FilterOption[] = activeCatalogs.areas.map((a) => ({ value: a.id, label: a.nombre }));
     const skillOptions: FilterOption[] = activeCatalogs.skills
@@ -533,16 +535,18 @@ export default function MarketPlace({ initialProjects, catalogs, role = 'student
 
                                     {/* Footer */}
                                     <div className="mt-auto flex items-center gap-2">
-                                        <Link
-                                            href={`/${locale}/gestion?proyecto=${project.id}`}
+                                        <button
+                                            type="button"
+                                            disabled={expired}
+                                            onClick={() => !expired && setPreviewProject(project)}
                                             className={`flex-1 rounded-full px-5 py-2.5 text-sm font-semibold text-center transition-colors duration-[var(--duration-fast)] ease-[var(--ease-out)] ${
                                                 expired
-                                                    ? 'bg-surface-sunken text-ink-muted pointer-events-none'
+                                                    ? 'bg-surface-sunken text-ink-muted cursor-not-allowed'
                                                     : 'bg-secondary text-white hover:bg-secondary/80'
                                             }`}
                                         >
                                             {expired ? t('badge_expired') : hasApplied ? t('view_my_offer') : t('view_project')}
-                                        </Link>
+                                        </button>
                                         <button
                                             type="button"
                                             aria-label={isSaved ? t('saved_project') : t('save_project')}
@@ -605,6 +609,13 @@ export default function MarketPlace({ initialProjects, catalogs, role = 'student
             </div>
 
         </div>
+
+        {previewProject && (
+            <ProjectPreviewModal
+                project={previewProject}
+                onClose={() => setPreviewProject(null)}
+            />
+        )}
         </>
     );
 }

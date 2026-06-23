@@ -1,6 +1,6 @@
 'use client';
 
-import React from 'react';
+import React, { useEffect, useState } from 'react';
 import { useTranslations, useLocale } from 'next-intl';
 import Link from 'next/link';
 import {
@@ -99,9 +99,26 @@ const recentActivity = [
   }
 ];
 
+type GreetingKey = 'greeting_morning' | 'greeting_afternoon' | 'greeting_evening';
+
+/** Saludo según la hora LOCAL del usuario (mañana / tarde / noche). */
+function greetingForHour(hour: number): GreetingKey {
+  if (hour >= 5 && hour < 12) return 'greeting_morning';
+  if (hour >= 12 && hour < 19) return 'greeting_afternoon';
+  return 'greeting_evening';
+}
+
 export function BienvenidaDashboard() {
   const t = useTranslations('bienvenida');
   const locale = useLocale();
+
+  // Se calcula tras montar (useEffect) para usar la hora del navegador del
+  // usuario y evitar el mismatch de hidratación: el servidor no conoce su zona.
+  const [greetingKey, setGreetingKey] = useState<GreetingKey>('greeting_morning');
+  useEffect(() => {
+    setGreetingKey(greetingForHour(new Date().getHours()));
+  }, []);
+
   const modalityLabel: Record<string, string> = {
     remote: t('modality.remote'),
     hybrid: t('modality.hybrid'),
@@ -122,7 +139,7 @@ export function BienvenidaDashboard() {
                 {t('hero.welcome')}
               </p>
               <h1 className="font-heading text-5xl md:text-6xl font-bold tracking-tight mb-6">
-                {t('hero.greeting')}<span className="text-primary">.</span>
+                {t(`hero.${greetingKey}`)}<span className="text-primary">.</span>
               </h1>
               <p className="text-lg md:text-xl text-white/80 whitespace-pre-line max-w-xl">
                 {t('hero.description')}
