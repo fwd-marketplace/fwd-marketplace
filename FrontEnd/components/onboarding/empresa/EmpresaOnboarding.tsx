@@ -5,6 +5,7 @@ import { useRouter, useParams } from "next/navigation";
 import { useTranslations } from "next-intl";
 import { ArrowRight, Upload } from "lucide-react";
 import { FwdGeoBackdrop } from "@/components/ui/fwd-geo-backdrop";
+import { CosmicBackdrop } from "@/components/ui/cosmic-backdrop";
 import { ProgressDots } from "@/components/onboarding/ProgressDots";
 import { saveStep, getOnboarding, clearOnboarding } from "@/lib/onboarding-storage";
 import { saveEmpresaProfile } from "@/lib/actions/auth";
@@ -553,6 +554,7 @@ export function EmpresaOnboarding() {
   return (
     <div className="relative flex min-h-[100dvh] flex-col bg-secondary">
       <FwdGeoBackdrop />
+      <CosmicBackdrop />
 
       <header className="relative flex items-center justify-between px-4 py-5 sm:px-8 sm:py-6">
         <span className="font-heading text-base font-extrabold text-secondary-foreground">

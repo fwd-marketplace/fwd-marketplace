@@ -4,6 +4,7 @@ import { useState } from "react";
 import { useRouter, useParams } from "next/navigation";
 import { useTranslations } from "next-intl";
 import { FwdGeoBackdrop } from "@/components/ui/fwd-geo-backdrop";
+import { CosmicBackdrop } from "@/components/ui/cosmic-backdrop";
 
 type AccountRole = "junior" | "empresa" | "emprendedor";
 
@@ -28,6 +29,7 @@ export function RoleSelector() {
   return (
     <div className="bg-secondary">
       <FwdGeoBackdrop />
+      <CosmicBackdrop />
 
       <div className="relative flex min-h-[100dvh] items-center justify-center px-4">
         <div className="w-full max-w-md rounded-[2rem] bg-surface px-6 py-8 shadow-elevated sm:px-10 sm:py-12">
