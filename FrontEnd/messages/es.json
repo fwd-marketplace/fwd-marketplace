@@ -1306,6 +1306,56 @@
       "card_desc": "Seguí explorando y construyendo tu futuro.",
       "btn_profile": "Ver mi perfil"
     },
+    "estrella": {
+      "eyebrow": "Tu constelación",
+      "aria_stage": "Tu constelación del viaje del héroe",
+      "center_title": "Tu Progreso",
+      "center_sub": "{done} de {total} hitos",
+      "lit_label": "Estrellas encendidas",
+      "status": {
+        "done": "Completado",
+        "progress": "En progreso",
+        "pending": "Pendiente"
+      },
+      "task_done_label": "Tarea completada",
+      "task_todo_label": "Tarea para completar",
+      "progress_label": "Progreso",
+      "lit_on": "Encendida el {date}",
+      "next_hint": "Tu próximo paso",
+      "close": "Cerrar",
+      "items": {
+        "llamado": {
+          "name": "El Llamado",
+          "desc": "Escuchaste el llamado y diste el primer paso en tu camino profesional.",
+          "task": "Completá tu perfil y definí tu especialidad.",
+          "date": "12 mar 2026"
+        },
+        "preparacion": {
+          "name": "La Preparación",
+          "desc": "Afilaste tus habilidades y armaste las bases de tu oficio.",
+          "task": "Subí tu CV y agregá tu stack de tecnologías.",
+          "date": "2 abr 2026"
+        },
+        "desafio": {
+          "name": "El Desafío",
+          "desc": "Te enfrentás a tu primer gran reto: mostrar al mundo lo que sabés hacer.",
+          "task": "Enviá tu primera postulación y superá tu primera entrevista.",
+          "date": ""
+        },
+        "transformacion": {
+          "name": "La Transformación",
+          "desc": "Cada proyecto te transforma: dejás de ser aprendiz para volverte profesional.",
+          "task": "Completá tu primer proyecto real y sumá una reseña de la empresa.",
+          "date": ""
+        },
+        "reconocimiento": {
+          "name": "El Reconocimiento",
+          "desc": "El mundo reconoce tu valor y se abren oportunidades a tu medida.",
+          "task": "Conseguí tu primera oportunidad destacada y subí de nivel.",
+          "date": ""
+        }
+      }
+    },
     "companies": {
       "title": "Empresas interesadas",
       "view_all": "Ver todas",

@@ -45,9 +45,9 @@ function Switch({ checked, onChange, label }: { checked: boolean; onChange: () =
       aria-checked={checked}
       aria-label={label}
       onClick={onChange}
-      className={`relative h-6 w-11 shrink-0 rounded-full transition-colors duration-[var(--duration-fast)] ease-[var(--ease-out)] ${checked ? "bg-primary" : "bg-border-strong"}`}
+      className={`inline-flex h-6 w-11 shrink-0 cursor-pointer items-center rounded-full px-0.5 outline-none transition-colors duration-[var(--duration-fast)] ease-[var(--ease-out)] focus-visible:ring-2 focus-visible:ring-primary/40 focus-visible:ring-offset-2 ${checked ? "bg-primary" : "bg-border-strong"}`}
     >
-      <span className={`absolute top-0.5 size-5 rounded-full bg-white shadow-soft transition-transform duration-[var(--duration-fast)] ease-[var(--ease-out)] ${checked ? "translate-x-[1.375rem]" : "translate-x-0.5"}`} />
+      <span className={`block size-5 rounded-full bg-white shadow-soft transition-transform duration-[var(--duration-fast)] ease-[var(--ease-out)] ${checked ? "translate-x-5" : "translate-x-0"}`} />
     </button>
   );
 }

@@ -1306,6 +1306,56 @@
       "card_desc": "Keep exploring and building your future.",
       "btn_profile": "View my profile"
     },
+    "estrella": {
+      "eyebrow": "Your constellation",
+      "aria_stage": "Your hero's journey constellation",
+      "center_title": "Your Progress",
+      "center_sub": "{done} of {total} milestones",
+      "lit_label": "Stars lit",
+      "status": {
+        "done": "Completed",
+        "progress": "In progress",
+        "pending": "Pending"
+      },
+      "task_done_label": "Task completed",
+      "task_todo_label": "Task to complete",
+      "progress_label": "Progress",
+      "lit_on": "Lit on {date}",
+      "next_hint": "Your next step",
+      "close": "Close",
+      "items": {
+        "llamado": {
+          "name": "The Call",
+          "desc": "You heard the call and took the first step on your professional path.",
+          "task": "Complete your profile and define your specialty.",
+          "date": "Mar 12, 2026"
+        },
+        "preparacion": {
+          "name": "The Preparation",
+          "desc": "You sharpened your skills and built the foundations of your craft.",
+          "task": "Upload your CV and add your tech stack.",
+          "date": "Apr 2, 2026"
+        },
+        "desafio": {
+          "name": "The Challenge",
+          "desc": "You face your first big test: showing the world what you can do.",
+          "task": "Send your first application and pass your first interview.",
+          "date": ""
+        },
+        "transformacion": {
+          "name": "The Transformation",
+          "desc": "Every project transforms you: you stop being an apprentice and become a professional.",
+          "task": "Complete your first real project and earn a company review.",
+          "date": ""
+        },
+        "reconocimiento": {
+          "name": "The Recognition",
+          "desc": "The world recognizes your value and tailored opportunities open up.",
+          "task": "Land your first standout opportunity and level up.",
+          "date": ""
+        }
+      }
+    },
     "companies": {
       "title": "Interested companies",
       "view_all": "View all",
