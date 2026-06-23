@@ -3,7 +3,7 @@
 import { useCallback, useEffect, useRef, useState, useTransition } from "react";
 import { useSearchParams } from "next/navigation";
 import { useTranslations } from "next-intl";
-import { ArrowLeft, Inbox, Loader2, Send } from "lucide-react";
+import { ArrowLeft, Inbox, Languages, Loader2, Send } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { getProjectMensajesAction, sendMensajeAction } from "@/lib/actions/mensajes";
 import type { ApiMensaje, MyOffer } from "@/lib/api/types";
@@ -37,6 +37,60 @@ function isSameDay(a: string, b: string): boolean {
     da.getFullYear() === db.getFullYear() &&
     da.getMonth() === db.getMonth() &&
     da.getDate() === db.getDate()
+  );
+}
+
+// ── Burbuja de mensaje (con "ver traducción") ─────────────────────────────────
+
+/**
+ * Burbuja de un mensaje del chat humano. Muestra el ORIGINAL y, si hay traducción guardada,
+ * un botón "ver traducción / ver original" que alterna el contenido (estado propio por mensaje).
+ */
+function MessageBubble({ msg, isMine }: { msg: ApiMensaje; isMine: boolean }) {
+  const tTrad = useTranslations("traduccion");
+  const [mostrarTraduccion, setMostrarTraduccion] = useState(false);
+  const texto = mostrarTraduccion && msg.contenido_traducido ? msg.contenido_traducido : msg.contenido;
+
+  return (
+    <div className={cn("flex", isMine ? "justify-end" : "justify-start")}>
+      <div
+        className={cn(
+          "max-w-[75%] rounded-2xl px-4 py-2.5 font-body text-sm leading-relaxed",
+          isMine
+            ? "bg-primary text-white rounded-br-sm"
+            : "bg-surface border border-border text-ink rounded-bl-sm shadow-[var(--shadow-soft)]",
+        )}
+      >
+        {!isMine && msg.remitente && (
+          <p className="font-semibold text-[11px] text-ink-muted mb-0.5">
+            {msg.remitente.nombre}
+            {msg.remitente.apellido1 ? ` ${msg.remitente.apellido1}` : ""}
+          </p>
+        )}
+        <p className="whitespace-pre-line">{texto}</p>
+        {msg.contenido_traducido && (
+          <button
+            type="button"
+            onClick={() => setMostrarTraduccion((valor) => !valor)}
+            className={cn(
+              "mt-1 inline-flex items-center gap-1 font-body text-[11px] font-semibold transition-opacity duration-[var(--duration-fast)] hover:opacity-80",
+              isMine ? "text-white/80" : "text-primary",
+            )}
+          >
+            <Languages className="size-3" aria-hidden="true" />
+            {mostrarTraduccion ? tTrad("ver_original") : tTrad("ver_traduccion")}
+          </button>
+        )}
+        <p
+          className={cn(
+            "mt-1 text-[10px] text-right",
+            isMine ? "text-white/70" : "text-ink-muted",
+          )}
+        >
+          {formatTime(msg.fecha_envio)}
+        </p>
+      </div>
+    </div>
   );
 }
 
@@ -172,32 +226,7 @@ function ChatView({
                     <div className="flex-1 h-px bg-border" />
                   </div>
                 )}
-                <div className={cn("flex", isMine ? "justify-end" : "justify-start")}>
-                  <div
-                    className={cn(
-                      "max-w-[75%] rounded-2xl px-4 py-2.5 font-body text-sm leading-relaxed",
-                      isMine
-                        ? "bg-primary text-white rounded-br-sm"
-                        : "bg-surface border border-border text-ink rounded-bl-sm shadow-[var(--shadow-soft)]",
-                    )}
-                  >
-                    {!isMine && msg.remitente && (
-                      <p className="font-semibold text-[11px] text-ink-muted mb-0.5">
-                        {msg.remitente.nombre}
-                        {msg.remitente.apellido1 ? ` ${msg.remitente.apellido1}` : ""}
-                      </p>
-                    )}
-                    <p>{msg.contenido}</p>
-                    <p
-                      className={cn(
-                        "mt-1 text-[10px] text-right",
-                        isMine ? "text-white/70" : "text-ink-muted",
-                      )}
-                    >
-                      {formatTime(msg.fecha_envio)}
-                    </p>
-                  </div>
-                </div>
+                <MessageBubble msg={msg} isMine={isMine} />
               </div>
             );
           })

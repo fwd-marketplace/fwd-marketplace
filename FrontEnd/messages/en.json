@@ -1,4 +1,8 @@
 {
+  "traduccion": {
+    "ver_traduccion": "View translation",
+    "ver_original": "View original"
+  },
   "hero_journey": {
     "llamado_label": "The Call",
     "llamado_cta": "Take your first step toward your career.",
@@ -2729,7 +2733,8 @@
     "matches_empty": "No juniors match this project yet. The matching algorithm will be available soon.",
     "matches_invite_btn": "Invite",
     "matches_invited_btn": "Invited",
-    "matches_toast_invited": "{name} was invited to the project."
+    "matches_toast_invited": "{name} was invited to the project.",
+    "state_en_recepcion": "Receiving"
   },
   "cosmos_profesional": {
     "screen_label": "Important points constellation",
@@ -2765,9 +2770,7 @@
         "title": "Publish yourself",
         "desc": "Make yourself visible like a star in the sky."
       }
-    },
-    "matches_toast_invited": "{name} was invited to the project.",
-    "state_en_recepcion": "Receiving"
+    }
   },
   "project_preview_modal": {
     "close": "Close",

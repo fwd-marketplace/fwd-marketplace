@@ -10,6 +10,8 @@ import {
   MENSAJES_NOTIFICACION,
   TIPO_POR_MENSAJE,
 } from "../services/notificacion.service";
+import { oppositeLocale, translateText } from "../services/ai/translation.service";
+import { LocaleSchema } from "../validations/ai";
 
 const router = Router();
 
@@ -17,11 +19,13 @@ const idParamSchema = z.string().uuid();
 const enviarMensajeSchema = z.object({
   contenido: z.string().min(1).max(5000),
   id_destinatario: z.string().uuid().optional(),
+  // Idioma en que el remitente escribió el mensaje; se traduce al opuesto y se guardan ambos.
+  locale: LocaleSchema.default("es"),
 });
 
 /** Campos que se retornan en cada mensaje (incluye info del destinatario para multi-tab empresa). */
 const MSG_SELECT =
-  "id, contenido, es_publico, fecha_envio, " +
+  "id, contenido, contenido_traducido, idioma_original, es_publico, fecha_envio, " +
   "remitente:users!mensaje_id_remitente_fkey(id, nombre, apellido1), " +
   "destinatario_info:users!mensaje_id_destinatario_fkey(id, nombre, apellido1)";
 
@@ -187,6 +191,14 @@ async function enviarMensaje(req: Request, res: Response) {
     idDestinatario = empresaUserId;
   }
 
+  // Traducir al idioma opuesto y guardar ambas versiones (best-effort: null si la IA falla).
+  const idiomaOriginal = bodyParsed.data.locale;
+  const contenidoTraducido = await translateText(
+    bodyParsed.data.contenido,
+    idiomaOriginal,
+    oppositeLocale(idiomaOriginal),
+  );
+
   const { data, error } = await client
     .from("mensaje")
     .insert({
@@ -194,6 +206,8 @@ async function enviarMensaje(req: Request, res: Response) {
       id_remitente: userId,
       id_destinatario: idDestinatario,
       contenido: bodyParsed.data.contenido,
+      contenido_traducido: contenidoTraducido,
+      idioma_original: idiomaOriginal,
       es_publico: false,
     })
     .select(MSG_SELECT)

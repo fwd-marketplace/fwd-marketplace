@@ -77,7 +77,7 @@ vi.mock("../../../config/supabase", () => ({
 import { generarPropuesta, streamAsistente, sugerirStack } from "../asistente.service";
 
 const TOKEN = "token";
-const PARAMS = { history: [{ role: "user" as const, content: "Quiero una tienda" }], userId: "u1", accessToken: TOKEN };
+const PARAMS = { history: [{ role: "user" as const, content: "Quiero una tienda" }], userId: "u1", accessToken: TOKEN, locale: "es" as const };
 
 beforeEach(() => {
   providerState.content = "";
@@ -323,6 +323,7 @@ describe("sugerirStack", () => {
       descripcion: "Una tienda online para vender productos.",
       userId: "u1",
       accessToken: TOKEN,
+      locale: "es",
     });
 
     expect(sugerencia.habilidades).toEqual([
@@ -335,7 +336,7 @@ describe("sugerirStack", () => {
   it("lanza 502 si el modelo no devuelve un JSON usable", async () => {
     providerState.content = "no es json";
     await expect(
-      sugerirStack({ descripcion: "Una tienda online.", userId: "u1", accessToken: TOKEN }),
+      sugerirStack({ descripcion: "Una tienda online.", userId: "u1", accessToken: TOKEN, locale: "es" }),
     ).rejects.toMatchObject({ statusCode: 502 });
   });
 });

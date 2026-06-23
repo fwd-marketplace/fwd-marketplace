@@ -25,6 +25,20 @@ export interface ProjectCatalog {
 export const PLAZO_MIN_DIAS = 5;
 export const PLAZO_MAX_DIAS = 15;
 
+/** Idioma de respuesta de la IA (coincide con `AppLocale` de `validations/ai`). */
+export type AiLocale = "es" | "en";
+
+/**
+ * Directiva final de idioma. Se agrega al final de cada system prompt para FORZAR el idioma de
+ * respuesta sin importar en qué idioma esté redactado el prompt. Los modelos siguen de forma
+ * confiable una instrucción de idioma puesta al final; así no hace falta traducir los prompts.
+ */
+export function languageDirective(locale: AiLocale): string {
+  return locale === "en"
+    ? "IMPORTANT — LANGUAGE: Write your entire response in natural English, regardless of the language of these instructions. This includes every text value inside any JSON you return."
+    : "IMPORTANTE — IDIOMA: Escribí toda tu respuesta en español natural, sin importar el idioma de estas instrucciones. Esto incluye cada valor de texto dentro de cualquier JSON que devuelvas.";
+}
+
 const CATEGORIA_SIN_CLASIFICAR = "Otras";
 
 function buildAreaListText(areas: CatalogArea[]): string {
@@ -55,7 +69,7 @@ function buildSkillCatalogText(skills: CatalogSkill[]): string {
  * Fase conversacional: el asistente hace 2 a 4 preguntas aclaratorias antes de
  * proponer nada. No fuerza JSON; es una charla guiada en la voz de FWD.
  */
-export function buildSystemPromptConversacion(catalog: ProjectCatalog): string {
+export function buildSystemPromptConversacion(catalog: ProjectCatalog, locale: AiLocale): string {
   return `Sos un consultor técnico experto del marketplace FWD Talent. Ayudás a una empresa
 —muchas veces sin perfil técnico— a definir un proyecto que luego publicará para que
 talento junior postule.
@@ -98,7 +112,9 @@ más práctico porque tus clientes entran desde cualquier celular o computadora 
 nada. ¿Te sirve arrancar así, o tus clientes ya usan mucho el celular y querés pensar en una app?"
 
 Áreas de negocio del sistema (para orientar tus preguntas):
-${buildAreaListText(catalog.areas)}`;
+${buildAreaListText(catalog.areas)}
+
+${languageDirective(locale)}`;
 }
 
 /**
@@ -106,7 +122,7 @@ ${buildAreaListText(catalog.areas)}`;
  * área y habilidades EXACTAMENTE del catálogo que se le pasa. La descripción debe
  * ser específica y accionable: un junior tiene que entender qué construir sin dudas.
  */
-export function buildSystemPromptPropuesta(catalog: ProjectCatalog): string {
+export function buildSystemPromptPropuesta(catalog: ProjectCatalog, locale: AiLocale): string {
   return `Sos un consultor técnico experto del marketplace FWD Talent. A partir de la
 conversación con la empresa, generás una propuesta de proyecto CLARA y ESPECÍFICA, pensada
 para que un desarrollador junior entienda exactamente qué tiene que construir, sin que le
@@ -192,7 +208,9 @@ Reglas estrictas:
 ${buildAreaListText(catalog.areas)}
 
 Catálogo de habilidades disponibles (elegí solo de aquí):
-${buildSkillCatalogText(catalog.skills)}`;
+${buildSkillCatalogText(catalog.skills)}
+
+${languageDirective(locale)}`;
 }
 
 /**
@@ -200,7 +218,7 @@ ${buildSkillCatalogText(catalog.skills)}`;
  * saber qué habilidades del catálogo le convienen. Devuelve solo el JSON con habilidades +
  * una justificación corta para alguien sin perfil técnico.
  */
-export function buildSystemPromptStack(catalog: ProjectCatalog): string {
+export function buildSystemPromptStack(catalog: ProjectCatalog, locale: AiLocale): string {
   return `Sos un consultor técnico experto de FWD Talent. Una empresa describió un proyecto y
 necesita saber qué stack tecnológico (habilidades) le conviene para llevarlo a cabo.
 
@@ -218,7 +236,9 @@ Reglas estrictas:
   stack sirve para este proyecto.
 
 Catálogo de habilidades disponibles (elegí solo de aquí):
-${buildSkillCatalogText(catalog.skills)}`;
+${buildSkillCatalogText(catalog.skills)}
+
+${languageDirective(locale)}`;
 }
 
 /**
@@ -272,13 +292,13 @@ function buildProyectoContextoText(contexto: ProyectoContexto): string {
  * si no puede, lo deriva a la empresa con la etiqueta de escalamiento. Guardrails: no habla de
  * pago/remuneración entre empresa y junior (fuera del MVP), no redacta la postulación del junior.
  */
-export function buildSystemPromptChatProyecto(contexto: ProyectoContexto): string {
+export function buildSystemPromptChatProyecto(contexto: ProyectoContexto, locale: AiLocale): string {
   return `Sos el asistente del proyecto "${contexto.titulo}" en el marketplace FWD Talent.
 Le respondés a un desarrollador junior que está evaluando si postular a este proyecto. Tu
 objetivo es aclararle dudas sobre el proyecto, con honestidad, para que decida con información.
 
-Respondé en español (o en inglés si el junior te escribe en inglés), breve y al grano (2 a 5
-frases), con la voz de FWD: cálida, cercana y clara, sin tecnicismos secos ni relleno.
+Respondé breve y al grano (2 a 5 frases), con la voz de FWD: cálida, cercana y clara, sin
+tecnicismos secos ni relleno.
 
 Información del proyecto (es lo ÚNICO que sabés con certeza; no inventes nada fuera de esto):
 
@@ -305,7 +325,9 @@ Reglas (importantes, seguilas siempre):
   FUNCIONALIDAD del proyecto a construir, por ejemplo una app de ventas que procesa cobros.)
 - NUNCA escribas la postulación, la carta de presentación ni la propuesta del junior: eso lo
   redacta siempre él. Podés darle consejos de qué resaltar, pero no se la escribas.
-- Mantenete en el tema de ESTE proyecto. Si te preguntan algo ajeno, redirigí con amabilidad.`;
+- Mantenete en el tema de ESTE proyecto. Si te preguntan algo ajeno, redirigí con amabilidad.
+
+${languageDirective(locale)}`;
 }
 
 /**

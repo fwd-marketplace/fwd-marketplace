@@ -4,7 +4,7 @@ import { useEffect, useRef, useState } from "react";
 import Link from "next/link";
 import { useLocale, useTranslations } from "next-intl";
 import { Bot, CheckCircle2, MessagesSquare, Send, Sparkles, X } from "lucide-react";
-import { ESCALATION_TAG, streamProjectChatbot, type AiStreamEvent } from "@/lib/api/ai-client";
+import { ESCALATION_TAG, streamProjectChatbot, toAiLocale, type AiStreamEvent } from "@/lib/api/ai-client";
 import { sendMensajeAction } from "@/lib/actions/mensajes";
 import type { AiChatMessage } from "@/lib/api/types";
 import { cn } from "@/lib/utils";
@@ -86,6 +86,7 @@ export function ProjectChatbot({ projectId, projectTitulo, embedded = false, onE
     await streamProjectChatbot(
       projectId,
       nextHistory,
+      toAiLocale(locale),
       (event: AiStreamEvent) => {
         if (event.type === "delta") {
           accumulated += event.text;

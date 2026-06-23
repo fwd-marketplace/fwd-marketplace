@@ -17,7 +17,7 @@ function sseStream(chunks: string[]): ReadableStream<Uint8Array> {
 async function collect(stream: ReadableStream<Uint8Array>, status = 200): Promise<AiStreamEvent[]> {
   vi.stubGlobal("fetch", vi.fn(async () => new Response(stream, { status })));
   const events: AiStreamEvent[] = [];
-  await streamAssistant([{ role: "user", content: "hola" }], (event) => events.push(event));
+  await streamAssistant([{ role: "user", content: "hola" }], "es", (event) => events.push(event));
   return events;
 }
 

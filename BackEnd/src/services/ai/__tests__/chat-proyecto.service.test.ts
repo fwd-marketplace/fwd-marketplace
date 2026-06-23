@@ -54,6 +54,7 @@ const PARAMS: ChatProyectoParams = {
   history: [{ role: "user", content: "¿Esto es web o app de celular?" }],
   userId: "u1",
   accessToken: "token",
+  locale: "es",
 };
 
 const PROYECTO_VISIBLE = {

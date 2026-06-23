@@ -110,7 +110,6 @@ export function updateAdminSettings(input: UpdateAdminSettingsInput): Promise<Re
   );
 }
 
-
 export function getAllCompanies(): Promise<Result<AdminCompaniesResponse>> {
   return asResult(() => apiAuth<AdminCompaniesResponse>("/admin/companies"));
 }
