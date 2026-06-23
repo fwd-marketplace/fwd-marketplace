@@ -77,8 +77,10 @@ describe("mejorarMensaje", () => {
     expect(system?.content).toContain("Tienda online");
     expect(system?.content).toContain("React");
     expect(system?.content).toContain("Stripe");
-    // El borrador llega como mensaje del usuario.
-    expect(providerState.lastMessages.at(-1)).toMatchObject({ role: "user", content: BASE.borrador });
+    // El borrador llega DENTRO del mensaje del usuario (envuelto con la instrucción de reescritura).
+    const userMsg = providerState.lastMessages.at(-1);
+    expect(userMsg?.role).toBe("user");
+    expect(userMsg?.content).toContain(BASE.borrador);
   });
 
   it("funciona sin proyecto_id (sin contexto de proyecto)", async () => {
