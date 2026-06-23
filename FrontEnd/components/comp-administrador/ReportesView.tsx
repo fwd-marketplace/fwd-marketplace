@@ -1,12 +1,36 @@
 "use client";
 
-import { useMemo } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { Download, FileText } from "lucide-react";
-import { PageTitle } from "@/components/ui/page-title";
+import {
+  Bar,
+  BarChart,
+  Cell,
+  Label,
+  LabelList,
+  Legend,
+  Pie,
+  PieChart,
+  ResponsiveContainer,
+  Tooltip,
+  XAxis,
+  YAxis,
+} from "recharts";
 import { Button } from "@/components/ui/button";
-import type { AdminPendingUser, AdminProject, ProjectState } from "@/lib/api/types";
+import type {
+  AccountState,
+  AdminCompany,
+  AdminProject,
+  AdminStudent,
+  AdminUser,
+  ApiRoleName,
+  CompanyType,
+  ProjectState,
+  StudentVerification,
+} from "@/lib/api/types";
 
 const ACTIVE_STATES: ProjectState[] = ["en_recepcion", "en_evaluacion", "adjudicado", "en_desarrollo"];
+const TOP_COMPANIES = 6;
 
 const STATE_LABEL: Record<ProjectState, string> = {
   borrador: "Borrador",
@@ -21,68 +45,237 @@ const STATE_LABEL: Record<ProjectState, string> = {
 
 const STATE_ORDER: ProjectState[] = ["borrador", "en_recepcion", "en_evaluacion", "adjudicado", "en_desarrollo", "cerrado", "cancelado", "pausado"];
 
-function initials(text: string): string {
-  const parts = text.trim().split(/\s+/).filter(Boolean);
-  const first = parts[0]?.[0] ?? "E";
-  const second = parts[1]?.[0] ?? parts[0]?.[1] ?? "M";
-  return `${first}${second}`.toUpperCase();
+const STATE_COLOR: Record<ProjectState, string> = {
+  borrador: "var(--ink-muted)",
+  en_recepcion: "var(--primary)",
+  en_evaluacion: "var(--secondary)",
+  adjudicado: "var(--highlight)",
+  en_desarrollo: "var(--warning)",
+  cerrado: "var(--accent)",
+  cancelado: "var(--magenta)",
+  pausado: "var(--border-strong)",
+};
+
+const ROLE_LABEL: Record<ApiRoleName, string> = { student: "Juniors", company: "Empresas", admin: "Admins" };
+const ROLE_COLOR: Record<ApiRoleName, string> = { student: "var(--primary)", company: "var(--secondary)", admin: "var(--highlight)" };
+
+const ACCOUNT_LABEL: Record<AccountState, string> = { activa: "Activas", pendiente: "Pendientes", suspendida: "Suspendidas", rechazada: "Rechazadas" };
+const ACCOUNT_COLOR: Record<AccountState, string> = { activa: "var(--accent)", pendiente: "var(--warning)", suspendida: "var(--magenta)", rechazada: "var(--ink-muted)" };
+const ACCOUNT_ORDER: AccountState[] = ["activa", "pendiente", "suspendida", "rechazada"];
+
+const VERIFICATION_LABEL: Record<StudentVerification, string> = { verificado: "Verificados", pendiente: "Pendientes", rechazado: "Rechazados" };
+const VERIFICATION_COLOR: Record<StudentVerification, string> = { verificado: "var(--accent)", pendiente: "var(--warning)", rechazado: "var(--magenta)" };
+const VERIFICATION_ORDER: StudentVerification[] = ["verificado", "pendiente", "rechazado"];
+
+const TYPE_LABEL: Record<CompanyType, string> = { empresa: "Empresas", emprendedor: "Emprendedores" };
+const TYPE_COLOR: Record<CompanyType, string> = { empresa: "var(--secondary)", emprendedor: "var(--warning)" };
+
+const CHART_TOOLTIP_STYLE = {
+  backgroundColor: "var(--surface)",
+  border: "1px solid var(--border)",
+  borderRadius: "0.75rem",
+  color: "var(--ink-strong)",
+  fontSize: "0.8125rem",
+} as const;
+const AXIS_TICK = { fill: "var(--ink-muted)", fontSize: 12 } as const;
+const LABEL_STYLE = { fill: "var(--ink-strong)", fontSize: 12, fontWeight: 600 } as const;
+const LEGEND_STYLE = { fontSize: "0.75rem", color: "var(--ink-muted)" } as const;
+
+interface Slice {
+  name: string;
+  value: number;
+  color: string;
+}
+
+function countBy<T, K extends string>(items: T[], pick: (item: T) => K | null | undefined): Map<K, number> {
+  const map = new Map<K, number>();
+  for (const item of items) {
+    const key = pick(item);
+    if (!key) continue;
+    map.set(key, (map.get(key) ?? 0) + 1);
+  }
+  return map;
+}
+
+// ── Gráficas reutilizables ──
+
+function DonutChart({ data }: { data: Slice[] }) {
+  const total = data.reduce((sum, slice) => sum + slice.value, 0);
+  return (
+    <ResponsiveContainer width="100%" height="100%">
+      <PieChart>
+        <Pie data={data} dataKey="value" nameKey="name" cx="50%" cy="50%" innerRadius={56} outerRadius={86} paddingAngle={2} stroke="var(--surface)">
+          {data.map((slice) => (
+            <Cell key={slice.name} fill={slice.color} />
+          ))}
+          <Label position="center" value={total} style={{ fill: "var(--ink-strong)", fontSize: "1.6rem", fontWeight: 800 }} />
+        </Pie>
+        <Tooltip
+          contentStyle={CHART_TOOLTIP_STYLE}
+          formatter={(value) => [`${value} (${total ? Math.round((Number(value) / total) * 100) : 0}%)`, ""]}
+        />
+        <Legend wrapperStyle={LEGEND_STYLE} />
+      </PieChart>
+    </ResponsiveContainer>
+  );
+}
+
+function HorizontalBars({ data }: { data: Slice[] }) {
+  return (
+    <ResponsiveContainer width="100%" height="100%">
+      <BarChart data={data} layout="vertical" margin={{ top: 4, right: 36, left: 8, bottom: 4 }}>
+        <XAxis type="number" allowDecimals={false} tick={AXIS_TICK} axisLine={{ stroke: "var(--border)" }} tickLine={false} />
+        <YAxis type="category" dataKey="name" width={130} tick={AXIS_TICK} axisLine={false} tickLine={false} />
+        <Tooltip cursor={{ fill: "var(--surface-sunken)" }} contentStyle={CHART_TOOLTIP_STYLE} />
+        <Bar dataKey="value" radius={[0, 6, 6, 0]} barSize={22}>
+          {data.map((slice) => (
+            <Cell key={slice.name} fill={slice.color} />
+          ))}
+          <LabelList dataKey="value" position="right" style={LABEL_STYLE} />
+        </Bar>
+      </BarChart>
+    </ResponsiveContainer>
+  );
+}
+
+function VerticalBars({ data }: { data: Slice[] }) {
+  return (
+    <ResponsiveContainer width="100%" height="100%">
+      <BarChart data={data} margin={{ top: 18, right: 8, left: -10, bottom: 4 }}>
+        <XAxis dataKey="name" tick={AXIS_TICK} axisLine={{ stroke: "var(--border)" }} tickLine={false} interval={0} />
+        <YAxis allowDecimals={false} tick={AXIS_TICK} axisLine={false} tickLine={false} />
+        <Tooltip cursor={{ fill: "var(--surface-sunken)" }} contentStyle={CHART_TOOLTIP_STYLE} />
+        <Bar dataKey="value" radius={[6, 6, 0, 0]} barSize={44}>
+          {data.map((slice) => (
+            <Cell key={slice.name} fill={slice.color} />
+          ))}
+          <LabelList dataKey="value" position="top" style={LABEL_STYLE} />
+        </Bar>
+      </BarChart>
+    </ResponsiveContainer>
+  );
+}
+
+function ChartSection({
+  title,
+  subtitle,
+  isEmpty,
+  mounted,
+  children,
+}: {
+  title: string;
+  subtitle: string;
+  isEmpty: boolean;
+  mounted: boolean;
+  children: React.ReactNode;
+}) {
+  return (
+    <section className="rounded-2xl bg-surface p-6 shadow-soft ring-1 ring-border">
+      <h2 className="font-heading text-lg font-bold text-ink-strong">{title}</h2>
+      <p className="mb-4 mt-0.5 font-body text-xs text-ink-muted">{subtitle}</p>
+      {isEmpty ? (
+        <p className="rounded-xl border border-dashed border-border px-4 py-10 text-center font-body text-sm text-ink-muted">Sin datos suficientes.</p>
+      ) : (
+        <div className="h-72 w-full">{mounted ? children : null}</div>
+      )}
+    </section>
+  );
 }
 
 export function ReportesView({
-  pendingUsers,
   projects,
+  users,
+  students,
+  companies,
 }: {
-  pendingUsers: AdminPendingUser[];
   projects: AdminProject[];
+  users: AdminUser[];
+  students: AdminStudent[];
+  companies: AdminCompany[];
 }) {
-  const companies = useMemo(() => {
-    const map = new Map<string, number>();
-    for (const project of projects) {
-      const name = project.empresa?.nombre_comercial;
-      if (!name) continue;
-      map.set(name, (map.get(name) ?? 0) + 1);
-    }
-    return Array.from(map.entries())
-      .map(([name, total]) => ({ name, total }))
-      .sort((a, b) => b.total - a.total);
-  }, [projects]);
-
-  const byState = useMemo(() => {
-    const counts = new Map<ProjectState, number>();
-    for (const project of projects) counts.set(project.estado.nombre, (counts.get(project.estado.nombre) ?? 0) + 1);
-    return STATE_ORDER.map((state) => ({ state, count: counts.get(state) ?? 0 })).filter((entry) => entry.count > 0);
-  }, [projects]);
+  const [mounted, setMounted] = useState(false);
+  useEffect(() => setMounted(true), []);
 
   const kpis = useMemo(() => {
-    const active = projects.filter((p) => ACTIVE_STATES.includes(p.estado.nombre)).length;
-    const seleccion = projects.filter((p) => p.estado.nombre === "en_recepcion" || p.estado.nombre === "en_evaluacion").length;
-    const finalizados = projects.filter((p) => p.estado.nombre === "cerrado").length;
-    const cancelados = projects.filter((p) => p.estado.nombre === "cancelado").length;
+    const active = projects.filter((project) => ACTIVE_STATES.includes(project.estado.nombre)).length;
+    const pendingAccounts = users.filter((user) => user.estado_cuenta === "pendiente").length;
+    const verified = students.filter((student) => student.estado_verificacion === "verificado").length;
+    const closed = projects.filter((project) => project.estado.nombre === "cerrado").length;
     return [
+      { label: "Usuarios", value: users.length },
+      { label: "Egresados", value: students.length },
       { label: "Empresas", value: companies.length },
       { label: "Proyectos", value: projects.length },
       { label: "Activos", value: active },
-      { label: "En selección", value: seleccion },
-      { label: "Finalizados", value: finalizados },
-      { label: "Cancelados", value: cancelados },
-      { label: "Solicitudes", value: pendingUsers.length },
+      { label: "Pendientes", value: pendingAccounts, highlight: true },
+      { label: "Verificados", value: verified },
+      { label: "Finalizados", value: closed },
     ];
-  }, [projects, companies, pendingUsers]);
+  }, [projects, users, students, companies]);
 
-  const maxState = Math.max(1, ...byState.map((entry) => entry.count));
+  const projectsByState = useMemo<Slice[]>(() => {
+    const counts = countBy(projects, (project) => project.estado.nombre);
+    return STATE_ORDER.filter((state) => (counts.get(state) ?? 0) > 0).map((state) => ({
+      name: STATE_LABEL[state],
+      value: counts.get(state) ?? 0,
+      color: STATE_COLOR[state],
+    }));
+  }, [projects]);
+
+  const topCompanies = useMemo<Slice[]>(() => {
+    const counts = countBy(projects, (project) => project.empresa?.nombre_comercial);
+    return Array.from(counts.entries())
+      .map(([name, value]) => ({ name, value, color: "var(--primary)" }))
+      .sort((a, b) => b.value - a.value)
+      .slice(0, TOP_COMPANIES);
+  }, [projects]);
+
+  const usersByRole = useMemo<Slice[]>(() => {
+    const counts = countBy(users, (user) => user.role?.nombre);
+    return (["student", "company", "admin"] as ApiRoleName[])
+      .filter((role) => (counts.get(role) ?? 0) > 0)
+      .map((role) => ({ name: ROLE_LABEL[role], value: counts.get(role) ?? 0, color: ROLE_COLOR[role] }));
+  }, [users]);
+
+  const accountsByState = useMemo<Slice[]>(() => {
+    const counts = countBy(users, (user) => user.estado_cuenta);
+    return ACCOUNT_ORDER.filter((state) => (counts.get(state) ?? 0) > 0).map((state) => ({
+      name: ACCOUNT_LABEL[state],
+      value: counts.get(state) ?? 0,
+      color: ACCOUNT_COLOR[state],
+    }));
+  }, [users]);
+
+  const studentsByVerification = useMemo<Slice[]>(() => {
+    const counts = countBy(students, (student) => student.estado_verificacion);
+    return VERIFICATION_ORDER.filter((state) => (counts.get(state) ?? 0) > 0).map((state) => ({
+      name: VERIFICATION_LABEL[state],
+      value: counts.get(state) ?? 0,
+      color: VERIFICATION_COLOR[state],
+    }));
+  }, [students]);
+
+  const companiesByType = useMemo<Slice[]>(() => {
+    const counts = countBy(companies, (company) => company.tipo);
+    return (["empresa", "emprendedor"] as CompanyType[])
+      .filter((type) => (counts.get(type) ?? 0) > 0)
+      .map((type) => ({ name: TYPE_LABEL[type], value: counts.get(type) ?? 0, color: TYPE_COLOR[type] }));
+  }, [companies]);
 
   function exportCsv() {
+    const block = (heading: string[], rows: Slice[]) => [heading, ...rows.map((row) => [row.name, String(row.value)]), []];
     const rows: string[][] = [
       ["Reporte FWD Talent"],
       [],
       ["Métrica", "Valor"],
       ...kpis.map((kpi) => [kpi.label, String(kpi.value)]),
       [],
-      ["Empresa", "Proyectos"],
-      ...companies.map((company) => [company.name, String(company.total)]),
-      [],
-      ["Estado", "Proyectos"],
-      ...byState.map((entry) => [STATE_LABEL[entry.state] ?? entry.state, String(entry.count)]),
+      ...block(["Proyectos por estado", "Total"], projectsByState),
+      ...block(["Top empresas por proyectos", "Total"], topCompanies),
+      ...block(["Usuarios por rol", "Total"], usersByRole),
+      ...block(["Estado de cuentas", "Total"], accountsByState),
+      ...block(["Verificación de egresados", "Total"], studentsByVerification),
+      ...block(["Empresas por tipo", "Total"], companiesByType),
     ];
     const csv = rows.map((row) => row.map((cell) => `"${String(cell).replace(/"/g, '""')}"`).join(",")).join("\n");
     const blob = new Blob([csv], { type: "text/csv;charset=utf-8;" });
@@ -103,7 +296,7 @@ export function ReportesView({
             Reportes<span className="text-primary" aria-hidden="true">.</span>
           </h1>
           <p className="max-w-xl font-body text-sm text-ink-muted">
-            Rendimiento del ecosistema FWD Talent calculado en vivo a partir de los proyectos y solicitudes registrados.
+            Panorama del ecosistema FWD Talent calculado en vivo a partir de usuarios, egresados, empresas y proyectos registrados.
           </p>
         </div>
         <div className="flex flex-wrap gap-3">
@@ -114,9 +307,9 @@ export function ReportesView({
 
       {/* KPIs */}
       <section className="rounded-2xl bg-surface p-6 shadow-soft ring-1 ring-border">
-        <div className="grid grid-cols-2 gap-6 sm:grid-cols-4 lg:grid-cols-7">
+        <div className="grid grid-cols-2 gap-6 sm:grid-cols-4 lg:grid-cols-8">
           {kpis.map((kpi) => (
-            <div key={kpi.label}>
+            <div key={kpi.label} className={kpi.highlight ? "border-l-4 border-warning pl-3" : ""}>
               <p className="font-body text-xs text-ink-muted">{kpi.label}</p>
               <p className="mt-1 font-heading text-2xl font-bold text-ink-strong">{kpi.value}</p>
             </div>
@@ -125,47 +318,21 @@ export function ReportesView({
       </section>
 
       <div className="grid grid-cols-1 gap-6 lg:grid-cols-2">
-        {/* Empresas destacadas */}
-        <section className="rounded-2xl bg-surface p-6 shadow-soft ring-1 ring-border">
-          <h2 className="mb-4 font-heading text-lg font-bold text-ink-strong">Empresas Destacadas</h2>
-          <div className="space-y-3">
-            {companies.length === 0 ? (
-              <p className="rounded-xl border border-dashed border-border px-4 py-6 text-center font-body text-sm text-ink-muted">Sin empresas con proyectos.</p>
-            ) : (
-              companies.slice(0, 5).map((company) => (
-                <div key={company.name} className="flex items-center gap-4 rounded-xl bg-surface-sunken p-3.5">
-                  <span className="flex size-10 shrink-0 items-center justify-center rounded-lg bg-primary/10 font-body text-xs font-bold text-primary">{initials(company.name)}</span>
-                  <div className="min-w-0 flex-1">
-                    <p className="font-body text-sm font-bold text-ink-strong">{company.name}</p>
-                    <p className="font-body text-[11px] font-semibold uppercase tracking-wider text-ink-muted">{company.total} proyectos</p>
-                  </div>
-                </div>
-              ))
-            )}
-          </div>
-        </section>
+        <ChartSection title="Proyectos por estado" subtitle="Distribución del total de proyectos según su etapa." isEmpty={projectsByState.length === 0} mounted={mounted}>
+          <DonutChart data={projectsByState} />
+        </ChartSection>
 
-        {/* Distribución por estado */}
-        <section className="rounded-2xl bg-surface p-6 shadow-soft ring-1 ring-border">
-          <h2 className="mb-4 font-heading text-lg font-bold text-ink-strong">Proyectos por Estado</h2>
-          <div className="space-y-4">
-            {byState.length === 0 ? (
-              <p className="rounded-xl border border-dashed border-border px-4 py-6 text-center font-body text-sm text-ink-muted">Sin proyectos registrados.</p>
-            ) : (
-              byState.map((entry) => (
-                <div key={entry.state}>
-                  <div className="mb-1.5 flex items-center justify-between font-body text-sm">
-                    <span className="text-ink">{STATE_LABEL[entry.state] ?? entry.state}</span>
-                    <span className="font-bold text-ink-strong">{entry.count}</span>
-                  </div>
-                  <div className="h-2 w-full overflow-hidden rounded-full bg-surface-sunken">
-                    <div className="h-full rounded-full bg-primary" style={{ width: `${(entry.count / maxState) * 100}%` }} />
-                  </div>
-                </div>
-              ))
-            )}
-          </div>
-        </section>
+        <ChartSection title="Top empresas por proyectos" subtitle="Las empresas con más proyectos publicados." isEmpty={topCompanies.length === 0} mounted={mounted}>
+          <HorizontalBars data={topCompanies} />
+        </ChartSection>
+
+        <ChartSection title="Usuarios por rol" subtitle="Cómo se reparten las cuentas entre juniors, empresas y admins." isEmpty={usersByRole.length === 0} mounted={mounted}>
+          <DonutChart data={usersByRole} />
+        </ChartSection>
+
+        <ChartSection title="Empresas por tipo" subtitle="Empresas consolidadas frente a emprendedores." isEmpty={companiesByType.length === 0} mounted={mounted}>
+          <VerticalBars data={companiesByType} />
+        </ChartSection>
       </div>
     </div>
   );

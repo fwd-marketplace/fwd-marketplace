@@ -1,15 +1,25 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useTransition } from "react";
 import { usePathname, useRouter } from "next/navigation";
 import { useLocale, useTranslations } from "next-intl";
-import { Palette, Moon, Languages, Store, ShieldCheck, Plus, Pencil, Trash2, X, CheckCircle2 } from "lucide-react";
+import { Palette, Moon, Languages, Store, ShieldCheck, Plus, Pencil, Trash2, X, CheckCircle2, Loader2 } from "lucide-react";
 import { PageTitle } from "@/components/ui/page-title";
 import { Button } from "@/components/ui/button";
 import { useTheme } from "@/lib/theme/theme-provider";
+import { updateAdminSettingsAction } from "@/lib/actions/admin";
+import type { AdminSettings } from "@/lib/api/types";
 
 const MARKETPLACE_KEYS = ["registros", "empresas", "postulaciones", "matching"] as const;
 const LOCALES = ["es", "en"] as const;
+
+/** Mapea las llaves visibles del marketplace a los flags reales de la configuración. */
+const SETTING_KEY_MAP: Record<(typeof MARKETPLACE_KEYS)[number], keyof AdminSettings> = {
+  registros: "allow_signups",
+  empresas: "allow_companies",
+  postulaciones: "allow_applications",
+  matching: "enable_matching",
+};
 
 interface Role {
   id: number;
@@ -35,14 +45,14 @@ function Switch({ checked, onChange, label }: { checked: boolean; onChange: () =
       aria-checked={checked}
       aria-label={label}
       onClick={onChange}
-      className={`relative h-6 w-11 shrink-0 rounded-full transition-colors duration-[var(--duration-fast)] ease-[var(--ease-out)] ${checked ? "bg-primary" : "bg-border-strong"}`}
+      className={`inline-flex h-6 w-11 shrink-0 cursor-pointer items-center rounded-full px-0.5 outline-none transition-colors duration-[var(--duration-fast)] ease-[var(--ease-out)] focus-visible:ring-2 focus-visible:ring-primary/40 focus-visible:ring-offset-2 ${checked ? "bg-primary" : "bg-border-strong"}`}
     >
-      <span className={`absolute top-0.5 size-5 rounded-full bg-white shadow-soft transition-transform duration-[var(--duration-fast)] ease-[var(--ease-out)] ${checked ? "translate-x-[1.375rem]" : "translate-x-0.5"}`} />
+      <span className={`block size-5 rounded-full bg-white shadow-soft transition-transform duration-[var(--duration-fast)] ease-[var(--ease-out)] ${checked ? "translate-x-5" : "translate-x-0"}`} />
     </button>
   );
 }
 
-export function ConfiguracionView() {
+export function ConfiguracionView({ initialSettings }: { initialSettings: AdminSettings }) {
   const t = useTranslations("admin_config");
   const locale = useLocale();
   const router = useRouter();
@@ -50,14 +60,11 @@ export function ConfiguracionView() {
   const { theme, toggleTheme } = useTheme();
   const isDark = theme === "dark";
 
-  const [settings, setSettings] = useState<Record<string, boolean>>({
-    registros: true,
-    empresas: true,
-    postulaciones: true,
-    matching: true,
-  });
+  const [settings, setSettings] = useState<AdminSettings>(initialSettings);
   const [roles, setRoles] = useState<Role[]>(INITIAL_ROLES);
   const [saved, setSaved] = useState(false);
+  const [saveError, setSaveError] = useState<string | null>(null);
+  const [isSaving, startSaving] = useTransition();
 
   const [modalOpen, setModalOpen] = useState(false);
   const [editingId, setEditingId] = useState<number | null>(null);
@@ -67,13 +74,27 @@ export function ConfiguracionView() {
     setSaved(false);
   }
 
+  function saveSettings() {
+    setSaveError(null);
+    startSaving(async () => {
+      const result = await updateAdminSettingsAction(settings);
+      if (!result.ok) {
+        setSaveError(result.error);
+        return;
+      }
+      setSettings(result.data.settings);
+      setSaved(true);
+      router.refresh();
+    });
+  }
+
   function changeLocale(next: string) {
     if (next === locale) return;
     const nextPath = pathname.replace(/^\/[^/]+/, `/${next}`);
     router.replace(nextPath);
   }
 
-  function toggleSetting(key: string) {
+  function toggleSetting(key: keyof AdminSettings) {
     setSettings((prev) => ({ ...prev, [key]: !prev[key] }));
     markDirty();
   }
@@ -170,15 +191,18 @@ export function ConfiguracionView() {
         </h2>
         <div className="rounded-2xl bg-surface px-6 shadow-soft ring-1 ring-border">
           <div className="divide-y divide-border">
-            {MARKETPLACE_KEYS.map((key) => (
-              <div key={key} className="flex items-center justify-between gap-6 py-5">
-                <div className="min-w-0">
-                  <p className="font-body text-sm font-bold text-ink-strong">{t(`marketplace.${key}_label`)}</p>
-                  <p className="font-body text-sm text-ink-muted">{t(`marketplace.${key}_desc`)}</p>
+            {MARKETPLACE_KEYS.map((key) => {
+              const settingKey = SETTING_KEY_MAP[key];
+              return (
+                <div key={key} className="flex items-center justify-between gap-6 py-5">
+                  <div className="min-w-0">
+                    <p className="font-body text-sm font-bold text-ink-strong">{t(`marketplace.${key}_label`)}</p>
+                    <p className="font-body text-sm text-ink-muted">{t(`marketplace.${key}_desc`)}</p>
+                  </div>
+                  <Switch checked={settings[settingKey]} onChange={() => toggleSetting(settingKey)} label={t(`marketplace.${key}_label`)} />
                 </div>
-                <Switch checked={!!settings[key]} onChange={() => toggleSetting(key)} label={t(`marketplace.${key}_label`)} />
-              </div>
-            ))}
+              );
+            })}
           </div>
         </div>
       </section>
@@ -239,12 +263,16 @@ export function ConfiguracionView() {
 
       {/* Save */}
       <div className="flex flex-wrap items-center justify-end gap-4 border-t border-border pt-6">
-        {saved && (
+        {saveError && <span className="font-body text-sm font-medium text-magenta">{saveError}</span>}
+        {saved && !saveError && (
           <span className="flex items-center gap-1.5 font-body text-sm font-medium text-accent">
             <CheckCircle2 className="size-4" aria-hidden="true" /> {t("saved")}
           </span>
         )}
-        <Button size="lg" onClick={() => setSaved(true)}>{t("save")}</Button>
+        <Button size="lg" onClick={saveSettings} disabled={isSaving}>
+          {isSaving && <Loader2 className="size-4 animate-spin" aria-hidden="true" />}
+          {t("save")}
+        </Button>
       </div>
 
       {/* Role modal */}

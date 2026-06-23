@@ -407,8 +407,349 @@ select {
   }
 }
 
+/* ====================================================================
+   Estrella del proceso (viaje del heroe) — Bienvenida del junior.
+   Estrella de 5 puntas interactiva. Todo color sale de tokens FWD.
+   ==================================================================== */
+.estrella-stage {
+  isolation: isolate;
+}
+/* Resplandor radial calido detras de la estrella: la hace ver encendida. */
+.estrella-stage::before {
+  content: "";
+  position: absolute;
+  left: 50%;
+  top: 48%;
+  width: 78%;
+  height: 78%;
+  transform: translate(-50%, -50%);
+  border-radius: 50%;
+  z-index: -1;
+  pointer-events: none;
+  background: radial-gradient(
+    circle,
+    color-mix(in oklab, var(--highlight) 24%, transparent) 0%,
+    color-mix(in oklab, var(--primary) 16%, transparent) 38%,
+    transparent 68%
+  );
+  animation: estrella-flare 4.2s var(--ease-in-out) infinite;
+}
+@keyframes estrella-flare {
+  0%,
+  100% {
+    opacity: 0.7;
+    transform: translate(-50%, -50%) scale(0.96);
+  }
+  50% {
+    opacity: 1;
+    transform: translate(-50%, -50%) scale(1.04);
+  }
+}
+.estrella-svg {
+  width: 100%;
+  height: 100%;
+  display: block;
+  overflow: visible;
+}
+
+/* Estrellas tenues de ambiente del panel (HTML) */
+.estrella-starfield span {
+  position: absolute;
+  width: 2px;
+  height: 2px;
+  border-radius: 50%;
+  background: var(--starlight);
+  opacity: 0.4;
+  animation: constellation-twinkle 5s var(--ease-out) infinite;
+}
+
+/* Estrellas tenues dentro del SVG */
+.estrella-faint {
+  fill: var(--starlight);
+  opacity: 0.5;
+  filter: drop-shadow(0 0 1px color-mix(in oklab, var(--starlight) 90%, transparent));
+  animation: constellation-twinkle 5s var(--ease-out) infinite;
+}
+
+/* Anillos concentricos y nucleo del centro */
+.estrella-ring {
+  fill: none;
+  stroke: var(--starlight);
+  stroke-width: 0.2;
+  stroke-opacity: 0.18;
+}
+.estrella-core {
+  fill: color-mix(in oklab, var(--secondary) 70%, var(--ink-strong));
+  stroke: color-mix(in oklab, var(--primary) 70%, transparent);
+  stroke-width: 0.4;
+  filter: drop-shadow(0 0 3px color-mix(in oklab, var(--primary) 65%, transparent))
+    drop-shadow(0 0 6px color-mix(in oklab, var(--highlight) 30%, transparent));
+}
+
+/* Rayos del centro a cada punta */
+.estrella-ray {
+  stroke: var(--starlight);
+  stroke-width: 0.18;
+  stroke-opacity: 0.16;
+}
+
+/* Contorno de la estrella (siempre visible) */
+/* Contorno de la estrella con glow: halo blanco starlight + dorado highlight,
+   con un latido suave de brillo para que se vea encendida. */
+.estrella-edge {
+  stroke: var(--starlight);
+  stroke-width: 0.5;
+  stroke-opacity: 0.85;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+  filter: drop-shadow(0 0 0.6px color-mix(in oklab, var(--starlight) 95%, transparent))
+    drop-shadow(0 0 2px color-mix(in oklab, var(--starlight) 60%, transparent))
+    drop-shadow(0 0 4px color-mix(in oklab, var(--highlight) 55%, transparent));
+  animation: estrella-glow 3.6s var(--ease-in-out) infinite;
+}
+@keyframes estrella-glow {
+  0%,
+  100% {
+    stroke-opacity: 0.5;
+  }
+  50% {
+    stroke-opacity: 1;
+  }
+}
+
+/* Centro: progreso global */
+.estrella-center {
+  position: absolute;
+  left: 50%;
+  top: 48%;
+  transform: translate(-50%, -50%);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+  pointer-events: none;
+}
+.estrella-center-title {
+  font-weight: 700;
+  font-size: 0.95rem;
+  letter-spacing: -0.01em;
+  color: var(--starlight);
+}
+.estrella-center-sub {
+  font-size: 0.7rem;
+  color: color-mix(in oklab, var(--starlight) 70%, transparent);
+}
+
+/* Nodos: circulo con icono + pastilla */
+.estrella-node {
+  position: absolute;
+  transform: translate(-50%, -50%);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.4rem;
+  background: none;
+  border: none;
+  padding: 0;
+  color: var(--starlight);
+  transition: transform var(--duration-fast) var(--ease-out);
+}
+.estrella-node:hover,
+.estrella-node:focus-visible,
+.estrella-node.is-focus {
+  transform: translate(-50%, -50%) scale(1.08);
+  z-index: 20;
+}
+.estrella-node:focus-visible {
+  outline: none;
+}
+.estrella-node-circle {
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 2.75rem;
+  height: 2.75rem;
+  border-radius: 50%;
+  border: 1px solid color-mix(in oklab, var(--node-color) 70%, transparent);
+  background: color-mix(in oklab, var(--node-color) 22%, transparent);
+  color: var(--node-color);
+  box-shadow: 0 0 18px color-mix(in oklab, var(--node-color) 45%, transparent);
+}
+.estrella-node-pending .estrella-node-circle {
+  border-color: color-mix(in oklab, var(--starlight) 35%, transparent);
+  background: color-mix(in oklab, var(--secondary) 55%, transparent);
+  color: color-mix(in oklab, var(--starlight) 75%, transparent);
+  box-shadow: none;
+}
+.estrella-node-pulse {
+  position: absolute;
+  inset: 0;
+  border-radius: 50%;
+  border: 1px solid var(--node-color);
+  opacity: 0;
+}
+.estrella-node-progress .estrella-node-pulse {
+  animation: estrella-node-pulse 2.4s var(--ease-out) infinite;
+}
+@keyframes estrella-node-pulse {
+  0% { transform: scale(1); opacity: 0.7; }
+  100% { transform: scale(1.8); opacity: 0; }
+}
+.estrella-node-check {
+  position: absolute;
+  right: -2px;
+  bottom: -2px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 1rem;
+  height: 1rem;
+  border-radius: 50%;
+  background: var(--accent);
+  color: var(--accent-foreground);
+}
+.estrella-node-pill {
+  font-size: 0.72rem;
+  font-weight: 600;
+  white-space: nowrap;
+  padding: 0.15rem 0.55rem;
+  border-radius: 0.5rem;
+  color: var(--starlight);
+  background: color-mix(in oklab, var(--secondary) 60%, transparent);
+  border: 1px solid color-mix(in oklab, var(--starlight) 12%, transparent);
+  backdrop-filter: blur(4px);
+}
+
+.estrella-progress-track {
+  position: relative;
+  display: inline-block;
+  width: 5rem;
+  height: 0.4rem;
+  border-radius: 9999px;
+  background: color-mix(in oklab, var(--starlight) 18%, transparent);
+  overflow: hidden;
+}
+.estrella-progress-track i {
+  position: absolute;
+  inset: 0;
+  border-radius: 9999px;
+  background: var(--highlight);
+  transition: width var(--duration-slow) var(--ease-out);
+}
+
+/* Modal de tarea */
+.estrella-task-layer {
+  position: absolute;
+  inset: 0;
+  z-index: 30;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 1rem;
+  /* En modo hover el overlay no captura el puntero: asi no tapa el nodo ni
+     dispara su mouseleave. Solo al fijarlo (clic) se vuelve interactivo. */
+  pointer-events: none;
+}
+.estrella-task-layer.is-pinned {
+  pointer-events: auto;
+}
+.estrella-task-scrim {
+  position: absolute;
+  inset: 0;
+  background: color-mix(in oklab, var(--ink-strong) 45%, transparent);
+  backdrop-filter: blur(2px);
+}
+.estrella-task-modal {
+  position: relative;
+  width: 100%;
+  max-width: 22rem;
+  background: var(--surface);
+  border-radius: var(--radius-md);
+  border-top: 3px solid var(--node-color);
+  box-shadow: var(--shadow-elevated);
+  padding: 1.25rem;
+  animation: estrella-modal-in var(--duration-base) var(--ease-out);
+}
+@keyframes estrella-modal-in {
+  from { opacity: 0; transform: translateY(8px) scale(0.98); }
+  to { opacity: 1; transform: translateY(0) scale(1); }
+}
+.estrella-task-close {
+  position: absolute;
+  top: 0.6rem;
+  right: 0.6rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 1.75rem;
+  height: 1.75rem;
+  font-size: 1.25rem;
+  line-height: 1;
+  border: none;
+  border-radius: 50%;
+  color: var(--ink-muted);
+  background: var(--surface-sunken);
+}
+.estrella-task-close:hover {
+  color: var(--ink-strong);
+}
+.estrella-task-glyph {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 2.5rem;
+  height: 2.5rem;
+  flex-shrink: 0;
+  border-radius: 0.75rem;
+  border: 1px solid color-mix(in oklab, var(--node-color) 40%, transparent);
+  background: color-mix(in oklab, var(--node-color) 12%, transparent);
+  color: var(--node-color);
+}
+.estrella-task-box {
+  margin-top: 0.85rem;
+  padding: 0.75rem;
+  border-radius: var(--radius-sm);
+  background: var(--surface-sunken);
+}
+.estrella-task-eyebrow {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+  font-size: 0.7rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  color: var(--ink-muted);
+}
+.estrella-task-bar {
+  display: block;
+  margin-top: 0.4rem;
+  height: 0.45rem;
+  border-radius: 9999px;
+  background: var(--surface-sunken);
+  overflow: hidden;
+}
+.estrella-task-bar i {
+  display: block;
+  height: 100%;
+  border-radius: 9999px;
+  background: var(--node-color);
+  transition: width var(--duration-slow) var(--ease-out);
+}
+
 /* Respeto a quienes prefieren menos movimiento: estado final, sin animar. */
 @media (prefers-reduced-motion: reduce) {
+  .estrella-starfield span,
+  .estrella-faint,
+  .estrella-edge,
+  .estrella-stage::before,
+  .estrella-node-progress .estrella-node-pulse {
+    animation: none !important;
+  }
+  .estrella-edge {
+    stroke-opacity: 0.85;
+  }
   .constellation-starfield span,
   .dark-starfield span,
   .constellation-scene.is-twinkling .constellation-star-pt .constellation-core,

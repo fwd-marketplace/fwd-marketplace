@@ -4,6 +4,8 @@ import { ApiError } from "../utils/ApiError";
 import { parseBody } from "../utils/parseBody";
 import { CreateUserSchema, UpdateUserSchema } from "../validations/adminUser";
 import { CreateCompanySchema, UpdateCompanySchema } from "../validations/adminCompany";
+import { UpdateSettingsSchema } from "../validations/adminSettings";
+import { getAppSettings, updateAppSettings } from "../services/settings.service";
 import {
   listPendingUsers,
   approveUser,
@@ -34,6 +36,20 @@ function readUuid(value: unknown, label: string): string {
   const parsed = z.string().uuid().safeParse(value);
   if (!parsed.success) throw new ApiError(400, `El id ${label} no es válido`);
   return parsed.data;
+}
+
+/** GET /api/admin/settings (configuración global del marketplace) */
+export async function getSettings(req: Request, res: Response) {
+  const settings = await getAppSettings(getToken(req));
+  res.status(200).json({ settings });
+}
+
+/** PATCH /api/admin/settings (actualiza la configuración global) */
+export async function updateSettings(req: Request, res: Response) {
+  getToken(req);
+  const input = parseBody(UpdateSettingsSchema, req.body);
+  const settings = await updateAppSettings(input);
+  res.status(200).json({ settings });
 }
 
 /** GET /api/admin/users/pending */

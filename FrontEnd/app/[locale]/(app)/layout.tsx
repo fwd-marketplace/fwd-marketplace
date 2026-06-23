@@ -1,16 +1,20 @@
 import { AppHeader } from "@/components/layout/app-header";
-import { getMe } from "@/lib/api/profile";
+import { requireActiveAccount } from "@/lib/auth/require-access";
 
 export default async function AppLayout({
   children,
+  params,
 }: {
   children: React.ReactNode;
+  params: Promise<{ locale: string }>;
 }) {
-  const meResult = await getMe();
-  const profile = meResult.ok ? meResult.data.profile : null;
-  const userName = profile ? `${profile.nombre}${profile.apellido1 ? ` ${profile.apellido1}` : ''}` : '';
-  const avatarUrl = profile?.estudiante?.url_avatar ?? '';
-  const role = profile?.role.nombre ?? "student";
+  const { locale } = await params;
+  // Juniors con cuenta aprobada; los admin también pueden ver el área (p. ej. la
+  // página de bienvenida desde el botón "Página principal" del panel).
+  const profile = await requireActiveAccount(locale, ["student", "admin"]);
+  const userName = `${profile.nombre}${profile.apellido1 ? ` ${profile.apellido1}` : ""}`;
+  const avatarUrl = profile.estudiante?.url_avatar ?? "";
+  const role = profile.role.nombre;
 
   return (
     <div className="flex min-h-[100dvh] flex-col bg-canvas">

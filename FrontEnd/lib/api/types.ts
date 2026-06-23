@@ -491,6 +491,21 @@ export type AdminUserDetailResponse = {
   user: AdminUserDetail;
 };
 
+// ── Configuración global (admin) ──
+
+export type AdminSettings = {
+  allow_signups: boolean;
+  allow_companies: boolean;
+  allow_applications: boolean;
+  enable_matching: boolean;
+};
+
+export type AdminSettingsResponse = {
+  settings: AdminSettings;
+};
+
+export type UpdateAdminSettingsInput = Partial<AdminSettings>;
+
 // ── Gestión de empresas (admin) ──
 
 export type CompanyType = "empresa" | "emprendedor";
