@@ -13,6 +13,7 @@ import {
   CheckCircle2,
   Clock,
   ExternalLink,
+  Languages,
   Zap,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
@@ -218,7 +219,14 @@ function ApplyForm({ project }: { project: ApiProject }) {
 
 export function ProjectDetail({ project, role }: Props) {
   const t = useTranslations("project_detail");
+  const tTrad = useTranslations("traduccion");
   const locale = useLocale();
+
+  // "Ver traducción": muestra el contenido del proyecto en el idioma opuesto al original.
+  const [mostrarTraduccion, setMostrarTraduccion] = useState(false);
+  const traducible = mostrarTraduccion && project.traduccion ? project.traduccion : null;
+  const tituloMostrado = traducible ? traducible.titulo : project.titulo;
+  const descripcionMostrada = traducible ? traducible.descripcion : project.descripcion;
 
   const skills = project.skills.flatMap((s) => (s.skill ? [s.skill] : []));
   const stateLabel = STATE_LABELS[project.estado.nombre] ?? project.estado.nombre.replace(/_/g, " ");
@@ -260,11 +268,21 @@ export function ProjectDetail({ project, role }: Props) {
                 {t("uses_ia")}
               </span>
             )}
+            {project.traduccion && (
+              <button
+                type="button"
+                onClick={() => setMostrarTraduccion((valor) => !valor)}
+                className="ml-auto inline-flex items-center gap-1.5 rounded-full border border-primary/30 bg-primary/5 px-3 py-1 font-body text-xs font-semibold text-primary transition-colors duration-[var(--duration-fast)] ease-[var(--ease-out)] hover:bg-primary/10"
+              >
+                <Languages className="size-3.5" aria-hidden="true" />
+                {mostrarTraduccion ? tTrad("ver_original") : tTrad("ver_traduccion")}
+              </button>
+            )}
           </div>
 
           {/* Título */}
           <h1 className="font-heading text-3xl font-extrabold tracking-tight text-ink-strong sm:text-4xl lg:text-5xl">
-            {project.titulo}
+            {tituloMostrado}
             <span className="text-primary" aria-hidden="true">.</span>
           </h1>
 
@@ -322,7 +340,7 @@ export function ProjectDetail({ project, role }: Props) {
                 Descripción del proyecto
               </h2>
               <p className="whitespace-pre-line font-body text-sm leading-relaxed text-ink">
-                {project.descripcion}
+                {descripcionMostrada}
               </p>
             </section>
 

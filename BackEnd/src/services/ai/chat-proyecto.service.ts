@@ -1,6 +1,7 @@
 import { supabaseForToken } from "../../config/supabase";
 import { ApiError } from "../../utils/ApiError";
 import { logger } from "../../utils/logger";
+import type { AppLocale } from "../../validations/ai";
 import { buildSystemPromptChatProyecto, type ProyectoContexto } from "./prompts";
 import { streamChatCompletion, type ChatMessage, type StreamChunk } from "./provider";
 
@@ -22,6 +23,8 @@ export interface ChatProyectoParams {
   history: ChatMessage[];
   userId: string;
   accessToken: string;
+  /** Idioma en el que debe responder la IA (locale del junior). */
+  locale: AppLocale;
   signal?: AbortSignal;
 }
 
@@ -76,7 +79,7 @@ export async function* streamChatProyecto(params: ChatProyectoParams): AsyncGene
   const contexto = await loadProyectoContexto(params.accessToken, params.proyectoId);
 
   const messages: ChatMessage[] = [
-    { role: "system", content: buildSystemPromptChatProyecto(contexto) },
+    { role: "system", content: buildSystemPromptChatProyecto(contexto, params.locale) },
     ...params.history,
   ];
 

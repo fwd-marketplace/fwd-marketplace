@@ -1,6 +1,7 @@
 import { ApiError, apiAuth } from "@/lib/api-client";
 import { err, ok, type Result } from "@/lib/result";
 import type {
+  AiLocale,
   ApiCalificacion,
   ApiProject,
   ApiRankedJunior,
@@ -51,11 +52,14 @@ export function getMyOffers(): Promise<Result<MyOffersResponse>> {
   return asResult(() => apiAuth<MyOffersResponse>("/ofertas/mias"));
 }
 
-export function createProject(input: CreateProjectInput): Promise<Result<ProjectsResponse["projects"][number]>> {
+export function createProject(
+  input: CreateProjectInput,
+  locale: AiLocale,
+): Promise<Result<ProjectsResponse["projects"][number]>> {
   return asResult(async () => {
     const response = await apiAuth<{ project: ProjectsResponse["projects"][number] }>("/projects", {
       method: "POST",
-      body: JSON.stringify(input),
+      body: JSON.stringify({ ...input, locale }),
     });
     return response.project;
   });
@@ -156,11 +160,12 @@ export function getRanking(especialidad?: string): Promise<Result<ApiRankedJunio
 export function updateProject(
   projectId: string,
   input: UpdateProjectInput,
+  locale: AiLocale,
 ): Promise<Result<ApiProject>> {
   return asResult(async () => {
     const res = await apiAuth<{ project: ApiProject }>(`/projects/${projectId}`, {
       method: "PATCH",
-      body: JSON.stringify(input),
+      body: JSON.stringify({ ...input, locale }),
     });
     return res.project;
   });

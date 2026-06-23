@@ -1,6 +1,8 @@
 "use server";
 
+import { getLocale } from "next-intl/server";
 import { getProjectMensajes, sendMensaje, getMyConversaciones } from "@/lib/api/mensajes";
+import { toAiLocale } from "@/lib/api/ai-client";
 
 export async function getProjectMensajesAction(projectId: string) {
   return getProjectMensajes(projectId);
@@ -11,7 +13,8 @@ export async function sendMensajeAction(
   contenido: string,
   idDestinatario?: string,
 ) {
-  return sendMensaje(projectId, contenido, idDestinatario);
+  const locale = await getLocale();
+  return sendMensaje(projectId, contenido, toAiLocale(locale), idDestinatario);
 }
 
 export async function getMyConversacionesAction() {

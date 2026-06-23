@@ -1,4 +1,8 @@
 {
+  "traduccion": {
+    "ver_traduccion": "Ver traducción",
+    "ver_original": "Ver original"
+  },
   "hero_journey": {
     "llamado_label": "El Llamado",
     "llamado_cta": "Da el primer paso hacia tu carrera.",

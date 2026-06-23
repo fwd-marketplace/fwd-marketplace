@@ -1,4 +1,4 @@
-import type { AiChatMessage } from "@/lib/api/types";
+import type { AiChatMessage, AiLocale } from "@/lib/api/types";
 
 /**
  * Cliente de IA para componentes de cliente (no usa `next/headers`). Llama a los route handlers
@@ -10,6 +10,11 @@ export type AiStreamEvent =
   | { type: "delta"; text: string }
   | { type: "done" }
   | { type: "error"; error: string };
+
+/** Reduce el locale de next-intl (string) al idioma soportado por la IA. */
+export function toAiLocale(locale: string): AiLocale {
+  return locale === "en" ? "en" : "es";
+}
 
 const ASSISTANT_ENDPOINT = "/api/ai/asistente";
 const DEFAULT_ERROR = "No se pudo contactar al asistente de IA.";
@@ -71,6 +76,7 @@ function emitFromSse(raw: string, onEvent: (event: AiStreamEvent) => void): void
 async function streamFromEndpoint(
   endpoint: string,
   history: AiChatMessage[],
+  locale: AiLocale,
   onEvent: (event: AiStreamEvent) => void,
   signal?: AbortSignal,
 ): Promise<void> {
@@ -79,7 +85,7 @@ async function streamFromEndpoint(
     response = await fetch(endpoint, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ history }),
+      body: JSON.stringify({ history, locale }),
       signal: signal ?? null,
     });
   } catch (error) {
@@ -133,10 +139,11 @@ async function streamFromEndpoint(
  */
 export function streamAssistant(
   history: AiChatMessage[],
+  locale: AiLocale,
   onEvent: (event: AiStreamEvent) => void,
   signal?: AbortSignal,
 ): Promise<void> {
-  return streamFromEndpoint(ASSISTANT_ENDPOINT, history, onEvent, signal);
+  return streamFromEndpoint(ASSISTANT_ENDPOINT, history, locale, onEvent, signal);
 }
 
 /**
@@ -146,8 +153,9 @@ export function streamAssistant(
 export function streamProjectChatbot(
   projectId: string,
   history: AiChatMessage[],
+  locale: AiLocale,
   onEvent: (event: AiStreamEvent) => void,
   signal?: AbortSignal,
 ): Promise<void> {
-  return streamFromEndpoint(`/api/ai/chat-proyecto/${projectId}`, history, onEvent, signal);
+  return streamFromEndpoint(`/api/ai/chat-proyecto/${projectId}`, history, locale, onEvent, signal);
 }
