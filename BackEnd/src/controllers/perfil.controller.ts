@@ -13,6 +13,9 @@ import {
   createPortafolioItem,
   updatePortafolioItem,
   deletePortafolioItem,
+  getPublicEmpresaProfile,
+  getPublicEmpresaProjects,
+  getPublicJuniorProfile,
 } from "../services/perfil.service";
 
 /** Token + id del usuario autenticado (los inyecta `authenticate`). */
@@ -106,6 +109,30 @@ export async function removePortafolioItem(req: Request, res: Response) {
   if (!id) throw new ApiError(400, "id requerido");
   await deletePortafolioItem(token, userId, id);
   res.status(204).send();
+}
+
+/** GET /api/perfil/empresa/:id — perfil público de empresa/emprendedor */
+export async function getPublicEmpresa(req: Request, res: Response) {
+  const id = String(req.params["id"] ?? "");
+  if (!id) throw new ApiError(400, "id requerido");
+  const perfil = await getPublicEmpresaProfile(id);
+  res.status(200).json({ perfil });
+}
+
+/** GET /api/perfil/empresa/:id/proyectos — proyectos públicos de una empresa */
+export async function getPublicEmpresaProyectos(req: Request, res: Response) {
+  const id = String(req.params["id"] ?? "");
+  if (!id) throw new ApiError(400, "id requerido");
+  const proyectos = await getPublicEmpresaProjects(id);
+  res.status(200).json({ proyectos });
+}
+
+/** GET /api/perfil/junior/:id — perfil público de junior */
+export async function getPublicJunior(req: Request, res: Response) {
+  const id = String(req.params["id"] ?? "");
+  if (!id) throw new ApiError(400, "id requerido");
+  const perfil = await getPublicJuniorProfile(id);
+  res.status(200).json({ perfil });
 }
 
 const preferenciasSchema = z.record(z.string(), z.boolean());

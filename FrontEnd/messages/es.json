@@ -1258,7 +1258,9 @@
   "bienvenida": {
     "hero": {
       "welcome": "¡BIENVENIDO A FWD TALENT!",
-      "greeting": "Buenos días",
+      "greeting_morning": "Buenos días",
+      "greeting_afternoon": "Buenas tardes",
+      "greeting_evening": "Buenas noches",
       "description": "Tu perfil ya está conectado con oportunidades reales.\nExplorá proyectos creados por empresas que buscan talento como el tuyo.",
       "btn_explore": "Explorar oportunidades",
       "btn_edit": "Editar mi perfil",
@@ -1431,6 +1433,102 @@
     "results_count": "{count, plural, =0 {Sin resultados} one {# estudiante} other {# estudiantes}}",
     "specialty": { "frontend": "Frontend", "backend": "Backend", "fullstack": "Fullstack", "ia": "IA & Data" },
     "modality": { "remote": "Remoto", "hybrid": "Híbrido", "onsite": "Presencial" }
+  },
+  "terms": {
+    "title": "Términos y Condiciones",
+    "download": "Descargar en PDF",
+    "sections": [
+      { "title": "1. Introducción y Aceptación", "paragraphs": ["Bienvenido al Marketplace de Proyectos Freelance de FWD Talent, una iniciativa de la Fundación Forward Costa Rica. Este documento constituye un acuerdo legalmente vinculante entre usted (el \"Usuario\") y la Fundación Forward Costa Rica (\"la Fundación\"). Al utilizar esta plataforma, usted acepta en su totalidad estos Términos y Condiciones."] },
+      { "title": "2. Naturaleza del Servicio", "paragraphs": ["Nuestra plataforma funciona exclusivamente como un espacio de intermediación tecnológica. Su propósito es conectar a egresados de la Fundación (\"Juniors FWD\") con empresas o clientes (\"Empresas\") que buscan talento para proyectos de corta duración."] },
+      { "title": "3. Registro y Elegibilidad", "paragraphs": ["Para registrarse como Junior, es un requisito estricto ser egresado certificado de los programas de formación de la Fundación Forward Costa Rica. Las Empresas pueden registrarse tras un proceso de validación comercial. El uso de la plataforma está restringido a mayores de edad."] },
+      { "title": "4. Cuentas de Usuario y Seguridad", "paragraphs": ["El Usuario es el único responsable de salvaguardar la confidencialidad de sus credenciales. Queda estrictamente prohibido compartir cuentas, transferirlas o crear perfiles falsos. Toda actividad realizada desde una cuenta se considerará responsabilidad de su titular."] },
+      { "title": "5. Rol de los Juniors FWD", "paragraphs": ["Los Juniors utilizan la plataforma para acceder a sus primeras oportunidades profesionales remuneradas o pro-bono (según se especifique en cada proyecto), construir experiencia y ampliar su portafolio. Deben actuar siempre con profesionalismo, honestidad y diligencia."] },
+      { "title": "6. Rol de las Empresas", "paragraphs": ["Las Empresas acceden a talento emergente a costos competitivos. Se comprometen a brindar un entorno de respeto, comunicación clara y retroalimentación constructiva, reconociendo que están trabajando con perfiles en etapa formativa o junior."] },
+      { "title": "7. Reglas de Publicación de Proyectos", "paragraphs": ["Todo proyecto debe tener requerimientos claros, plazos definidos y expectativas realistas. No se permitirá la publicación de proyectos ilegales, ofensivos, discriminatorios, o que impliquen el desarrollo de software malicioso."] },
+      { "title": "8. Reglas de Postulación", "paragraphs": ["Los Juniors deben postularse únicamente a proyectos para los cuales posean las habilidades requeridas y la disponibilidad de tiempo necesaria. El abandono injustificado de un proyecto impactará negativamente su reputación en la plataforma."] },
+      { "title": "9. Prohibición de Inteligencia Artificial en Postulaciones", "note": "Toda comunicación y carta de presentación debe ser de autoría humana. El uso exclusivo de Inteligencia Artificial (ChatGPT, Claude, etc.) para generar mensajes automatizados está prohibido. Valoramos la autenticidad sobre la perfección sintáctica generada por máquinas." },
+      { "title": "10. Proceso de Selección y Adjudicación", "paragraphs": ["La Empresa es la única responsable de evaluar y seleccionar al candidato idóneo. La Fundación ofrece herramientas de \"matching\", pero no garantiza la adjudicación, ni obliga a la Empresa a seleccionar a un Junior específico."] },
+      { "title": "11. Desarrollo y Ejecución de Proyectos", "paragraphs": ["Una vez iniciado el proyecto, ambas partes acuerdan trabajar bajo metodologías ágiles o los estándares pactados. La Fundación no supervisa ni audita el código generado por los Juniors ni las directrices de las Empresas."] },
+      { "title": "12. Comunicación", "paragraphs": ["Se insta a los Usuarios a mantener la comunicación preliminar dentro de la plataforma por seguridad y transparencia. La Fundación se reserva el derecho de auditar las comunicaciones dentro del ecosistema en caso de disputas reportadas."] },
+      { "title": "13. Pagos y Compensaciones", "paragraphs": ["La plataforma no actúa como procesador de pagos. Todo acuerdo económico se negocia, factura y liquida externamente entre la Empresa y el Junior. La Fundación no cobra comisiones transaccionales por la adjudicación de proyectos."] },
+      { "title": "14. Relación Laboral", "paragraphs": ["En ningún momento se establece una relación laboral (empleador-empleado) entre la Fundación y el Junior, ni inherentemente entre la Empresa y el Junior (a menos que firmen un contrato laboral formal fuera de la plataforma). La naturaleza predeterminada de los proyectos es freelance o servicios profesionales independientes."] },
+      { "title": "15. Propiedad Intelectual de los Entregables", "paragraphs": ["Como norma general, una vez liquidado el pago acordado, los derechos patrimoniales sobre el código y el producto desarrollado se transfieren a la Empresa. Los derechos morales del autor son inalienables según la ley aplicable."] },
+      { "title": "16. Derechos de Portafolio", "paragraphs": ["Salvo prohibición explícita vía NDA (Acuerdo de Confidencialidad), los Juniors conservan el derecho de mencionar el proyecto, describir la arquitectura y mostrar capturas de pantalla de la interfaz pública en sus portafolios profesionales con fines de promoción laboral."] },
+      { "title": "17. Confidencialidad y NDAs", "paragraphs": ["Las Empresas pueden requerir la firma de un Acuerdo de Confidencialidad (NDA) antes de compartir detalles sensibles. Es responsabilidad del Junior leer, comprender y acatar las restricciones de cualquier contrato legal firmado externamente."] },
+      { "title": "18. Comportamiento y Código de Conducta", "paragraphs": ["Tolerancia cero ante acoso, discriminación, extorsión, lenguaje abusivo o prácticas fraudulentas. Cualquier violación al código de conducta resultará en la expulsión inmediata del infractor del ecosistema de FWD Talent."] },
+      { "title": "19. Responsabilidad y Limitaciones (Disclaimer)", "paragraphs": ["La Fundación provee la plataforma \"tal cual\" (as is) sin garantías implícitas. No seremos responsables por daños indirectos, lucro cesante, pérdida de datos o interrupciones de negocio derivados del uso de la plataforma o del resultado de los proyectos freelance."] },
+      { "title": "20. Privacidad y Tratamiento de Datos", "paragraphs": ["Toda recolección y tratamiento de datos personales se rige por nuestra Política de Privacidad, alineada a las regulaciones nacionales pertinentes. La información se utiliza exclusivamente para fines de \"matching\" y operación de la plataforma."] },
+      { "title": "21. Resolución de Disputas", "paragraphs": ["Las diferencias entre Empresa y Junior deben resolverse de mutuo acuerdo. La Fundación no ofrece servicios de mediación legal o arbitraje, y se exime de participar en cualquier litigio derivado de la ejecución de los proyectos."] },
+      { "title": "22. Modificaciones a los Términos", "paragraphs": ["Nos reservamos el derecho de modificar estos Términos en cualquier momento. Cualquier actualización será notificada a través de la plataforma. Su uso continuado implica la aceptación de los nuevos términos."] }
+    ]
+  },
+  "privacy_policy": {
+    "title": "Políticas de Privacidad",
+    "download": "Descargar en PDF",
+    "sections": [
+      {
+        "title": "1. Información General y Responsable",
+        "paragraphs": ["En la Fundación Forward Costa Rica y el ecosistema FWD Talent, valoramos y respetamos tu privacidad. Esta Política de Privacidad describe cómo recopilamos, utilizamos, almacenamos, compartimos y protegemos tu información personal cuando utilizas nuestro Marketplace de Proyectos Freelance. El responsable del tratamiento de tus datos es la Fundación Forward Costa Rica."]
+      },
+      {
+        "title": "2. Datos que Recopilamos",
+        "paragraphs": ["Recopilamos información para proporcionar y mejorar nuestros servicios. Esto incluye:"],
+        "items": [
+          "Datos de Registro: Nombre, correo electrónico, contraseña (encriptada) y rol (Junior o Empresa).",
+          "Información Profesional (Juniors FWD): Habilidades técnicas, enlaces a portafolios (GitHub, LinkedIn, Behance), historial educativo en la Fundación y experiencia.",
+          "Información Comercial (Empresas): Nombre de la empresa, descripción, datos de contacto comercial y detalles de los proyectos publicados.",
+          "Datos de Uso: Información sobre cómo interactúas con la plataforma, registros de acceso y postulaciones."
+        ]
+      },
+      {
+        "title": "3. Uso de la Información",
+        "paragraphs": ["Utilizamos tus datos personales exclusivamente para:"],
+        "items": [
+          "Facilitar la creación y gestión de tu cuenta en la plataforma.",
+          "Habilitar la herramienta de \"matching\", conectando perfiles de Juniors FWD con los requerimientos técnicos de los proyectos publicados por las Empresas.",
+          "Permitir la comunicación inicial y las postulaciones a proyectos.",
+          "Enviar notificaciones importantes sobre el estado de tus proyectos, actualizaciones de la plataforma o cambios en nuestras políticas.",
+          "Mejorar el rendimiento, la seguridad y la experiencia de usuario del marketplace."
+        ]
+      },
+      {
+        "title": "4. Compartir y Divulgación de Datos",
+        "paragraphs": ["La premisa principal del marketplace es conectar talento con oportunidades. Por lo tanto:"],
+        "items": [
+          "Para Juniors FWD: Al postularte a un proyecto o hacer tu perfil público, las Empresas registradas podrán ver tu nombre, habilidades, historial de proyectos y portafolio.",
+          "Para Empresas: La información general de tu empresa y los detalles de los proyectos publicados serán visibles para los Juniors registrados."
+        ],
+        "note": "Compromiso: La Fundación Forward Costa Rica no vende, alquila ni comercializa tu información personal con terceros ajenos al ecosistema FWD Talent bajo ninguna circunstancia."
+      },
+      {
+        "title": "5. Retención de Datos",
+        "paragraphs": ["Conservaremos tu información personal mientras tu cuenta permanezca activa o según sea necesario para proporcionarte los servicios de la plataforma. Si decides eliminar tu cuenta, tus datos personales serán eliminados o anonimizados de nuestros sistemas, salvo aquellos que debamos conservar por obligaciones legales o para la resolución de disputas."]
+      },
+      {
+        "title": "6. Seguridad de la Información",
+        "paragraphs": ["Implementamos medidas de seguridad técnicas y organizativas para proteger tu información contra acceso no autorizado, pérdida o alteración. Esto incluye el uso de encriptación para contraseñas y comunicaciones seguras. Sin embargo, ningún sistema en internet es 100% seguro, por lo que te instamos a utilizar contraseñas fuertes y mantener tus credenciales confidenciales."]
+      },
+      {
+        "title": "7. Tus Derechos",
+        "paragraphs": ["Tienes el derecho de acceder, rectificar, actualizar o solicitar la eliminación de tu información personal en cualquier momento. Puedes gestionar la mayoría de tus datos directamente desde la sección \"Perfil\" en la plataforma. Si deseas ejercer algún derecho adicional o solicitar la eliminación completa de tu cuenta, puedes contactarnos."]
+      },
+      {
+        "title": "8. Cookies y Tecnologías Similares",
+        "paragraphs": ["Utilizamos cookies esenciales para mantener tu sesión activa y garantizar la seguridad de tu navegación. También podemos utilizar cookies analíticas de forma anonimizada para entender cómo se utiliza la plataforma y mejorar nuestros servicios. Puedes configurar tu navegador para rechazar cookies, aunque esto podría afectar el funcionamiento del sitio."]
+      },
+      {
+        "title": "9. Servicios de Terceros e IA",
+        "paragraphs": ["Para el funcionamiento de la plataforma y el análisis de compatibilidad (matching), utilizamos APIs de terceros (como servicios de IA para procesar coincidencias de habilidades). Los datos enviados a estos servicios se limitan a la información estrictamente necesaria y se procesan bajo acuerdos de confidencialidad y privacidad estrictos."]
+      },
+      {
+        "title": "10. Cambios a esta Política",
+        "paragraphs": ["Nos reservamos el derecho de actualizar esta Política de Privacidad periódicamente para reflejar cambios en nuestras prácticas o por requerimientos legales. Te notificaremos sobre actualizaciones significativas mediante un aviso en la plataforma o por correo electrónico."]
+      },
+      {
+        "title": "11. Contacto",
+        "paragraphs": ["Si tienes dudas, consultas o inquietudes relacionadas con el manejo de tus datos personales o esta Política de Privacidad, no dudes en ponerte en contacto con el equipo de soporte técnico de la Fundación Forward Costa Rica."]
+      }
+    ]
   },
   "postulaciones_empresa": {
     "select_for_award": "Seleccionar esta propuesta para adjudicar",
@@ -2067,6 +2165,11 @@
     "chat_label_empresa": "Empresa",
     "chat_label_junior": "Junior",
     "chat_empty": "Aún no hay mensajes. Iniciá la conversación.",
+    "chat_send_error": "No se pudo enviar el mensaje. Probá de nuevo.",
+    "chat_loading": "Cargando chat",
+    "project_load_failed": "No se pudo cargar el proyecto.",
+    "back_to_projects": "Volver a mis proyectos",
+    "conditions_faq_label": "Condiciones y preguntas frecuentes",
     "chat_placeholder": "Escribí un mensaje... (Enter para enviar)",
     "chat_send": "Enviar mensaje",
     "chat_hint": "Enter para enviar · Shift+Enter para nueva línea",
@@ -2620,6 +2723,55 @@
     "matches_invited_btn": "Invitado",
     "matches_toast_invited": "{name} fue invitado al proyecto."
   },
+  "project_preview_modal": {
+    "close": "Cerrar",
+    "days": "días",
+    "uses_ia": "Con IA",
+    "company_type_empresa": "Empresa",
+    "company_type_emprendedor": "Emprendedor",
+    "view_company_profile": "Ver perfil",
+    "go_to_gestion": "Ir a gestión"
+  },
+  "public_empresa_profile": {
+    "not_found": "Perfil de empresa no encontrado.",
+    "back_to_marketplace": "Volver al marketplace",
+    "type_empresa": "Empresa",
+    "type_emprendedor": "Emprendedor",
+    "etapa_idea": "Idea",
+    "etapa_mvp": "MVP",
+    "etapa_validating": "En validación",
+    "etapa_scaling": "En crecimiento",
+    "no_name": "Empresa",
+    "website": "Sitio web",
+    "about": "Sobre nosotros",
+    "sectors": "Sectores",
+    "mission_vision": "Misión y visión",
+    "mission": "MISIÓN",
+    "vision": "VISIÓN",
+    "culture": "Cultura",
+    "modalities": "Modalidades",
+    "schedule": "Horario"
+  },
+  "public_junior_profile": {
+    "not_found": "Perfil de junior no encontrado.",
+    "back": "Volver",
+    "about": "Sobre mí",
+    "skills": "Habilidades técnicas",
+    "knowledge": "Conocimientos adicionales",
+    "availability": "Disponibilidad",
+    "availability_label": "DISPONIBILIDAD",
+    "modality_label": "MODALIDAD",
+    "portfolio_link": "Portafolio",
+    "portfolio": "Portafolio de proyectos",
+    "especialidad_frontend": "Frontend",
+    "especialidad_backend": "Backend",
+    "especialidad_fullstack": "Fullstack",
+    "especialidad_ia": "IA",
+    "disponibilidad_immediate": "Disponible ahora",
+    "disponibilidad_two_weeks": "Disponible en 2 semanas",
+    "disponibilidad_one_month": "Disponible en 1 mes",
+    "disponibilidad_unavailable": "No disponible"
+  },
   "project_chatbot": {
     "title": "Asistente del proyecto",
     "subtitle": "Resolvé tus dudas antes de postular",
@@ -2630,7 +2782,6 @@
     "thinking": "Pensando…",
     "input_placeholder": "Escribí tu pregunta…",
     "send": "Enviar",
-    "prefer_human": "¿Preferís hablar con la empresa?",
     "talk_to_company": "Hablar con la empresa",
     "escalate_title": "Escribile a la empresa",
     "escalate_desc": "La empresa lo verá y te responderá en el chat del proyecto.",

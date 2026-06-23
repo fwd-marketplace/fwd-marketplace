@@ -1,7 +1,8 @@
 "use client";
 
 import { useState, useTransition } from "react";
-import { useTranslations } from "next-intl";
+import Link from "next/link";
+import { useTranslations, useLocale } from "next-intl";
 import {
   BookOpen,
   CheckCircle2,
@@ -258,6 +259,7 @@ function OfferCard({
   onToggleSelect: (id: string) => void;
 }) {
   const t = useTranslations("postulaciones_empresa");
+  const locale = useLocale();
   const [expanded, setExpanded] = useState(false);
   const [activeTab, setActiveTab] = useState<OfferTab>("propuesta");
 
@@ -308,7 +310,12 @@ function OfferCard({
 
         <div className="flex-1 min-w-0">
           <div className="flex flex-wrap items-center gap-2 mb-0.5">
-            <h3 className="font-heading text-base font-bold text-ink-strong">{juniorName}</h3>
+            <Link
+              href={`/${locale}/junior/${offer.junior.id}`}
+              className="font-heading text-base font-bold text-ink-strong hover:text-primary transition-colors duration-[var(--duration-fast)]"
+            >
+              {juniorName}
+            </Link>
             <StatusPill
               label={t(`offer_states.${offer.estado.nombre}`)}
               variant={offerVariant(offer.estado.nombre)}
