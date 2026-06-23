@@ -2667,9 +2667,11 @@
     "matches_invited_btn": "Invited",
     "matches_toast_invited": "{name} was invited to the project."
   },
-<<<<<<< HEAD
   "cosmos_profesional": {
     "screen_label": "Important points constellation",
+    "eyebrow": "Professional constellation",
+    "title": "Connect the dots of your career",
+    "description": "Each star is a reason to start here: real projects, companies that post, and matches based on your skills",
     "controls": {
       "style_aria": "Star style",
       "style_diamante": "◆ Diamond",
@@ -2752,7 +2754,7 @@
     "disponibilidad_two_weeks": "Available in 2 weeks",
     "disponibilidad_one_month": "Available in 1 month",
     "disponibilidad_unavailable": "Not available"
-=======
+  },
   "project_chatbot": {
     "title": "Project assistant",
     "subtitle": "Clear up your questions before applying",
@@ -2802,6 +2804,5 @@
     "sent_title": "Report sent",
     "sent_desc": "Thanks. The moderation team will review it.",
     "error": "Couldn't send the report. Try again."
->>>>>>> cbc5783a949bfd93bbf5bd117333bf550ed5dcd3
   }
 }
