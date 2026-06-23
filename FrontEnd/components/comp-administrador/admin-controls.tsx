@@ -101,3 +101,47 @@ export function EmptyRow({ message }: { message: string }) {
     </div>
   );
 }
+
+const AVATAR_SIZE_CLASS = {
+  sm: "size-9 text-xs",
+  md: "size-10 text-xs",
+  lg: "size-14 text-base",
+} as const;
+
+const AVATAR_TONE_CLASS = {
+  primary: "bg-primary/10 text-primary",
+  secondary: "bg-secondary/10 text-secondary",
+} as const;
+
+/**
+ * Avatar de perfil compartido por las vistas de admin: muestra la foto (avatar del
+ * estudiante o logo de la empresa) y, si no hay, las iniciales en un círculo tintado.
+ */
+export function ProfileAvatar({
+  photoUrl,
+  fallback,
+  name,
+  size = "md",
+  tone = "primary",
+}: {
+  photoUrl: string | null;
+  fallback: string;
+  name?: string;
+  size?: keyof typeof AVATAR_SIZE_CLASS;
+  tone?: keyof typeof AVATAR_TONE_CLASS;
+}) {
+  const sizeClass = AVATAR_SIZE_CLASS[size];
+  if (photoUrl) {
+    return (
+      <span className={`flex ${sizeClass} shrink-0 items-center justify-center overflow-hidden rounded-full ring-1 ring-border`}>
+        {/* eslint-disable-next-line @next/next/no-img-element */}
+        <img src={photoUrl} alt={name ?? fallback} className="size-full object-cover" />
+      </span>
+    );
+  }
+  return (
+    <span className={`flex ${sizeClass} shrink-0 items-center justify-center rounded-full font-body font-bold ${AVATAR_TONE_CLASS[tone]}`}>
+      {fallback}
+    </span>
+  );
+}

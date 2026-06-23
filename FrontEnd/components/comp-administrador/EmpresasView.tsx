@@ -86,6 +86,23 @@ function TypeBadge({ type, label }: { type: CompanyType; label: string }) {
   );
 }
 
+function CompanyAvatar({ logoUrl, name, size }: { logoUrl: string | null; name: string; size: "sm" | "lg" }) {
+  const sizeClass = size === "lg" ? "size-14 text-base" : "size-10 text-xs";
+  if (logoUrl) {
+    return (
+      <span className={`flex ${sizeClass} shrink-0 items-center justify-center overflow-hidden rounded-full ring-1 ring-border`}>
+        {/* eslint-disable-next-line @next/next/no-img-element */}
+        <img src={logoUrl} alt={name} className="size-full object-cover" />
+      </span>
+    );
+  }
+  return (
+    <span className={`flex ${sizeClass} shrink-0 items-center justify-center rounded-full bg-primary/10 font-body font-bold text-primary dark:bg-primary dark:text-primary-foreground`}>
+      {buildInitials(name)}
+    </span>
+  );
+}
+
 function StatusBadge({ status, label }: { status: AccountState; label: string }) {
   return (
     <span className={`rounded-full px-2.5 py-0.5 font-body text-[10px] font-bold uppercase tracking-wider ${STATUS_BADGE_STYLE[status]}`}>
@@ -154,7 +171,7 @@ function CompanyDetailModal({ company, locale, onClose }: { company: AdminCompan
     <ModalShell titleId={titleId} onClose={onClose}>
       <div className="flex items-start justify-between gap-4 border-b border-border bg-surface-sunken p-6">
         <div className="flex min-w-0 items-center gap-4">
-          <span className="flex size-14 shrink-0 items-center justify-center rounded-full bg-primary/10 font-body text-base font-bold text-primary">{buildInitials(name)}</span>
+          <CompanyAvatar logoUrl={company.url_logo} name={name} size="lg" />
           <div className="min-w-0">
             <h2 id={titleId} className="truncate font-heading text-xl font-bold tracking-tight text-ink-strong">{name}</h2>
             <p className="font-body text-sm text-ink-muted">{t("detail_modal.subtitle")}</p>
@@ -632,7 +649,7 @@ export function EmpresasView({ companies, locale }: { companies: AdminCompany[];
                     <tr key={company.id} className="font-body text-sm transition-colors duration-[var(--duration-fast)] ease-[var(--ease-out)] hover:bg-surface-sunken/40">
                       <td className="px-6 py-4">
                         <div className="flex items-center gap-3">
-                          <span className="flex size-10 shrink-0 items-center justify-center rounded-full bg-primary/10 font-body text-xs font-bold text-primary">{buildInitials(name)}</span>
+                          <CompanyAvatar logoUrl={company.url_logo} name={name} size="sm" />
                           <div className="min-w-0">
                             <p className="truncate font-semibold text-ink-strong">{name}</p>
                             <p className="truncate text-xs text-ink-muted">{company.usuario?.correo ?? EMPTY_VALUE}</p>

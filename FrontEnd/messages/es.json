@@ -103,12 +103,20 @@
     "how_it_works": {
       "eyebrow": "Cómo funciona",
       "title": "En 3 pasos simples",
+      "audience_juniors": "Para estudiantes",
+      "audience_empresas": "Para empresas",
       "step1_title": "Crea tu perfil",
       "step1_desc": "Completa tu perfil con tus habilidades, stack tecnológico y disponibilidad.",
       "step2_title": "Encuentra proyectos",
       "step2_desc": "Explora proyectos reales de empresas que buscan exactamente tu perfil.",
       "step3_title": "Entrega y cobra",
-      "step3_desc": "Trabaja en el proyecto, entrega a tiempo y recibe tu pago seguro."
+      "step3_desc": "Trabaja en el proyecto, entrega a tiempo y recibe tu pago seguro.",
+      "empresa_step1_title": "Publica tu proyecto",
+      "empresa_step1_desc": "Describe tu proyecto, el stack que necesitas y el presupuesto disponible.",
+      "empresa_step2_title": "Recibe postulaciones",
+      "empresa_step2_desc": "Estudiantes con el perfil correcto te enviarán su carta y portafolio.",
+      "empresa_step3_title": "Contrata y paga",
+      "empresa_step3_desc": "Elige al mejor candidato, recibe la entrega y paga de forma segura."
     }
   },
   "login": {
@@ -260,7 +268,7 @@
         "label_apellido2": "Segundo apellido",
         "placeholder_apellido2": "Ej. López",
         "label_cedula": "Número de cédula",
-        "placeholder_cedula": "Ej. 1-1234-5678"
+        "placeholder_cedula": "Tu número de cédula (ej. 1-1234-5678)"
       },
       "step2": {
         "eyebrow": "Tu especialización",
@@ -2726,6 +2734,42 @@
     "matches_invite_btn": "Invitar",
     "matches_invited_btn": "Invitado",
     "matches_toast_invited": "{name} fue invitado al proyecto."
+  },
+  "cosmos_profesional": {
+    "screen_label": "Constelación de puntos importantes",
+    "controls": {
+      "style_aria": "Estilo de estrella",
+      "style_diamante": "◆ Diamante",
+      "style_circulo": "● Círculo",
+      "style_punta4": "✦ 4 puntas",
+      "style_punta6": "✶ 6 puntas",
+      "style_destello": "✧ Destello",
+      "style_anillo": "◌ Anillo",
+      "toggle_aria": "Mostrar u ocultar trazos",
+      "trazos": "Trazos"
+    },
+    "stars": {
+      "0": {
+        "title": "Proyectos reales",
+        "desc": "Trabajá en retos de empresas, no en ejercicios de práctica."
+      },
+      "1": {
+        "title": "Las empresas publican",
+        "desc": "Suben proyectos y briefs pensados para talento junior."
+      },
+      "2": {
+        "title": "Match con tus skills",
+        "desc": "Te mostramos oportunidades según lo que sabés hacer."
+      },
+      "3": {
+        "title": "Notificaciones",
+        "desc": "Enterate apenas se abre un proyecto que encaja con vos."
+      },
+      "4": {
+        "title": "Publicate",
+        "desc": "Hacete visible como una estrella del cielo."
+      }
+    }
   },
   "project_preview_modal": {
     "close": "Cerrar",

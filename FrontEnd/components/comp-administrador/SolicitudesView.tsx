@@ -211,9 +211,16 @@ export function SolicitudesView({ initialUsers }: { initialUsers: AdminPendingUs
             return (
               <article key={user.id} className={`rounded-2xl bg-surface p-5 shadow-soft ring-1 transition-shadow ${isOpen ? "ring-primary/40" : "ring-border"}`}>
                 <div className="flex flex-wrap items-center gap-4">
-                  <span className={`flex size-12 shrink-0 items-center justify-center rounded-xl ${meta.bg}`}>
-                    <Icon className={`size-5 ${meta.tone}`} aria-hidden="true" />
-                  </span>
+                  {user.url_foto ? (
+                    <span className="flex size-12 shrink-0 items-center justify-center overflow-hidden rounded-xl ring-1 ring-border">
+                      {/* eslint-disable-next-line @next/next/no-img-element */}
+                      <img src={user.url_foto} alt={fullName} className="size-full object-cover" />
+                    </span>
+                  ) : (
+                    <span className={`flex size-12 shrink-0 items-center justify-center rounded-xl ${meta.bg}`}>
+                      <Icon className={`size-5 ${meta.tone}`} aria-hidden="true" />
+                    </span>
+                  )}
                   <div className="min-w-0 flex-1">
                     <h3 className="font-heading text-base font-bold text-ink-strong">{meta.title}</h3>
                     <p className="font-body text-sm text-ink">{fullName}</p>

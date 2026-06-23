@@ -16,10 +16,23 @@ import {
   Loader2,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { ProfileAvatar } from "@/components/comp-administrador/admin-controls";
 import { approveAdminUserAction, cancelAdminProjectAction } from "@/lib/actions/admin";
-import type { AdminPendingUser, AdminProject, ProjectState } from "@/lib/api/types";
+import type { AdminPendingUser, AdminProject, AdminStudent, ProjectState } from "@/lib/api/types";
 
 const ACTIVE_STATES: ProjectState[] = ["en_recepcion", "en_evaluacion", "adjudicado", "en_desarrollo"];
+
+const STATE_LABEL: Record<ProjectState, string> = {
+  borrador: "Borrador",
+  en_recepcion: "En recepción",
+  en_evaluacion: "En evaluación",
+  adjudicado: "Adjudicado",
+  en_desarrollo: "En desarrollo",
+  cerrado: "Cerrado",
+  cancelado: "Cancelado",
+  pausado: "Pausado",
+};
+
 
 const MODULES = [
   { key: "talento", icon: Users, href: "/admin/talento" },
@@ -49,9 +62,11 @@ function initials(text: string): string {
 export function DashboardView({
   pendingUsers,
   projects,
+  pendingStudents,
 }: {
   pendingUsers: AdminPendingUser[];
   projects: AdminProject[];
+  pendingStudents: AdminStudent[];
 }) {
   const locale = useLocale();
   const t = useTranslations("admin_dashboard");
@@ -63,7 +78,7 @@ export function DashboardView({
 
   const stats = useMemo(() => {
     const companies = pendingUsers.filter((u) => u.role?.nombre === "company").length;
-    const students = pendingUsers.filter((u) => u.role?.nombre === "student").length;
+    const students = pendingStudents.length;
     const active = projects.filter((p) => ACTIVE_STATES.includes(p.estado.nombre)).length;
     const cancelled = projects.filter((p) => p.estado.nombre === "cancelado").length;
     return [
@@ -74,7 +89,7 @@ export function DashboardView({
       { label: t("stats.requests_label"), value: String(pendingUsers.length), caption: t("stats.requests_caption"), highlight: true },
       { label: t("stats.cancelled_label"), value: String(cancelled), caption: t("stats.cancelled_caption") },
     ];
-  }, [pendingUsers, projects, t]);
+  }, [pendingUsers, pendingStudents, projects, t]);
 
   const filteredAdmissions = useMemo(() => {
     const q = admissionQuery.trim().toLowerCase();
@@ -183,7 +198,7 @@ export function DashboardView({
                       <tr key={user.id} className="font-body text-sm">
                         <td className="py-3.5">
                           <div className="flex items-center gap-3">
-                            <span className="flex size-9 shrink-0 items-center justify-center rounded-full bg-primary/10 font-body text-xs font-bold text-primary">{initials(fullName)}</span>
+                            <ProfileAvatar photoUrl={user.url_foto} fallback={initials(fullName)} name={fullName} size="sm" />
                             <div className="min-w-0">
                               <p className="font-semibold text-ink-strong">{fullName}</p>
                               <p className="text-xs text-ink-muted">{user.correo}</p>

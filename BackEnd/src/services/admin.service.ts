@@ -13,6 +13,77 @@ const USER_BASE_SELECT =
   "id, nombre, apellido1, apellido2, cedula, correo, estado_cuenta, fecha_registro, role:roles(nombre)";
 
 /**
+ * Mapa `empresario.id -> URL del logo` (archivo `files` con `tipo = 'logo'`), para adjuntar
+ * el logo a los listados de gestión sin un query por fila. La política `files_logo_publico`
+ * deja a cualquier autenticado leer los logos, así que sirve el cliente con el token del admin.
+ */
+async function getCompanyLogos(
+  client: ReturnType<typeof supabaseForToken>,
+  empresarioIds: string[],
+): Promise<Map<string, string>> {
+  const uniqueIds = [...new Set(empresarioIds)];
+  if (uniqueIds.length === 0) return new Map();
+
+  const { data, error } = await client
+    .from("files")
+    .select("id_empresario, storage_path")
+    .eq("tipo", "logo")
+    .in("id_empresario", uniqueIds);
+  if (error) throw new ApiError(500, error.message);
+
+  const logosByEmpresario = new Map<string, string>();
+  for (const file of data ?? []) {
+    if (file.id_empresario) logosByEmpresario.set(file.id_empresario, file.storage_path);
+  }
+  return logosByEmpresario;
+}
+
+/**
+ * Mapa `users.id -> URL de foto de perfil` para los listados de usuarios, sin un query por
+ * fila. Resuelve el avatar del estudiante (columna `estudiante.url_avatar`) y el logo de la
+ * empresa (`files.tipo='logo'` vía `empresario`). Un usuario admin no tiene foto asociada.
+ * Las políticas `estudiante_admin_ver`, `empresario_ver_perfil` y `files_logo_publico` dejan
+ * leer estos datos con el token del admin.
+ */
+async function getUserPhotos(
+  client: ReturnType<typeof supabaseForToken>,
+  userIds: string[],
+): Promise<Map<string, string>> {
+  const photosByUser = new Map<string, string>();
+  const uniqueIds = [...new Set(userIds)];
+  if (uniqueIds.length === 0) return photosByUser;
+
+  // Avatares de estudiantes (columna directa en `estudiante`).
+  const { data: estudiantes, error: estudiantesError } = await client
+    .from("estudiante")
+    .select("id_usuario, url_avatar")
+    .in("id_usuario", uniqueIds);
+  if (estudiantesError) throw new ApiError(500, estudiantesError.message);
+  for (const estudiante of estudiantes ?? []) {
+    if (estudiante.url_avatar) photosByUser.set(estudiante.id_usuario, estudiante.url_avatar);
+  }
+
+  // Logos de empresas: se mapea `empresario.id -> id_usuario` y se reusa `getCompanyLogos`.
+  const { data: empresarios, error: empresariosError } = await client
+    .from("empresario")
+    .select("id, id_usuario")
+    .in("id_usuario", uniqueIds);
+  if (empresariosError) throw new ApiError(500, empresariosError.message);
+
+  const userByEmpresario = new Map<string, string>();
+  for (const empresario of empresarios ?? []) {
+    if (empresario.id_usuario) userByEmpresario.set(empresario.id, empresario.id_usuario);
+  }
+  const logosByEmpresario = await getCompanyLogos(client, [...userByEmpresario.keys()]);
+  for (const [empresarioId, logoUrl] of logosByEmpresario) {
+    const userId = userByEmpresario.get(empresarioId);
+    if (userId) photosByUser.set(userId, logoUrl);
+  }
+
+  return photosByUser;
+}
+
+/**
  * Lista los usuarios con la cuenta en 'pendiente' (a la espera de aprobación).
  * Solo un admin puede leerlos (RLS: `users_admin_ver_todos` via `is_admin()`).
  */
@@ -27,7 +98,9 @@ export async function listPendingUsers(accessToken: string) {
     .order("fecha_registro", { ascending: true });
 
   if (error) throw new ApiError(500, error.message);
-  return data;
+
+  const photosByUser = await getUserPhotos(client, (data ?? []).map((user) => user.id));
+  return (data ?? []).map((user) => ({ ...user, url_foto: photosByUser.get(user.id) ?? null }));
 }
 
 /** Estados válidos de `users.estado_cuenta` (coincide con el CHECK de la BD). */
@@ -78,7 +151,9 @@ export async function listAllUsers(accessToken: string) {
     .order("fecha_registro", { ascending: false });
 
   if (error) throw new ApiError(500, error.message);
-  return data;
+
+  const photosByUser = await getUserPhotos(client, (data ?? []).map((user) => user.id));
+  return (data ?? []).map((user) => ({ ...user, url_foto: photosByUser.get(user.id) ?? null }));
 }
 
 /** Nombres de las skills de un estudiante (catálogo `skills` vía `student_skills`). */
@@ -130,10 +205,15 @@ export async function getUserDetail(accessToken: string, targetUserId: string) {
       .eq("id_usuario", targetUserId)
       .maybeSingle();
     if (estudianteError) throw new ApiError(500, estudianteError.message);
-    if (!estudiante) return { ...user, estudiante: null, empresario: null };
+    if (!estudiante) return { ...user, url_foto: null, estudiante: null, empresario: null };
 
     const skills = await getStudentSkills(client, estudiante.id);
-    return { ...user, estudiante: { ...estudiante, skills }, empresario: null };
+    return {
+      ...user,
+      url_foto: estudiante.url_avatar ?? null,
+      estudiante: { ...estudiante, skills },
+      empresario: null,
+    };
   }
 
   if (user.role?.nombre === "company") {
@@ -143,10 +223,19 @@ export async function getUserDetail(accessToken: string, targetUserId: string) {
       .eq("id_usuario", targetUserId)
       .maybeSingle();
     if (empresarioError) throw new ApiError(500, empresarioError.message);
-    return { ...user, estudiante: null, empresario: empresario ?? null };
+
+    const logosByEmpresario = empresario
+      ? await getCompanyLogos(client, [empresario.id])
+      : new Map<string, string>();
+    return {
+      ...user,
+      url_foto: empresario ? logosByEmpresario.get(empresario.id) ?? null : null,
+      estudiante: null,
+      empresario: empresario ?? null,
+    };
   }
 
-  return { ...user, estudiante: null, empresario: null };
+  return { ...user, url_foto: null, estudiante: null, empresario: null };
 }
 
 /** Resuelve el `id` de un rol a partir de su nombre. 400 si no existe (seeds). */
@@ -206,6 +295,22 @@ export async function createUser(input: CreateUserInput) {
     await admin.auth.admin.deleteUser(userId);
     throw new ApiError(400, insertError?.message ?? "No se pudo crear el perfil de usuario");
   }
+
+  // Para 'student' se crea además la fila mínima de `estudiante`: sin ella el egresado no
+  // aparecería en la vista de talento (que lee de `estudiante`, no de `users`). El propio
+  // usuario completa el resto del perfil en su onboarding. La verificación queda 'pendiente'
+  // (default de la tabla). Mismo enfoque que `createCompany` con `empresario`.
+  if (input.rol === "student") {
+    const { error: profileError } = await admin
+      .from("estudiante")
+      .insert({ id_usuario: userId });
+    if (profileError) {
+      // Rollback total: borrar el auth user (la cascada elimina la fila `users`).
+      await admin.auth.admin.deleteUser(userId);
+      throw new ApiError(400, profileError.message);
+    }
+  }
+
   return row;
 }
 
@@ -289,7 +394,12 @@ export async function listAllCompanies(accessToken: string) {
     .order("id", { ascending: true });
 
   if (error) throw new ApiError(500, error.message);
-  return data;
+
+  const logosByEmpresario = await getCompanyLogos(client, (data ?? []).map((company) => company.id));
+  return (data ?? []).map((company) => ({
+    ...company,
+    url_logo: logosByEmpresario.get(company.id) ?? null,
+  }));
 }
 
 /**
@@ -390,12 +500,23 @@ export async function listAllProjects(accessToken: string) {
   const { data, error } = await client
     .from("proyecto")
     .select(
-      "id, titulo, fecha_publicacion, estado:estado_proyecto(nombre), empresa:empresario(nombre_comercial, tipo)",
+      "id, titulo, fecha_publicacion, estado:estado_proyecto(nombre), empresa:empresario(id, nombre_comercial, tipo)",
     )
     .order("fecha_publicacion", { ascending: false, nullsFirst: false });
 
   if (error) throw new ApiError(500, error.message);
-  return data;
+
+  const empresarioIds = (data ?? [])
+    .map((project) => project.empresa?.id)
+    .filter((id): id is string => Boolean(id));
+  const logosByEmpresario = await getCompanyLogos(client, empresarioIds);
+
+  return (data ?? []).map((project) => ({
+    ...project,
+    empresa: project.empresa
+      ? { ...project.empresa, url_logo: logosByEmpresario.get(project.empresa.id) ?? null }
+      : null,
+  }));
 }
 
 /**

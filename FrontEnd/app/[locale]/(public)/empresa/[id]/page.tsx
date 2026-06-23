@@ -1,7 +1,8 @@
 import { setRequestLocale } from "next-intl/server";
 import { getTranslations } from "next-intl/server";
-import { getPublicEmpresaProfile, getPublicEmpresaProjects } from "@/lib/api/profile";
+import { getPublicEmpresaProfile, getPublicEmpresaProjects, getMe } from "@/lib/api/profile";
 import { PublicEmpresaProfile } from "@/components/public/PublicEmpresaProfile";
+import { AppHeader } from "@/components/layout/app-header";
 
 interface Props {
   params: Promise<{ locale: string; id: string }>;
@@ -12,9 +13,10 @@ export default async function PublicEmpresaPage({ params }: Props) {
   setRequestLocale(locale);
   const t = await getTranslations({ locale, namespace: "public_empresa_profile" });
 
-  const [profileResult, projectsResult] = await Promise.all([
+  const [profileResult, projectsResult, meResult] = await Promise.all([
     getPublicEmpresaProfile(id),
     getPublicEmpresaProjects(id),
+    getMe(),
   ]);
 
   if (!profileResult.ok) {
@@ -26,14 +28,23 @@ export default async function PublicEmpresaPage({ params }: Props) {
   }
 
   const projects = projectsResult.ok ? projectsResult.data : [];
+  const profile = meResult.ok ? meResult.data.profile : null;
+  const userName = profile ? `${profile.nombre}${profile.apellido1 ? ` ${profile.apellido1}` : ""}` : "";
+  const avatarUrl = profile?.empresario?.url_logo ?? profile?.estudiante?.url_avatar ?? "";
+  const role = profile?.role.nombre;
 
   return (
-    <PublicEmpresaProfile
-      perfil={profileResult.data}
-      projects={projects}
-      locale={locale}
-      backLabel={t("back_to_marketplace")}
-      backHref={`/${locale}/marketplace`}
-    />
+    <div className="flex min-h-[100dvh] flex-col bg-canvas">
+      <AppHeader userName={userName} avatarUrl={avatarUrl} {...(role !== undefined ? { role } : {})} />
+      <main className="flex-1">
+        <PublicEmpresaProfile
+          perfil={profileResult.data}
+          projects={projects}
+          locale={locale}
+          backLabel={t("back_to_marketplace")}
+          backHref={`/${locale}/marketplace`}
+        />
+      </main>
+    </div>
   );
 }
