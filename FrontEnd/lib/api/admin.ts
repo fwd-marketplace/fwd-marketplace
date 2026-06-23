@@ -95,7 +95,6 @@ export function cancelAdminProject(projectId: string): Promise<Result<void>> {
   });
 }
 
-<<<<<<< HEAD
 export function getAllCompanies(): Promise<Result<AdminCompaniesResponse>> {
   return asResult(() => apiAuth<AdminCompaniesResponse>("/admin/companies"));
 }
@@ -130,7 +129,9 @@ export function verifyAdminStudent(studentId: string): Promise<Result<void>> {
 export function rejectAdminStudent(studentId: string): Promise<Result<void>> {
   return asResult(async () => {
     await apiAuth(`/admin/students/${studentId}/rechazar`, { method: "PATCH" });
-=======
+  });
+}
+
 export function getReportes(): Promise<Result<AdminReportesResponse>> {
   return asResult(() => apiAuth<AdminReportesResponse>("/admin/reportes"));
 }
@@ -144,6 +145,5 @@ export function resolverReporte(
       method: "PATCH",
       body: JSON.stringify({ estado }),
     });
->>>>>>> eb34129fb0681ae33cce2870141185427c16d44c
   });
 }

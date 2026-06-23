@@ -70,7 +70,6 @@ export async function cancelAdminProjectAction(projectId: string) {
   return result;
 }
 
-<<<<<<< HEAD
 export async function getAdminProjectDetailAction(projectId: string) {
   return getProjectById(projectId);
 }
@@ -95,13 +94,15 @@ export async function verifyAdminStudentAction(studentId: string) {
 
 export async function rejectAdminStudentAction(studentId: string) {
   const result = await rejectAdminStudent(studentId);
-=======
+  if (result.ok) revalidatePath("/");
+  return result;
+}
+
 export async function resolverReporteAction(
   reporteId: string,
   estado: "revisado" | "desestimado",
 ) {
   const result = await resolverReporte(reporteId, estado);
->>>>>>> eb34129fb0681ae33cce2870141185427c16d44c
   if (result.ok) revalidatePath("/");
   return result;
 }

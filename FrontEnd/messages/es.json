@@ -1258,7 +1258,9 @@
   "bienvenida": {
     "hero": {
       "welcome": "¡BIENVENIDO A FWD TALENT!",
-      "greeting": "Buenos días",
+      "greeting_morning": "Buenos días",
+      "greeting_afternoon": "Buenas tardes",
+      "greeting_evening": "Buenas noches",
       "description": "Tu perfil ya está conectado con oportunidades reales.\nExplorá proyectos creados por empresas que buscan talento como el tuyo.",
       "btn_explore": "Explorar oportunidades",
       "btn_edit": "Editar mi perfil",
