@@ -1,4 +1,5 @@
 import { getTranslations } from "next-intl/server";
+import { redirect } from "next/navigation";
 import Link from "next/link";
 import { FwdGeoBackdrop } from "@/components/ui/fwd-geo-backdrop";
 import { apiAuth } from "@/lib/api-client";
@@ -16,23 +17,24 @@ export default async function DonePage({ params }: Props) {
   const { locale } = await params;
   const t = await getTranslations("done_page");
 
-  let destination = `/${locale}`;
+  // Si la cuenta YA fue aprobada por el admin, se entra al área según el rol.
+  // El estado se calcula dentro del try; el redirect va FUERA (no debe ser atrapado).
+  let approvedRole: string | null = null;
   try {
     const meData = await apiAuth<{ user: unknown; profile: ProfileData | null }>("/users/me");
-    if (meData?.profile) {
-      const roleName = meData.profile.role.nombre;
-      if (roleName === "admin") {
-        destination = `/${locale}/admin`;
-      } else if (roleName === "company") {
-        destination = `/${locale}/dashboard`;
-      } else if (roleName === "student") {
-        destination = `/${locale}/bienvenida`;
-      }
+    if (meData?.profile?.estado_cuenta === "activa") {
+      approvedRole = meData.profile.role.nombre;
     }
   } catch {
-    // fallback a /${locale}
+    // Sin sesión o error: se muestra la pantalla de revisión.
   }
 
+  if (approvedRole === "admin") redirect(`/${locale}/admin/dashboard`);
+  if (approvedRole === "company") redirect(`/${locale}/perfil-empresa`);
+  if (approvedRole === "student") redirect(`/${locale}/bienvenida`);
+  if (approvedRole) redirect(`/${locale}/marketplace`);
+
+  // Cuenta no aprobada todavía: pantalla de revisión, "volver" al inicio (home, público).
   return (
     <div className="bg-secondary relative min-h-[100dvh] overflow-hidden">
       <FwdGeoBackdrop />
@@ -53,7 +55,7 @@ export default async function DonePage({ params }: Props) {
           </p>
 
           <Link
-            href={destination}
+            href={`/${locale}/home`}
             className="inline-flex items-center justify-center rounded-full bg-primary px-8 py-3.5 font-body text-sm font-semibold text-white transition-opacity duration-[--duration-fast] hover:opacity-90"
           >
             {t("cta")}

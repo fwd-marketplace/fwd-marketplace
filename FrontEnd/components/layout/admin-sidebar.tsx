@@ -14,6 +14,7 @@ import {
   BarChart2,
   ShieldAlert,
   Settings,
+  Home,
   LogOut,
 } from "lucide-react";
 import { logoutUser } from "@/lib/actions/auth";
@@ -31,7 +32,7 @@ const NAV_ITEMS = [
   { label: "Configuración", href: "/admin/configuracion", icon: Settings },
 ] as const;
 
-export function AdminSidebar() {
+export function AdminSidebar({ userName, email }: { userName: string; email: string }) {
   const pathname = usePathname();
   const router = useRouter();
   const locale = useLocale();
@@ -79,12 +80,19 @@ export function AdminSidebar() {
       </nav>
 
       <div className="border-t border-white/10 p-3">
+        <Link
+          href={`/${locale}/bienvenida`}
+          className="mb-2 flex w-full items-center gap-2.5 rounded-lg px-3 py-2 font-body text-sm font-medium text-white/60 transition-colors duration-[var(--duration-fast)] ease-[var(--ease-out)] hover:bg-white/5 hover:text-white/90"
+        >
+          <Home className="size-4 shrink-0" aria-hidden="true" />
+          Página principal
+        </Link>
         <div className="mb-2 px-3 py-1">
-          <p className="font-body text-xs font-semibold text-white/90">
-            Admin FWD
+          <p className="truncate font-body text-xs font-semibold text-white/90">
+            {userName || "Administrador"}
           </p>
-          <p className="font-body text-[11px] text-white/50">
-            admin@fwd.cr
+          <p className="truncate font-body text-[11px] text-white/50">
+            {email}
           </p>
         </div>
         <button

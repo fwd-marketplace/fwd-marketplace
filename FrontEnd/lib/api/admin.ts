@@ -14,6 +14,8 @@ import type {
   AdminCompanyMutationResponse,
   CreateAdminCompanyInput,
   UpdateAdminCompanyInput,
+  AdminSettingsResponse,
+  UpdateAdminSettingsInput,
 } from "@/lib/api/types";
 
 async function asResult<T>(operation: () => Promise<T>): Promise<Result<T>> {
@@ -93,6 +95,19 @@ export function cancelAdminProject(projectId: string): Promise<Result<void>> {
   return asResult(async () => {
     await apiAuth(`/admin/projects/${projectId}/cancelar`, { method: "PATCH" });
   });
+}
+
+export function getAdminSettings(): Promise<Result<AdminSettingsResponse>> {
+  return asResult(() => apiAuth<AdminSettingsResponse>("/admin/settings"));
+}
+
+export function updateAdminSettings(input: UpdateAdminSettingsInput): Promise<Result<AdminSettingsResponse>> {
+  return asResult(() =>
+    apiAuth<AdminSettingsResponse>("/admin/settings", {
+      method: "PATCH",
+      body: JSON.stringify(input),
+    }),
+  );
 }
 
 export function getAllCompanies(): Promise<Result<AdminCompaniesResponse>> {
