@@ -7,6 +7,8 @@ import { useTranslations } from "next-intl";
 import { Eye, EyeOff, Lock, RotateCcwKey } from "lucide-react";
 import { confirmResetPassword } from "@/lib/actions/auth";
 import { MIN_PASSWORD_LENGTH } from "@/lib/validations/auth";
+import { FwdGeoBackdrop } from "@/components/ui/fwd-geo-backdrop";
+import { CosmicBackdrop } from "@/components/ui/cosmic-backdrop";
 
 type RecoveryTokens = {
   accessToken?: string;
@@ -77,25 +79,27 @@ export function NewPasswordForm() {
   }
 
   return (
-    <div className="flex min-h-[100dvh] flex-col bg-canvas">
+    <div className="relative flex min-h-[100dvh] flex-col overflow-hidden bg-secondary">
+      <FwdGeoBackdrop />
+      <CosmicBackdrop />
       {/* Header */}
-      <header className="flex items-center justify-between px-6 py-6 md:px-10">
+      <header className="relative flex items-center justify-between px-6 py-6 md:px-10">
         <Link
           href={`/${locale}/login`}
-          className="font-heading text-xl font-bold tracking-tight text-primary"
+          className="font-heading text-xl font-bold tracking-tight text-secondary-foreground"
         >
           {t("brand")}
         </Link>
         <Link
           href={`/${locale}/login`}
-          className="font-body text-sm text-ink-muted transition-colors duration-[--duration-fast] hover:text-ink-strong"
+          className="font-body text-sm text-white/60 transition-colors duration-[--duration-fast] hover:text-white"
         >
           {t("back_to_login")}
         </Link>
       </header>
 
       {/* Main card */}
-      <main className="flex flex-grow items-start justify-center px-4 py-8 md:py-12">
+      <main className="relative flex flex-grow items-start justify-center px-4 py-8 md:py-12">
         <div className="w-full max-w-lg rounded-3xl bg-surface px-6 py-10 shadow-soft sm:px-12">
           <div className="mx-auto mb-6 flex size-14 items-center justify-center rounded-full bg-primary/10">
             <RotateCcwKey className="size-7 text-primary" aria-hidden="true" />

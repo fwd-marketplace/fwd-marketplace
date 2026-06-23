@@ -2,6 +2,8 @@ import { getTranslations } from "next-intl/server";
 import { redirect } from "next/navigation";
 import Link from "next/link";
 import { FwdGeoBackdrop } from "@/components/ui/fwd-geo-backdrop";
+import { CosmicBackdrop } from "@/components/ui/cosmic-backdrop";
+import { HeroJourneyBadge } from "@/components/ui/HeroJourneyBadge";
 import { apiAuth } from "@/lib/api-client";
 
 type Props = {
@@ -16,6 +18,7 @@ interface ProfileData {
 export default async function DonePage({ params }: Props) {
   const { locale } = await params;
   const t = await getTranslations("done_page");
+  const tJourney = await getTranslations("hero_journey");
 
   // Si la cuenta YA fue aprobada por el admin, se entra al área según el rol.
   // El estado se calcula dentro del try; el redirect va FUERA (no debe ser atrapado).
@@ -36,8 +39,12 @@ export default async function DonePage({ params }: Props) {
 
   // Cuenta no aprobada todavía: pantalla de revisión, "volver" al inicio (home, público).
   return (
-    <div className="bg-secondary relative min-h-[100dvh] overflow-hidden">
+    <div className="relative min-h-[100dvh] overflow-hidden bg-secondary">
       <FwdGeoBackdrop />
+      <CosmicBackdrop />
+      <div className="absolute right-4 top-4">
+        <HeroJourneyBadge stage="preparacion" label={tJourney("preparacion_label")} cta={tJourney("preparacion_cta")} />
+      </div>
 
       <main className="relative flex min-h-[100dvh] flex-col items-center justify-center px-4 py-10">
         <div className="w-full max-w-lg rounded-[2rem] bg-surface px-6 py-12 shadow-elevated sm:px-12 text-center">
