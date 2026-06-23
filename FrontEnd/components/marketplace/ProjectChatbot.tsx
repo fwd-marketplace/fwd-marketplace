@@ -4,7 +4,7 @@ import { useEffect, useRef, useState } from "react";
 import Link from "next/link";
 import { useLocale, useTranslations } from "next-intl";
 import { Bot, CheckCircle2, MessagesSquare, Send, Sparkles, X } from "lucide-react";
-import { ESCALATION_TAG, streamProjectChatbot, type AiStreamEvent } from "@/lib/api/ai-client";
+import { ESCALATION_TAG, streamProjectChatbot, toAiLocale, type AiStreamEvent } from "@/lib/api/ai-client";
 import { sendMensajeAction } from "@/lib/actions/mensajes";
 import type { AiChatMessage } from "@/lib/api/types";
 import { cn } from "@/lib/utils";
@@ -13,17 +13,22 @@ interface Props {
   projectId: string;
   projectTitulo: string;
   /**
-   * Si se provee, "Ir al chat" cambia a la sección de chat en la MISMA página (sin recargar). Si no,
-   * cae a un enlace que navega a /gestion del proyecto.
+   * Modo panel completo: arranca abierto y sin botón de colapsar/cerrar. Se usa cuando el bot es
+   * el contenido principal de la pestaña del proyecto (Nivel 0 como punto de entrada del contacto).
    */
-  onGoToChat?: () => void;
+  embedded?: boolean;
+  /**
+   * Se invoca cuando el junior escala y envía el primer mensaje a la empresa, para que el contenedor
+   * recargue el hilo humano (que solo aparece una vez que existe conversación).
+   */
+  onEscalated?: () => void;
 }
 
 /**
- * Chatbot del proyecto (Nivel 0): el junior pregunta dudas sobre ESTE proyecto y el bot responde
- * anclado a su contexto. Cuando el bot no puede responder añade la etiqueta de escalamiento y el
- * widget resalta "Hablar con la empresa" (Nivel 1), que crea un mensaje real en el chat humano.
- * El enlace para hablar con la empresa está SIEMPRE disponible, pero discreto, hasta que hace falta.
+ * Chatbot del proyecto (Nivel 0): el junior pregunta dudas TÉCNICAS sobre ESTE proyecto y el bot
+ * responde anclado a su contexto. El chat directo con la empresa NO está disponible de entrada:
+ * solo cuando la pregunta deja de ser técnica el bot añade la etiqueta de escalamiento y resalta
+ * "Hablar con la empresa" (Nivel 1), que crea el primer mensaje real y abre el chat humano.
  */
 
 /** Quita la etiqueta de escalamiento (completa o un prefijo parcial al final) del texto visible. */
@@ -31,11 +36,11 @@ function stripEscalationTag(text: string): string {
   return text.replace(ESCALATION_TAG, "").replace(/\s*\[\[?[A-Z]*$/i, "").trimEnd();
 }
 
-export function ProjectChatbot({ projectId, projectTitulo, onGoToChat }: Props) {
+export function ProjectChatbot({ projectId, projectTitulo, embedded = false, onEscalated }: Props) {
   const t = useTranslations("project_chatbot");
   const locale = useLocale();
 
-  const [open, setOpen] = useState(false);
+  const [open, setOpen] = useState(embedded);
   const [messages, setMessages] = useState<AiChatMessage[]>([]);
   const [input, setInput] = useState("");
   const [streamingText, setStreamingText] = useState("");
@@ -81,6 +86,7 @@ export function ProjectChatbot({ projectId, projectTitulo, onGoToChat }: Props) 
     await streamProjectChatbot(
       projectId,
       nextHistory,
+      toAiLocale(locale),
       (event: AiStreamEvent) => {
         if (event.type === "delta") {
           accumulated += event.text;
@@ -133,6 +139,8 @@ export function ProjectChatbot({ projectId, projectTitulo, onGoToChat }: Props) 
     setEscalateSending(false);
     if (result.ok) {
       setEscalateSent(true);
+      // Avisa al contenedor para que recargue el hilo humano (que ya tiene su primer mensaje).
+      onEscalated?.();
     } else {
       setEscalateError(t("error_generic"));
     }
@@ -171,14 +179,16 @@ export function ProjectChatbot({ projectId, projectTitulo, onGoToChat }: Props) 
             <p className="font-body text-[11px] text-ink-muted">{t("header_hint")}</p>
           </div>
         </div>
-        <button
-          type="button"
-          onClick={() => setOpen(false)}
-          aria-label={t("close")}
-          className="flex size-7 items-center justify-center rounded-full text-ink-muted transition-colors hover:bg-surface-sunken hover:text-ink-strong"
-        >
-          <X className="size-4" aria-hidden="true" />
-        </button>
+        {!embedded && (
+          <button
+            type="button"
+            onClick={() => setOpen(false)}
+            aria-label={t("close")}
+            className="flex size-7 items-center justify-center rounded-full text-ink-muted transition-colors hover:bg-surface-sunken hover:text-ink-strong"
+          >
+            <X className="size-4" aria-hidden="true" />
+          </button>
+        )}
       </div>
 
       {/* Mensajes */}
@@ -233,16 +243,8 @@ export function ProjectChatbot({ projectId, projectTitulo, onGoToChat }: Props) 
             {t("escalate_sent_title")}
           </p>
           <p className="mt-1 font-body text-xs text-ink-muted">{t("escalate_sent_desc")}</p>
-          {onGoToChat ? (
-            <button
-              type="button"
-              onClick={onGoToChat}
-              className="mt-3 inline-flex items-center gap-1.5 rounded-full bg-secondary px-4 py-2 font-body text-sm font-semibold text-white transition-colors hover:bg-secondary/80"
-            >
-              <MessagesSquare className="size-4" aria-hidden="true" />
-              {t("go_to_chat")}
-            </button>
-          ) : (
+          {/* Embebido: el hilo con la empresa aparece debajo del bot. Standalone: enlace a gestión. */}
+          {!embedded && (
             <Link
               href={`/${locale}/gestion?proyecto=${projectId}`}
               className="mt-3 inline-flex items-center gap-1.5 rounded-full bg-secondary px-4 py-2 font-body text-sm font-semibold text-white transition-colors hover:bg-secondary/80"
@@ -317,8 +319,9 @@ export function ProjectChatbot({ projectId, projectTitulo, onGoToChat }: Props) 
               </button>
             </div>
 
-            {/* Botón híbrido: prominente cuando el bot lo sugiere; discreto el resto del tiempo. */}
-            {escalateSuggested ? (
+            {/* "Hablar con la empresa" aparece SOLO cuando el bot escala (pregunta no técnica).
+                No hay atajo directo: el contacto humano pasa siempre por el asistente primero. */}
+            {escalateSuggested && (
               <button
                 type="button"
                 onClick={openEscalate}
@@ -326,14 +329,6 @@ export function ProjectChatbot({ projectId, projectTitulo, onGoToChat }: Props) 
               >
                 <MessagesSquare className="size-4" aria-hidden="true" />
                 {t("talk_to_company")}
-              </button>
-            ) : (
-              <button
-                type="button"
-                onClick={openEscalate}
-                className="mt-2 block w-full text-center font-body text-xs font-medium text-ink-muted underline-offset-2 transition-colors hover:text-secondary hover:underline"
-              >
-                {t("prefer_human")}
               </button>
             )}
           </div>

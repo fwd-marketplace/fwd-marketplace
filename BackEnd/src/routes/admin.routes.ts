@@ -3,6 +3,8 @@ import { authenticate } from "../middlewares/auth.middleware";
 import { requireAdmin } from "../middlewares/requireAdmin.middleware";
 import { asyncHandler } from "../utils/asyncHandler";
 import {
+  getSettings,
+  updateSettings,
   listPending,
   approve,
   reject,
@@ -27,6 +29,9 @@ import { listReportes, resolverReporte } from "../controllers/reporte.controller
 const router = Router();
 
 // Todas exigen sesión + rol admin.
+// Configuración global del marketplace.
+router.get("/settings", authenticate, requireAdmin, asyncHandler(getSettings));
+router.patch("/settings", authenticate, requireAdmin, asyncHandler(updateSettings));
 // Las rutas literales (/users/pending) van ANTES que las paramétricas (/users/:id)
 // para que Express no interprete "pending" como un :id.
 router.get("/users/pending", authenticate, requireAdmin, asyncHandler(listPending));

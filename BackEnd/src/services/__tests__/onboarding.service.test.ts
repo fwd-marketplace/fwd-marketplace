@@ -25,6 +25,18 @@ vi.mock("../../config/supabase", () => ({
   }),
 }));
 
+// El onboarding consulta la config global (settings.service) para gatear los
+// registros; acá la fijamos en "todo habilitado" para probar solo la lógica RPC.
+vi.mock("../settings.service", () => ({
+  readAppSettings: () =>
+    Promise.resolve({
+      allow_signups: true,
+      allow_companies: true,
+      allow_applications: true,
+      enable_matching: true,
+    }),
+}));
+
 import { onboardJunior, onboardEmpresa, onboardEmprendedor } from "../onboarding.service";
 
 const TOKEN = "token";

@@ -2,7 +2,9 @@ import { supabaseForToken } from "../config/supabase";
 import { ApiError } from "../utils/ApiError";
 import { logger } from "../utils/logger";
 import { crearNotificaciones, MENSAJES_NOTIFICACION, TIPO_POR_MENSAJE } from "./notificacion.service";
-import type { Database } from "../types/database.types";
+import { oppositeLocale, translateFields } from "./ai/translation.service";
+import type { Database, Json } from "../types/database.types";
+import type { AppLocale } from "../validations/ai";
 import type {
   CreateProjectInput,
   ChangeProjectStateInput,
@@ -11,6 +13,27 @@ import type {
 
 type Client = ReturnType<typeof supabaseForToken>;
 type ProyectoUpdate = Database["public"]["Tables"]["proyecto"]["Update"];
+
+/**
+ * Traduce el contenido del proyecto (titulo/descripcion/condiciones) al idioma opuesto al original
+ * y persiste `idioma_original` + `traduccion`. Best-effort: si la traducción no está disponible se
+ * guarda `traduccion = null` (el FrontEnd no muestra el botón). No bloquea la creación/edición.
+ */
+async function persistProjectTranslation(
+  client: Client,
+  projectId: string,
+  fields: { titulo: string; descripcion: string; condiciones: string },
+  from: AppLocale,
+): Promise<void> {
+  const traduccion = await translateFields({ fields, from, to: oppositeLocale(from) });
+  const { error } = await client
+    .from("proyecto")
+    .update({ idioma_original: from, traduccion: (traduccion as Json) ?? null })
+    .eq("id", projectId);
+  if (error) {
+    logger.warn("proyecto_traduccion_persist_failed", { reason: error.message });
+  }
+}
 
 /** Resuelve el id de un estado de proyecto por nombre. */
 async function getEstadoProyectoId(client: Client, nombre: string): Promise<string> {
@@ -68,6 +91,8 @@ export const PROJECT_SELECT = `
   usa_ia,
   plazo_dias,
   tecnologias_extra,
+  idioma_original,
+  traduccion,
   fecha_publicacion,
   fecha_cierre,
   estado:estado_proyecto(id, nombre),
@@ -286,6 +311,14 @@ export async function createProject(
     if (skillsError) throw new ApiError(400, skillsError.message);
   }
 
+  // 7. Traducir el contenido al idioma opuesto y guardarlo (best-effort, no bloquea la creación).
+  await persistProjectTranslation(
+    client,
+    proyecto.id,
+    { titulo: input.titulo, descripcion: input.descripcion, condiciones: input.condiciones ?? "" },
+    input.locale,
+  );
+
   return proyecto;
 }
 
@@ -356,7 +389,7 @@ export async function updateProject(
   // 1. El proyecto debe existir y pertenecer al usuario.
   const { data: proyecto, error: projError } = await client
     .from("proyecto")
-    .select("id, empresa:empresario(id_usuario), estado:estado_proyecto(nombre)")
+    .select("id, titulo, descripcion, condiciones, empresa:empresario(id_usuario), estado:estado_proyecto(nombre)")
     .eq("id", projectId)
     .maybeSingle();
   if (projError) throw new ApiError(500, projError.message);
@@ -404,6 +437,24 @@ export async function updateProject(
       const { error: insertError } = await client.from("project_skills").insert(rows);
       if (insertError) throw new ApiError(400, insertError.message);
     }
+  }
+
+  // 3.b Si cambió algún campo de texto, re-traducir el contenido al idioma opuesto (best-effort).
+  const cambioTexto =
+    input.titulo !== undefined ||
+    input.descripcion !== undefined ||
+    input.condiciones !== undefined;
+  if (cambioTexto) {
+    await persistProjectTranslation(
+      client,
+      projectId,
+      {
+        titulo: input.titulo ?? proyecto.titulo,
+        descripcion: input.descripcion ?? proyecto.descripcion,
+        condiciones: input.condiciones ?? proyecto.condiciones,
+      },
+      input.locale,
+    );
   }
 
   // 4. Devolver el proyecto actualizado con la misma forma que el resto de endpoints.

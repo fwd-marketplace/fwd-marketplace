@@ -1,4 +1,8 @@
 {
+  "traduccion": {
+    "ver_traduccion": "Ver traducción",
+    "ver_original": "Ver original"
+  },
   "hero_journey": {
     "llamado_label": "El Llamado",
     "llamado_cta": "Da el primer paso hacia tu carrera.",
@@ -1258,7 +1262,9 @@
   "bienvenida": {
     "hero": {
       "welcome": "¡BIENVENIDO A FWD TALENT!",
-      "greeting": "Buenos días",
+      "greeting_morning": "Buenos días",
+      "greeting_afternoon": "Buenas tardes",
+      "greeting_evening": "Buenas noches",
       "description": "Tu perfil ya está conectado con oportunidades reales.\nExplorá proyectos creados por empresas que buscan talento como el tuyo.",
       "btn_explore": "Explorar oportunidades",
       "btn_edit": "Editar mi perfil",
@@ -1305,6 +1311,56 @@
       "card_title": "Vas por excelente camino",
       "card_desc": "Seguí explorando y construyendo tu futuro.",
       "btn_profile": "Ver mi perfil"
+    },
+    "estrella": {
+      "eyebrow": "Tu constelación",
+      "aria_stage": "Tu constelación del viaje del héroe",
+      "center_title": "Tu Progreso",
+      "center_sub": "{done} de {total} hitos",
+      "lit_label": "Estrellas encendidas",
+      "status": {
+        "done": "Completado",
+        "progress": "En progreso",
+        "pending": "Pendiente"
+      },
+      "task_done_label": "Tarea completada",
+      "task_todo_label": "Tarea para completar",
+      "progress_label": "Progreso",
+      "lit_on": "Encendida el {date}",
+      "next_hint": "Tu próximo paso",
+      "close": "Cerrar",
+      "items": {
+        "llamado": {
+          "name": "El Llamado",
+          "desc": "Escuchaste el llamado y diste el primer paso en tu camino profesional.",
+          "task": "Completá tu perfil y definí tu especialidad.",
+          "date": "12 mar 2026"
+        },
+        "preparacion": {
+          "name": "La Preparación",
+          "desc": "Afilaste tus habilidades y armaste las bases de tu oficio.",
+          "task": "Subí tu CV y agregá tu stack de tecnologías.",
+          "date": "2 abr 2026"
+        },
+        "desafio": {
+          "name": "El Desafío",
+          "desc": "Te enfrentás a tu primer gran reto: mostrar al mundo lo que sabés hacer.",
+          "task": "Enviá tu primera postulación y superá tu primera entrevista.",
+          "date": ""
+        },
+        "transformacion": {
+          "name": "La Transformación",
+          "desc": "Cada proyecto te transforma: dejás de ser aprendiz para volverte profesional.",
+          "task": "Completá tu primer proyecto real y sumá una reseña de la empresa.",
+          "date": ""
+        },
+        "reconocimiento": {
+          "name": "El Reconocimiento",
+          "desc": "El mundo reconoce tu valor y se abren oportunidades a tu medida.",
+          "task": "Conseguí tu primera oportunidad destacada y subí de nivel.",
+          "date": ""
+        }
+      }
     },
     "companies": {
       "title": "Empresas interesadas",
@@ -2113,6 +2169,11 @@
     "chat_label_empresa": "Empresa",
     "chat_label_junior": "Junior",
     "chat_empty": "Aún no hay mensajes. Iniciá la conversación.",
+    "chat_send_error": "No se pudo enviar el mensaje. Probá de nuevo.",
+    "chat_loading": "Cargando chat",
+    "project_load_failed": "No se pudo cargar el proyecto.",
+    "back_to_projects": "Volver a mis proyectos",
+    "conditions_faq_label": "Condiciones y preguntas frecuentes",
     "chat_placeholder": "Escribí un mensaje... (Enter para enviar)",
     "chat_send": "Enviar mensaje",
     "chat_hint": "Enter para enviar · Shift+Enter para nueva línea",
@@ -2666,42 +2727,6 @@
     "matches_invited_btn": "Invitado",
     "matches_toast_invited": "{name} fue invitado al proyecto."
   },
-  "cosmos_profesional": {
-    "screen_label": "Constelación de puntos importantes",
-    "controls": {
-      "style_aria": "Estilo de estrella",
-      "style_diamante": "◆ Diamante",
-      "style_circulo": "● Círculo",
-      "style_punta4": "✦ 4 puntas",
-      "style_punta6": "✶ 6 puntas",
-      "style_destello": "✧ Destello",
-      "style_anillo": "◌ Anillo",
-      "toggle_aria": "Mostrar u ocultar trazos",
-      "trazos": "Trazos"
-    },
-    "stars": {
-      "0": {
-        "title": "Proyectos reales",
-        "desc": "Trabajá en retos de empresas, no en ejercicios de práctica."
-      },
-      "1": {
-        "title": "Las empresas publican",
-        "desc": "Suben proyectos y briefs pensados para talento junior."
-      },
-      "2": {
-        "title": "Match con tus skills",
-        "desc": "Te mostramos oportunidades según lo que sabés hacer."
-      },
-      "3": {
-        "title": "Notificaciones",
-        "desc": "Enterate apenas se abre un proyecto que encaja con vos."
-      },
-      "4": {
-        "title": "Publicate",
-        "desc": "Hacete visible como una estrella del cielo."
-      }
-    }
-  },
   "project_preview_modal": {
     "close": "Cerrar",
     "days": "días",
@@ -2761,7 +2786,6 @@
     "thinking": "Pensando…",
     "input_placeholder": "Escribí tu pregunta…",
     "send": "Enviar",
-    "prefer_human": "¿Preferís hablar con la empresa?",
     "talk_to_company": "Hablar con la empresa",
     "escalate_title": "Escribile a la empresa",
     "escalate_desc": "La empresa lo verá y te responderá en el chat del proyecto.",

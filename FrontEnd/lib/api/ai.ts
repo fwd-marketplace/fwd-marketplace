@@ -2,6 +2,7 @@ import { ApiError, apiAuth } from "@/lib/api-client";
 import { err, ok, type Result } from "@/lib/result";
 import type {
   AiChatMessage,
+  AiLocale,
   GenerateProposalResponse,
   ProjectProposal,
   StackSuggestion,
@@ -22,22 +23,28 @@ async function asResult<T>(operation: () => Promise<T>): Promise<Result<T>> {
  * (devuelve el JSON final). El turno conversacional sí va por streaming a través
  * del route handler `/api/ai/asistente`.
  */
-export function generateProposal(history: AiChatMessage[]): Promise<Result<ProjectProposal>> {
+export function generateProposal(
+  history: AiChatMessage[],
+  locale: AiLocale,
+): Promise<Result<ProjectProposal>> {
   return asResult(async () => {
     const response = await apiAuth<GenerateProposalResponse>("/ai/generar-propuesta", {
       method: "POST",
-      body: JSON.stringify({ history }),
+      body: JSON.stringify({ history, locale }),
     });
     return response.propuesta;
   });
 }
 
 /** Sugiere habilidades del catálogo para el formulario manual (no es streaming). */
-export function suggestStack(input: SuggestStackInput): Promise<Result<StackSuggestion>> {
+export function suggestStack(
+  input: SuggestStackInput,
+  locale: AiLocale,
+): Promise<Result<StackSuggestion>> {
   return asResult(async () => {
     const response = await apiAuth<SuggestStackResponse>("/ai/sugerir-stack", {
       method: "POST",
-      body: JSON.stringify(input),
+      body: JSON.stringify({ ...input, locale }),
     });
     return response.sugerencia;
   });

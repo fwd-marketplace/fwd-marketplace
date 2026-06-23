@@ -49,6 +49,13 @@ export type CatalogsResponse = {
   conocimientos: CatalogKnowledge[];
 };
 
+/** Contenido del proyecto traducido al idioma opuesto al original (para "ver traducción"). */
+export type ProjectTranslation = {
+  titulo: string;
+  descripcion: string;
+  condiciones: string;
+};
+
 export type ApiProject = {
   id: string;
   titulo: string;
@@ -57,6 +64,10 @@ export type ApiProject = {
   usa_ia: boolean;
   plazo_dias: number;
   tecnologias_extra?: string[];
+  /** Idioma en que la empresa escribió el proyecto. */
+  idioma_original?: AiLocale;
+  /** Traducción al idioma opuesto; null/ausente si no está disponible. */
+  traduccion?: ProjectTranslation | null;
   fecha_publicacion: string | null;
   fecha_cierre: string | null;
   estado: { id?: string; nombre: ProjectState };
@@ -88,6 +99,9 @@ export type AiChatMessage = {
   role: "user" | "assistant";
   content: string;
 };
+
+/** Idioma en el que debe responder la IA (coincide con los locales de next-intl). */
+export type AiLocale = "es" | "en";
 
 export type ProposalSkill = {
   id: string;
@@ -491,6 +505,21 @@ export type AdminUserDetailResponse = {
   user: AdminUserDetail;
 };
 
+// ── Configuración global (admin) ──
+
+export type AdminSettings = {
+  allow_signups: boolean;
+  allow_companies: boolean;
+  allow_applications: boolean;
+  enable_matching: boolean;
+};
+
+export type AdminSettingsResponse = {
+  settings: AdminSettings;
+};
+
+export type UpdateAdminSettingsInput = Partial<AdminSettings>;
+
 // ── Gestión de empresas (admin) ──
 
 export type CompanyType = "empresa" | "emprendedor";
@@ -631,6 +660,10 @@ export type ApiMensajeUser = { id: string; nombre: string; apellido1: string | n
 export type ApiMensaje = {
   id: string;
   contenido: string;
+  /** Idioma original del mensaje. */
+  idioma_original?: AiLocale;
+  /** Contenido traducido al idioma opuesto; null/ausente si no está disponible. */
+  contenido_traducido?: string | null;
   fecha_envio: string;
   es_publico: boolean;
   remitente: ApiMensajeUser | null;
