@@ -485,10 +485,23 @@ export type AdminUserStudentProfile = {
 export type AdminUserCompanyProfile = {
   tipo: "empresa" | "emprendedor";
   nombre_comercial: string | null;
+  cedula_juridica: string | null;
   descripcion: string | null;
   sector: string | null;
   etapa: string | null;
   url_sitio_web: string | null;
+  direccion: string | null;
+  cantidad_empleados: string | null;
+  modalidades: string | null;
+  horario: string | null;
+  presupuesto: string | null;
+  tipos_proyecto: string | null;
+  apoyo_tecnico_necesario: string | null;
+  mision: string | null;
+  vision: string | null;
+  cultura: string | null;
+  valores: string | null;
+  contactos: string | null;
 };
 
 export type AdminUserDetail = {
