@@ -11,9 +11,8 @@ export default async function RegisterPage({ params }: Props) {
   setRequestLocale(locale);
   const t = await getTranslations("hero_journey");
   return (
-    <>
-      <HeroJourneyBadge stage="llamado" label={t("llamado_label")} cta={t("llamado_cta")} />
-      <RegisterForm />
-    </>
+    <RegisterForm
+      badge={<HeroJourneyBadge stage="llamado" label={t("llamado_label")} cta={t("llamado_cta")} />}
+    />
   );
 }
