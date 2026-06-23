@@ -1241,10 +1241,10 @@ function ChatPanel({
   t: T;
   userId: string | null;
 }) {
-  const [rawMsgs, setRawMsgs]       = useState<ApiMensaje[]>([]);
-  const [draft, setDraft]           = useState("");
-  const [sending, setSending]       = useState(false);
-  const [sendError, setSendError]   = useState("");
+  const [rawMsgs, setRawMsgs] = useState<ApiMensaje[]>([]);
+  const [draft, setDraft] = useState("");
+  const [sending, setSending] = useState(false);
+  const [sendError, setSendError] = useState("");
   const [selectedJuniorId, setSelectedJuniorId] = useState<string | null>(null);
   const bottomRef = useRef<HTMLDivElement>(null);
 
@@ -1535,11 +1535,11 @@ function JuniorContactoPanel({
   userId: string | null;
   onConversationActivity?: () => void;
 }) {
-  const [rawMsgs, setRawMsgs]     = useState<ApiMensaje[]>([]);
-  const [draft, setDraft]         = useState("");
-  const [sending, setSending]     = useState(false);
+  const [rawMsgs, setRawMsgs] = useState<ApiMensaje[]>([]);
+  const [draft, setDraft] = useState("");
+  const [sending, setSending] = useState(false);
   const [sendError, setSendError] = useState("");
-  const [loaded, setLoaded]       = useState(false);
+  const [loaded, setLoaded] = useState(false);
   const bottomRef = useRef<HTMLDivElement>(null);
 
   // Guard de desmontaje (seguro para React Strict Mode: se re-activa en cada montaje).
@@ -1580,7 +1580,7 @@ function JuniorContactoPanel({
     bottomRef.current?.scrollIntoView({ behavior: "smooth" });
   }, [rawMsgs.length]);
 
-  const empresaName    = empresaNombre ?? t("chat_label_empresa");
+  const empresaName = empresaNombre ?? t("chat_label_empresa");
   const empresaInitial = empresaNombre?.[0]?.toUpperCase() ?? "E";
 
   const send = async () => {

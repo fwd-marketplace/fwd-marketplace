@@ -21,6 +21,18 @@ import type { AdminPendingUser, AdminProject, ProjectState } from "@/lib/api/typ
 
 const ACTIVE_STATES: ProjectState[] = ["en_recepcion", "en_evaluacion", "adjudicado", "en_desarrollo"];
 
+const STATE_LABEL: Record<ProjectState, string> = {
+  borrador: "Borrador",
+  en_recepcion: "En recepción",
+  en_evaluacion: "En evaluación",
+  adjudicado: "Adjudicado",
+  en_desarrollo: "En desarrollo",
+  cerrado: "Cerrado",
+  cancelado: "Cancelado",
+  pausado: "Pausado",
+};
+
+
 const MODULES = [
   { key: "talento", icon: Users, href: "/admin/talento" },
   { key: "empresas", icon: Building2, href: "/admin/empresas" },

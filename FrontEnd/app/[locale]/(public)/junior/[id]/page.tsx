@@ -1,7 +1,8 @@
 import { setRequestLocale } from "next-intl/server";
 import { getTranslations } from "next-intl/server";
-import { getPublicJuniorProfile } from "@/lib/api/profile";
+import { getPublicJuniorProfile, getMe } from "@/lib/api/profile";
 import { PublicJuniorProfile } from "@/components/public/PublicJuniorProfile";
+import { AppHeader } from "@/components/layout/app-header";
 
 interface Props {
   params: Promise<{ locale: string; id: string }>;
@@ -12,7 +13,10 @@ export default async function PublicJuniorPage({ params }: Props) {
   setRequestLocale(locale);
   const t = await getTranslations({ locale, namespace: "public_junior_profile" });
 
-  const result = await getPublicJuniorProfile(id);
+  const [result, meResult] = await Promise.all([
+    getPublicJuniorProfile(id),
+    getMe(),
+  ]);
 
   if (!result.ok) {
     return (
@@ -22,11 +26,21 @@ export default async function PublicJuniorPage({ params }: Props) {
     );
   }
 
+  const profile = meResult.ok ? meResult.data.profile : null;
+  const userName = profile ? `${profile.nombre}${profile.apellido1 ? ` ${profile.apellido1}` : ""}` : "";
+  const avatarUrl = profile?.empresario?.url_logo ?? profile?.estudiante?.url_avatar ?? "";
+  const role = profile?.role.nombre;
+
   return (
-    <PublicJuniorProfile
-      perfil={result.data}
-      backHref={`/${locale}/marketplace`}
-      backLabel={t("back")}
-    />
+    <div className="flex min-h-[100dvh] flex-col bg-canvas">
+      <AppHeader userName={userName} avatarUrl={avatarUrl} {...(role !== undefined ? { role } : {})} />
+      <main className="flex-1">
+        <PublicJuniorProfile
+          perfil={result.data}
+          backHref={`/${locale}/marketplace`}
+          backLabel={t("back")}
+        />
+      </main>
+    </div>
   );
 }
