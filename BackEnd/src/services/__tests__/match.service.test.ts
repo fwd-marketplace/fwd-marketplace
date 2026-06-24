@@ -33,4 +33,19 @@ describe("computeMatchScore", () => {
     expect(computeMatchScore([], ["React"], true).score).toBe(60); // 0.5*80 + 20
     expect(computeMatchScore([], ["React"], false).score).toBe(40); // 0.5*80
   });
+
+  it("la reputación suma un bonus positivo (hasta +10), topado en 100", () => {
+    // base 60 (media cobertura + disponible) + (5/5)*10 = 70
+    expect(computeMatchScore(["React", "Node"], ["react"], true, 5).score).toBe(70);
+    // base 60 + (3/5)*10 = 66
+    expect(computeMatchScore(["React", "Node"], ["react"], true, 3).score).toBe(66);
+    // base 100 + bonus se topa en 100
+    expect(computeMatchScore(["React"], ["React"], true, 5).score).toBe(100);
+  });
+
+  it("sin reputación (null) no penaliza al junior nuevo", () => {
+    // mismo score que sin el argumento de reputación
+    expect(computeMatchScore(["React", "Node"], ["react"], true, null).score).toBe(60);
+    expect(computeMatchScore(["React", "Node"], ["react"], true).score).toBe(60);
+  });
 });

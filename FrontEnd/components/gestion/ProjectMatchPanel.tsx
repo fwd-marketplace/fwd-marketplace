@@ -3,7 +3,7 @@
 import { useEffect, useMemo, useState, useTransition } from "react";
 import Link from "next/link";
 import { useLocale, useTranslations } from "next-intl";
-import { Sparkles, RotateCcw, BadgeCheck, Loader2, ArrowUpRight, Check, UserPlus } from "lucide-react";
+import { Sparkles, RotateCcw, BadgeCheck, Loader2, ArrowUpRight, Check, UserPlus, Star } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { getProjectMatchesAction, inviteToProjectAction } from "@/lib/actions/marketplace";
 import type { ApiProject, MatchCandidate } from "@/lib/api/types";
@@ -192,7 +192,15 @@ export function ProjectMatchPanel({ project, className }: Props) {
                                 <BadgeCheck className="size-4 shrink-0 text-accent" aria-label={t("verified")} />
                               )}
                             </div>
-                            {c.especialidad && <p className="font-body text-xs text-ink-muted">{c.especialidad}</p>}
+                            <p className="flex items-center gap-1.5 font-body text-xs text-ink-muted">
+                              {c.especialidad && <span>{c.especialidad}</span>}
+                              {c.reputacion != null && (
+                                <span className="inline-flex items-center gap-0.5 font-semibold text-warning">
+                                  <Star className="size-3 fill-warning" aria-hidden="true" />
+                                  {c.reputacion.toFixed(1)}
+                                </span>
+                              )}
+                            </p>
                           </div>
                         </div>
                         <div className="shrink-0 text-right">

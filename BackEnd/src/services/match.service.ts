@@ -24,21 +24,27 @@ const MAX_CANDIDATOS = 20;
 
 /**
  * Puntúa la afinidad (0-100) entre las skills que pide el proyecto y las del
- * estudiante, premiando la disponibilidad. Función pura (testeable).
- *  - La cobertura de skills vale hasta 80 puntos; estar disponible suma 20.
- *  - Si el proyecto no declara skills, la cobertura es neutra (0.5).
+ * estudiante, premiando la disponibilidad y la reputación. Función pura (testeable).
+ *  - Base: cobertura de skills hasta 80 puntos; estar disponible suma 20.
+ *    Si el proyecto no declara skills, la cobertura es neutra (0.5).
+ *  - Reputación: bonus de hasta +10 (reputacion 1-5 → 2-10). Es un desempate
+ *    POSITIVO: a quien no tiene calificaciones (null) no se le resta nada, para no
+ *    penalizar a los juniors nuevos. El total se topa en 100.
  * Devuelve también qué skills coinciden y cuáles faltan, para mostrarlas en la UI.
  */
 export function computeMatchScore(
   projectSkills: string[],
   studentSkills: string[],
   disponible: boolean,
+  reputacion: number | null = null,
 ): { score: number; matchedSkills: string[]; missingSkills: string[] } {
   const studentSet = new Set(studentSkills.map((s) => s.toLowerCase()));
   const matchedSkills = projectSkills.filter((s) => studentSet.has(s.toLowerCase()));
   const missingSkills = projectSkills.filter((s) => !studentSet.has(s.toLowerCase()));
   const cobertura = projectSkills.length > 0 ? matchedSkills.length / projectSkills.length : 0.5;
-  const score = Math.round(cobertura * 80 + (disponible ? 20 : 0));
+  const base = cobertura * 80 + (disponible ? 20 : 0);
+  const repBonus = reputacion != null ? (reputacion / 5) * 10 : 0;
+  const score = Math.min(100, Math.round(base + repBonus));
   return { score, matchedSkills, missingSkills };
 }
 
@@ -83,6 +89,7 @@ export async function matchStudentsForProject(
         projectSkills,
         e.skills,
         e.disponible,
+        e.reputacion,
       );
       return {
         id: e.id,
