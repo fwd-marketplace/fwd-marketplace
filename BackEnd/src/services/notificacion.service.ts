@@ -14,7 +14,8 @@ export type TipoNotificacion =
   | "vencimiento_plazo"
   | "nuevo_mensaje"
   | "entregable_subido"
-  | "cambio_estado";
+  | "cambio_estado"
+  | "invitacion";
 
 /**
  * Textos de las notificaciones (se guardan tal cual en la BD).
@@ -47,6 +48,9 @@ export const MENSAJES_NOTIFICACION = {
   // Mensaje nuevo (cualquier parte del chat)
   nuevoMensaje: (titulo: string): string =>
     `Recibiste un nuevo mensaje en el proyecto "${titulo}".`,
+  // Junior → recibe cuando una empresa lo invita a postular a un proyecto
+  invitacionProyecto: (empresa: string, titulo: string): string =>
+    `${empresa} te invitó a postular a su proyecto "${titulo}". Revisalo y enviá tu propuesta.`,
 } as const;
 
 /** Tipo por mensaje para el icono correcto en el panel. */
@@ -61,6 +65,7 @@ export const TIPO_POR_MENSAJE: Record<keyof typeof MENSAJES_NOTIFICACION, TipoNo
   proyectoCerrado:              TIPO_ADJUDICACION,
   proyectoEliminado:            TIPO_CAMBIO_ESTADO,
   nuevoMensaje:                 "nuevo_mensaje" as TipoNotificacion,
+  invitacionProyecto:           "invitacion" as TipoNotificacion,
 } as const;
 
 /**

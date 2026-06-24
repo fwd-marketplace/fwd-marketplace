@@ -21,6 +21,7 @@ import {
   getProjectEntregables,
   getProjectMatches,
   getProjectOffers,
+  inviteToProject,
   getProjects,
   getSavedProjects,
   getSavedProjectIds,
@@ -132,6 +133,10 @@ export async function getProjectOffersAction(projectId: string) {
 
 export async function getProjectMatchesAction(projectId: string) {
   return getProjectMatches(projectId);
+}
+
+export async function inviteToProjectAction(projectId: string, juniorUserId: string) {
+  return inviteToProject(projectId, juniorUserId);
 }
 
 export async function submitOfferAction(projectId: string, input: SubmitOfferInput) {

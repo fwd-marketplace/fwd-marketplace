@@ -53,6 +53,16 @@ export function getProjectMatches(projectId: string): Promise<Result<ProjectMatc
   return asResult(() => apiAuth<ProjectMatchesResponse>(`/projects/${projectId}/matches`));
 }
 
+/** La empresa invita a un junior (por su user id) a postular al proyecto. */
+export function inviteToProject(projectId: string, juniorUserId: string): Promise<Result<void>> {
+  return asResult(async () => {
+    await apiAuth(`/projects/${projectId}/invitaciones`, {
+      method: "POST",
+      body: JSON.stringify({ id_usuario: juniorUserId }),
+    });
+  });
+}
+
 export function getMyOffers(): Promise<Result<MyOffersResponse>> {
   return asResult(() => apiAuth<MyOffersResponse>("/ofertas/mias"));
 }

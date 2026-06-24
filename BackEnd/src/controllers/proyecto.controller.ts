@@ -2,6 +2,7 @@ import type { Request, Response } from "express";
 import { z } from "zod";
 import * as projectService from "../services/proyecto.service";
 import { matchStudentsForProject } from "../services/match.service";
+import { invitarEstudiante } from "../services/invitacion.service";
 import { ApiError } from "../utils/ApiError";
 import { CreateProjectSchema, ChangeProjectStateSchema, UpdateProjectSchema } from "../validations/project";
 
@@ -101,6 +102,25 @@ export async function matches(req: Request, res: Response) {
 
   const result = await matchStudentsForProject(readToken(req), req.user.id, idParsed.data);
   res.status(200).json(result);
+}
+
+const invitarSchema = z.object({ id_usuario: z.string().uuid() });
+
+/** POST /api/projects/:id/invitaciones (ruta protegida — empresa dueña): invitar a un junior */
+export async function invitar(req: Request, res: Response) {
+  if (!req.user) throw new ApiError(401, "No autenticado");
+  const idParsed = idParamSchema.safeParse(req.params.id);
+  if (!idParsed.success) throw new ApiError(400, "El id del proyecto no es válido");
+  const bodyParsed = invitarSchema.safeParse(req.body);
+  if (!bodyParsed.success) throw new ApiError(400, "Falta el estudiante a invitar");
+
+  const result = await invitarEstudiante(
+    readToken(req),
+    req.user.id,
+    idParsed.data,
+    bodyParsed.data.id_usuario,
+  );
+  res.status(201).json(result);
 }
 
 /** PATCH /api/projects/:id/estado (ruta protegida — empresa dueña) */

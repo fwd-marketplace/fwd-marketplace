@@ -1439,7 +1439,9 @@
     "score_label": "match",
     "available": "Available",
     "busy": "Busy",
-    "view_profile": "View profile"
+    "view_profile": "View profile",
+    "invite": "Invite",
+    "invited": "Invited"
   },
   "talento": {
     "title": "Find talent",

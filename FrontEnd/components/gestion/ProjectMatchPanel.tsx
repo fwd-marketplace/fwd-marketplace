@@ -1,11 +1,11 @@
 "use client";
 
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useState, useTransition } from "react";
 import Link from "next/link";
 import { useLocale, useTranslations } from "next-intl";
-import { Sparkles, RotateCcw, BadgeCheck, Loader2, ArrowUpRight } from "lucide-react";
+import { Sparkles, RotateCcw, BadgeCheck, Loader2, ArrowUpRight, Check, UserPlus } from "lucide-react";
 import { cn } from "@/lib/utils";
-import { getProjectMatchesAction } from "@/lib/actions/marketplace";
+import { getProjectMatchesAction, inviteToProjectAction } from "@/lib/actions/marketplace";
 import type { ApiProject, MatchCandidate } from "@/lib/api/types";
 
 interface Props {
@@ -37,8 +37,27 @@ export function ProjectMatchPanel({ project, className }: Props) {
   const [loading, setLoading] = useState(false);
   const [minMatch, setMinMatch] = useState(0);
   const [soloDisponibles, setSoloDisponibles] = useState(false);
+  const [invitedIds, setInvitedIds] = useState<Set<string>>(new Set());
+  const [invitingId, setInvitingId] = useState<string | null>(null);
+  const [errorMsg, setErrorMsg] = useState<string | null>(null);
+  const [, startInvite] = useTransition();
 
   const projectId = project?.id ?? null;
+
+  function handleInvite(userId: string) {
+    if (!projectId) return;
+    setInvitingId(userId);
+    setErrorMsg(null);
+    startInvite(async () => {
+      const r = await inviteToProjectAction(projectId, userId);
+      if (r.ok) {
+        setInvitedIds((prev) => new Set(prev).add(userId));
+      } else {
+        setErrorMsg(r.error);
+      }
+      setInvitingId(null);
+    });
+  }
 
   useEffect(() => {
     if (!projectId) return;
@@ -70,6 +89,12 @@ export function ProjectMatchPanel({ project, className }: Props) {
         <Sparkles className="size-4 shrink-0 text-secondary" aria-hidden="true" />
         <p className="font-body text-xs font-bold uppercase tracking-wider text-ink-muted">{t("title")}</p>
       </div>
+
+      {errorMsg && (
+        <div className="mb-4 rounded-xl border border-magenta/30 bg-magenta/10 px-4 py-2.5 font-body text-sm text-magenta">
+          {errorMsg}
+        </div>
+      )}
 
       {!enabled ? (
         <div className="flex flex-col items-center gap-3 rounded-2xl border border-dashed border-border bg-surface p-12 text-center">
@@ -201,7 +226,7 @@ export function ProjectMatchPanel({ project, className }: Props) {
                         </div>
                       )}
 
-                      <div className="mt-auto flex items-center justify-between border-t border-border pt-3">
+                      <div className="mt-auto flex items-center justify-between gap-2 border-t border-border pt-3">
                         <span
                           className={cn(
                             "inline-flex items-center rounded-full px-2.5 py-0.5 font-body text-[11px] font-bold",
@@ -211,13 +236,35 @@ export function ProjectMatchPanel({ project, className }: Props) {
                           {c.disponible ? t("available") : t("busy")}
                         </span>
                         {c.usuario && (
-                          <Link
-                            href={`/${locale}/junior/${c.usuario.id}`}
-                            className="inline-flex items-center gap-1 font-body text-xs font-bold text-primary hover:underline"
-                          >
-                            {t("view_profile")}
-                            <ArrowUpRight className="size-3.5" aria-hidden="true" />
-                          </Link>
+                          <div className="flex items-center gap-3">
+                            <Link
+                              href={`/${locale}/junior/${c.usuario.id}`}
+                              className="inline-flex items-center gap-1 font-body text-xs font-bold text-primary hover:underline"
+                            >
+                              {t("view_profile")}
+                              <ArrowUpRight className="size-3.5" aria-hidden="true" />
+                            </Link>
+                            {invitedIds.has(c.usuario.id) ? (
+                              <span className="inline-flex items-center gap-1 font-body text-xs font-bold text-accent">
+                                <Check className="size-3.5" aria-hidden="true" />
+                                {t("invited")}
+                              </span>
+                            ) : (
+                              <button
+                                type="button"
+                                onClick={() => handleInvite(c.usuario!.id)}
+                                disabled={invitingId === c.usuario.id}
+                                className="inline-flex items-center gap-1 rounded-full bg-primary px-3 py-1 font-body text-xs font-bold text-white transition-opacity hover:opacity-90 disabled:opacity-50"
+                              >
+                                {invitingId === c.usuario.id ? (
+                                  <Loader2 className="size-3.5 animate-spin" aria-hidden="true" />
+                                ) : (
+                                  <UserPlus className="size-3.5" aria-hidden="true" />
+                                )}
+                                {t("invite")}
+                              </button>
+                            )}
+                          </div>
                         )}
                       </div>
                     </article>

@@ -1439,7 +1439,9 @@
     "score_label": "match",
     "available": "Disponible",
     "busy": "Ocupado",
-    "view_profile": "Ver perfil"
+    "view_profile": "Ver perfil",
+    "invite": "Invitar",
+    "invited": "Invitado"
   },
   "talento": {
     "title": "Buscar talento",

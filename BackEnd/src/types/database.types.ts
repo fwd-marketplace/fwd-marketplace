@@ -828,6 +828,36 @@ export type Database = {
           },
         ]
       }
+      invitacion: {
+        Row: {
+          estado: string
+          fecha: string
+          id: string
+          id_empresa_usuario: string
+          id_proyecto: string
+          id_usuario: string
+          mensaje: string | null
+        }
+        Insert: {
+          estado?: string
+          fecha?: string
+          id?: string
+          id_empresa_usuario: string
+          id_proyecto: string
+          id_usuario: string
+          mensaje?: string | null
+        }
+        Update: {
+          estado?: string
+          fecha?: string
+          id?: string
+          id_empresa_usuario?: string
+          id_proyecto?: string
+          id_usuario?: string
+          mensaje?: string | null
+        }
+        Relationships: []
+      }
       notificacion: {
         Row: {
           fecha: string
