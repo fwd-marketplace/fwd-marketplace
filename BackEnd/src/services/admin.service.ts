@@ -219,7 +219,9 @@ export async function getUserDetail(accessToken: string, targetUserId: string) {
   if (user.role?.nombre === "company") {
     const { data: empresario, error: empresarioError } = await client
       .from("empresario")
-      .select("id, tipo, nombre_comercial, descripcion, sector, etapa, url_sitio_web")
+      .select(
+        "id, tipo, nombre_comercial, cedula_juridica, descripcion, sector, etapa, url_sitio_web, direccion, cantidad_empleados, modalidades, horario, presupuesto, tipos_proyecto, apoyo_tecnico_necesario, mision, vision, cultura, valores, contactos",
+      )
       .eq("id_usuario", targetUserId)
       .maybeSingle();
     if (empresarioError) throw new ApiError(500, empresarioError.message);
