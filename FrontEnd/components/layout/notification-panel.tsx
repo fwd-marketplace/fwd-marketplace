@@ -12,6 +12,7 @@ import {
   Clock,
   FileUp,
   MessageSquarePlus,
+  UserPlus,
   X,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
@@ -29,6 +30,7 @@ const ICON_BY_TIPO: Record<string, { Icon: React.ElementType; className: string;
   nuevo_mensaje: { Icon: MessageSquarePlus, className: "text-primary", bgClass: "bg-primary/10" },
   entregable_subido: { Icon: FileUp, className: "text-secondary", bgClass: "bg-secondary/10" },
   vencimiento_plazo: { Icon: Clock, className: "text-warning", bgClass: "bg-warning/10" },
+  invitacion: { Icon: UserPlus, className: "text-secondary", bgClass: "bg-secondary/10" },
 };
 const DEFAULT_ICON = { Icon: Bell, className: "text-ink-muted", bgClass: "bg-surface-sunken" };
 
@@ -42,6 +44,10 @@ function linkFor(notif: ApiNotificacion, role: ApiRoleName | undefined, locale: 
   // Mensaje nuevo: si trae el proyecto referenciado, abrir DIRECTO su chat en gestión.
   if (tipo === "nuevo_mensaje" && id_referencia) {
     return `/${locale}/gestion?proyecto=${id_referencia}&seccion=chat`;
+  }
+  // Invitación a un proyecto: llevar al detalle del proyecto para postular.
+  if (tipo === "invitacion" && id_referencia) {
+    return `/${locale}/marketplace/${id_referencia}`;
   }
   if (role === "company") {
     if (tipo === "nuevo_mensaje") return `/${locale}/gestion`;

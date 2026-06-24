@@ -17,6 +17,7 @@ import type {
   OfertaContacto,
   OfertaContactoResponse,
   ProjectDetailResponse,
+  ProjectMatchesResponse,
   ProjectOffer,
   ProjectOffersResponse,
   ProjectsResponse,
@@ -48,6 +49,20 @@ export function getMyProjects(): Promise<Result<ProjectsResponse>> {
 
 export function getProjectOffers(projectId: string): Promise<Result<ProjectOffersResponse>> {
   return asResult(() => apiAuth<ProjectOffersResponse>(`/projects/${projectId}/ofertas`));
+}
+
+export function getProjectMatches(projectId: string): Promise<Result<ProjectMatchesResponse>> {
+  return asResult(() => apiAuth<ProjectMatchesResponse>(`/projects/${projectId}/matches`));
+}
+
+/** La empresa invita a un junior (por su user id) a postular al proyecto. */
+export function inviteToProject(projectId: string, juniorUserId: string): Promise<Result<void>> {
+  return asResult(async () => {
+    await apiAuth(`/projects/${projectId}/invitaciones`, {
+      method: "POST",
+      body: JSON.stringify({ id_usuario: juniorUserId }),
+    });
+  });
 }
 
 export function getMyOffers(): Promise<Result<MyOffersResponse>> {

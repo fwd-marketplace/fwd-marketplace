@@ -908,13 +908,7 @@ export function GestionPage({ role, userId, initialProjectId, initialSection: in
               />
             )}
             {section === "matches" && isEmpresa && (
-              <ProjectMatchPanel
-                project={selectedProject}
-                inviteLabel={t("matches_invite_btn")}
-                invitedLabel={t("matches_invited_btn")}
-                emptyText={t("matches_empty")}
-                toastInvitedTemplate={t("matches_toast_invited", { name: "{name}" })}
-              />
+              <ProjectMatchPanel project={selectedProject} />
             )}
           </>
         )}

@@ -1,8 +1,9 @@
 "use client";
 
 import { useEffect, useMemo, useRef, useState, useTransition } from "react";
-import { useTranslations } from "next-intl";
-import { Search, RotateCcw, BadgeCheck, Loader2, Users } from "lucide-react";
+import Link from "next/link";
+import { useLocale, useTranslations } from "next-intl";
+import { Search, RotateCcw, BadgeCheck, Loader2, Users, ArrowUpRight } from "lucide-react";
 import { searchStudentsAction } from "@/lib/actions/students";
 import type { StudentSpecialty, TalentStudent } from "@/lib/api/types";
 
@@ -222,6 +223,7 @@ export function MatchesEmpresa({ initialStudents, skills }: Props) {
 }
 
 function StudentCard({ student, t }: { student: TalentStudent; t: Traducir }) {
+  const locale = useLocale();
   const nombre = student.usuario?.nombre ?? "";
   const apellido = student.usuario?.apellido1 ?? "";
   const nombreCompleto = `${nombre} ${apellido}`.trim();
@@ -274,7 +276,7 @@ function StudentCard({ student, t }: { student: TalentStudent; t: Traducir }) {
         </div>
       )}
 
-      <div className="mt-4 border-t border-border pt-3">
+      <div className="mt-4 flex items-center justify-between gap-2 border-t border-border pt-3">
         <span
           className={`inline-flex items-center rounded-full px-2.5 py-0.5 font-body text-[11px] font-bold ${
             student.disponible ? "bg-accent/10 text-accent" : "bg-warning/10 text-warning"
@@ -282,6 +284,15 @@ function StudentCard({ student, t }: { student: TalentStudent; t: Traducir }) {
         >
           {student.disponible ? t("available_badge") : t("busy_badge")}
         </span>
+        {student.usuario && (
+          <Link
+            href={`/${locale}/junior/${student.usuario.id}`}
+            className="inline-flex items-center gap-1 font-body text-xs font-bold text-primary hover:underline"
+          >
+            {t("view_profile")}
+            <ArrowUpRight className="size-3.5" aria-hidden="true" />
+          </Link>
+        )}
       </div>
     </article>
   );

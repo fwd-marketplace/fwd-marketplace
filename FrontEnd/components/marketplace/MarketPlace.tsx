@@ -195,7 +195,7 @@ export default function MarketPlace({ initialProjects, catalogs, role = 'student
     ];
 
     const sortOptions: FilterOption[] = [
-        { value: 'sort_recent_desc', label: t('sort_match_desc') },
+        { value: 'sort_recent_desc', label: t('sort_recent_desc') },
         { value: 'sort_duration_asc', label: t('sort_duration_asc') },
     ];
 

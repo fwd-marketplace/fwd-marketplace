@@ -699,10 +699,6 @@
       "applications": "Postulaciones",
       "matches": "Matches"
     },
-    "matches_invite_btn": "Invitar",
-    "matches_invited_btn": "Invitado",
-    "matches_toast_invited": "{name} fue invitado al proyecto.",
-    "matches_empty": "Aún no hay juniors que coincidan con este proyecto.",
     "objective_title": "Objetivo del Proyecto",
     "scope_title": "Alcance y Requerimientos",
     "deliverables_title": "Entregables Esperados",
@@ -1240,8 +1236,7 @@
     "save_project": "Guardar proyecto",
     "saved_project": "Quitar de guardados",
     "filter_all": "Todas",
-    "sort_match_desc": "Mayor match",
-    "sort_match_asc": "Menor match",
+    "sort_recent_desc": "Más recientes",
     "sort_duration_asc": "Menor duración",
     "duration_short": "Hasta 30 días",
     "duration_medium": "31 a 60 días",
@@ -1426,6 +1421,23 @@
     "open_in_new_tab": "Abrir en pestaña nueva",
     "close": "Cerrar",
     "iframe_error": "No se pudo mostrar la vista previa embebida. Abrí el prototipo en una pestaña nueva."
+  },
+  "matches_panel": {
+    "title": "Juniors compatibles",
+    "disabled": "El matching está desactivado por el administrador.",
+    "filters_title": "Filtros",
+    "clear": "Limpiar",
+    "min_match": "Nivel de match",
+    "only_available": "Solo disponibles",
+    "results_count": "{count, plural, one {# candidato} other {# candidatos}}",
+    "empty": "Ningún candidato coincide con estos filtros todavía.",
+    "verified": "Verificado",
+    "score_label": "match",
+    "available": "Disponible",
+    "busy": "Ocupado",
+    "view_profile": "Ver perfil",
+    "invite": "Invitar",
+    "invited": "Invitado"
   },
   "talento": {
     "title": "Buscar talento",
@@ -2732,11 +2744,7 @@
     "resume_dialog_confirm": "Reactivar",
     "resume_dialog_back": "Volver",
     "state_en_recepcion": "En recepción",
-    "section_matches": "Matches",
-    "matches_empty": "Aún no hay juniors que coincidan con este proyecto. El algoritmo de matching estará disponible pronto.",
-    "matches_invite_btn": "Invitar",
-    "matches_invited_btn": "Invitado",
-    "matches_toast_invited": "{name} fue invitado al proyecto."
+    "section_matches": "Matches"
   },
   "project_preview_modal": {
     "close": "Cerrar",

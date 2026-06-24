@@ -20,7 +20,9 @@ import {
   getOfertaContacto,
   getProjectById,
   getProjectEntregables,
+  getProjectMatches,
   getProjectOffers,
+  inviteToProject,
   getProjects,
   getSavedProjects,
   getSavedProjectIds,
@@ -128,6 +130,14 @@ export async function reviewOfferAction(offerId: string, input: ReviewOfferInput
 
 export async function getProjectOffersAction(projectId: string) {
   return getProjectOffers(projectId);
+}
+
+export async function getProjectMatchesAction(projectId: string) {
+  return getProjectMatches(projectId);
+}
+
+export async function inviteToProjectAction(projectId: string, juniorUserId: string) {
+  return inviteToProject(projectId, juniorUserId);
 }
 
 export async function getOfertaContactoAction(offerId: string) {

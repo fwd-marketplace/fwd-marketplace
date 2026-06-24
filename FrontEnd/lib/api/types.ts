@@ -180,6 +180,29 @@ export type ProjectOffersResponse = {
   ofertas: ProjectOffer[];
 };
 
+/** Candidato (estudiante verificado) rankeado por afinidad con un proyecto. */
+export type MatchCandidate = {
+  id: string;
+  usuario: { id: string; nombre: string; apellido1: string | null } | null;
+  especialidad: string | null;
+  titulo_fwd: string | null;
+  url_avatar: string | null;
+  modalidad_preferida: string | null;
+  reputacion: number | null;
+  estado_verificacion: string;
+  skills: string[];
+  disponible: boolean;
+  score: number;
+  matchedSkills: string[];
+  missingSkills: string[];
+};
+
+export type ProjectMatchesResponse = {
+  /** false si el administrador desactivó el matching (enable_matching). */
+  enabled: boolean;
+  candidates: MatchCandidate[];
+};
+
 /** Contacto del junior de UNA oferta (GET /ofertas/:id). Solo lo ve el dueño del proyecto. */
 export type OfertaContacto = {
   id: string;
