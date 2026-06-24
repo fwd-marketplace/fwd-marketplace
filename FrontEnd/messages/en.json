@@ -699,10 +699,6 @@
       "applications": "Applications",
       "matches": "Matches"
     },
-    "matches_invite_btn": "Invite",
-    "matches_invited_btn": "Invited",
-    "matches_toast_invited": "{name} was invited to the project.",
-    "matches_empty": "No juniors match this project yet.",
     "objective_title": "Project Objective",
     "scope_title": "Scope and Requirements",
     "deliverables_title": "Expected Deliverables",
@@ -2755,10 +2751,6 @@
     "resume_dialog_confirm": "Reactivate",
     "resume_dialog_back": "Go back",
     "section_matches": "Matches",
-    "matches_empty": "No juniors match this project yet. The matching algorithm will be available soon.",
-    "matches_invite_btn": "Invite",
-    "matches_invited_btn": "Invited",
-    "matches_toast_invited": "{name} was invited to the project.",
     "state_en_recepcion": "Receiving"
   },
   "project_preview_modal": {

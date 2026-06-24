@@ -699,10 +699,6 @@
       "applications": "Postulaciones",
       "matches": "Matches"
     },
-    "matches_invite_btn": "Invitar",
-    "matches_invited_btn": "Invitado",
-    "matches_toast_invited": "{name} fue invitado al proyecto.",
-    "matches_empty": "Aún no hay juniors que coincidan con este proyecto.",
     "objective_title": "Objetivo del Proyecto",
     "scope_title": "Alcance y Requerimientos",
     "deliverables_title": "Entregables Esperados",
@@ -2746,11 +2742,7 @@
     "resume_dialog_confirm": "Reactivar",
     "resume_dialog_back": "Volver",
     "state_en_recepcion": "En recepción",
-    "section_matches": "Matches",
-    "matches_empty": "Aún no hay juniors que coincidan con este proyecto. El algoritmo de matching estará disponible pronto.",
-    "matches_invite_btn": "Invitar",
-    "matches_invited_btn": "Invitado",
-    "matches_toast_invited": "{name} fue invitado al proyecto."
+    "section_matches": "Matches"
   },
   "project_preview_modal": {
     "close": "Cerrar",

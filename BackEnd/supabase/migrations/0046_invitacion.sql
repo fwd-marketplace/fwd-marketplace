@@ -1,4 +1,4 @@
--- 0045_invitacion.sql
+-- 0046_invitacion.sql
 -- Invitaciones: una empresa puede invitar a un estudiante verificado a postular a
 -- uno de sus proyectos (desde el panel de "match"). El estudiante recibe una
 -- notificación y puede ir a postular. Una invitación por (proyecto, estudiante).
