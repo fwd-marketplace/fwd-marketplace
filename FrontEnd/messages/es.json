@@ -1240,8 +1240,7 @@
     "save_project": "Guardar proyecto",
     "saved_project": "Quitar de guardados",
     "filter_all": "Todas",
-    "sort_match_desc": "Mayor match",
-    "sort_match_asc": "Menor match",
+    "sort_recent_desc": "Más recientes",
     "sort_duration_asc": "Menor duración",
     "duration_short": "Hasta 30 días",
     "duration_medium": "31 a 60 días",
@@ -1426,6 +1425,21 @@
     "open_in_new_tab": "Abrir en pestaña nueva",
     "close": "Cerrar",
     "iframe_error": "No se pudo mostrar la vista previa embebida. Abrí el prototipo en una pestaña nueva."
+  },
+  "matches_panel": {
+    "title": "Juniors compatibles",
+    "disabled": "El matching está desactivado por el administrador.",
+    "filters_title": "Filtros",
+    "clear": "Limpiar",
+    "min_match": "Nivel de match",
+    "only_available": "Solo disponibles",
+    "results_count": "{count, plural, one {# candidato} other {# candidatos}}",
+    "empty": "Ningún candidato coincide con estos filtros todavía.",
+    "verified": "Verificado",
+    "score_label": "match",
+    "available": "Disponible",
+    "busy": "Ocupado",
+    "view_profile": "Ver perfil"
   },
   "talento": {
     "title": "Buscar talento",

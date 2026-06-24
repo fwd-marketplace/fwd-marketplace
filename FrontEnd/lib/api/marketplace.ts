@@ -15,6 +15,7 @@ import type {
   EntregablesResponse,
   MyOffersResponse,
   ProjectDetailResponse,
+  ProjectMatchesResponse,
   ProjectOffer,
   ProjectOffersResponse,
   ProjectsResponse,
@@ -46,6 +47,10 @@ export function getMyProjects(): Promise<Result<ProjectsResponse>> {
 
 export function getProjectOffers(projectId: string): Promise<Result<ProjectOffersResponse>> {
   return asResult(() => apiAuth<ProjectOffersResponse>(`/projects/${projectId}/ofertas`));
+}
+
+export function getProjectMatches(projectId: string): Promise<Result<ProjectMatchesResponse>> {
+  return asResult(() => apiAuth<ProjectMatchesResponse>(`/projects/${projectId}/matches`));
 }
 
 export function getMyOffers(): Promise<Result<MyOffersResponse>> {

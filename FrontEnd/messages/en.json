@@ -1240,8 +1240,7 @@
     "save_project": "Save project",
     "saved_project": "Remove from saved",
     "filter_all": "All",
-    "sort_match_desc": "Highest match",
-    "sort_match_asc": "Lowest match",
+    "sort_recent_desc": "Most recent",
     "sort_duration_asc": "Shortest duration",
     "duration_short": "Up to 30 days",
     "duration_medium": "31 to 60 days",
@@ -1426,6 +1425,21 @@
     "open_in_new_tab": "Open in new tab",
     "close": "Close",
     "iframe_error": "The embedded preview could not be shown. Open the prototype in a new tab."
+  },
+  "matches_panel": {
+    "title": "Compatible juniors",
+    "disabled": "Matching is currently disabled by the administrator.",
+    "filters_title": "Filters",
+    "clear": "Clear",
+    "min_match": "Match level",
+    "only_available": "Available only",
+    "results_count": "{count, plural, one {# candidate} other {# candidates}}",
+    "empty": "No candidates match these filters yet.",
+    "verified": "Verified",
+    "score_label": "match",
+    "available": "Available",
+    "busy": "Busy",
+    "view_profile": "View profile"
   },
   "talento": {
     "title": "Find talent",

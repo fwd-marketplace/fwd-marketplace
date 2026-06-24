@@ -19,6 +19,7 @@ import {
   getMyProjects,
   getProjectById,
   getProjectEntregables,
+  getProjectMatches,
   getProjectOffers,
   getProjects,
   getSavedProjects,
@@ -127,6 +128,10 @@ export async function reviewOfferAction(offerId: string, input: ReviewOfferInput
 
 export async function getProjectOffersAction(projectId: string) {
   return getProjectOffers(projectId);
+}
+
+export async function getProjectMatchesAction(projectId: string) {
+  return getProjectMatches(projectId);
 }
 
 export async function submitOfferAction(projectId: string, input: SubmitOfferInput) {

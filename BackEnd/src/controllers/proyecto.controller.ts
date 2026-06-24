@@ -1,6 +1,7 @@
 import type { Request, Response } from "express";
 import { z } from "zod";
 import * as projectService from "../services/proyecto.service";
+import { matchStudentsForProject } from "../services/match.service";
 import { ApiError } from "../utils/ApiError";
 import { CreateProjectSchema, ChangeProjectStateSchema, UpdateProjectSchema } from "../validations/project";
 
@@ -90,6 +91,16 @@ export async function update(req: Request, res: Response) {
     bodyParsed.data,
   );
   res.status(200).json({ project });
+}
+
+/** GET /api/projects/:id/matches (ruta protegida — empresa dueña): candidatos por afinidad */
+export async function matches(req: Request, res: Response) {
+  if (!req.user) throw new ApiError(401, "No autenticado");
+  const idParsed = idParamSchema.safeParse(req.params.id);
+  if (!idParsed.success) throw new ApiError(400, "El id del proyecto no es válido");
+
+  const result = await matchStudentsForProject(readToken(req), req.user.id, idParsed.data);
+  res.status(200).json(result);
 }
 
 /** PATCH /api/projects/:id/estado (ruta protegida — empresa dueña) */

@@ -969,14 +969,7 @@ export function MisProyectos({
 
         {/* Tab: Matches */}
         {activeTab === "matches" && (
-          <ProjectMatchPanel
-            project={selectedProject}
-            inviteLabel={t("matches_invite_btn")}
-            invitedLabel={t("matches_invited_btn")}
-            emptyText={t("matches_empty")}
-            toastInvitedTemplate={t("matches_toast_invited", { name: "{name}" })}
-            className=""
-          />
+          <ProjectMatchPanel project={selectedProject} className="" />
         )}
 
         {/* Tab: Postulaciones — solo analíticas, sin acciones */}
