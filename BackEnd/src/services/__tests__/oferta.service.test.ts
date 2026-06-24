@@ -24,6 +24,7 @@ vi.mock("../../config/supabase", () => ({
       insert: chain,
       update: chain,
       eq: chain,
+      neq: chain,
       // .in() es el terminal del chequeo de "estudiante ocupado" (estudiantesOcupados).
       // Usa su propia clave para no chocar con el insert/lista sobre la tabla 'oferta'.
       // Por defecto vacío = el estudiante NO tiene proyecto activo (está disponible).
@@ -129,6 +130,8 @@ function decideHappyPath(estadoFinal = "adjudicada") {
   };
   responses["proyecto"] = { data: { empresa: { id_usuario: USER } }, error: null };
   responses["estado_oferta"] = { data: { id: "estado-x" }, error: null };
+  // Al adjudicar, el servicio pasa el proyecto a 'adjudicado' (cierra la recepción).
+  responses["estado_proyecto"] = { data: { id: "estado-adjudicado" }, error: null };
 }
 
 describe("decideOferta", () => {

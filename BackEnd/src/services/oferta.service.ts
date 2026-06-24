@@ -1,6 +1,6 @@
 import { supabaseForToken, supabaseAdmin } from "../config/supabase";
 import { ApiError } from "../utils/ApiError";
-import { crearNotificacion, MENSAJES_NOTIFICACION, TIPO_POR_MENSAJE } from "./notificacion.service";
+import { crearNotificacion, crearNotificaciones, MENSAJES_NOTIFICACION, TIPO_POR_MENSAJE } from "./notificacion.service";
 import type { CreateOfertaInput, DecideOfertaInput, ReviewOfertaInput, CalificarOfertaInput, ReplicarCalificacionInput, EditOfertaInput } from "../validations/oferta";
 
 type Client = ReturnType<typeof supabaseForToken>;
@@ -15,6 +15,71 @@ async function getEstadoOfertaId(client: Client, nombre: string): Promise<string
   if (error) throw new ApiError(500, error.message);
   if (!data) throw new ApiError(500, `Falta el estado de oferta '${nombre}' (seeds no aplicados)`);
   return data.id;
+}
+
+/** Resuelve el id de un estado de proyecto por nombre. */
+async function getEstadoProyectoId(client: Client, nombre: string): Promise<string> {
+  const { data, error } = await client
+    .from("estado_proyecto")
+    .select("id")
+    .eq("nombre", nombre)
+    .maybeSingle();
+  if (error) throw new ApiError(500, error.message);
+  if (!data) throw new ApiError(500, `Falta el estado de proyecto '${nombre}' (seeds no aplicados)`);
+  return data.id;
+}
+
+/** Estados de oferta que siguen "abiertos" (pendientes de decisión). */
+const ESTADOS_OFERTA_PENDIENTES = ["enviada", "en_revision", "solicitar_cambios"];
+
+/**
+ * Cierra la recepción de un proyecto al adjudicarlo: pasa el proyecto a 'adjudicado'
+ * (lo saca del marketplace y bloquea nuevas propuestas) y marca el resto de
+ * propuestas pendientes como 'no_seleccionada', notificando a esos juniors.
+ * El llamador ya verificó que el usuario es dueño del proyecto.
+ */
+async function cerrarProyectoAdjudicado(
+  client: Client,
+  accessToken: string,
+  idProyecto: string,
+  ofertaGanadoraId: string,
+  tituloProyecto: string,
+): Promise<void> {
+  // 1. Proyecto -> adjudicado.
+  const estadoProyectoId = await getEstadoProyectoId(client, "adjudicado");
+  const { error: projError } = await client
+    .from("proyecto")
+    .update({ id_estado: estadoProyectoId })
+    .eq("id", idProyecto);
+  if (projError) throw new ApiError(400, projError.message);
+
+  // 2. Rechazar las demás propuestas pendientes del proyecto.
+  const { data: otras, error: otrasError } = await client
+    .from("oferta")
+    .select("id, id_usuario, estado:estado_oferta(nombre)")
+    .eq("id_proyecto", idProyecto)
+    .neq("id", ofertaGanadoraId);
+  if (otrasError) throw new ApiError(500, otrasError.message);
+
+  const pendientes = (otras ?? []).filter((o) =>
+    ESTADOS_OFERTA_PENDIENTES.includes(o.estado?.nombre ?? ""),
+  );
+  if (pendientes.length === 0) return;
+
+  const noSeleccionadaId = await getEstadoOfertaId(client, "no_seleccionada");
+  const { error: updError } = await client
+    .from("oferta")
+    .update({ id_estado: noSeleccionadaId, updated_at: new Date().toISOString() })
+    .in("id", pendientes.map((o) => o.id));
+  if (updError) throw new ApiError(400, updError.message);
+
+  // Notificar a los juniors no seleccionados (best-effort).
+  await crearNotificaciones(
+    accessToken,
+    pendientes.map((o) => o.id_usuario),
+    MENSAJES_NOTIFICACION.postulacionRechazada(tituloProyecto),
+    TIPO_POR_MENSAJE.postulacionRechazada,
+  );
 }
 
 /** Estados de proyecto en los que una adjudicación ya NO ocupa al estudiante. */
@@ -329,6 +394,8 @@ export async function decideOferta(
       TIPO_POR_MENSAJE.seguimientoAdjudicacion,
       oferta.id_proyecto,
     );
+    // Cierra la recepción: proyecto -> adjudicado y rechaza las demás propuestas.
+    await cerrarProyectoAdjudicado(client, accessToken, oferta.id_proyecto, ofertaId, proyecto.titulo);
   }
 
   return data;
@@ -406,6 +473,8 @@ export async function reviewOferta(
       TIPO_POR_MENSAJE.seguimientoAdjudicacion,
       oferta.id_proyecto,
     );
+    // Cierra la recepción: proyecto -> adjudicado y rechaza las demás propuestas.
+    await cerrarProyectoAdjudicado(client, accessToken, oferta.id_proyecto, ofertaId, titulo);
   } else if (input.accion === "solicitar_cambios") {
     await crearNotificacion(
       accessToken, oferta.id_usuario,
