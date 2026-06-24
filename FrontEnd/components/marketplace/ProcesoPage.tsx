@@ -219,12 +219,14 @@ export function ProcesoPage({
   const [withdrawPending,   startWithdraw] = useTransition();
   const [withdrawError,     setWithdrawError] = useState("");
 
-  const [localEntregables, setLocalEntregables] = useState<Entregable[]>(initialEntregables);
-  const [entregableUrl,    setEntregableUrl]    = useState("");
-  const [entregableTipo,   setEntregableTipo]   = useState<"parcial" | "final">("final");
+  const [localEntregables,   setLocalEntregables]   = useState<Entregable[]>(initialEntregables);
+  const [entregableUrl,      setEntregableUrl]      = useState("");
+  const [entregableUrlGithub, setEntregableUrlGithub] = useState("");
+  const [entregableTipo,     setEntregableTipo]     = useState<"parcial" | "final">("final");
   const [showEntregableForm, setShowEntregableForm] = useState(false);
   const [entregablePending,  startEntregable] = useTransition();
   const [entregableError,    setEntregableError] = useState<string | null>(null);
+  const [previewEntregableId, setPreviewEntregableId] = useState<string | null>(null);
 
   // ── Empresa flow state ─────────────────────────────────────────────────────
 
@@ -327,10 +329,19 @@ export function ProcesoPage({
     if (!entregableUrl.trim()) return;
     setEntregableError(null);
     startEntregable(async () => {
-      const result = await submitEntregableAction({ id_proyecto: project.id, url: entregableUrl.trim(), tipo: entregableTipo });
+      const github = entregableUrlGithub.trim();
+      const result = await submitEntregableAction({
+        id_proyecto: project.id,
+        url: entregableUrl.trim(),
+        ...(github ? { url_github: github } : {}),
+        tipo: entregableTipo,
+      });
       if (result.ok) {
         setLocalEntregables((p) => [...p, result.data]);
-        setEntregableUrl(""); setEntregableTipo("final"); setShowEntregableForm(false);
+        setEntregableUrl("");
+        setEntregableUrlGithub("");
+        setEntregableTipo("final");
+        setShowEntregableForm(false);
       } else {
         setEntregableError(result.error);
       }
@@ -812,37 +823,85 @@ export function ProcesoPage({
                                   <div className="space-y-2">
                                     {[...localEntregablesE].sort((a, b) => b.version - a.version).map((ent) => {
                                       const entCfg = ENTREGABLE_STATE_CONFIG[ent.estado.nombre];
+                                      const isShowingPreview = previewEntregableId === ent.id;
                                       return (
-                                        <div key={ent.id}
-                                          className="flex flex-wrap items-center justify-between gap-3 rounded-xl border border-border bg-surface px-5 py-3">
-                                          <div className="flex items-center gap-3">
-                                            <span className="font-body text-sm font-bold text-ink-muted">
-                                              v{ent.version} · {tm(`entregable_tipo_${ent.tipo}`)}
-                                            </span>
-                                            <span className={cn("rounded-full px-3 py-0.5 font-body text-xs font-semibold", entCfg.className)}>
-                                              {entCfg.label}
-                                            </span>
+                                        <div key={ent.id} className="rounded-xl border border-border bg-surface overflow-hidden">
+                                          {/* Row header */}
+                                          <div className="flex flex-wrap items-center justify-between gap-3 px-5 py-3">
+                                            <div className="flex items-center gap-3">
+                                              <span className="font-body text-sm font-bold text-ink-muted">
+                                                v{ent.version} · {tm(`entregable_tipo_${ent.tipo}`)}
+                                              </span>
+                                              <span className={cn("rounded-full px-3 py-0.5 font-body text-xs font-semibold", entCfg.className)}>
+                                                {entCfg.label}
+                                              </span>
+                                            </div>
+                                            <div className="flex flex-wrap items-center gap-2">
+                                              {ent.url_github && (
+                                                <a href={ent.url_github} target="_blank" rel="noopener noreferrer"
+                                                  className="inline-flex items-center gap-1 font-body text-sm font-semibold text-ink-muted hover:text-ink hover:underline">
+                                                  <GitBranch className="size-3.5" aria-hidden="true" /> GitHub
+                                                </a>
+                                              )}
+                                              {ent.url && (
+                                                <button type="button"
+                                                  onClick={() => setPreviewEntregableId(isShowingPreview ? null : ent.id)}
+                                                  className={cn(
+                                                    "inline-flex items-center gap-1 rounded-full px-3 py-1 font-body text-xs font-semibold transition-colors",
+                                                    isShowingPreview
+                                                      ? "bg-primary text-white"
+                                                      : "border border-primary/30 text-primary hover:bg-primary/5"
+                                                  )}>
+                                                  <ImageIcon className="size-3" aria-hidden="true" />
+                                                  {isShowingPreview ? "Cerrar" : "Previsualizar"}
+                                                </button>
+                                              )}
+                                              {(ent.estado.nombre === "enviado" || ent.estado.nombre === "en_revision") && (
+                                                <div className="flex gap-2">
+                                                  <button type="button" onClick={() => decideEntregableEmpresa(ent.id, "aprobar")}
+                                                    className="rounded-full bg-accent px-3 py-1.5 font-body text-xs font-semibold text-white hover:bg-accent/80">
+                                                    {tp("empresa_entregable_approve")}
+                                                  </button>
+                                                  <button type="button" onClick={() => decideEntregableEmpresa(ent.id, "cambios")}
+                                                    className="rounded-full border border-warning/30 px-3 py-1.5 font-body text-xs font-semibold text-warning hover:bg-warning/5">
+                                                    {tp("empresa_entregable_changes")}
+                                                  </button>
+                                                </div>
+                                              )}
+                                            </div>
                                           </div>
-                                          <div className="flex items-center gap-2">
-                                            {ent.url && (
-                                              <a href={ent.url} target="_blank" rel="noopener noreferrer"
-                                                className="inline-flex items-center gap-1 font-body text-sm font-semibold text-primary hover:underline">
-                                                Ver <ExternalLink className="size-3" aria-hidden="true" />
-                                              </a>
-                                            )}
-                                            {(ent.estado.nombre === "enviado" || ent.estado.nombre === "en_revision") && (
-                                              <div className="flex gap-2">
-                                                <button type="button" onClick={() => decideEntregableEmpresa(ent.id, "aprobar")}
-                                                  className="rounded-full bg-accent px-3 py-1.5 font-body text-xs font-semibold text-white hover:bg-accent/80">
-                                                  {tp("empresa_entregable_approve")}
-                                                </button>
-                                                <button type="button" onClick={() => decideEntregableEmpresa(ent.id, "cambios")}
-                                                  className="rounded-full border border-warning/30 px-3 py-1.5 font-body text-xs font-semibold text-warning hover:bg-warning/5">
-                                                  {tp("empresa_entregable_changes")}
-                                                </button>
+
+                                          {/* Browser preview */}
+                                          {isShowingPreview && ent.url && (
+                                            <div className="border-t border-border">
+                                              {/* Chrome bar */}
+                                              <div className="flex items-center gap-3 bg-surface-sunken px-4 py-2">
+                                                <div className="flex gap-1.5" aria-hidden="true">
+                                                  <span className="size-3 rounded-full bg-magenta/60" />
+                                                  <span className="size-3 rounded-full bg-warning/60" />
+                                                  <span className="size-3 rounded-full bg-accent/60" />
+                                                </div>
+                                                <span className="flex-1 truncate rounded-md bg-surface px-3 py-1 font-mono text-xs text-ink-muted border border-border">
+                                                  {ent.url}
+                                                </span>
+                                                <a href={ent.url} target="_blank" rel="noopener noreferrer"
+                                                  className="shrink-0 text-ink-subtle hover:text-primary transition-colors"
+                                                  aria-label="Abrir en nueva pestaña">
+                                                  <ExternalLink className="size-4" />
+                                                </a>
                                               </div>
-                                            )}
-                                          </div>
+                                              {/* iframe */}
+                                              <div className="relative h-72 bg-surface-sunken">
+                                                <iframe
+                                                  src={ent.url}
+                                                  className="h-full w-full border-0"
+                                                  title={`Previsualización v${ent.version}`}
+                                                  sandbox="allow-scripts allow-same-origin allow-popups allow-forms"
+                                                  referrerPolicy="no-referrer"
+                                                />
+                                              </div>
+                                            </div>
+                                          )}
                                         </div>
                                       );
                                     })}
@@ -1132,17 +1191,31 @@ export function ProcesoPage({
                                 ))}
                               </div>
                             </fieldset>
-                            <div className="flex gap-3">
+                            <div className="flex flex-col gap-2">
+                              <label className="font-body text-sm font-semibold text-ink">
+                                Link de previsualización <span className="text-magenta">*</span>
+                              </label>
                               <input type="url" required value={entregableUrl}
                                 onChange={(e) => setEntregableUrl(e.target.value)}
-                                placeholder={tm("entregable_url_placeholder")}
-                                className="flex-1 rounded-xl border border-border bg-surface-sunken px-4 py-3 font-body text-base text-ink outline-none focus:ring-2 focus:ring-primary/20" />
+                                placeholder="https://tu-proyecto.netlify.app"
+                                className="w-full rounded-xl border border-border bg-surface-sunken px-4 py-3 font-body text-base text-ink outline-none focus:ring-2 focus:ring-primary/20" />
+                            </div>
+                            <div className="flex flex-col gap-2">
+                              <label className="font-body text-sm font-semibold text-ink">
+                                Repositorio en GitHub
+                              </label>
+                              <input type="url" value={entregableUrlGithub}
+                                onChange={(e) => setEntregableUrlGithub(e.target.value)}
+                                placeholder="https://github.com/usuario/repositorio"
+                                className="w-full rounded-xl border border-border bg-surface-sunken px-4 py-3 font-body text-base text-ink outline-none focus:ring-2 focus:ring-primary/20" />
+                            </div>
+                            <div className="flex gap-3">
                               <button type="submit" disabled={entregablePending || !entregableUrl.trim()}
                                 className="inline-flex items-center gap-2 rounded-full bg-primary px-5 py-3 font-body text-sm font-semibold text-white hover:bg-secondary disabled:opacity-50">
                                 {entregablePending ? <Loader2 className="size-4 animate-spin" /> : <Send className="size-4" />}
                                 {entregablePending ? tm("entregable_sending") : tm("entregable_send_btn")}
                               </button>
-                              <button type="button" onClick={() => setShowEntregableForm(false)}
+                              <button type="button" onClick={() => { setShowEntregableForm(false); setEntregableUrl(""); setEntregableUrlGithub(""); }}
                                 className="rounded-full border border-border px-4 py-3 font-body text-sm font-semibold text-ink-muted hover:bg-surface-sunken">
                                 {tm("entregable_cancel")}
                               </button>

@@ -648,6 +648,7 @@ export type Entregable = {
   fecha: string;
   estado: { nombre: EntregableState };
   url: string | null;
+  url_github: string | null;
   junior?: { id: string; nombre: string; apellido1: string | null } | null;
   proyecto?: { id: string; titulo: string } | null;
 };
@@ -655,6 +656,7 @@ export type Entregable = {
 export type SubmitEntregableInput = {
   id_proyecto: string;
   url: string;
+  url_github?: string;
   tipo: EntregableTipo;
 };
 

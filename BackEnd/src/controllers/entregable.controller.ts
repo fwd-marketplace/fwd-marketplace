@@ -29,6 +29,7 @@ function readUuidParam(value: unknown, label: string): string {
 const SubmitEntregableSchema = z.object({
   id_proyecto: z.string().uuid(),
   url: z.string().min(1).max(500),
+  url_github: z.string().max(500).optional(),
   tipo: z.enum(["parcial", "final"]),
 });
 
