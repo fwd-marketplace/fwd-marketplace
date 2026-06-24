@@ -17,6 +17,7 @@ import {
   getCatalogs,
   getMyOffers,
   getMyProjects,
+  getOfertaContacto,
   getProjectById,
   getProjectEntregables,
   getProjectMatches,
@@ -137,6 +138,10 @@ export async function getProjectMatchesAction(projectId: string) {
 
 export async function inviteToProjectAction(projectId: string, juniorUserId: string) {
   return inviteToProject(projectId, juniorUserId);
+}
+
+export async function getOfertaContactoAction(offerId: string) {
+  return getOfertaContacto(offerId);
 }
 
 export async function submitOfferAction(projectId: string, input: SubmitOfferInput) {

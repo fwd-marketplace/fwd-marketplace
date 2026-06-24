@@ -18,6 +18,7 @@ import {
   GitBranch,
   Loader2,
   Lock,
+  Mail,
   MessageSquare,
   PauseCircle,
   Pencil,
@@ -40,6 +41,7 @@ import {
   updateProjectAction,
   deleteProjectAction,
   getProjectByIdAction,
+  getOfertaContactoAction,
   getProjectOffersAction,
   pauseProjectAction,
   resumeProjectAction,
@@ -2368,6 +2370,21 @@ function EmpresaProcesoView({
     setSaved(null);
   }, [offers, project, locale]);
 
+  // Seguimiento: correo del junior adjudicado (on-demand, reusa GET /ofertas/:id). Best-effort:
+  // si no hay adjudicado o falla, no se muestra el botón de "escribir por correo".
+  const adjudicadaOfferId = offers.find((o) => o.estado?.nombre === "adjudicada")?.id;
+  const [correoAdjudicado, setCorreoAdjudicado] = useState<string | null>(null);
+  useEffect(() => {
+    setCorreoAdjudicado(null);
+    if (!adjudicadaOfferId) return;
+    let active = true;
+    void (async () => {
+      const r = await getOfertaContactoAction(adjudicadaOfferId);
+      if (active && r.ok && r.data.junior?.correo) setCorreoAdjudicado(r.data.junior.correo);
+    })();
+    return () => { active = false; };
+  }, [adjudicadaOfferId]);
+
   const toggleStudent = (id: number) =>
     setStudents((prev) =>
       prev.map((s) => s.id === id ? { ...s, expanded: !s.expanded } : s),
@@ -2550,6 +2567,19 @@ function EmpresaProcesoView({
           {offers.length} {offers.length === 1 ? t("proceso_version_singular") : t("proceso_version_plural")} {offers.length === 1 ? "recibida" : "recibidas"}
         </p>
       </div>
+
+      {/* Seguimiento del junior adjudicado: abre el cliente de correo de la empresa (mailto). */}
+      {correoAdjudicado && (
+        <div className="border-b border-border bg-accent/5 px-6 py-3 md:px-8">
+          <a
+            href={`mailto:${correoAdjudicado}?subject=${encodeURIComponent(t("seguimiento_correo_subject", { titulo: project?.titulo ?? "" }))}`}
+            className="inline-flex items-center gap-2 rounded-full bg-secondary px-4 py-2 font-body text-sm font-semibold text-white transition-colors duration-[var(--duration-fast)] ease-[var(--ease-out)] hover:bg-secondary/80"
+          >
+            <Mail className="size-4" aria-hidden="true" />
+            {t("seguimiento_correo_btn")}
+          </a>
+        </div>
+      )}
 
       {offers.length === 0 ? (
         <div className="flex flex-col items-center gap-3 px-6 py-16 text-center">
