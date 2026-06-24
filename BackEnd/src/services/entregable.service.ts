@@ -23,7 +23,7 @@ async function getEstadoEntregableId(client: Client, nombre: string): Promise<st
 export async function submitEntregable(
   accessToken: string,
   userId: string,
-  input: { id_proyecto: string; url: string; tipo: "parcial" | "final" },
+  input: { id_proyecto: string; url: string; url_github?: string; tipo: "parcial" | "final" },
 ) {
   const client = supabaseForToken(accessToken);
 
@@ -80,9 +80,10 @@ export async function submitEntregable(
       version,
       fecha: new Date().toISOString(),
       url: input.url,
+      url_github: input.url_github ?? null,
     })
     .select(
-      "id, version, tipo, fecha, url, group_id, estado:estado_entregable(nombre), proyecto:proyecto(id, titulo, empresa:empresario(id_usuario)), junior:users(id, nombre, apellido1)",
+      "id, version, tipo, fecha, url, url_github, group_id, estado:estado_entregable(nombre), proyecto:proyecto(id, titulo, empresa:empresario(id_usuario)), junior:users(id, nombre, apellido1)",
     )
     .single();
   if (insertError) throw new ApiError(400, insertError.message);
@@ -109,7 +110,7 @@ export async function listMyEntregables(accessToken: string, userId: string) {
   const { data, error } = await client
     .from("entregable")
     .select(
-      "id, version, tipo, fecha, url, group_id, comentario_revision, estado:estado_entregable(nombre), proyecto:proyecto(id, titulo)",
+      "id, version, tipo, fecha, url, url_github, group_id, comentario_revision, estado:estado_entregable(nombre), proyecto:proyecto(id, titulo)",
     )
     .eq("id_usuario", userId)
     .order("fecha", { ascending: false });
@@ -140,7 +141,7 @@ export async function listProjectEntregables(
   const { data, error } = await client
     .from("entregable")
     .select(
-      "id, version, tipo, fecha, url, group_id, comentario_revision, estado:estado_entregable(nombre), junior:users(id, nombre, apellido1)",
+      "id, version, tipo, fecha, url, url_github, group_id, comentario_revision, estado:estado_entregable(nombre), junior:users(id, nombre, apellido1)",
     )
     .eq("id_proyecto", projectId)
     .order("version", { ascending: false });
@@ -196,7 +197,7 @@ export async function reviewEntregable(
     .update(updatePayload)
     .eq("id", entregableId)
     .select(
-      "id, version, tipo, fecha, url, group_id, comentario_revision, estado:estado_entregable(nombre)",
+      "id, version, tipo, fecha, url, url_github, group_id, comentario_revision, estado:estado_entregable(nombre)",
     )
     .single();
   if (error) throw new ApiError(400, error.message);

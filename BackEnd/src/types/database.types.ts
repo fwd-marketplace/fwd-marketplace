@@ -296,6 +296,7 @@ export type Database = {
           id_usuario: string
           tipo: string
           url: string | null
+          url_github: string | null
           version: number
         }
         Insert: {
@@ -308,6 +309,7 @@ export type Database = {
           id_usuario: string
           tipo: string
           url?: string | null
+          url_github?: string | null
           version?: number
         }
         Update: {
@@ -320,6 +322,7 @@ export type Database = {
           id_usuario?: string
           tipo?: string
           url?: string | null
+          url_github?: string | null
           version?: number
         }
         Relationships: [
