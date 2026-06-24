@@ -386,6 +386,14 @@ export async function decideOferta(
       MENSAJES_NOTIFICACION.postulacionAdjudicada(proyecto.titulo),
       TIPO_POR_MENSAJE.postulacionAdjudicada,
     );
+    // La empresa también recibe un aviso para dar seguimiento al junior adjudicado.
+    await crearNotificacion(
+      accessToken,
+      userId,
+      MENSAJES_NOTIFICACION.seguimientoAdjudicacion(proyecto.titulo),
+      TIPO_POR_MENSAJE.seguimientoAdjudicacion,
+      oferta.id_proyecto,
+    );
     // Cierra la recepción: proyecto -> adjudicado y rechaza las demás propuestas.
     await cerrarProyectoAdjudicado(client, accessToken, oferta.id_proyecto, ofertaId, proyecto.titulo);
   }
@@ -457,6 +465,13 @@ export async function reviewOferta(
       accessToken, oferta.id_usuario,
       MENSAJES_NOTIFICACION.postulacionAdjudicada(titulo),
       TIPO_POR_MENSAJE.postulacionAdjudicada,
+    );
+    // La empresa también recibe un aviso para dar seguimiento al junior adjudicado.
+    await crearNotificacion(
+      accessToken, userId,
+      MENSAJES_NOTIFICACION.seguimientoAdjudicacion(titulo),
+      TIPO_POR_MENSAJE.seguimientoAdjudicacion,
+      oferta.id_proyecto,
     );
     // Cierra la recepción: proyecto -> adjudicado y rechaza las demás propuestas.
     await cerrarProyectoAdjudicado(client, accessToken, oferta.id_proyecto, ofertaId, titulo);
