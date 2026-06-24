@@ -2181,6 +2181,7 @@
     "chat_sin_conversaciones": "Sin conversaciones aún",
     "sidebar_chats_label": "Chats",
     "chat_n_chats": "{count, plural, one {# chat} other {# chats}}",
+    "chat_no_leidos": "{count, plural, one {# mensaje sin leer} other {# mensajes sin leer}}",
     "chat_overview_empty": "Aún no hay mensajes en este proyecto"
   },
   "gestion_usuarios": {

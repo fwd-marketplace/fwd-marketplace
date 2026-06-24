@@ -4,7 +4,8 @@ import { z } from "zod";
 import { authenticate } from "../middlewares/auth.middleware";
 import { asyncHandler } from "../utils/asyncHandler";
 import { ApiError } from "../utils/ApiError";
-import { supabaseForToken } from "../config/supabase";
+import { logger } from "../utils/logger";
+import { supabaseForToken, supabaseAdmin } from "../config/supabase";
 import {
   crearNotificacion,
   MENSAJES_NOTIFICACION,
@@ -102,11 +103,12 @@ async function listConversaciones(req: Request, res: Response) {
   // RLS filtra solo mensajes donde el usuario es remitente o destinatario.
   const { data, error } = await client
     .from("mensaje")
-    .select("id_proyecto, fecha_envio, id_remitente, proyecto:proyecto(id, titulo)")
+    .select("id_proyecto, fecha_envio, id_remitente, id_destinatario, leida, proyecto:proyecto(id, titulo)")
     .order("fecha_envio", { ascending: false });
   if (error) throw new ApiError(500, error.message);
 
-  // Deduplicar por proyecto, mantener el mas reciente y contar participantes únicos
+  // Deduplicar por proyecto, mantener el mas reciente, contar participantes únicos
+  // y los mensajes recibidos sin leer (no_leidos) para marcar chats pendientes.
   const seen = new Set<string>();
   const conversaciones = (data ?? [])
     .filter((m) => m.proyecto && !seen.has(m.id_proyecto) && !!seen.add(m.id_proyecto))
@@ -115,10 +117,14 @@ async function listConversaciones(req: Request, res: Response) {
       const uniqueSenders = new Set(
         msgsForProject.map((x) => x.id_remitente).filter((id): id is string => !!id && id !== userId),
       );
+      const noLeidos = msgsForProject.filter(
+        (x) => x.id_destinatario === userId && !x.leida,
+      ).length;
       return {
         proyecto: m.proyecto,
         ultimo_mensaje: m.fecha_envio,
         n_participantes: uniqueSenders.size,
+        no_leidos: noLeidos,
       };
     });
 
@@ -148,6 +154,21 @@ async function listMensajes(req: Request, res: Response) {
     .eq("id_proyecto", idParsed.data)
     .order("fecha_envio", { ascending: true });
   if (error) throw new ApiError(500, error.message);
+
+  // Al abrir el chat, marcar como leídos los mensajes que recibió el usuario
+  // (limpia el indicador de "pendiente" en gestión). Se usa service role porque
+  // mensaje no tiene política RLS de UPDATE. Best-effort: no bloquea la respuesta.
+  void supabaseAdmin()
+    .from("mensaje")
+    .update({ leida: true })
+    .eq("id_proyecto", idParsed.data)
+    .eq("id_destinatario", userId)
+    .eq("leida", false)
+    .then(({ error: updateError }) => {
+      if (updateError) {
+        logger.warn("marcar mensajes leidos fallo (best-effort)", { error: updateError.message });
+      }
+    });
 
   res.status(200).json({ mensajes: data });
 }
@@ -214,12 +235,14 @@ async function enviarMensaje(req: Request, res: Response) {
     .single();
   if (error) throw new ApiError(400, error.message);
 
-  // Notificar al destinatario (best-effort)
+  // Notificar al destinatario (best-effort). id_referencia = proyecto, para que la
+  // campanita lleve directo al chat de ese proyecto.
   await crearNotificacion(
     req.accessToken,
     idDestinatario,
     MENSAJES_NOTIFICACION.nuevoMensaje(proyectoTitulo),
     TIPO_POR_MENSAJE.nuevoMensaje,
+    idParsed.data,
   );
 
   res.status(201).json({ mensaje: data });

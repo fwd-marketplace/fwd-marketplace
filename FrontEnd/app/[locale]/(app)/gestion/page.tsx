@@ -6,12 +6,12 @@ import type { ApiProject, ApiRoleName, MyOffer } from "@/lib/api/types";
 
 interface Props {
   params: Promise<{ locale: string }>;
-  searchParams: Promise<{ demo?: string; proyecto?: string }>;
+  searchParams: Promise<{ demo?: string; proyecto?: string; seccion?: string }>;
 }
 
 export default async function GestionRoute({ params, searchParams }: Props) {
   const { locale } = await params;
-  const { demo, proyecto } = await searchParams;
+  const { demo, proyecto, seccion } = await searchParams;
   setRequestLocale(locale);
 
   const meResult = await getMe();
@@ -50,6 +50,7 @@ export default async function GestionRoute({ params, searchParams }: Props) {
       role={role}
       userId={userId}
       initialProjectId={proyecto ?? null}
+      initialSection={seccion === "chat" ? "chat" : null}
       disponible={disponible}
       initialOffers={initialOffers}
       initialProject={initialProject}

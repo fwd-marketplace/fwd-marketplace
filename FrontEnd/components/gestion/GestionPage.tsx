@@ -294,9 +294,9 @@ function buildEmpresaStudents(
 
 // ── Main component ────────────────────────────────────────────────────────────
 
-interface Props { role: ApiRoleName | null; userId: string | null; initialProjectId?: string | null; disponible?: boolean; initialOffers?: MyOffer[]; initialProject?: ApiProject | null }
+interface Props { role: ApiRoleName | null; userId: string | null; initialProjectId?: string | null; initialSection?: Section | null; disponible?: boolean; initialOffers?: MyOffer[]; initialProject?: ApiProject | null }
 
-export function GestionPage({ role, userId, initialProjectId, disponible = true, initialOffers = [], initialProject = null }: Props) {
+export function GestionPage({ role, userId, initialProjectId, initialSection: initialSectionProp = null, disponible = true, initialOffers = [], initialProject = null }: Props) {
   const t      = useTranslations("gestion_page");
   const locale = useLocale();
   const isEmpresa = role === "company";
@@ -335,7 +335,10 @@ export function GestionPage({ role, userId, initialProjectId, disponible = true,
   const [projectLoading, setProjectLoading]   = useState<boolean>(false);
   const [projectError, setProjectError]       = useState<string | null>(null);
   const [projectOffers, setProjectOffers]     = useState<ProjectOffer[]>([]);
-  const initialSection: Section = (!isEmpresa && !!initialProjectId) ? "proceso" : "info";
+  // Si vienen con ?seccion=chat (deep-link desde la campanita), abrir el chat directo.
+  // Si no, el junior con proyecto preseleccionado abre "proceso"; el resto, "info".
+  const initialSection: Section =
+    initialSectionProp ?? ((!isEmpresa && !!initialProjectId) ? "proceso" : "info");
   const [section, setSection]               = useState<Section>(initialSection);
 
   // Clean ?proyecto= from URL once used to pre-select
@@ -411,6 +414,15 @@ export function GestionPage({ role, userId, initialProjectId, disponible = true,
     const r = await getMyConversacionesAction();
     if (r.ok) setMyConversaciones(r.data);
   }, []);
+
+  // Al abrir el chat de un proyecto, el backend marca esos mensajes como leídos;
+  // limpiamos el badge "pendiente" de ese proyecto de inmediato (optimista).
+  useEffect(() => {
+    if (section !== "chat" || !selectedId) return;
+    setMyConversaciones((prev) =>
+      prev.map((c) => (c.proyecto.id === selectedId ? { ...c, no_leidos: 0 } : c)),
+    );
+  }, [section, selectedId]);
 
   const handleSaveProject = async (data: CreateProjectInput | UpdateProjectInput) => {
     setFormSaving(true);
@@ -582,6 +594,7 @@ export function GestionPage({ role, userId, initialProjectId, disponible = true,
               {isEmpresa ? (
                 (() => {
                   const convSet = new Map(myConversaciones.map((c) => [c.proyecto.id, c.n_participantes]));
+                  const unreadByProject = new Map(myConversaciones.map((c) => [c.proyecto.id, c.no_leidos]));
                   if (sidebarProjects.length === 0) {
                     return <SidebarEmpty text={t("empty_empresa")} />;
                   }
@@ -592,6 +605,7 @@ export function GestionPage({ role, userId, initialProjectId, disponible = true,
                         const count  = isSelected ? projectOffers.length : (proyecto.n_ofertas ?? 0);
                         const hasAdj = isSelected && projectOffers.some((o) => o.estado.nombre === "adjudicada");
                         const nChats = convSet.get(proyecto.id) ?? 0;
+                        const unread = unreadByProject.get(proyecto.id) ?? 0;
                         return (
                           <li key={proyecto.id}>
                             <div className="group flex items-center gap-1 rounded-xl hover:bg-white/10 transition-colors duration-[var(--duration-fast)] ease-[var(--ease-out)]">
@@ -613,6 +627,14 @@ export function GestionPage({ role, userId, initialProjectId, disponible = true,
                                     {count === 0 && nChats === 0 && t("proposals_count", { count: 0 })}
                                   </p>
                                 </div>
+                                {unread > 0 && (
+                                  <span
+                                    className="flex min-w-5 shrink-0 items-center justify-center rounded-full bg-magenta px-1.5 py-0.5 font-body text-[10px] font-bold text-white"
+                                    aria-label={t("chat_no_leidos", { count: unread })}
+                                  >
+                                    {unread > 9 ? "9+" : unread}
+                                  </span>
+                                )}
                                 {hasAdj && <CheckCircle2 className="size-4 shrink-0 text-accent" aria-hidden="true" />}
                                 <ChevronRight className="size-4 shrink-0 text-white/30 transition-colors group-hover:text-white/60" aria-hidden="true" />
                               </button>
@@ -636,6 +658,7 @@ export function GestionPage({ role, userId, initialProjectId, disponible = true,
               ) : (
                 (() => {
                   const seen = new Set<string>();
+                  const unreadByProject = new Map(myConversaciones.map((c) => [c.proyecto.id, c.no_leidos]));
                   const fromOffers = myOffers
                     .filter((o) => o.proyecto && !seen.has(o.proyecto.id) && !!seen.add(o.proyecto.id))
                     .map((o) => ({ id: o.proyecto!.id, titulo: o.proyecto!.titulo }));
@@ -646,6 +669,7 @@ export function GestionPage({ role, userId, initialProjectId, disponible = true,
                   const renderJuniorItem = (proyecto: { id: string; titulo: string }, soloChat: boolean) => {
                     const latestOferta = myOffers.find((o) => o.proyecto?.id === proyecto.id);
                     const cfg = latestOferta ? OFFER_STATE_CONFIG[latestOferta.estado.nombre] : null;
+                    const unread = unreadByProject.get(proyecto.id) ?? 0;
                     return (
                       <li key={proyecto.id}>
                         <button
@@ -673,6 +697,14 @@ export function GestionPage({ role, userId, initialProjectId, disponible = true,
                               )}
                             </p>
                           </div>
+                          {unread > 0 && (
+                            <span
+                              className="flex min-w-5 shrink-0 items-center justify-center rounded-full bg-magenta px-1.5 py-0.5 font-body text-[10px] font-bold text-white"
+                              aria-label={t("chat_no_leidos", { count: unread })}
+                            >
+                              {unread > 9 ? "9+" : unread}
+                            </span>
+                          )}
                           {latestOferta?.estado.nombre === "adjudicada" && (
                             <CheckCircle2 className="size-4 shrink-0 text-accent" aria-hidden="true" />
                           )}
