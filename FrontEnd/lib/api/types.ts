@@ -686,6 +686,7 @@ export type ConversacionItem = {
   proyecto: { id: string; titulo: string };
   ultimo_mensaje: string;
   n_participantes: number;
+  no_leidos: number;
 };
 
 export type ConversacionesResponse = {
@@ -771,6 +772,7 @@ export type ApiNotificacion = {
   mensaje: string;
   leida: boolean;
   fecha: string;
+  id_referencia: string | null;
 };
 
 export type NotificacionesResponse = {

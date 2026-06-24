@@ -76,15 +76,18 @@ export async function crearNotificacion(
   destinatarioUserId: string,
   mensaje: string,
   tipo: TipoNotificacion = TIPO_CAMBIO_ESTADO,
+  idReferencia: string | null = null,
 ): Promise<void> {
   try {
     const admin = supabaseAdmin();
-    // Funcion SECURITY DEFINER (migracion 0034): corre como postgres, bypasea RLS y
-    // no depende de auth.uid(). Solo accesible via service_role (cliente admin).
+    // Funcion SECURITY DEFINER (migracion 0034/0044): corre como postgres, bypasea RLS
+    // y no depende de auth.uid(). Solo accesible via service_role (cliente admin).
+    // p_id_referencia permite el deep-link (p.ej. al chat del proyecto).
     const { error } = await admin.rpc("sistema_crear_notificacion", {
       p_id_usuario: destinatarioUserId,
       p_tipo: tipo,
       p_mensaje: mensaje,
+      p_id_referencia: idReferencia,
     });
     if (error) {
       logger.warn("sistema_crear_notificacion fallo (best-effort)", {
@@ -105,9 +108,12 @@ export async function crearNotificaciones(
   destinatarioUserIds: string[],
   mensaje: string,
   tipo: TipoNotificacion = TIPO_CAMBIO_ESTADO,
+  idReferencia: string | null = null,
 ): Promise<void> {
   await Promise.all(
-    destinatarioUserIds.map((userId) => crearNotificacion(accessToken, userId, mensaje, tipo)),
+    destinatarioUserIds.map((userId) =>
+      crearNotificacion(accessToken, userId, mensaje, tipo, idReferencia),
+    ),
   );
 }
 
@@ -116,7 +122,7 @@ export async function listMyNotificaciones(accessToken: string, userId: string) 
   const client = supabaseForToken(accessToken);
   const { data, error } = await client
     .from("notificacion")
-    .select("id, tipo, mensaje, leida, fecha")
+    .select("id, tipo, mensaje, leida, fecha, id_referencia")
     .eq("id_usuario", userId)
     .order("fecha", { ascending: false })
     .limit(MAX_NOTIFICACIONES);

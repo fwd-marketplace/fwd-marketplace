@@ -694,6 +694,7 @@ export type Database = {
           id_proyecto: string
           id_remitente: string
           idioma_original: string
+          leida: boolean
         }
         Insert: {
           contenido: string
@@ -705,6 +706,7 @@ export type Database = {
           id_proyecto: string
           id_remitente: string
           idioma_original?: string
+          leida?: boolean
         }
         Update: {
           contenido?: string
@@ -716,6 +718,7 @@ export type Database = {
           id_proyecto?: string
           id_remitente?: string
           idioma_original?: string
+          leida?: boolean
         }
         Relationships: [
           {
@@ -826,6 +829,7 @@ export type Database = {
         Row: {
           fecha: string
           id: string
+          id_referencia: string | null
           id_usuario: string
           leida: boolean
           mensaje: string
@@ -834,6 +838,7 @@ export type Database = {
         Insert: {
           fecha?: string
           id?: string
+          id_referencia?: string | null
           id_usuario: string
           leida?: boolean
           mensaje: string
@@ -842,6 +847,7 @@ export type Database = {
         Update: {
           fecha?: string
           id?: string
+          id_referencia?: string | null
           id_usuario?: string
           leida?: boolean
           mensaje?: string

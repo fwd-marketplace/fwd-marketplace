@@ -36,15 +36,20 @@ function iconFor(tipo: string): { Icon: React.ElementType; className: string; bg
   return ICON_BY_TIPO[tipo] ?? DEFAULT_ICON;
 }
 
-/** Ruta de destino al hacer click en una notificacion, segun tipo y rol. */
-function linkFor(tipo: string, role: ApiRoleName | undefined, locale: string): string {
+/** Ruta de destino al hacer click en una notificacion, segun tipo, rol y referencia. */
+function linkFor(notif: ApiNotificacion, role: ApiRoleName | undefined, locale: string): string {
+  const { tipo, id_referencia } = notif;
+  // Mensaje nuevo: si trae el proyecto referenciado, abrir DIRECTO su chat en gestión.
+  if (tipo === "nuevo_mensaje" && id_referencia) {
+    return `/${locale}/gestion?proyecto=${id_referencia}&seccion=chat`;
+  }
   if (role === "company") {
-    if (tipo === "nuevo_mensaje") return `/${locale}/mensajes`;
+    if (tipo === "nuevo_mensaje") return `/${locale}/gestion`;
     return `/${locale}/gestion`;
   }
   if (role === "admin") return `/${locale}/admin`;
   // student y fallback
-  if (tipo === "nuevo_mensaje") return `/${locale}/mensajes`;
+  if (tipo === "nuevo_mensaje") return `/${locale}/gestion`;
   return `/${locale}/mis-postulaciones`;
 }
 
@@ -108,7 +113,7 @@ export function NotificationPanel({
   async function handleNotifClick(notif: ApiNotificacion) {
     setOpen(false);
     if (!notif.leida) await markRead(notif.id);
-    router.push(linkFor(notif.tipo, role, locale));
+    router.push(linkFor(notif, role, locale));
   }
 
   return (
