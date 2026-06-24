@@ -14,6 +14,8 @@ import type {
   Entregable,
   EntregablesResponse,
   MyOffersResponse,
+  OfertaContacto,
+  OfertaContactoResponse,
   ProjectDetailResponse,
   ProjectOffer,
   ProjectOffersResponse,
@@ -50,6 +52,14 @@ export function getProjectOffers(projectId: string): Promise<Result<ProjectOffer
 
 export function getMyOffers(): Promise<Result<MyOffersResponse>> {
   return asResult(() => apiAuth<MyOffersResponse>("/ofertas/mias"));
+}
+
+/** Contacto del junior de UNA oferta (correo) — reusa GET /ofertas/:id; solo el dueño del proyecto. */
+export function getOfertaContacto(offerId: string): Promise<Result<OfertaContacto>> {
+  return asResult(async () => {
+    const res = await apiAuth<OfertaContactoResponse>(`/ofertas/${offerId}`);
+    return res.oferta;
+  });
 }
 
 export function createProject(

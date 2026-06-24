@@ -2178,6 +2178,8 @@
     "chat_label_junior": "Junior",
     "chat_empty": "Aún no hay mensajes. Iniciá la conversación.",
     "chat_send_error": "No se pudo enviar el mensaje. Probá de nuevo.",
+    "seguimiento_correo_btn": "Escribir al junior por correo",
+    "seguimiento_correo_subject": "Seguimiento del proyecto «{titulo}»",
     "chat_loading": "Cargando chat",
     "project_load_failed": "No se pudo cargar el proyecto.",
     "back_to_projects": "Volver a mis proyectos",

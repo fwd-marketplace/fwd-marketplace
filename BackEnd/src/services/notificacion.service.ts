@@ -34,6 +34,9 @@ export const MENSAJES_NOTIFICACION = {
   // Empresa → recibe cuando el junior sube un entregable
   entregableRecibido: (titulo: string): string =>
     `El junior subió un entregable para tu proyecto "${titulo}". Revisalo en el panel de gestión.`,
+  // Empresa → recibe al adjudicar, para dar seguimiento al junior adjudicado
+  seguimientoAdjudicacion: (titulo: string): string =>
+    `Adjudicaste el proyecto "${titulo}". Dale seguimiento al junior: revisá su propuesta y entregables, y podés escribirle por correo desde el panel de gestión.`,
   // Junior → recibe cuando la empresa revisa su entregable
   entregableAprobado: (titulo: string): string =>
     `La empresa aprobó tu entregable para el proyecto "${titulo}". Bien hecho.`,
@@ -56,6 +59,7 @@ export const TIPO_POR_MENSAJE: Record<keyof typeof MENSAJES_NOTIFICACION, TipoNo
   postulacionAdjudicada:        TIPO_ADJUDICACION,
   cambiosSolicitados:           TIPO_CAMBIO_ESTADO,
   entregableRecibido:           "entregable_subido",
+  seguimientoAdjudicacion:      TIPO_ADJUDICACION,
   entregableAprobado:           TIPO_ADJUDICACION,
   entregableCambiosSolicitados: "entregable_subido",
   proyectoCerrado:              TIPO_ADJUDICACION,

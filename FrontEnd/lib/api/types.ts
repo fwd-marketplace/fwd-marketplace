@@ -180,6 +180,19 @@ export type ProjectOffersResponse = {
   ofertas: ProjectOffer[];
 };
 
+/** Contacto del junior de UNA oferta (GET /ofertas/:id). Solo lo ve el dueño del proyecto. */
+export type OfertaContacto = {
+  id: string;
+  junior: {
+    id: string;
+    nombre: string;
+    apellido1: string | null;
+    correo: string | null;
+  } | null;
+};
+
+export type OfertaContactoResponse = { oferta: OfertaContacto };
+
 export type MyOffer = {
   id: string;
   propuesta: string;
