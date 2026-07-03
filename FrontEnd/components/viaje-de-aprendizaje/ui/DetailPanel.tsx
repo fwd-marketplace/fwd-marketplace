@@ -302,7 +302,7 @@ function QuizTab({
     return (
       <div
         className="px-4 py-5 rounded-[14px] flex flex-col items-center gap-3 text-center"
-        style={{ background: "#E8F9FA", border: "1.5px solid #20BEC6" }}
+        style={{ background: area.color + "14", border: `1.5px solid ${area.color}` }}
       >
         <div className="flex gap-[6px]">
           {[0, 1, 2].map((i) => (
@@ -317,10 +317,10 @@ function QuizTab({
             </svg>
           ))}
         </div>
-        <p className="font-heading font-bold text-[14px] m-0" style={{ color: "#0e8a90" }}>
+        <p className="font-heading font-bold text-[14px] m-0" style={{ color: area.color }}>
           {t("tab_quiz_all_done_title")}
         </p>
-        <p className="font-body text-[13px] leading-[1.5] m-0" style={{ color: "#0e8a90" }}>
+        <p className="font-body text-[13px] leading-[1.5] m-0" style={{ color: "var(--ink-muted)" }}>
           {t("tab_quiz_all_done_body")}
         </p>
       </div>
@@ -553,10 +553,10 @@ export function DetailPanel({ star, area, onClose, onLight, onMastery, onStage3C
   const [activeTab, setActiveTab] = useState<Tab>("info");
 
   const statePill = isDone
-    ? { label: t("panel_state_done"),      bg: "#E8F9FA", fg: "#0e8a90" }
+    ? { label: t("panel_state_done"),      bg: area.color + "18", fg: area.color }
     : isAvailable
-    ? { label: t("panel_state_available"), bg: "#FFFBE6", fg: "#8a6e00" }
-    : { label: t("panel_state_locked"),    bg: "#F0F1F6", fg: "#6B6F85" };
+    ? { label: t("panel_state_available"), bg: "#FFFBE620", fg: "#8a6e00" }
+    : { label: t("panel_state_locked"),    bg: "var(--surface-sunken)", fg: "var(--ink-subtle)" };
 
   const tabs: { id: Tab; label: string; icon: React.ReactNode }[] = [
     { id: "info", label: t("tab_info"), icon: <BookOpen size={13} /> },
@@ -565,7 +565,7 @@ export function DetailPanel({ star, area, onClose, onLight, onMastery, onStage3C
 
   return (
     <>
-      <div className="sheet-scrim-enter fixed inset-0 z-40 bg-[rgba(22,10,38,0.55)]" onClick={onClose} />
+      <div className="sheet-scrim-enter fixed inset-0 z-40 bg-[rgba(18,6,36,0.65)] backdrop-blur-[2px]" onClick={onClose} />
 
       <aside
         role="dialog"
@@ -575,7 +575,10 @@ export function DetailPanel({ star, area, onClose, onLight, onMastery, onStage3C
           "md:top-1/2 md:left-1/2 md:-translate-x-1/2 md:-translate-y-1/2 md:w-[560px] md:max-h-[88dvh] md:rounded-[24px] md:p-[32px]",
           "max-md:left-0 max-md:right-0 max-md:bottom-0 max-md:max-h-[88dvh] max-md:rounded-t-[22px] max-md:p-5 max-md:pb-[30px]",
         ].join(" ")}
-        style={{ boxShadow: "0 8px 24px oklch(0.55 0.16 245 / 0.12), 0 32px 64px oklch(0.55 0.16 245 / 0.18)" }}
+        style={{
+          boxShadow: `0 0 0 1.5px ${area.color}28, 0 8px 28px ${area.color}22, 0 32px 64px oklch(0.25 0.18 260 / 0.28)`,
+          borderTop: `3px solid ${area.color}`,
+        }}
       >
         {/* grip móvil */}
         <div className="md:hidden w-[42px] h-1 rounded-full bg-border-strong mx-auto mb-[14px]" />
@@ -647,8 +650,14 @@ export function DetailPanel({ star, area, onClose, onLight, onMastery, onStage3C
 
         {/* bloques de estado */}
         {isDone && (
-          <div className="px-4 py-[14px] rounded-[14px] bg-[#E8F9FA] mb-4">
-            <span className="block font-heading font-bold text-[10px] tracking-[0.14em] uppercase text-[#0e8a90] mb-[5px]">
+          <div
+            className="px-4 py-[14px] rounded-[14px] mb-4"
+            style={{ background: area.color + "12", borderLeft: `3px solid ${area.color}` }}
+          >
+            <span
+              className="block font-heading font-bold text-[10px] tracking-[0.14em] uppercase mb-[5px]"
+              style={{ color: area.color }}
+            >
               {t("panel_unlocked_eyebrow")}
             </span>
             <p className="font-body text-[13.5px] leading-[1.5] text-ink m-0">

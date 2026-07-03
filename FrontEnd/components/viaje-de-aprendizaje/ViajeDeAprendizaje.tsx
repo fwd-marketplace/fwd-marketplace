@@ -3,8 +3,8 @@
 import "./viaje.css";
 
 import { useState, useEffect, useRef, useCallback, useMemo } from "react";
-import { useRouter } from "next/navigation";
 import type { Star, CelebrationData, Transform } from "./data/types";
+import type { ApiRoleName } from "@/lib/api/types";
 import { STARS } from "./data/stars";
 import { CONSTELLATIONS } from "./data/constellations";
 import { EDGES, META } from "./data/edges";
@@ -69,9 +69,13 @@ function mergeProgress(rows: ProgressRow[]): Star[] {
   return recompute(merged, EDGES);
 }
 
-export function ViajeDeAprendizaje() {
-  const router = useRouter();
+interface ViajeDeAprendizajeProps {
+  userName?: string | undefined;
+  avatarUrl?: string | undefined;
+  role?: ApiRoleName | undefined;
+}
 
+export function ViajeDeAprendizaje({ userName, avatarUrl, role }: ViajeDeAprendizajeProps) {
   const [stars, setStars] = useState<Star[]>(() => STARS.map((s) => ({ ...s })));
   const [isLoading, setIsLoading] = useState(true);
   const [selectedId, setSelectedId] = useState<string | null>(null);
@@ -244,6 +248,13 @@ export function ViajeDeAprendizaje() {
 
   return (
     <div className="relative w-full h-[100dvh] bg-secondary overflow-hidden">
+      {/* glow radial central — sutil teal para animar el cielo */}
+      <div
+        className="absolute inset-0 pointer-events-none z-0"
+        style={{ background: "radial-gradient(ellipse 70% 55% at 42% 52%, rgba(32,190,198,0.055) 0%, transparent 68%)" }}
+        aria-hidden="true"
+      />
+
       {/* franjas decorativas — fijas, siempre pegadas al borde derecho */}
       <svg
         className="absolute right-0 top-0 h-full pointer-events-none"
@@ -252,9 +263,10 @@ export function ViajeDeAprendizaje() {
         preserveAspectRatio="xMaxYMid slice"
         aria-hidden="true"
       >
-        <polygon points="80,-10 200,-10 340,400 200,810 80,810 220,400"  fill="rgba(255,255,255,0.04)" />
-        <polygon points="200,-10 320,-10 460,400 320,810 200,810 340,400" fill="rgba(255,255,255,0.07)" />
-        <polygon points="310,-10 430,-10 570,400 430,810 310,810 450,400" fill="rgba(255,255,255,0.10)" />
+        <polygon points="80,-10 200,-10 340,400 200,810 80,810 220,400"  fill="rgba(32,190,198,0.045)" />
+        <polygon points="200,-10 320,-10 460,400 320,810 200,810 340,400" fill="rgba(255,255,255,0.055)" />
+        <polygon points="310,-10 430,-10 570,400 430,810 310,810 450,400" fill="rgba(255,255,255,0.09)" />
+        <polygon points="390,-10 500,-10 640,400 500,810 390,810 520,400" fill="rgba(10,108,185,0.07)" />
       </svg>
 
       <Starfield />
@@ -292,12 +304,19 @@ export function ViajeDeAprendizaje() {
         progress={progress}
         xp={xp}
         streak={META.streakDays}
-        level={META.level}
-        onBack={() => router.back()}
+        userName={userName}
+        avatarUrl={avatarUrl}
+        role={role}
       />
 
       <Legend />
-      <GoalBar nextStar={nextStar} area={nextStar ? (CONSTELLATIONS[nextStar.area] ?? null) : null} onOpen={openFromGoal} />
+      <GoalBar
+        nextStar={nextStar}
+        area={nextStar ? (CONSTELLATIONS[nextStar.area] ?? null) : null}
+        onOpen={openFromGoal}
+        progress={progress}
+        level={META.level}
+      />
 
       {selected && (
         <DetailPanel
