@@ -7,13 +7,14 @@ import { useRouter } from "next/navigation";
 import type { Star, CelebrationData, Transform } from "./data/types";
 import { STARS } from "./data/stars";
 import { CONSTELLATIONS } from "./data/constellations";
-import { BOARD, EDGES, META } from "./data/edges";
+import { EDGES, META } from "./data/edges";
 import { recompute } from "./utils";
+import { getProgressAction, putProgressAction } from "@/lib/actions/viaje";
+import type { ProgressRow } from "@/lib/api/viaje";
 import { Sky } from "./sky/Sky";
 import { HeaderBar } from "./ui/HeaderBar";
 import { GoalBar } from "./ui/GoalBar";
 import { Legend } from "./ui/Legend";
-import { ZoomControls } from "./ui/ZoomControls";
 import { DetailPanel } from "./ui/DetailPanel";
 import { Celebration } from "./ui/Celebration";
 
@@ -56,17 +57,26 @@ function Starfield() {
   );
 }
 
+function mergeProgress(rows: ProgressRow[]): Star[] {
+  const doneMap = new Map(rows.map((r) => [r.star_id, r.mastery]));
+  const merged = STARS.map((s) => {
+    const mastery = doneMap.get(s.id);
+    if (mastery !== undefined) {
+      return { ...s, state: "done" as const, mastery, unlockedDate: "hoy" };
+    }
+    return { ...s, state: "locked" as const, mastery: 0 };
+  });
+  return recompute(merged, EDGES);
+}
+
 export function ViajeDeAprendizaje() {
   const router = useRouter();
 
-  const [stars, setStars] = useState<Star[]>(() =>
-    recompute(STARS.map((s) => ({ ...s })), EDGES),
-  );
+  const [stars, setStars] = useState<Star[]>(() => STARS.map((s) => ({ ...s })));
+  const [isLoading, setIsLoading] = useState(true);
   const [selectedId, setSelectedId] = useState<string | null>(null);
   const [celeb, setCeleb] = useState<CelebrationData | null>(null);
-  const [xp, setXp] = useState<number>(() =>
-    STARS.filter((s) => s.state === "done").reduce((acc, s) => acc + s.mastery * 100, 0),
-  );
+  const [xp, setXp] = useState<number>(META.initialXp);
 
   const progress = useMemo(() => ({
     lit: stars.filter((s) => s.state === "done").length,
@@ -76,49 +86,66 @@ export function ViajeDeAprendizaje() {
   const nextStar = useMemo(() => stars.find((s) => s.state === "available") ?? null, [stars]);
   const selected = stars.find((s) => s.id === selectedId) ?? null;
 
+  const [newlyAvailableIds, setNewlyAvailableIds] = useState<Set<string>>(new Set());
+  const pendingUnlockRef = useRef<{ ids: string[]; nextArea: string | null }>({ ids: [], nextArea: null });
+
   /* ── pan / zoom ─────────────────────────────────────────────────────── */
   const [tf, setTf] = useState<Transform>({ x: 0, y: 0, scale: 0.5 });
   const [isDragging, setIsDragging] = useState(false);
   const drag = useRef<{ sx: number; sy: number; ox: number; oy: number; moved: boolean } | null>(null);
-  const minScaleRef = useRef(0.18);
+  const currentConstellationRef = useRef<string | null>(null);
 
-  const clamp = useCallback((nx: number, ny: number, scale: number) => {
+  const panToConstellation = useCallback((constellationId: string) => {
     const vw = window.innerWidth;
     const vh = window.innerHeight;
-    const margin = 160;
-    return {
-      x: Math.max(Math.min(nx, margin), vw - BOARD.w * scale - margin),
-      y: Math.max(Math.min(ny, margin), vh - BOARD.h * scale - margin),
-    };
+    const isMobile = vw < 760;
+
+    const conStars = STARS.filter((s) => s.area === constellationId);
+    if (conStars.length === 0) return;
+    const xs = conStars.map((s) => s.x);
+    const ys = conStars.map((s) => s.y);
+    const minX = Math.min(...xs);
+    const maxX = Math.max(...xs);
+    const minY = Math.min(...ys);
+    const maxY = Math.max(...ys);
+    const cx = (minX + maxX) / 2;
+    const cy = (minY + maxY) / 2;
+    const cw = maxX - minX + 300;
+    const ch = maxY - minY + 300;
+
+    const availW = isMobile ? vw - 40 : vw - 460;
+    const availH = vh - (isMobile ? 180 : 220);
+    const scale = Math.min(availW / cw, availH / ch, 1.6);
+
+    const screenCx = isMobile ? vw / 2 : (vw - 412) / 2;
+    const screenCy = isMobile ? vh * 0.42 : vh / 2;
+
+    currentConstellationRef.current = constellationId;
+    setTf({ x: screenCx - cx * scale, y: screenCy - cy * scale, scale });
   }, []);
 
-  const fitAll = useCallback(() => {
-    const vw = window.innerWidth;
-    const vh = window.innerHeight;
-    // Star content bounding box (x:80–1470, y:50–980) with UI padding
-    const contentW = 1390;
-    const contentH = 930;
-    const contentOffsetX = 80;
-    const contentOffsetY = 50;
-    const padH = 80;
-    const padV = vw < 760 ? 160 : 200;
-    const raw = Math.min((vw - padH) / contentW, (vh - padV) / contentH);
-    const s = Math.max(Math.min(raw, 1), 0.1);
-    minScaleRef.current = s;
-    setTf({
-      x: (vw - contentW * s) / 2 - contentOffsetX * s,
-      y: (vh - contentH * s) / 2 - contentOffsetY * s + 10,
-      scale: s,
-    });
-  }, []);
-
-  useEffect(() => { fitAll(); }, [fitAll]);
   useEffect(() => {
-    window.addEventListener("resize", fitAll);
-    return () => window.removeEventListener("resize", fitAll);
-  }, [fitAll]);
+    getProgressAction().then((result) => {
+      if (result.ok && result.data.length > 0) {
+        const merged = mergeProgress(result.data);
+        setStars(merged);
+        const firstAvail = merged.find((s) => s.state === "available");
+        if (firstAvail) panToConstellation(firstAvail.area);
+      } else {
+        const initial = STARS.find((s) => s.state === "available");
+        if (initial) panToConstellation(initial.area);
+      }
+      setIsLoading(false);
+    });
+  }, [panToConstellation]);
 
-  const canZoomOut = tf.scale > minScaleRef.current + 0.01;
+  useEffect(() => {
+    const onResize = () => {
+      if (currentConstellationRef.current) panToConstellation(currentConstellationRef.current);
+    };
+    window.addEventListener("resize", onResize);
+    return () => window.removeEventListener("resize", onResize);
+  }, [panToConstellation]);
 
   const onPointerDown = (e: React.PointerEvent<HTMLDivElement>) => {
     if ((e.target as Element).closest("[data-star]")) return;
@@ -132,8 +159,9 @@ export function ViajeDeAprendizaje() {
     const dx = e.clientX - drag.current.sx;
     const dy = e.clientY - drag.current.sy;
     if (Math.abs(dx) + Math.abs(dy) > 4) drag.current.moved = true;
-    const c = clamp(drag.current.ox + dx, drag.current.oy + dy, tf.scale);
-    setTf((p) => ({ ...p, x: c.x, y: c.y }));
+    drag.current.sx = e.clientX;
+    drag.current.sy = e.clientY;
+    setTf((p) => ({ ...p, x: p.x + dx, y: p.y + dy }));
   };
 
   const onPointerUp = () => {
@@ -143,47 +171,76 @@ export function ViajeDeAprendizaje() {
     if (wasDrag && !wasDrag.moved) setSelectedId(null);
   };
 
-  const zoom = (factor: number) => {
-    setTf((p) => {
-      const vw = window.innerWidth;
-      const vh = window.innerHeight;
-      const ns = Math.max(Math.min(p.scale * factor, 1.5), minScaleRef.current);
-      if (ns === p.scale) return p;
-      const bx = (vw / 2 - p.x) / p.scale;
-      const by = (vh / 2 - p.y) / p.scale;
-      const c = clamp(vw / 2 - bx * ns, vh / 2 - by * ns, ns);
-      return { x: c.x, y: c.y, scale: ns };
-    });
-  };
-
-  const centerOn = useCallback((x: number, y: number) => {
-    setTf((p) => {
-      const vw = window.innerWidth;
-      const vh = window.innerHeight;
-      const isMobile = vw < 760;
-      const targetX = isMobile ? vw / 2 : (vw - 412) / 2;
-      const targetY = isMobile ? vh * 0.32 : vh * 0.46;
-      const c = clamp(targetX - x * p.scale, targetY - y * p.scale, p.scale);
-      return { ...p, x: c.x, y: c.y };
-    });
-  }, [clamp]);
-
   /* ── acciones ────────────────────────────────────────────────────────── */
+  const showPendingUnlocks = useCallback(() => {
+    const { ids, nextArea } = pendingUnlockRef.current;
+    if (ids.length === 0) return;
+    setNewlyAvailableIds(new Set(ids));
+    setTimeout(() => setNewlyAvailableIds(new Set()), 1200);
+    pendingUnlockRef.current = { ids: [], nextArea: null };
+    if (nextArea) setTimeout(() => panToConstellation(nextArea), 200);
+  }, [panToConstellation]);
+
+  const handleClose = useCallback(() => {
+    setSelectedId(null);
+    showPendingUnlocks();
+  }, [showPendingUnlocks]);
+
   const openFromGoal = (id: string) => {
     const s = stars.find((x) => x.id === id);
-    if (s) centerOn(s.x, s.y);
+    if (s) panToConstellation(s.area);
     setTimeout(() => setSelectedId(id), 60);
   };
 
   const lightStar = (id: string) => {
     const s = stars.find((x) => x.id === id);
-    if (!s) return;
-    setSelectedId(null);
+    if (!s || s.state === "done") return;
+    // modal stays open — do NOT close here
     const lit: Star = { ...s, state: "done", mastery: 1, unlockedDate: "hoy" };
-    setCeleb({ star: lit, area: CONSTELLATIONS[s.area]!, xpGain: 100 });
-    setStars((prev) => recompute(prev.map((x) => (x.id === id ? lit : x)), EDGES));
+    const updatedStars = recompute(stars.map((x) => (x.id === id ? lit : x)), EDGES);
+    setStars(updatedStars);
     setXp((v) => v + 100);
+
+    // defer unlock animation until the modal closes
+    const prevAvailSet = new Set(stars.filter((x) => x.state === "available").map((x) => x.id));
+    const newlyAvail = updatedStars.filter((x) => x.state === "available" && !prevAvailSet.has(x.id));
+    if (newlyAvail.length > 0) {
+      pendingUnlockRef.current = {
+        ids: newlyAvail.map((x) => x.id),
+        nextArea: newlyAvail[0]?.area ?? null,
+      };
+    }
+
+    putProgressAction(id, 1).catch(() => {});
   };
+
+  const addMastery = (id: string) => {
+    const current = stars.find((s) => s.id === id);
+    if (!current || current.state !== "done" || current.mastery >= 3) return;
+    const newMastery = current.mastery + 1;
+    setStars((prev) =>
+      prev.map((s) =>
+        s.id === id && s.state === "done" && s.mastery < 3
+          ? { ...s, mastery: newMastery }
+          : s,
+      ),
+    );
+    putProgressAction(id, newMastery).catch(() => {});
+  };
+
+  // Llamado desde QuizTab cuando la pantalla "etapa 3 completada" se muestra.
+  // El timer empieza en ese momento, no al hacer submit.
+  const handleStage3Complete = useCallback(() => {
+    setTimeout(() => {
+      const star = stars.find((s) => s.id === selectedId);
+      const area = star ? CONSTELLATIONS[star.area] : null;
+      setSelectedId(null);
+      showPendingUnlocks();
+      if (star && area) {
+        setCeleb({ star, area, xpGain: 200 });
+      }
+    }, 1600);
+  }, [stars, selectedId, showPendingUnlocks]);
 
   return (
     <div className="relative w-full h-[100dvh] bg-secondary overflow-hidden">
@@ -218,7 +275,7 @@ export function ViajeDeAprendizaje() {
             transformOrigin: "0 0",
             transform: `translate(${tf.x}px, ${tf.y}px) scale(${tf.scale})`,
             transition: isDragging ? "none" : "transform 320ms cubic-bezier(0.23, 1, 0.32, 1)",
-            willChange: "transform",
+            willChange: isDragging ? "transform" : "auto",
           }}
         >
           <Sky
@@ -226,6 +283,7 @@ export function ViajeDeAprendizaje() {
             tweaks={TWEAKS}
             selectedId={selectedId}
             onSelectStar={setSelectedId}
+            newlyAvailableIds={newlyAvailableIds}
           />
         </div>
       </div>
@@ -239,15 +297,16 @@ export function ViajeDeAprendizaje() {
       />
 
       <Legend />
-      <ZoomControls onIn={() => zoom(1.25)} onOut={() => zoom(0.8)} onFit={fitAll} canZoomOut={canZoomOut} />
       <GoalBar nextStar={nextStar} area={nextStar ? (CONSTELLATIONS[nextStar.area] ?? null) : null} onOpen={openFromGoal} />
 
       {selected && (
         <DetailPanel
           star={selected}
           area={CONSTELLATIONS[selected.area]!}
-          onClose={() => setSelectedId(null)}
+          onClose={handleClose}
           onLight={lightStar}
+          onMastery={addMastery}
+          onStage3Complete={handleStage3Complete}
         />
       )}
 

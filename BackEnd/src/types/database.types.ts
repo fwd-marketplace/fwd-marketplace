@@ -1311,6 +1311,30 @@ export type Database = {
           },
         ]
       }
+      viaje_progress: {
+        Row: {
+          created_at: string
+          mastery: number
+          star_id: string
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          mastery?: number
+          star_id: string
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          mastery?: number
+          star_id?: string
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
     }
     Views: {
       [_ in never]: never
