@@ -2015,41 +2015,43 @@
     "preferences": "Preferencias"
   },
   "cosmos_profesional": {
-    "screen_label": "Constelación de puntos importantes",
-    "eyebrow": "Constelación FWD",
-    "title": "Los estudiantes son las estrellas",
-    "description": "Acá ves un poco de todo lo que vas a encontrar en la plataforma. Pasá por cada estrella y descubrí cómo FWD te conecta con proyectos reales.",
-    "controls": {
-      "style_aria": "Estilo de estrella",
-      "style_diamante": "◆ Diamante",
-      "style_circulo": "● Círculo",
-      "style_punta4": "✦ 4 puntas",
-      "style_punta6": "✶ 6 puntas",
-      "style_destello": "✧ Destello",
-      "style_anillo": "◌ Anillo",
-      "toggle_aria": "Mostrar u ocultar trazos",
-      "trazos": "Trazos"
-    },
+    "screen_label": "Diagrama del proceso en FWD",
+    "eyebrow": "Cómo funciona",
+    "title": "De la idea a la realidad",
+    "description": "Dos roles, un mismo camino: de la idea al proyecto real en FWD Talent.",
+    "col_egresado": "Egresado FWD",
+    "col_empresa": "Empresa",
+    "cta_question": "¿Listo para tu primer proyecto real?",
+    "cta_junior": "Unirme como egresado",
+    "cta_empresa": "Publicar un proyecto",
     "stars": {
       "0": {
-        "title": "Proyectos reales",
-        "desc": "Trabajá en retos de empresas, no en ejercicios de práctica."
+        "title": "Crea tu cuenta",
+        "desc": "Registrate como egresado FWD, completá tu perfil y empezá a explorar los proyectos disponibles."
       },
       "1": {
-        "title": "Las empresas publican",
-        "desc": "Suben proyectos y briefs pensados para talento junior."
+        "title": "Crea tu cuenta",
+        "desc": "Registrate como empresa, describí tu organización y el tipo de talento que necesitás."
       },
       "2": {
-        "title": "Match con tus skills",
-        "desc": "Te mostramos oportunidades según lo que sabés hacer."
+        "title": "Publica el proyecto",
+        "desc": "Definí el alcance, el stack requerido y el presupuesto. El equipo de FWD revisa y activa el proyecto."
       },
       "3": {
-        "title": "Notificaciones",
-        "desc": "Enterate apenas se abre un proyecto que encaja con vos."
+        "title": "Envía tu propuesta",
+        "desc": "Elegí el proyecto que mejor encaja con tus habilidades y escribí tu carta de presentación."
       },
       "4": {
-        "title": "Publicate",
-        "desc": "Hacete visible como una estrella del cielo."
+        "title": "Recibe propuestas",
+        "desc": "Revisá las postulaciones, pedí ajustes si hace falta y elegí al egresado ideal para tu proyecto."
+      },
+      "5": {
+        "title": "Mejora tu propuesta",
+        "desc": "Si la empresa pide cambios, refiná tu propuesta y demostrá tu capacidad de iteración."
+      },
+      "6": {
+        "title": "Proyecto adjudicado",
+        "desc": "El proyecto se adjudica: el egresado gana experiencia real y la empresa recibe el trabajo terminado."
       }
     }
   },

@@ -2024,41 +2024,43 @@
     "preferences": "Preferences"
   },
   "cosmos_profesional": {
-    "screen_label": "Important points constellation",
-    "eyebrow": "FWD constellation",
-    "title": "Students are the stars",
-    "description": "Here you get a glimpse of everything you'll find on the platform. Hover over each star to see how FWD connects you with real projects.",
-    "controls": {
-      "style_aria": "Star style",
-      "style_diamante": "◆ Diamond",
-      "style_circulo": "● Circle",
-      "style_punta4": "✦ 4 points",
-      "style_punta6": "✶ 6 points",
-      "style_destello": "✧ Sparkle",
-      "style_anillo": "◌ Ring",
-      "toggle_aria": "Show or hide paths",
-      "trazos": "Paths"
-    },
+    "screen_label": "FWD process diagram",
+    "eyebrow": "How it works",
+    "title": "From idea to reality",
+    "description": "Two roles, one shared path: from concept to real project on FWD Talent.",
+    "col_egresado": "FWD Graduate",
+    "col_empresa": "Company",
+    "cta_question": "Ready for your first real project?",
+    "cta_junior": "Join as a graduate",
+    "cta_empresa": "Publish a project",
     "stars": {
       "0": {
-        "title": "Real projects",
-        "desc": "Work on company challenges, not practice exercises."
+        "title": "Create your account",
+        "desc": "Sign up as an FWD graduate, complete your profile, and start exploring available projects."
       },
       "1": {
-        "title": "Companies publish",
-        "desc": "Upload projects and briefs designed for junior talent."
+        "title": "Create your account",
+        "desc": "Sign up as a company, describe your organization, and the kind of talent you need."
       },
       "2": {
-        "title": "Match your skills",
-        "desc": "We show you opportunities based on what you know how to do."
+        "title": "Publish the project",
+        "desc": "Define the scope, required stack, and budget. The FWD team reviews and activates the project."
       },
       "3": {
-        "title": "Notifications",
-        "desc": "Find out as soon as a project that fits you opens."
+        "title": "Submit your proposal",
+        "desc": "Choose the project that best fits your skills and write your cover letter."
       },
       "4": {
-        "title": "Publish yourself",
-        "desc": "Make yourself visible like a star in the sky."
+        "title": "Receive proposals",
+        "desc": "Review applications, request adjustments if needed, and choose the ideal graduate for your project."
+      },
+      "5": {
+        "title": "Refine your proposal",
+        "desc": "If the company requests changes, polish your proposal and demonstrate your ability to iterate."
+      },
+      "6": {
+        "title": "Project awarded",
+        "desc": "The project is awarded: the graduate gains real experience and the company receives the finished work."
       }
     }
   },
