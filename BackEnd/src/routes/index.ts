@@ -16,6 +16,7 @@ import aiRoutes from "./ai.routes";
 import uploadRoutes from "./upload.routes";
 import guardadoRoutes from "./guardado.routes";
 import publicPerfilRoutes from "./public-perfil.routes";
+import viajeRoutes from "./viaje.routes";
 import { asyncHandler } from "../utils/asyncHandler";
 import { isDatabaseReachable } from "../services/health.service";
 
@@ -50,5 +51,6 @@ router.use("/ai", aiRoutes);
 router.use("/upload", uploadRoutes);
 router.use("/guardados", guardadoRoutes);
 router.use("/perfil", publicPerfilRoutes);
+router.use("/viaje", viajeRoutes);
 
 export default router;
