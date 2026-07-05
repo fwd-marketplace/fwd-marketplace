@@ -7,13 +7,13 @@ import { ScrollToSection } from "@/components/home/ScrollToSection";
 import { StarDecoration } from "@/components/home/StarDecoration";
 
 const STARS = [
-  { x: "2%",  y: "10%", size: 13, opacity: 0.25, rotate: 15  },
-  { x: "95%", y: "7%",  size: 10, opacity: 0.2,  rotate: -5  },
-  { x: "1%",  y: "65%", size: 16, opacity: 0.2,  rotate: 0   },
-  { x: "97%", y: "70%", size: 11, opacity: 0.22, rotate: 30  },
-  { x: "60%", y: "3%",  size: 8,  opacity: 0.18, rotate: 45  },
-  { x: "25%", y: "94%", size: 12, opacity: 0.2,  rotate: -20 },
-  { x: "80%", y: "92%", size: 9,  opacity: 0.18, rotate: 10  },
+  { x: "2%",  y: "10%", size: 14, opacity: 0.55, rotate: 15  },
+  { x: "95%", y: "7%",  size: 11, opacity: 0.45, rotate: -5  },
+  { x: "1%",  y: "65%", size: 18, opacity: 0.5,  rotate: 0   },
+  { x: "97%", y: "70%", size: 12, opacity: 0.5,  rotate: 30  },
+  { x: "60%", y: "3%",  size: 9,  opacity: 0.4,  rotate: 45  },
+  { x: "25%", y: "94%", size: 13, opacity: 0.45, rotate: -20 },
+  { x: "80%", y: "92%", size: 10, opacity: 0.4,  rotate: 10  },
 ];
 
 const PROJECT_CARDS = [
@@ -78,7 +78,7 @@ export default function MarketplacePreviewSection() {
       className="relative overflow-hidden bg-gradient-to-br from-primary/5 via-canvas to-accent/5 py-24"
     >
       <StarDecoration stars={STARS} />
-      <div className="relative mx-auto max-w-7xl px-6 md:px-10">
+      <div className="relative z-10 mx-auto max-w-7xl px-6 md:px-10">
         {/* Header */}
         <div
           className="mb-14 text-center"

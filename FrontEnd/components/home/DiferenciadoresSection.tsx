@@ -22,13 +22,13 @@ const DIFER_ITEMS: DiferItem[] = [
 ];
 
 const STARS = [
-  { x: "3%",  y: "12%", size: 12, opacity: 0.28, rotate: 0   },
-  { x: "94%", y: "8%",  size: 16, opacity: 0.22, rotate: 20  },
-  { x: "1%",  y: "72%", size: 10, opacity: 0.2,  rotate: 15  },
-  { x: "97%", y: "60%", size: 14, opacity: 0.25, rotate: -10 },
-  { x: "48%", y: "4%",  size: 8,  opacity: 0.18, rotate: 45  },
-  { x: "78%", y: "90%", size: 12, opacity: 0.22, rotate: 30  },
-  { x: "18%", y: "93%", size: 9,  opacity: 0.18, rotate: -15 },
+  { x: "3%",  y: "12%", size: 13, opacity: 0.55, rotate: 0   },
+  { x: "94%", y: "8%",  size: 17, opacity: 0.5,  rotate: 20  },
+  { x: "1%",  y: "72%", size: 11, opacity: 0.45, rotate: 15  },
+  { x: "97%", y: "60%", size: 15, opacity: 0.52, rotate: -10 },
+  { x: "48%", y: "4%",  size: 9,  opacity: 0.4,  rotate: 45  },
+  { x: "78%", y: "90%", size: 13, opacity: 0.48, rotate: 30  },
+  { x: "18%", y: "93%", size: 10, opacity: 0.42, rotate: -15 },
 ];
 
 type Phase = "idle" | "title" | "cards";
@@ -69,7 +69,7 @@ export default function DiferenciadoresSection() {
     <section ref={sectionRef} className="relative overflow-hidden bg-surface pb-16 pt-28">
       <StarDecoration stars={STARS} />
 
-      <div className="relative mx-auto max-w-7xl px-6 md:px-10">
+      <div className="relative z-10 mx-auto max-w-7xl px-6 md:px-10">
         {/* Header */}
         <div
           className="mb-14 text-center"

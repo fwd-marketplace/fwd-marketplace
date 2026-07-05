@@ -21,14 +21,14 @@ const FAQ_CARDS = [
 const FAQ_DEFAULT = { topBorder: "border-t-primary", numberColor: "text-primary" };
 
 const STARS = [
-  { x: "2%",  y: "6%",  size: 14, opacity: 0.25, rotate: 10  },
-  { x: "96%", y: "10%", size: 10, opacity: 0.2,  rotate: -20 },
-  { x: "1%",  y: "55%", size: 16, opacity: 0.22, rotate: 0   },
-  { x: "97%", y: "50%", size: 12, opacity: 0.2,  rotate: 35  },
-  { x: "55%", y: "2%",  size: 9,  opacity: 0.18, rotate: 45  },
-  { x: "90%", y: "88%", size: 14, opacity: 0.22, rotate: -10 },
-  { x: "12%", y: "92%", size: 10, opacity: 0.18, rotate: 20  },
-  { x: "40%", y: "97%", size: 8,  opacity: 0.15, rotate: 0   },
+  { x: "2%",  y: "6%",  size: 15, opacity: 0.55, rotate: 10  },
+  { x: "96%", y: "10%", size: 11, opacity: 0.48, rotate: -20 },
+  { x: "1%",  y: "55%", size: 17, opacity: 0.5,  rotate: 0   },
+  { x: "97%", y: "50%", size: 13, opacity: 0.48, rotate: 35  },
+  { x: "55%", y: "2%",  size: 10, opacity: 0.42, rotate: 45  },
+  { x: "90%", y: "88%", size: 15, opacity: 0.5,  rotate: -10 },
+  { x: "12%", y: "92%", size: 11, opacity: 0.45, rotate: 20  },
+  { x: "40%", y: "97%", size: 9,  opacity: 0.4,  rotate: 0   },
 ];
 
 type Phase = "idle" | "title" | "cards";
@@ -69,7 +69,7 @@ export default function FaqSection() {
   return (
     <section ref={sectionRef} className="relative overflow-hidden bg-canvas pb-28 pt-16">
       <StarDecoration stars={STARS} />
-      <div className="relative mx-auto max-w-7xl px-6 md:px-10">
+      <div className="relative z-10 mx-auto max-w-7xl px-6 md:px-10">
         {/* Header — centered */}
         <div
           className="mb-14 text-center"
