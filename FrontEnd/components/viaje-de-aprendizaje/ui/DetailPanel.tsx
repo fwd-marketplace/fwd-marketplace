@@ -20,6 +20,16 @@ interface DetailPanelProps {
 
 type Tab = "info" | "quiz";
 
+/** Forma del contenido explicativo por estrella en messages (viaje.contenido.<id>). */
+interface ContentBlock {
+  titulo: string;
+  cuerpo: string;
+}
+interface StarContent {
+  intro: string;
+  bloques: ContentBlock[];
+}
+
 function extractYouTubeId(url: string): string | null {
   const m = url.match(/(?:youtube\.com\/watch\?v=|youtu\.be\/)([A-Za-z0-9_-]{11})/);
   return m?.[1] ?? null;
@@ -31,23 +41,60 @@ function InfoTab({ starId, area }: { starId: string; area: Constellation }) {
   const webResources = all.filter((r) => r.kind === "web");
   const videoResources = all.filter((r) => r.kind === "video");
 
+  // El contenido lo redacta el asistente de aprendizaje y vive en i18n (es/en).
+  // Si una estrella todavía no lo tuviera, se cae al placeholder original.
+  const contentKey = `contenido.${starId}`;
+  const content = t.has(contentKey) ? (t.raw(contentKey) as StarContent) : null;
+
   return (
     <div className="flex flex-col gap-5">
-      {/* placeholder de contenido explicativo */}
-      <div
-        className="px-4 py-[14px] rounded-[14px] border border-dashed"
-        style={{ borderColor: "var(--border)", background: "var(--surface-sunken)" }}
-      >
-        <span
-          className="block font-heading font-bold text-[10px] tracking-[0.14em] uppercase mb-[6px]"
-          style={{ color: "var(--ink-subtle)" }}
+      {/* contenido explicativo */}
+      {content ? (
+        <div
+          className="px-4 py-[14px] rounded-[14px] border"
+          style={{ borderColor: "var(--border)", background: "var(--surface-sunken)" }}
         >
-          {t("tab_info_content_eyebrow")}
-        </span>
-        <p className="font-body text-[13px] leading-[1.5] m-0" style={{ color: "var(--ink-muted)" }}>
-          {t("tab_info_content_placeholder")}
-        </p>
-      </div>
+          <span
+            className="block font-heading font-bold text-[10px] tracking-[0.14em] uppercase mb-[10px]"
+            style={{ color: "var(--ink-subtle)" }}
+          >
+            {t("tab_info_content_eyebrow")}
+          </span>
+          <p className="font-body text-[13.5px] leading-[1.55] m-0" style={{ color: "var(--ink)" }}>
+            {content.intro}
+          </p>
+          <div className="flex flex-col gap-[14px] mt-[14px]">
+            {content.bloques.map((bloque, i) => (
+              <div key={i}>
+                <span
+                  className="block font-heading font-bold text-[11px] mb-[3px]"
+                  style={{ color: area.color }}
+                >
+                  {bloque.titulo}
+                </span>
+                <p className="font-body text-[13px] leading-[1.5] m-0" style={{ color: "var(--ink-muted)" }}>
+                  {bloque.cuerpo}
+                </p>
+              </div>
+            ))}
+          </div>
+        </div>
+      ) : (
+        <div
+          className="px-4 py-[14px] rounded-[14px] border border-dashed"
+          style={{ borderColor: "var(--border)", background: "var(--surface-sunken)" }}
+        >
+          <span
+            className="block font-heading font-bold text-[10px] tracking-[0.14em] uppercase mb-[6px]"
+            style={{ color: "var(--ink-subtle)" }}
+          >
+            {t("tab_info_content_eyebrow")}
+          </span>
+          <p className="font-body text-[13px] leading-[1.5] m-0" style={{ color: "var(--ink-muted)" }}>
+            {t("tab_info_content_placeholder")}
+          </p>
+        </div>
+      )}
 
       {/* recursos web */}
       {webResources.length > 0 && (
@@ -218,6 +265,14 @@ function QuizTab({
       return next;
     });
 
+  // Dispara el cierre+celebración desde el padre cuando la pantalla de etapa 3 se muestra.
+  // Debe declararse antes de cualquier return para no romper las reglas de los hooks.
+  useEffect(() => {
+    if (stageComplete && localRound === 2) {
+      onStage3Complete();
+    }
+  }, [stageComplete, localRound, onStage3Complete]);
+
   if (isLocked) {
     return (
       <div
@@ -239,13 +294,6 @@ function QuizTab({
       </p>
     );
   }
-
-  // Dispara el cierre+celebración desde el padre cuando la pantalla de etapa 3 se muestra
-  useEffect(() => {
-    if (stageComplete && localRound === 2) {
-      onStage3Complete();
-    }
-  }, [stageComplete, localRound, onStage3Complete]);
 
   if (stageComplete) {
     const isLastStage = localRound === 2;
@@ -477,7 +525,7 @@ function QuizTab({
                     className="px-3 py-[10px] rounded-[10px] font-body text-[12px] leading-[1.5]"
                     style={{ background: "#FFFBE6", border: "1px dashed #FFE57A", color: "#8a6e00" }}
                   >
-                    {t("tab_quiz_hint_placeholder")}
+                    {q.explanation ?? t("tab_quiz_hint_placeholder")}
                   </div>
                 )}
               </div>
