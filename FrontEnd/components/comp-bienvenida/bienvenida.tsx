@@ -25,6 +25,9 @@ import {
 import { FwdGeoBackdrop } from '@/components/ui/fwd-geo-backdrop';
 import { Button } from '@/components/ui/button';
 import { EstrellaProceso } from '@/components/comp-bienvenida/EstrellaProceso';
+import { ViajeActivity } from '@/components/comp-bienvenida/ViajeActivity';
+import { LlamadoToast } from '@/components/comp-bienvenida/LlamadoToast';
+import type { HeroJourneyData } from '@/lib/hero-journey/mock';
 
 // TODO: replace with real API data once backend integration is complete
 const recommendedProjects = [
@@ -108,13 +111,19 @@ function greetingForHour(hour: number): GreetingKey {
   return 'greeting_evening';
 }
 
-export function BienvenidaDashboard() {
+interface BienvenidaDashboardProps {
+  isJunior: boolean;
+  heroJourney: HeroJourneyData;
+}
+
+export function BienvenidaDashboard({ isJunior, heroJourney }: BienvenidaDashboardProps) {
   const t = useTranslations('bienvenida');
   const locale = useLocale();
 
   // Se calcula tras montar (useEffect) para usar la hora del navegador del
   // usuario y evitar el mismatch de hidratación: el servidor no conoce su zona.
   const [greetingKey, setGreetingKey] = useState<GreetingKey>('greeting_morning');
+
   useEffect(() => {
     setGreetingKey(greetingForHour(new Date().getHours()));
   }, []);
@@ -126,6 +135,7 @@ export function BienvenidaDashboard() {
   };
 
   return (
+    <>
     <div className="min-h-screen bg-canvas font-body pb-20">
       {/* Hero Section */}
       <section className="relative overflow-hidden bg-secondary px-6 py-16 md:px-10 lg:px-16 text-white lg:py-24">
@@ -163,116 +173,135 @@ export function BienvenidaDashboard() {
             </div>
           </div>
 
-          {/* Right Column (Constellation Network Simulation) */}
+          {/* Right Column — Constellation animation */}
           <div className="hidden lg:flex flex-1 relative h-[400px] w-full items-center justify-center">
-            
-            {/* Background Stars */}
+
+            <style>{`
+              @keyframes centerReveal {
+                0%   { transform: scale(0) rotate(-180deg); opacity: 0; }
+                65%  { transform: scale(1.1) rotate(5deg);  opacity: 1; }
+                100% { transform: scale(1)   rotate(0deg);  opacity: 1; }
+              }
+              @keyframes orbitExpand {
+                0%   { transform: scale(0); opacity: 0; }
+                100% { transform: scale(1); opacity: 1; }
+              }
+              @keyframes cNodeFade {
+                from { opacity: 0; }
+                to   { opacity: 1; }
+              }
+              @keyframes cIconPop {
+                0%   { transform: scale(0.1); }
+                55%  { transform: scale(1.3);  filter: brightness(2.8) drop-shadow(0 0 12px currentColor); }
+                78%  { transform: scale(0.93); filter: brightness(1.4); }
+                100% { transform: scale(1);    filter: brightness(1); }
+              }
+              @keyframes cLinePulse {
+                0%, 100% { opacity: 0.35; filter: drop-shadow(0 0 2px rgba(255,255,255,0.4)); }
+                50%      { opacity: 1;    filter: drop-shadow(0 0 8px rgba(255,255,255,0.9)); }
+              }
+              @keyframes cStarTwinkle {
+                0%, 100% { opacity: var(--s-op, 0.15); transform: scale(1); }
+                50%      { opacity: 0.9; transform: scale(2.4); }
+              }
+              .c-center { animation: centerReveal 0.9s cubic-bezier(0.34,1.56,0.64,1) both; }
+              .c-orbit  { animation: orbitExpand  0.65s ease-out both; }
+              .c-node   { animation: cNodeFade 0.45s ease-out both; }
+              .c-icon   { animation: cIconPop  0.65s cubic-bezier(0.34,1.56,0.64,1) both; }
+              .c-line   {
+                stroke-dasharray: 1 6;
+                stroke-linecap: round;
+                animation: cNodeFade 0.5s ease-out both, cLinePulse 3s ease-in-out infinite;
+              }
+.c-point  { animation: cNodeFade 0.35s ease-out both, cLinePulse 3s ease-in-out infinite; }
+              .c-star   { animation: cStarTwinkle var(--s-dur,2.5s) ease-in-out infinite both; }
+            `}</style>
+
+            {/* Background stars — deterministic (no hydration mismatch) */}
             <div className="absolute inset-0 z-0 overflow-hidden pointer-events-none">
-              {[...Array(30)].map((_, i) => (
-                <div 
-                  key={i} 
-                  className="absolute rounded-full bg-white"
+              {[...Array(22)].map((_, i) => (
+                <div
+                  key={i}
+                  className="absolute rounded-full bg-white c-star"
                   style={{
-                    width: Math.random() * 3 + 1 + 'px',
-                    height: Math.random() * 3 + 1 + 'px',
-                    top: Math.random() * 100 + '%',
-                    left: Math.random() * 100 + '%',
-                    opacity: Math.random() * 0.5 + 0.1,
-                    animation: `pulse ${Math.random() * 3 + 2}s infinite ${Math.random() * 2}s`
-                  }}
+                    width:  `${1 + (i * 7  % 3)}px`,
+                    height: `${1 + (i * 7  % 3)}px`,
+                    top:    `${(i * 17 + 11) % 97}%`,
+                    left:   `${(i * 13 +  7) % 97}%`,
+                    '--s-op':  0.1 + (i % 5) * 0.08,
+                    '--s-dur': `${2 + (i % 3) * 0.8}s`,
+                    animationDelay: `${3.9 + (i % 7) * 0.22}s`,
+                  } as React.CSSProperties}
                 />
               ))}
             </div>
 
-            {/* Center Node (Enhanced with double ring and glow) */}
-            <div className="absolute z-30 flex h-36 w-36 items-center justify-center rounded-full border border-primary/40 bg-secondary/80 backdrop-blur-md shadow-[0_0_60px_rgba(102,45,145,0.7)]">
+            {/* Center node */}
+            <div className="c-center absolute z-30 flex h-36 w-36 items-center justify-center rounded-full border border-primary/40 bg-secondary/80 backdrop-blur-md shadow-[0_0_60px_rgba(102,45,145,0.7)]">
               <div className="absolute inset-0 rounded-full border border-white/20 scale-[0.85]" />
               <div className="absolute inset-0 rounded-full border border-magenta/30 scale-[1.15]" />
-              <span className="text-xl font-bold bg-clip-text text-transparent bg-gradient-to-br from-white to-white/70">Tu Progreso</span>
+              <span className="text-center text-base font-bold leading-tight px-2 bg-clip-text text-transparent bg-gradient-to-br from-white to-white/70">Viaje del{' '}Héroe</span>
             </div>
 
-            {/* Orbit paths with depth */}
-            <div className="absolute h-[250px] w-[250px] rounded-full border border-white/10 shadow-[0_0_20px_rgba(255,255,255,0.05)] z-10" />
-            <div className="absolute h-[350px] w-[350px] rounded-full border border-white/5 shadow-[0_0_30px_rgba(255,255,255,0.02)] z-10" />
+            {/* Orbit rings */}
+            <div className="c-orbit absolute h-[250px] w-[250px] rounded-full border border-white/10 shadow-[0_0_20px_rgba(255,255,255,0.05)] z-10" style={{ animationDelay: '0.5s' }} />
+            <div className="c-orbit absolute h-[350px] w-[350px] rounded-full border border-white/5  shadow-[0_0_30px_rgba(255,255,255,0.02)] z-10" style={{ animationDelay: '0.75s' }} />
 
-            {/* Nodes */}
-            {/* El Llamado */}
-            <div className="absolute -top-4 left-1/2 -translate-x-1/2 flex items-center gap-3 z-30 transition-transform duration-300 hover:scale-110 cursor-pointer">
-              <div className="flex h-12 w-12 items-center justify-center rounded-full bg-primary text-white shadow-[0_0_20px_rgba(0,188,212,0.5)] border border-white/20">
+            {/* 1 · El Llamado */}
+            <div className="c-node absolute -top-4 left-1/2 -translate-x-1/2 flex items-center gap-3 z-30 cursor-pointer" style={{ animationDelay: '1.3s' }}>
+              <div className="c-icon flex h-12 w-12 items-center justify-center rounded-full bg-primary text-white shadow-[0_0_20px_rgba(10,108,185,0.6)] border border-white/20 transition-transform duration-300 hover:scale-110" style={{ animationDelay: '1.3s' }}>
                 <Compass className="h-6 w-6" />
               </div>
               <span className="font-medium text-sm bg-secondary/60 border border-white/10 px-3 py-1.5 rounded backdrop-blur-md shadow-lg">El Llamado</span>
             </div>
 
-            {/* La Preparación */}
-            <div className="absolute top-1/4 right-0 flex flex-col items-center gap-2 z-30 transition-transform duration-300 hover:scale-110 cursor-pointer">
-              <div className="flex h-12 w-12 items-center justify-center rounded-full bg-secondary border border-white/30 text-white shadow-[0_0_20px_rgba(102,45,145,0.5)]">
+            {/* 2 · La Preparación */}
+            <div className="c-node absolute top-1/4 right-0 flex flex-col items-center gap-2 z-30 cursor-pointer" style={{ animationDelay: '1.8s' }}>
+              <div className="c-icon flex h-12 w-12 items-center justify-center rounded-full bg-secondary border border-white/30 text-white shadow-[0_0_20px_rgba(102,45,145,0.6)] transition-transform duration-300 hover:scale-110" style={{ animationDelay: '1.8s' }}>
                 <BookOpen className="h-5 w-5" />
               </div>
               <span className="font-medium text-sm bg-secondary/60 border border-white/10 px-3 py-1.5 rounded backdrop-blur-md shadow-lg">La Preparación</span>
             </div>
 
-            {/* El Desafío */}
-            <div className="absolute bottom-4 right-1/4 flex flex-col items-center gap-2 z-30 transition-transform duration-300 hover:scale-110 cursor-pointer">
-              <div className="flex h-12 w-12 items-center justify-center rounded-full bg-primary text-white shadow-[0_0_20px_rgba(0,188,212,0.5)] border border-white/20">
+            {/* 3 · El Desafío */}
+            <div className="c-node absolute bottom-4 right-1/4 flex flex-col items-center gap-2 z-30 cursor-pointer" style={{ animationDelay: '2.3s' }}>
+              <div className="c-icon flex h-12 w-12 items-center justify-center rounded-full bg-highlight text-white shadow-[0_0_20px_rgba(255,203,5,0.6)] border border-white/20 transition-transform duration-300 hover:scale-110" style={{ animationDelay: '2.3s' }}>
                 <Mountain className="h-5 w-5" />
               </div>
               <span className="font-medium text-sm bg-secondary/60 border border-white/10 px-3 py-1.5 rounded backdrop-blur-md shadow-lg">El Desafío</span>
             </div>
 
-            {/* La Transformación */}
-            <div className="absolute bottom-10 left-1/4 flex flex-col items-center gap-2 z-30 transition-transform duration-300 hover:scale-110 cursor-pointer">
-              <div className="flex h-12 w-12 items-center justify-center rounded-full bg-accent text-white shadow-[0_0_20px_rgba(255,107,107,0.5)] border border-white/20">
+            {/* 4 · La Transformación */}
+            <div className="c-node absolute bottom-10 left-1/4 flex flex-col items-center gap-2 z-30 cursor-pointer" style={{ animationDelay: '2.8s' }}>
+              <div className="c-icon flex h-12 w-12 items-center justify-center rounded-full bg-accent text-white shadow-[0_0_20px_rgba(32,190,198,0.6)] border border-white/20 transition-transform duration-300 hover:scale-110" style={{ animationDelay: '2.8s' }}>
                 <Sparkles className="h-6 w-6" />
               </div>
               <span className="font-medium text-sm bg-secondary/60 border border-white/10 px-3 py-1.5 rounded backdrop-blur-md shadow-lg">La Transformación</span>
             </div>
 
-            {/* El Reconocimiento */}
-            <div className="absolute top-1/3 left-4 flex flex-col items-center gap-2 z-30 transition-transform duration-300 hover:scale-110 cursor-pointer">
-              <div className="flex h-12 w-12 items-center justify-center rounded-full bg-magenta text-white shadow-[0_0_20px_rgba(236,0,140,0.5)] border border-white/20">
+            {/* 5 · El Reconocimiento */}
+            <div className="c-node absolute top-1/3 left-4 flex flex-col items-center gap-2 z-30 cursor-pointer" style={{ animationDelay: '3.3s' }}>
+              <div className="c-icon flex h-12 w-12 items-center justify-center rounded-full bg-magenta text-white shadow-[0_0_20px_rgba(236,0,140,0.6)] border border-white/20 transition-transform duration-300 hover:scale-110" style={{ animationDelay: '3.3s' }}>
                 <Trophy className="h-5 w-5" />
               </div>
               <span className="font-medium text-sm bg-secondary/60 border border-white/10 px-3 py-1.5 rounded backdrop-blur-md shadow-lg">El Reconocimiento</span>
             </div>
 
-            {/* Lines connecting (Astronomical Constellation style) */}
-            <style>{`
-              @keyframes constellationPulse {
-                0%, 100% { opacity: 0.3; filter: drop-shadow(0 0 2px rgba(255,255,255,0.4)); }
-                50% { opacity: 1; filter: drop-shadow(0 0 8px rgba(255,255,255,0.9)); }
-              }
-              .constellation-line {
-                animation: constellationPulse 3s ease-in-out infinite;
-                stroke-dasharray: 1 6;
-                stroke-linecap: round;
-              }
-              .secondary-line {
-                stroke-dasharray: 2 4;
-                opacity: 0.15;
-              }
-            `}</style>
+            {/* SVG connections */}
             <svg className="absolute inset-0 h-full w-full pointer-events-none" style={{ zIndex: 20 }}>
-              {/* Primary connections to center */}
-              <line x1="50%" y1="10%" x2="50%" y2="50%" stroke="rgba(255,255,255,0.7)" strokeWidth="1.5" className="constellation-line" />
-              <line x1="15%" y1="35%" x2="50%" y2="50%" stroke="rgba(255,255,255,0.7)" strokeWidth="1.5" className="constellation-line" style={{ animationDelay: '0.5s' }} />
-              <line x1="25%" y1="80%" x2="50%" y2="50%" stroke="rgba(255,255,255,0.7)" strokeWidth="1.5" className="constellation-line" style={{ animationDelay: '1s' }} />
-              <line x1="75%" y1="85%" x2="50%" y2="50%" stroke="rgba(255,255,255,0.7)" strokeWidth="1.5" className="constellation-line" style={{ animationDelay: '1.5s' }} />
-              <line x1="85%" y1="35%" x2="50%" y2="50%" stroke="rgba(255,255,255,0.7)" strokeWidth="1.5" className="constellation-line" style={{ animationDelay: '2s' }} />
-              
-              {/* Secondary connections (Network web) */}
-              <line x1="50%" y1="10%" x2="85%" y2="35%" stroke="rgba(255,255,255,0.5)" strokeWidth="1" className="secondary-line" />
-              <line x1="85%" y1="35%" x2="75%" y2="85%" stroke="rgba(255,255,255,0.5)" strokeWidth="1" className="secondary-line" />
-              <line x1="75%" y1="85%" x2="25%" y2="80%" stroke="rgba(255,255,255,0.5)" strokeWidth="1" className="secondary-line" />
-              <line x1="25%" y1="80%" x2="15%" y2="35%" stroke="rgba(255,255,255,0.5)" strokeWidth="1" className="secondary-line" />
-              <line x1="15%" y1="35%" x2="50%" y2="10%" stroke="rgba(255,255,255,0.5)" strokeWidth="1" className="secondary-line" />
+              {/* Primary lines — fade in with their node, then pulse */}
+              <line x1="50%" y1="10%" x2="50%" y2="50%" stroke="rgba(255,255,255,0.7)" strokeWidth="1.5" className="c-line" style={{ animationDelay: '1.3s, 5.5s' }} />
+              <line x1="85%" y1="35%" x2="50%" y2="50%" stroke="rgba(255,255,255,0.7)" strokeWidth="1.5" className="c-line" style={{ animationDelay: '1.8s, 5.5s' }} />
+              <line x1="75%" y1="85%" x2="50%" y2="50%" stroke="rgba(255,255,255,0.7)" strokeWidth="1.5" className="c-line" style={{ animationDelay: '2.3s, 5.5s' }} />
+              <line x1="25%" y1="80%" x2="50%" y2="50%" stroke="rgba(255,255,255,0.7)" strokeWidth="1.5" className="c-line" style={{ animationDelay: '2.8s, 5.5s' }} />
+              <line x1="15%" y1="35%" x2="50%" y2="50%" stroke="rgba(255,255,255,0.7)" strokeWidth="1.5" className="c-line" style={{ animationDelay: '3.3s, 5.5s' }} />
 
-              {/* Luminous stars on the connection lines */}
-              <circle cx="50%" cy="30%" r="2" fill="white" className="constellation-line" />
-              <circle cx="32%" cy="42%" r="1.5" fill="white" className="constellation-line" style={{ animationDelay: '0.3s' }} />
-              <circle cx="37%" cy="65%" r="2" fill="white" className="constellation-line" style={{ animationDelay: '0.8s' }} />
-              <circle cx="62%" cy="67%" r="1.5" fill="white" className="constellation-line" style={{ animationDelay: '1.2s' }} />
-              <circle cx="67%" cy="42%" r="2" fill="white" className="constellation-line" style={{ animationDelay: '1.8s' }} />
+              {/* Midpoint glow dots — appear last, then pulse */}
+              <circle cx="50%" cy="30%" r="2"   fill="white" className="c-point" style={{ animationDelay: '4.1s, 5.5s' }} />
+              <circle cx="67%" cy="42%" r="1.5" fill="white" className="c-point" style={{ animationDelay: '4.3s, 5.5s' }} />
+              <circle cx="62%" cy="67%" r="2"   fill="white" className="c-point" style={{ animationDelay: '4.5s, 5.5s' }} />
+              <circle cx="37%" cy="65%" r="1.5" fill="white" className="c-point" style={{ animationDelay: '4.7s, 5.5s' }} />
+              <circle cx="32%" cy="42%" r="2"   fill="white" className="c-point" style={{ animationDelay: '4.9s, 5.5s' }} />
             </svg>
           </div>
         </div>
@@ -388,45 +417,23 @@ export function BienvenidaDashboard() {
           </div>
         </section>
 
-        {/* Progress & Companies */}
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-          <div className="lg:col-span-2">
-            <h2 className="text-xl font-bold text-ink-strong mb-4">{t('progress.title')}</h2>
-            <EstrellaProceso />
-          </div>
-
-          <div>
-            <div className="flex items-center justify-between mb-4">
-              <h2 className="text-xl font-bold text-ink-strong">{t('companies.title')}</h2>
-              <Link href="#" className="text-sm font-medium text-primary hover:underline flex items-center">
-                {t('companies.view_all')} <ArrowRight className="ml-1 h-4 w-4" />
-              </Link>
-            </div>
-            <div className="bg-surface rounded-xl p-6 shadow-soft border border-border flex flex-col h-[calc(100%-2rem)]">
-              <div className="space-y-6 flex-1">
-                {interestedCompanies.map((company) => (
-                  <div key={company.id} className="flex items-center justify-between">
-                    <div className="flex items-center gap-3">
-                      <div className={`flex h-10 w-10 shrink-0 items-center justify-center rounded-full text-white font-bold text-sm ${company.color}`}>
-                        {company.initials}
-                      </div>
-                      <div>
-                        <div className="font-bold text-sm text-ink-strong">{company.name}</div>
-                        <div className="text-xs text-ink-muted">{company.searching}</div>
-                      </div>
-                    </div>
-                    <span className="text-[10px] font-bold text-accent tracking-wider">
-                      {t('companies.active')}
-                    </span>
-                  </div>
-                ))}
+        {/* Viaje del Héroe — solo visible para juniors (role = student) */}
+        {isJunior && (
+          <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 items-stretch">
+            <div className="lg:col-span-2 flex flex-col">
+              <div className="mb-5">
+                <h2 className="font-heading text-3xl font-extrabold tracking-tight text-ink-strong">
+                  {t('progress.title')}<span className="text-primary">.</span>
+                </h2>
+                <p className="mt-2 max-w-prose text-sm leading-relaxed text-ink-muted">
+                  {t('progress.subtitle')}
+                </p>
               </div>
-              <Button variant="outline" className="w-full mt-6 rounded-full border-secondary text-secondary hover:bg-secondary/5 hover:text-secondary">
-                {t('companies.btn_all')}
-              </Button>
+              <EstrellaProceso heroJourney={heroJourney} />
             </div>
+            <ViajeActivity heroJourney={heroJourney} />
           </div>
-        </div>
+        )}
 
         {/* Recent Activity */}
         <section>
@@ -461,5 +468,8 @@ export function BienvenidaDashboard() {
 
       </div>
     </div>
+
+    {isJunior && <LlamadoToast />}
+    </>
   );
 }

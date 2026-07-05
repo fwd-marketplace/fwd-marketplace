@@ -1,5 +1,6 @@
 import { ApiError, apiAuth } from "@/lib/api-client";
 import { err, ok, type Result } from "@/lib/result";
+import type { HeroJourneyData } from "@/lib/hero-journey/mock";
 
 export type ProgressRow = {
   star_id: string;
@@ -30,4 +31,9 @@ export function putProgress(starId: string, mastery: number): Promise<Result<voi
       body: JSON.stringify({ mastery }),
     });
   });
+}
+
+/** GET /api/junior/hero-journey — hitos del Viaje del Héroe del junior autenticado. */
+export function getHeroJourney(): Promise<Result<HeroJourneyData>> {
+  return asResult(async () => apiAuth<HeroJourneyData>("/junior/hero-journey"));
 }

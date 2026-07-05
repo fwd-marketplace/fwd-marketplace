@@ -1177,12 +1177,12 @@
     "back": "Back to marketplace",
     "inicio": "Home",
     "marketplace": "Marketplace",
-    "viaje": "My journey",
+    "viaje": "Map",
     "perfil": "My profile"
   },
   "viaje": {
     "title": "Your sky",
-    "eyebrow": "Learning journey",
+    "eyebrow": "Learning map",
     "back_label": "Back to profile",
     "sky_lit": "{pct}% of the sky lit",
     "xp_label": "XP",
@@ -1295,7 +1295,7 @@
   },
   "bienvenida": {
     "hero": {
-      "welcome": "WELCOME TO FWD TALENT!",
+      "welcome": "WELCOME TO FWD MARKETPLACE!",
       "greeting_morning": "Good morning",
       "greeting_afternoon": "Good afternoon",
       "greeting_evening": "Good evening",
@@ -1331,7 +1331,8 @@
       "match": "High match"
     },
     "progress": {
-      "title": "Your progress at FWD",
+      "title": "My Hero's Journey",
+      "subtitle": "Every badge you earn is a real step in your career. Complete the challenges and unlock the next chapter of your professional story.",
       "step1_title": "Profile completed",
       "step1_desc": "Excellent! Your profile is at 100%.",
       "step2_title": "Stack defined",
@@ -1347,10 +1348,10 @@
       "btn_profile": "View my profile"
     },
     "estrella": {
-      "eyebrow": "Your constellation",
+      "eyebrow": "My progress",
       "aria_stage": "Your hero's journey constellation",
       "center_title": "Your Progress",
-      "center_sub": "{done} of {total} milestones",
+      "center_sub": "{done} of {total} badges",
       "lit_label": "Stars lit",
       "status": {
         "done": "Completed",
@@ -1362,7 +1363,19 @@
       "progress_label": "Progress",
       "lit_on": "Lit on {date}",
       "next_hint": "Your next step",
+      "next_links": {
+        "llamado": "/bienvenida",
+        "preparacion": "/perfil-estudiante",
+        "desafio": "/marketplace",
+        "transformacion": "/mapa-de-aprendizaje",
+        "reconocimiento": "/gestion"
+      },
       "close": "Close",
+      "activity_title": "Journey achievements",
+      "activity_map_btn": "Go to Learning Map",
+      "unlocked_on": "Unlocked on {date}",
+      "to_unlock": "To unlock:",
+      "learning_pct": "{pct}% of the Learning Map",
       "items": {
         "llamado": {
           "name": "The Call",
@@ -1395,6 +1408,11 @@
           "date": ""
         }
       }
+    },
+    "llamado_toast": {
+      "title": "First badge unlocked",
+      "desc": "Welcome to the Hero's Journey. You created your account and your adventure has already begun.",
+      "dismiss": "Dismiss"
     },
     "companies": {
       "title": "Interested companies",

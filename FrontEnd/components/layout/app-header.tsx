@@ -137,7 +137,7 @@ type MenuLink = { key: string; href: string; Icon: typeof Settings };
 function buildMenuLinks(role?: ApiRoleName): MenuLink[] {
   const links: MenuLink[] = [];
   if (role === "student") {
-    links.push({ key: "learning_map", href: "/viaje-de-aprendizaje", Icon: GraduationCap });
+    links.push({ key: "learning_map", href: "/mapa-de-aprendizaje", Icon: GraduationCap });
   }
   links.push({ key: "settings", href: "/preferencias-notificaciones", Icon: Settings });
   return links;

@@ -1177,12 +1177,12 @@
     "back": "Volver al marketplace",
     "inicio": "Inicio",
     "marketplace": "Marketplace",
-    "viaje": "Mi viaje",
+    "viaje": "Mapa",
     "perfil": "Mi perfil"
   },
   "viaje": {
     "title": "Tu cielo",
-    "eyebrow": "Viaje de aprendizaje",
+    "eyebrow": "Mapa de aprendizaje",
     "back_label": "Volver al perfil",
     "sky_lit": "{pct}% del cielo iluminado",
     "xp_label": "XP",
@@ -1295,7 +1295,7 @@
   },
   "bienvenida": {
     "hero": {
-      "welcome": "¡BIENVENIDO A FWD TALENT!",
+      "welcome": "¡BIENVENIDO A FWD MARKETPLACE!",
       "greeting_morning": "Buenos días",
       "greeting_afternoon": "Buenas tardes",
       "greeting_evening": "Buenas noches",
@@ -1331,7 +1331,8 @@
       "match": "Match alto"
     },
     "progress": {
-      "title": "Tu progreso en FWD",
+      "title": "Mi viaje del Héroe",
+      "subtitle": "Cada insignia que alcanzas es un paso real en tu carrera. Completa los desafios y desbloquea el siguiente capitulo de tu historia profesional.",
       "step1_title": "Perfil completado",
       "step1_desc": "¡Excelente! Tu perfil está al 100%.",
       "step2_title": "Stack definido",
@@ -1347,10 +1348,10 @@
       "btn_profile": "Ver mi perfil"
     },
     "estrella": {
-      "eyebrow": "Tu constelación",
+      "eyebrow": "Mi progreso",
       "aria_stage": "Tu constelación del viaje del héroe",
       "center_title": "Tu Progreso",
-      "center_sub": "{done} de {total} hitos",
+      "center_sub": "{done} de {total} insignias",
       "lit_label": "Estrellas encendidas",
       "status": {
         "done": "Completado",
@@ -1362,7 +1363,19 @@
       "progress_label": "Progreso",
       "lit_on": "Encendida el {date}",
       "next_hint": "Tu próximo paso",
+      "next_links": {
+        "llamado": "/bienvenida",
+        "preparacion": "/perfil-estudiante",
+        "desafio": "/marketplace",
+        "transformacion": "/mapa-de-aprendizaje",
+        "reconocimiento": "/gestion"
+      },
       "close": "Cerrar",
+      "activity_title": "Logros del viaje",
+      "activity_map_btn": "Ir al Mapa de aprendizaje",
+      "unlocked_on": "Desbloqueado el {date}",
+      "to_unlock": "Para desbloquear:",
+      "learning_pct": "{pct}% del Mapa de aprendizaje",
       "items": {
         "llamado": {
           "name": "El Llamado",
@@ -1395,6 +1408,11 @@
           "date": ""
         }
       }
+    },
+    "llamado_toast": {
+      "title": "Primera insignia desbloqueada",
+      "desc": "Bienvenido al Viaje del Heroe. Creaste tu cuenta y tu aventura ya comenzo.",
+      "dismiss": "Cerrar"
     },
     "companies": {
       "title": "Empresas interesadas",
