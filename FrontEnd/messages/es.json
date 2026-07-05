@@ -55,7 +55,7 @@
       "title": "Tu primer proyecto freelance",
       "description": "Conecta con empresas reales, construye tu portafolio y empieza tu carrera profesional.",
       "cta_projects": "Unirme a la comunidad",
-      "cta_company": "Conocer la dinámica",
+      "cta_company": "Dar un vistazo rápido",
       "card_eyebrow": "Proyecto destacado",
       "card_title": "Dashboard de Analítica",
       "card_company": "TechFlow Systems",
@@ -2052,6 +2052,103 @@
       "6": {
         "title": "Proyecto adjudicado",
         "desc": "El proyecto se adjudica: el egresado gana experiencia real y la empresa recibe el trabajo terminado."
+      }
+    }
+  },
+  "marketplace_preview": {
+    "eyebrow": "Proyectos disponibles ahora",
+    "title": "Proyectos reales. No simulaciones",
+    "description": "Empresas publican proyectos concretos con stack definido, presupuesto claro y alcance real. Vos elegís el que encaja con tus habilidades, enviás tu propuesta y construís tu primer portafolio profesional.",
+    "cta_hint": "¿Pero cuál es el proceso?",
+    "cta": "Conocer la dinámica",
+    "remote": "Remoto",
+    "weeks": "sem",
+    "new_badge": "Nuevo",
+    "projects": {
+      "0": {
+        "title": "Landing page para startup de bienestar",
+        "company": "BioTech CR",
+        "stack": "React · Tailwind · Framer Motion",
+        "duration": "3",
+        "budget": "$250 – $400",
+        "desc": "Diseñar e implementar una landing page responsive con hero animado y formulario de captura de leads."
+      },
+      "1": {
+        "title": "API REST para app de delivery",
+        "company": "FoodRush",
+        "stack": "Node.js · Express · Supabase",
+        "duration": "4",
+        "budget": "$300 – $500",
+        "desc": "Construir endpoints de pedidos, usuarios y notificaciones para el MVP de una app de entrega a domicilio."
+      },
+      "2": {
+        "title": "Dashboard de métricas de ventas",
+        "company": "DataLab",
+        "stack": "Next.js · TypeScript · Chart.js",
+        "duration": "5",
+        "budget": "$400 – $650",
+        "desc": "Panel de control con gráficas de ventas diarias, usuarios activos y tasa de conversión en tiempo real."
+      }
+    }
+  },
+  "diferenciadores": {
+    "eyebrow": "Por qué FWD Talent",
+    "title": "No somos Upwork",
+    "description": "Construimos un espacio para que el talento junior de Costa Rica demuestre lo que vale. Cada detalle del proceso está pensado para que ambas partes ganen.",
+    "items": {
+      "0": {
+        "title": "Proyectos validados",
+        "desc": "Cada publicación pasa por revisión del equipo FWD antes de aparecer en el marketplace. Sin ruido, solo oportunidades reales."
+      },
+      "1": {
+        "title": "Talento verificado",
+        "desc": "Solo egresados del programa FWD con habilidades comprobadas y portafolio real. Cero perfiles vacíos."
+      },
+      "2": {
+        "title": "Proceso guiado",
+        "desc": "Acompañamiento en cada etapa: desde la postulación hasta la entrega final. Nunca navegás solo."
+      },
+      "3": {
+        "title": "Contacto directo",
+        "desc": "Sin intermediarios entre egresado y empresa. Contacto directo desde el primer proyecto."
+      }
+    }
+  },
+  "faq": {
+    "eyebrow": "Preguntas frecuentes",
+    "title": "Todo lo que querés saber",
+    "items": {
+      "0": {
+        "q": "¿Necesito experiencia laboral para postular?",
+        "a": "No. FWD Talent está diseñado para egresados sin experiencia formal. Lo que importa es lo que aprendiste en el programa y lo que podés demostrar con tu portafolio."
+      },
+      "1": {
+        "q": "¿Cómo me paga la empresa?",
+        "a": "El pago se coordina directamente entre vos y la empresa. FWD facilita el contacto y el proceso, pero actualmente no procesa pagos. Podés acordar transferencia bancaria, PayPal u otros métodos con cada empresa."
+      },
+      "2": {
+        "q": "¿Puedo postular a varios proyectos al mismo tiempo?",
+        "a": "Podés explorar todos los proyectos que quieras, aunque solo podés tener una postulación activa a la vez. Te recomendamos personalizar tu carta de presentación para aumentar tus posibilidades."
+      },
+      "3": {
+        "q": "¿Cuánto cuesta publicar un proyecto como empresa?",
+        "a": "El acceso está disponible de forma gratuita durante la fase beta. Próximamente habrá planes según el volumen de publicaciones."
+      },
+      "4": {
+        "q": "¿Cómo sé que el egresado tiene las habilidades que necesito?",
+        "a": "Cada perfil muestra los proyectos completados en FWD, el stack dominado y la evaluación del programa. Podés revisar el portafolio antes de adjudicar el proyecto."
+      },
+      "5": {
+        "q": "¿Cuánto tarda en revisarse mi publicación?",
+        "a": "El equipo de FWD revisa cada publicación en un máximo de 48 horas hábiles. Recibís una notificación cuando el proyecto esté activo en el marketplace."
+      },
+      "6": {
+        "q": "¿Qué pasa si no estoy satisfecho con el trabajo entregado?",
+        "a": "El proceso incluye una ronda de revisión antes del cierre. Podés solicitar correcciones a través de la plataforma. El equipo FWD puede mediar si es necesario."
+      },
+      "7": {
+        "q": "¿En qué países está disponible FWD Talent?",
+        "a": "Por ahora operamos en Costa Rica. La expansión a otros países de Centroamérica y LATAM está en el roadmap para el segundo semestre."
       }
     }
   },

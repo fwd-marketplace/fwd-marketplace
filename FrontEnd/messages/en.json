@@ -55,7 +55,7 @@
       "title": "Your first freelance project",
       "description": "Connect with real companies, build your portfolio and start your professional career.",
       "cta_projects": "Join the community",
-      "cta_company": "Learn how it works",
+      "cta_company": "Take a quick look",
       "card_eyebrow": "Featured project",
       "card_title": "Analytics Dashboard",
       "card_company": "TechFlow Systems",
@@ -2061,6 +2061,103 @@
       "6": {
         "title": "Project awarded",
         "desc": "The project is awarded: the graduate gains real experience and the company receives the finished work."
+      }
+    }
+  },
+  "marketplace_preview": {
+    "eyebrow": "Projects available now",
+    "title": "Real projects. Not simulations",
+    "description": "Companies post concrete projects with a defined stack, clear budget, and real scope. You pick what fits your skills, send your proposal, and build your first professional portfolio.",
+    "cta_hint": "But what's the process?",
+    "cta": "Learn how it works",
+    "remote": "Remote",
+    "weeks": "wks",
+    "new_badge": "New",
+    "projects": {
+      "0": {
+        "title": "Landing page for a wellness startup",
+        "company": "BioTech CR",
+        "stack": "React · Tailwind · Framer Motion",
+        "duration": "3",
+        "budget": "$250 – $400",
+        "desc": "Design and build a responsive landing page with an animated hero section and a lead-capture form."
+      },
+      "1": {
+        "title": "REST API for a delivery app",
+        "company": "FoodRush",
+        "stack": "Node.js · Express · Supabase",
+        "duration": "4",
+        "budget": "$300 – $500",
+        "desc": "Build order, user, and notification endpoints for the MVP of a home-delivery application."
+      },
+      "2": {
+        "title": "Sales metrics dashboard",
+        "company": "DataLab",
+        "stack": "Next.js · TypeScript · Chart.js",
+        "duration": "5",
+        "budget": "$400 – $650",
+        "desc": "Control panel with daily sales charts, active users, and real-time conversion rate tracking."
+      }
+    }
+  },
+  "diferenciadores": {
+    "eyebrow": "Why FWD Talent",
+    "title": "We are not Upwork",
+    "description": "We built a space for junior talent in Costa Rica to prove their worth. Every detail of the process is designed so both sides win.",
+    "items": {
+      "0": {
+        "title": "Validated projects",
+        "desc": "Every listing goes through an FWD team review before appearing in the marketplace. No noise — only real opportunities."
+      },
+      "1": {
+        "title": "Verified talent",
+        "desc": "FWD graduates only, with proven skills and a real portfolio. Zero empty profiles."
+      },
+      "2": {
+        "title": "Guided process",
+        "desc": "Support at every stage: from application to final delivery. You never navigate alone."
+      },
+      "3": {
+        "title": "Direct contact",
+        "desc": "No middlemen between graduate and company. Direct contact from the very first project."
+      }
+    }
+  },
+  "faq": {
+    "eyebrow": "Frequently asked questions",
+    "title": "Everything you want to know",
+    "items": {
+      "0": {
+        "q": "Do I need work experience to apply?",
+        "a": "No. FWD Talent is designed for graduates without formal experience. What matters is what you learned in the program and what you can demonstrate with your portfolio."
+      },
+      "1": {
+        "q": "How does the company pay me?",
+        "a": "Payment is coordinated directly between you and the company. FWD facilitates the contact and the process, but does not process payments. You can agree on bank transfer, PayPal, or other methods with each company."
+      },
+      "2": {
+        "q": "Can I apply to several projects at the same time?",
+        "a": "You can explore as many projects as you like, but you can only have one active application at a time. We recommend personalizing your cover letter to increase your chances."
+      },
+      "3": {
+        "q": "How much does it cost to post a project as a company?",
+        "a": "Access is free during the beta phase. Pricing plans based on posting volume are coming soon."
+      },
+      "4": {
+        "q": "How do I know the graduate has the skills I need?",
+        "a": "Each profile shows completed FWD projects, the stack they've mastered, and their program evaluation. You can review their portfolio before awarding the project."
+      },
+      "5": {
+        "q": "How long does it take for my listing to be reviewed?",
+        "a": "The FWD team reviews each listing within 48 business hours. You receive a notification when the project goes live in the marketplace."
+      },
+      "6": {
+        "q": "What happens if I'm not satisfied with the delivered work?",
+        "a": "The process includes a revision round before closing. You can request corrections through the platform. The FWD team can mediate if needed."
+      },
+      "7": {
+        "q": "In which countries is FWD Talent available?",
+        "a": "We currently operate in Costa Rica. Expansion to other Central American and LATAM countries is on the roadmap for the second half of the year."
       }
     }
   },

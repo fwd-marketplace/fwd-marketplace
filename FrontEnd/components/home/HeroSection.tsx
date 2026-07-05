@@ -37,7 +37,7 @@ export default async function HeroSection({ locale }: { locale: string }) {
               {t('cta_projects')}
               <ArrowRight className="ml-2 h-5 w-5" />
             </Link>
-            <ScrollToSection targetId="como-funciona" label={t('cta_company')} />
+            <ScrollToSection targetId="marketplace-preview" label={t('cta_company')} />
           </div>
         </div>
 
