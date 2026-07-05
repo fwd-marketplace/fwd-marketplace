@@ -31,8 +31,8 @@ export function RoleSelector() {
       <FwdGeoBackdrop />
       <CosmicBackdrop />
 
-      <div className="relative flex min-h-[100dvh] items-center justify-center px-4">
-        <div className="w-full max-w-md rounded-[2rem] bg-surface px-6 py-8 shadow-elevated sm:px-10 sm:py-12">
+      <div className="relative flex min-h-[100dvh] items-center justify-center px-6 py-16">
+        <div className="w-full max-w-xl rounded-[2rem] bg-surface px-8 py-10 shadow-elevated sm:px-14 sm:py-12">
           <p className="mb-3 text-center font-heading text-[0.65rem] font-bold uppercase tracking-[0.2em] text-ink-muted">
             {t("role.eyebrow")}
           </p>

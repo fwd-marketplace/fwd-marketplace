@@ -25,14 +25,14 @@
     "description": "Marketplace de proyectos freelance para juniors egresados de Fundación Forward Costa Rica."
   },
   "site_footer": {
-    "brand_name": "FWD Talent Marketplace",
+    "brand_name": "FWD Marketplace",
     "logo_alt": "Logotipo de Fundación Forward Costa Rica",
     "description": "Conectamos talento junior egresado de Fundación Forward con empresas que buscan desarrollar proyectos reales.",
     "links_title": "Recursos",
     "terms": "Términos de uso",
     "privacy": "Políticas de privacidad",
     "copyright": "© 2026 Fundación Forward Costa Rica",
-    "rights": "FWD Talent Marketplace • Todos los derechos reservados",
+    "rights": "FWD Marketplace • Todos los derechos reservados",
     "facebook": "Seguir a Fundación Forward en Facebook",
     "linkedin": "Seguir a Fundación Forward en LinkedIn"
   },
@@ -144,11 +144,12 @@
     "mfa_submit": "Verificar e ingresar",
     "mfa_back": "Volver",
     "terms_prefix": "Al ingresar aceptas los",
-    "terms_link": "Términos de Servicio",
+    "terms_link": "Términos y condiciones",
     "terms_connector": "y la",
     "privacy_link": "Política de Privacidad",
     "no_account": "¿No tienes cuenta?",
-    "register_link": "Regístrate aquí"
+    "register_link": "Crear una",
+    "back_home": "Volver al inicio"
   },
   "oauth_callback": {
     "loading": "Completando inicio de sesión...",
@@ -157,8 +158,13 @@
     "error_suspended": "Tu cuenta está suspendida o rechazada.",
     "back_to_login": "Volver al inicio de sesión"
   },
+  "auth_footer": {
+    "privacy": "Política de Privacidad",
+    "terms": "Términos y condiciones",
+    "copyright": "© 2026 FWD Marketplace. Conexión cifrada y segura."
+  },
   "reset_password": {
-    "brand": "FWD Talent",
+    "brand": "FWD Marketplace",
     "back_to_login": "Volver al inicio de sesión",
     "title": "Restablecé tu contraseña",
     "description": "Ingresá tu correo y te enviaremos un enlace seguro para definir una nueva contraseña.",
@@ -193,11 +199,11 @@
     "footer_privacy": "Política de Privacidad",
     "footer_terms": "Términos de Servicio",
     "footer_security": "Centro de Seguridad",
-    "footer_copyright": "© 2026 FWD Talent. Conexión cifrada y segura."
+    "footer_copyright": "© 2026 FWD Marketplace. Conexión cifrada y segura."
   },
   "register": {
     "brand": "FWD",
-    "brand_suffix": "Talent",
+    "brand_suffix": "Marketplace",
     "nav": {
       "step_counter": "Paso {current} de {total}",
       "back": "Volver",
@@ -240,10 +246,11 @@
       "submitting": "Creando cuenta...",
       "passwords_mismatch": "Las contraseñas no coinciden",
       "terms_prefix": "Al registrarte aceptas los",
-      "terms_link": "Términos de Servicio",
+      "terms_link": "Términos y condiciones",
       "terms_connector": "y la",
       "privacy_link": "Política de Privacidad",
       "login_link": "Iniciar sesión",
+      "already_account": "¿Ya tienes cuenta?",
       "back_home": "Volver al inicio",
       "amcham_badge": "Avalado por AmCham Costa Rica"
     },
@@ -838,7 +845,7 @@
     "nav_privacy": "Políticas",
     "settings": "Configuración",
     "learning_map": "Mapa de aprendizaje",
-    "logo_alt": "Logotipo FWD Talent",
+    "logo_alt": "Logotipo FWD Marketplace",
     "profile_link": "Ver perfil",
     "open_menu": "Abrir menú",
     "nav_gestion": "Gestión",
@@ -1484,6 +1491,7 @@
   },
   "terms": {
     "title": "Términos y Condiciones",
+    "back": "Volver",
     "download": "Descargar en PDF",
     "sections": [
       { "title": "1. Introducción y Aceptación", "paragraphs": ["Bienvenido al Marketplace de Proyectos Freelance de FWD Talent, una iniciativa de la Fundación Forward Costa Rica. Este documento constituye un acuerdo legalmente vinculante entre usted (el \"Usuario\") y la Fundación Forward Costa Rica (\"la Fundación\"). Al utilizar esta plataforma, usted acepta en su totalidad estos Términos y Condiciones."] },
@@ -1512,6 +1520,7 @@
   },
   "privacy_policy": {
     "title": "Políticas de Privacidad",
+    "back": "Volver",
     "download": "Descargar en PDF",
     "sections": [
       {

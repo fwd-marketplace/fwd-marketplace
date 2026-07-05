@@ -25,14 +25,14 @@
     "description": "Freelance project marketplace for junior graduates of Fundación Forward Costa Rica."
   },
   "site_footer": {
-    "brand_name": "FWD Talent Marketplace",
+    "brand_name": "FWD Marketplace",
     "logo_alt": "Fundación Forward Costa Rica logo",
     "description": "We connect junior talent who graduated from Fundación Forward with companies looking to build real projects.",
     "links_title": "Resources",
     "terms": "Terms of use",
     "privacy": "Privacy policy",
     "copyright": "© 2026 Fundación Forward Costa Rica",
-    "rights": "FWD Talent Marketplace • All rights reserved",
+    "rights": "FWD Marketplace • All rights reserved",
     "facebook": "Follow Fundación Forward on Facebook",
     "linkedin": "Follow Fundación Forward on LinkedIn"
   },
@@ -144,11 +144,12 @@
     "mfa_submit": "Verify and sign in",
     "mfa_back": "Back",
     "terms_prefix": "By signing in you agree to the",
-    "terms_link": "Terms of Service",
+    "terms_link": "Terms and Conditions",
     "terms_connector": "and the",
     "privacy_link": "Privacy Policy",
     "no_account": "Don't have an account?",
-    "register_link": "Sign up here"
+    "register_link": "Create one",
+    "back_home": "Back to home"
   },
   "oauth_callback": {
     "loading": "Completing sign in...",
@@ -157,8 +158,13 @@
     "error_suspended": "Your account is suspended or rejected.",
     "back_to_login": "Back to sign in"
   },
+  "auth_footer": {
+    "privacy": "Privacy Policy",
+    "terms": "Terms and Conditions",
+    "copyright": "© 2026 FWD Marketplace. Secure encrypted connection."
+  },
   "reset_password": {
-    "brand": "FWD Talent",
+    "brand": "FWD Marketplace",
     "back_to_login": "Back to login",
     "title": "Reset your password",
     "description": "Enter your email and we'll send you a secure link to set a new password.",
@@ -193,11 +199,11 @@
     "footer_privacy": "Privacy Policy",
     "footer_terms": "Terms of Service",
     "footer_security": "Security Center",
-    "footer_copyright": "© 2026 FWD Talent. Secure encrypted connection."
+    "footer_copyright": "© 2026 FWD Marketplace. Secure encrypted connection."
   },
   "register": {
     "brand": "FWD",
-    "brand_suffix": "Talent",
+    "brand_suffix": "Marketplace",
     "nav": {
       "step_counter": "Step {current} of {total}",
       "back": "Back",
@@ -240,10 +246,11 @@
       "submitting": "Creating account...",
       "passwords_mismatch": "Passwords do not match",
       "terms_prefix": "By signing up you agree to the",
-      "terms_link": "Terms of Service",
+      "terms_link": "Terms and Conditions",
       "terms_connector": "and the",
       "privacy_link": "Privacy Policy",
       "login_link": "Sign in",
+      "already_account": "Already have an account?",
       "back_home": "Back to home",
       "amcham_badge": "Endorsed by AmCham Costa Rica"
     },
@@ -838,7 +845,7 @@
     "nav_privacy": "Privacy",
     "settings": "Settings",
     "learning_map": "Learning map",
-    "logo_alt": "FWD Talent logo",
+    "logo_alt": "FWD Marketplace logo",
     "profile_link": "View profile",
     "open_menu": "Open menu",
     "nav_gestion": "Projects",
@@ -1493,6 +1500,7 @@
   },
   "terms": {
     "title": "Terms and Conditions",
+    "back": "Back",
     "download": "Download as PDF",
     "sections": [
       { "title": "1. Introduction and Acceptance", "paragraphs": ["Welcome to the FWD Talent Freelance Projects Marketplace, an initiative of Fundación Forward Costa Rica. This document constitutes a legally binding agreement between you (the \"User\") and Fundación Forward Costa Rica (\"the Foundation\"). By using this platform, you fully accept these Terms and Conditions."] },
@@ -1521,6 +1529,7 @@
   },
   "privacy_policy": {
     "title": "Privacy Policy",
+    "back": "Back",
     "download": "Download as PDF",
     "sections": [
       {

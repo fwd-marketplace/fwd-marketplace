@@ -393,18 +393,14 @@ export function EmprendedorOnboarding() {
       <FwdGeoBackdrop />
       <CosmicBackdrop />
 
-      <header className="relative flex items-center justify-between px-4 py-5 sm:px-8 sm:py-6">
-        <span className="font-heading text-base font-extrabold text-secondary-foreground">
-          {t("brand")}
-          <span className="text-highlight">{t("brand_suffix")}</span>
-        </span>
+      <header className="relative flex items-center justify-end px-6 py-6 sm:px-10 sm:py-7">
         <span className="font-body text-xs font-medium uppercase tracking-widest text-secondary-foreground/60">
           {t("nav.step_counter", { current: currentStep, total: TOTAL_STEPS })}
         </span>
       </header>
 
-      <div className="relative flex flex-1 items-center justify-center px-4">
-        <div className="w-full max-w-md rounded-[2rem] bg-surface px-6 py-8 shadow-elevated sm:px-10 sm:py-10">
+      <div className="relative flex flex-1 items-center justify-center px-6">
+        <div className="w-full max-w-xl rounded-[2rem] bg-surface px-6 py-8 shadow-elevated sm:px-12 sm:py-10">
           {currentStep === 1 && (
             <Step1
               showErrors={showStepErrors}
@@ -424,9 +420,9 @@ export function EmprendedorOnboarding() {
         </div>
       </div>
 
-      <footer className="relative flex flex-col items-center gap-2 px-4 py-5 sm:px-8 sm:py-6">
+      <footer className="relative flex flex-col items-center gap-2 px-6 py-6 sm:px-10 sm:py-7">
         {footerMessage && (
-          <p role="alert" className="w-full max-w-md text-center font-body text-xs text-red-500">
+          <p role="alert" className="w-full max-w-xl text-center font-body text-xs text-red-500">
             {footerMessage}
           </p>
         )}
