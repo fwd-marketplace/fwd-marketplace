@@ -22,22 +22,27 @@ type AnimStep =
   | { at: number; action: 'star'; idx: number }
   | { at: number; action: 'edge'; idx: number };
 
+// Solo las 6 aristas del flujo principal. Sin conexiones secundarias
+// que aparecerían "volviendo" a estrellas ya iluminadas.
 const SEQUENCE: AnimStep[] = [
   { at: 0,    action: 'star', idx: 0 }, // Egresado  "Crea tu cuenta"
   { at: 250,  action: 'star', idx: 1 }, // Empresa   "Crea tu cuenta"
   { at: 650,  action: 'edge', idx: 1 }, // arista [1→2] Empresa crea → publica
   { at: 1200, action: 'star', idx: 2 }, // Empresa   "Publica el proyecto"
+  // Dos aristas salen de star[2] al mismo tiempo
+  { at: 1450, action: 'edge', idx: 6 }, // arista [2→3] Publica → Envía propuesta
   { at: 1450, action: 'edge', idx: 0 }, // arista [0→3] Egresado crea → envía
   { at: 2000, action: 'star', idx: 3 }, // Egresado  "Envía tu propuesta"
-  { at: 2300, action: 'edge', idx: 3 }, // arista [3→4] Egresado envía → Empresa recibe
+  // [2→4] y [3→4] salen al mismo tiempo: las dos llegan juntas a "Recibe propuestas"
+  { at: 2300, action: 'edge', idx: 2 }, // arista [3→4] Egresado envía → Empresa recibe
+  { at: 2300, action: 'edge', idx: 7 }, // arista [2→4] Publica → Recibe propuestas
   { at: 2850, action: 'star', idx: 4 }, // Empresa   "Recibe propuestas"
-  { at: 3150, action: 'edge', idx: 5 }, // arista [4→5] Empresa recibe → Egresado mejora
+  { at: 3150, action: 'edge', idx: 3 }, // arista [4→5] Empresa recibe → Egresado mejora
   { at: 3700, action: 'star', idx: 5 }, // Egresado  "Mejora tu propuesta"
-  { at: 4000, action: 'edge', idx: 7 }, // arista [4→6] Empresa recibe → Adjudicado
-  { at: 4000, action: 'edge', idx: 6 }, // arista [5→6] Egresado mejora → Adjudicado
+  // Las dos aristas que llegan a star[6] salen exactamente al mismo tiempo
+  { at: 4000, action: 'edge', idx: 4 }, // arista [5→6] Egresado mejora → Adjudicado
+  { at: 4000, action: 'edge', idx: 5 }, // arista [4→6] Empresa recibe → Adjudicado
   { at: 4550, action: 'star', idx: 6 }, // "Proyecto adjudicado"
-  { at: 4850, action: 'edge', idx: 2 }, // arista [3→2] conexión secundaria
-  { at: 4850, action: 'edge', idx: 4 }, // arista [2→4] conexión secundaria
 ];
 
 type LabelSide = 'left' | 'right' | 'center';
@@ -94,25 +99,24 @@ export default function CosmosProfesional() {
 
   // ── Estrellas y aristas ───────────────────────────────────────────────────
   const stars: ConstellationStar[] = [
-    { id: 0, x: 22, y: 16, color: 'var(--accent)',    isBright: false, labelSide: 'left',   title: t('stars.0.title'), description: t('stars.0.desc') },
-    { id: 1, x: 72, y: 16, color: 'var(--primary)',   isBright: false, labelSide: 'right',  title: t('stars.1.title'), description: t('stars.1.desc') },
-    { id: 2, x: 62, y: 36, color: 'var(--highlight)', isBright: true,  labelSide: 'right',  title: t('stars.2.title'), description: t('stars.2.desc') },
-    { id: 3, x: 22, y: 49, color: 'var(--warning)',   isBright: false, labelSide: 'left',   title: t('stars.3.title'), description: t('stars.3.desc') },
-    { id: 4, x: 68, y: 61, color: 'var(--magenta)',   isBright: true,  labelSide: 'right',  title: t('stars.4.title'), description: t('stars.4.desc') },
-    { id: 5, x: 20, y: 75, color: 'var(--accent)',    isBright: false, labelSide: 'left',   title: t('stars.5.title'), description: t('stars.5.desc') },
-    { id: 6, x: 52, y: 87, color: 'var(--highlight)', isBright: true,  labelSide: 'center', title: t('stars.6.title'), description: t('stars.6.desc') },
+    { id: 0, x: 16, y: 13, color: 'var(--accent)',    isBright: false, labelSide: 'left',   title: t('stars.0.title'), description: t('stars.0.desc') },
+    { id: 1, x: 80, y: 13, color: 'var(--primary)',   isBright: false, labelSide: 'right',  title: t('stars.1.title'), description: t('stars.1.desc') },
+    { id: 2, x: 68, y: 38, color: 'var(--highlight)', isBright: true,  labelSide: 'right',  title: t('stars.2.title'), description: t('stars.2.desc') },
+    { id: 3, x: 16, y: 55, color: 'var(--warning)',   isBright: false, labelSide: 'left',   title: t('stars.3.title'), description: t('stars.3.desc') },
+    { id: 4, x: 74, y: 70, color: 'var(--magenta)',   isBright: true,  labelSide: 'right',  title: t('stars.4.title'), description: t('stars.4.desc') },
+    { id: 5, x: 14, y: 86, color: 'var(--accent)',    isBright: false, labelSide: 'left',   title: t('stars.5.title'), description: t('stars.5.desc') },
+    { id: 6, x: 50, y: 100, color: 'var(--highlight)', isBright: true, labelSide: 'center', title: t('stars.6.title'), description: t('stars.6.desc') },
   ];
 
-  // índices en SEQUENCE → edge[idx] de este array
   const edges: ReadonlyArray<readonly [number, number]> = [
-    [0, 3], // 0 Egresado cuenta → Envía propuesta
-    [1, 2], // 1 Empresa cuenta  → Publica proyecto
-    [3, 2], // 2 Egresado envía  → Empresa publica (secundaria)
-    [3, 4], // 3 Egresado envía  → Empresa recibe
-    [2, 4], // 4 Empresa publica → Empresa recibe (secundaria)
-    [4, 5], // 5 Empresa recibe  → Egresado mejora
-    [5, 6], // 6 Egresado mejora → Adjudicado
-    [4, 6], // 7 Empresa recibe  → Adjudicado
+    [0, 3], // 0 Egresado cuenta  → Envía propuesta
+    [1, 2], // 1 Empresa cuenta   → Publica proyecto
+    [3, 4], // 2 Egresado envía   → Empresa recibe
+    [4, 5], // 3 Empresa recibe   → Egresado mejora
+    [5, 6], // 4 Egresado mejora  → Adjudicado
+    [4, 6], // 5 Empresa recibe   → Adjudicado
+    [2, 3], // 6 Publica proyecto → Envía propuesta
+    [2, 4], // 7 Publica proyecto → Recibe propuestas
   ];
 
   // ── Arrancar animación ────────────────────────────────────────────────────
@@ -251,10 +255,10 @@ export default function CosmosProfesional() {
       </header>
 
       {/* ── Diagrama SVG ───────────────────────────────────────────────── */}
-      <div className="relative z-10 mt-10 aspect-[100/92] max-h-[82vh] w-[min(1360px,94vw)] max-md:aspect-auto max-md:max-h-none max-md:w-full max-md:px-2">
+      <div className="relative z-10 mt-8 aspect-[100/112] max-h-[88vh] w-[min(1400px,96vw)] max-md:aspect-auto max-md:max-h-none max-md:w-full max-md:px-2">
         <svg
-          className="absolute inset-0 block h-full w-full overflow-visible max-md:relative max-md:inset-auto max-md:aspect-[100/92] max-md:h-auto"
-          viewBox="0 0 100 94"
+          className="absolute inset-0 block h-full w-full overflow-visible max-md:relative max-md:inset-auto max-md:aspect-[100/112] max-md:h-auto"
+          viewBox="0 0 100 112"
           role="group"
           aria-label={t('screen_label')}
         >
@@ -262,7 +266,7 @@ export default function CosmosProfesional() {
             {/* filterUnits="userSpaceOnUse": evita el caso donde una línea
                 perfectamente vertical tiene bounding-box width=0 y el filtro
                 basado en porcentajes recorta la salida a nada. */}
-            <filter id="cosmosEdgeGlow" filterUnits="userSpaceOnUse" x="-3" y="-3" width="106" height="100">
+            <filter id="cosmosEdgeGlow" filterUnits="userSpaceOnUse" x="-3" y="-3" width="106" height="118">
               <feGaussianBlur stdDeviation="0.4" result="blurred" />
               <feMerge>
                 <feMergeNode in="blurred" />
@@ -283,16 +287,16 @@ export default function CosmosProfesional() {
             aria-hidden="true"
           >
             <text
-              className="fill-[var(--starlight)] font-heading font-bold text-[1.55px] uppercase tracking-[0.25em]"
-              x={22} y={9}
+              className="fill-[var(--starlight)] font-heading font-bold text-[2px] uppercase tracking-[0.22em]"
+              x={16} y={7}
               textAnchor="middle"
-              fillOpacity={0.45}
+              fillOpacity={0.5}
             >
               {t('col_egresado')}
             </text>
             <text
-              className="fill-[var(--starlight)] font-heading font-bold text-[1.55px] uppercase tracking-[0.25em]"
-              x={72} y={9}
+              className="fill-[var(--starlight)] font-heading font-bold text-[2px] uppercase tracking-[0.22em]"
+              x={80} y={7}
               textAnchor="middle"
               fillOpacity={0.45}
             >
@@ -338,10 +342,10 @@ export default function CosmosProfesional() {
               const ringRadius = star.isBright ? 3.8  : 2.8;
               const isActive   = activeStarIndex === starIndex;
 
-              const textX = star.labelSide === 'left'   ? -3.2
-                          : star.labelSide === 'right'  ? 3.2
+              const textX = star.labelSide === 'left'   ? -4.5
+                          : star.labelSide === 'right'  ? 4.5
                           : 0;
-              const textY = star.labelSide === 'center' ? ringRadius + 2.8 : 0;
+              const textY = star.labelSide === 'center' ? ringRadius + 3.6 : 0;
               const textAnchor = star.labelSide === 'left'   ? 'end'
                                : star.labelSide === 'right'  ? 'start'
                                : 'middle';
@@ -387,7 +391,7 @@ export default function CosmosProfesional() {
                     />
                     <polygon points={buildSparklePoints(coreRadius * SPARKLE_CORE_SCALE)} fill="var(--starlight)" />
                     <text
-                      className={`pointer-events-none fill-[var(--starlight)] font-body font-semibold tracking-wide [fill-opacity:0.85] [paint-order:stroke] [stroke-linejoin:round] [stroke:color-mix(in_oklab,var(--secondary)_55%,var(--ink-strong))] stroke-[0.14px] ${star.isBright ? 'text-[1.6px]' : 'text-[1.45px]'}`}
+                      className={`pointer-events-none fill-[var(--starlight)] font-body font-semibold tracking-wide [fill-opacity:0.9] [paint-order:stroke] [stroke-linejoin:round] [stroke:color-mix(in_oklab,var(--secondary)_55%,var(--ink-strong))] stroke-[0.22px] ${star.isBright ? 'text-[2.4px]' : 'text-[2.1px]'}`}
                       x={textX}
                       y={textY}
                       textAnchor={textAnchor}
