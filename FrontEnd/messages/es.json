@@ -1229,7 +1229,137 @@
     "tab_quiz_stage_done_body": "Ganaste un punto de maestria. Hay {remaining} mas por completar.",
     "tab_quiz_stage_last_body": "Ganaste el ultimo punto de maestria. Cerrando...",
     "tab_quiz_next_stage": "Ir a la parte {n}",
-    "tab_quiz_continue": "Continuar"
+    "tab_quiz_continue": "Continuar",
+    "contenido": {
+      "terminal": {
+        "intro": "La terminal es una ventana donde le escribís órdenes a la computadora en texto, sin menús ni botones.",
+        "bloques": [
+          { "titulo": "Cómo funciona", "cuerpo": "Escribís un comando, presionás Enter y la máquina lo ejecuta al instante. Cada comando es un verbo: `ls` lista, `cd` entra a una carpeta, `mkdir` crea una." },
+          { "titulo": "Un ejemplo", "cuerpo": "Para crear una carpeta y entrar en ella: `mkdir mi-proyecto` y luego `cd mi-proyecto`. Dos líneas hacen lo que con el mouse serían varios clics." },
+          { "titulo": "Por qué importa", "cuerpo": "Casi todas las herramientas de desarrollo (Git, Node, npm) viven en la terminal. Dominarla te vuelve mucho más rápido y es el primer paso para todo lo demás." }
+        ]
+      },
+      "git": {
+        "intro": "Git es un sistema que guarda la historia de tu código: cada cambio queda registrado y podés volver atrás cuando quieras.",
+        "bloques": [
+          { "titulo": "Cómo funciona", "cuerpo": "Trabajás y, cuando algo funciona, hacés un `commit`: una foto de tu proyecto en ese momento con un mensaje que explica qué cambiaste." },
+          { "titulo": "Un ejemplo", "cuerpo": "Si rompés algo hoy, podés volver al commit de ayer sin perder nada. Y con `branches` probás ideas nuevas sin tocar la versión que ya funciona." },
+          { "titulo": "Por qué importa", "cuerpo": "Es la forma en que los equipos trabajan sobre el mismo proyecto sin pisarse. Sin Git, colaborar en serio es imposible." }
+        ]
+      },
+      "htmlcss": {
+        "intro": "HTML pone los ladrillos de una página; CSS los pinta y los ordena. Juntos son la base de todo lo que ves en la web.",
+        "bloques": [
+          { "titulo": "Cómo funciona", "cuerpo": "HTML describe el contenido con etiquetas (`<h1>` para un título, `<button>` para un botón). CSS decide cómo se ve: color, tamaño, posición." },
+          { "titulo": "Un ejemplo", "cuerpo": "`<button>Enviar</button>` crea el botón; en CSS, `button { background: blue; border-radius: 8px; }` lo vuelve azul con esquinas redondeadas." },
+          { "titulo": "Por qué importa", "cuerpo": "Ninguna interfaz existe sin HTML y CSS. React, Next.js y Tailwind construyen encima de esto, así que entenderlo bien te ahorra dolores más adelante." }
+        ]
+      },
+      "javascript": {
+        "intro": "JavaScript es el lenguaje que le da vida a la web: hace que las páginas reaccionen a lo que hace el usuario.",
+        "bloques": [
+          { "titulo": "Cómo funciona", "cuerpo": "Con JS respondés a eventos (un clic, una tecla), cambiás la página al vuelo y pedís datos a un servidor sin recargar." },
+          { "titulo": "Un ejemplo", "cuerpo": "Un botón que muestra un mensaje al hacer clic: `boton.addEventListener('click', () => alert('¡Hola!'))`. HTML lo dibuja, JS lo hace responder." },
+          { "titulo": "Por qué importa", "cuerpo": "Es el único lenguaje que corre nativo en el navegador y también en el servidor (Node.js). Todo el stack de FWD se apoya en él." }
+        ]
+      },
+      "react": {
+        "intro": "React es una librería para construir interfaces armándolas con piezas reutilizables llamadas componentes.",
+        "bloques": [
+          { "titulo": "Cómo funciona", "cuerpo": "Dividís la pantalla en componentes (un botón, una tarjeta, un formulario) y React actualiza solo lo que cambia cuando los datos cambian." },
+          { "titulo": "Un ejemplo", "cuerpo": "Un componente `<Tarjeta titulo=\"React\" />` que reusás cuantas veces quieras, cada una con su propio contenido, sin repetir código." },
+          { "titulo": "Por qué importa", "cuerpo": "Es el corazón del frontend en FWD Talent. Casi todo lo que vas a construir del lado visual pasa por React." }
+        ]
+      },
+      "typescript": {
+        "intro": "TypeScript es JavaScript con una red de seguridad: le agregás tipos para que los errores salten antes de llegar al usuario.",
+        "bloques": [
+          { "titulo": "Cómo funciona", "cuerpo": "Le decís a cada variable qué clase de dato guarda (texto, número, lista). Si te equivocás, el editor te avisa mientras escribís." },
+          { "titulo": "Un ejemplo", "cuerpo": "`function saludar(nombre: string)` deja claro que espera texto. Si le pasás un número, TypeScript lo marca antes de ejecutar nada." },
+          { "titulo": "Por qué importa", "cuerpo": "En proyectos que crecen, los tipos son documentación viva y evitan bugs difíciles. El repo de FWD es `strict`, así que es parte del día a día." }
+        ]
+      },
+      "nextjs": {
+        "intro": "Next.js es el framework de React que usa FWD: te da rutas, render en el servidor y despliegue listos para producción.",
+        "bloques": [
+          { "titulo": "Cómo funciona", "cuerpo": "Cada archivo dentro de la carpeta de rutas se vuelve una página. Podés renderizar en el servidor para que cargue rápido y salga bien en buscadores." },
+          { "titulo": "Un ejemplo", "cuerpo": "Crear `app/proyectos/page.tsx` te da automáticamente la ruta `/proyectos`, sin configurar nada extra." },
+          { "titulo": "Por qué importa", "cuerpo": "Es la base sobre la que corre FWD Talent. Aprenderlo te acerca directo a cómo se construye el producto real." }
+        ]
+      },
+      "tailwind": {
+        "intro": "Tailwind te deja diseñar aplicando clases de utilidad directamente en el HTML, sin saltar a archivos de CSS aparte.",
+        "bloques": [
+          { "titulo": "Cómo funciona", "cuerpo": "En vez de escribir CSS, componés estilos con clases pequeñas: `p-4` da padding, `rounded-full` redondea, `bg-primary` pinta el fondo." },
+          { "titulo": "Un ejemplo", "cuerpo": "`<button class=\"px-4 py-2 rounded-full bg-primary\">` es un botón estilizado completo, sin abrir un `.css`." },
+          { "titulo": "Por qué importa", "cuerpo": "Acelera muchísimo el diseño y mantiene todo consistente con los tokens del sistema. Es el estándar de estilos en el repo de FWD." }
+        ]
+      },
+      "nodejs": {
+        "intro": "Node.js te deja correr JavaScript fuera del navegador, del lado del servidor. Es la puerta de entrada al backend.",
+        "bloques": [
+          { "titulo": "Cómo funciona", "cuerpo": "El mismo lenguaje que usás en el frontend ahora atiende peticiones, lee bases de datos y devuelve respuestas desde un servidor." },
+          { "titulo": "Un ejemplo", "cuerpo": "Con pocas líneas levantás un servidor que responde 'Hola' cuando alguien visita una dirección. Ese es el ladrillo de cualquier API." },
+          { "titulo": "Por qué importa", "cuerpo": "El BackEnd de FWD corre sobre Node. Saberlo te permite trabajar en ambos lados del proyecto con un solo lenguaje." }
+        ]
+      },
+      "apis": {
+        "intro": "Una API REST es el idioma con el que el frontend y el backend se hablan: uno pide, el otro responde.",
+        "bloques": [
+          { "titulo": "Cómo funciona", "cuerpo": "El frontend hace una petición a una dirección (`GET /proyectos`) y el backend devuelve datos, normalmente en formato JSON." },
+          { "titulo": "Un ejemplo", "cuerpo": "`GET /proyectos` trae la lista de proyectos; `POST /proyectos` crea uno nuevo. Cada verbo (GET, POST, PUT, DELETE) es una intención distinta." },
+          { "titulo": "Por qué importa", "cuerpo": "Es exactamente cómo el FrontEnd y el BackEnd de FWD se comunican. Entender REST es entender cómo fluyen los datos en la app." }
+        ]
+      },
+      "supabase": {
+        "intro": "Supabase es la base de datos y el sistema de login que usa FWD: Postgres con superpoderes y listo para usar.",
+        "bloques": [
+          { "titulo": "Cómo funciona", "cuerpo": "Te da una base de datos Postgres, autenticación de usuarios y almacenamiento de archivos, todo accesible desde tu código." },
+          { "titulo": "Un ejemplo", "cuerpo": "Registrar un usuario o guardar un proyecto son llamadas directas a Supabase, que se encarga de la seguridad con reglas por fila (RLS)." },
+          { "titulo": "Por qué importa", "cuerpo": "Es la capa de datos de FWD Talent. Todo el progreso, los perfiles y los proyectos viven ahí." }
+        ]
+      },
+      "postgres": {
+        "intro": "PostgreSQL es una base de datos relacional: guarda la información en tablas ordenadas y relacionadas entre sí.",
+        "bloques": [
+          { "titulo": "Cómo funciona", "cuerpo": "Organizás los datos en tablas con columnas y filas. Las tablas se relacionan: un proyecto pertenece a una empresa, una postulación a un junior." },
+          { "titulo": "Un ejemplo", "cuerpo": "Una tabla `proyectos` y una tabla `empresas` se conectan por un id, así cada proyecto sabe de qué empresa es sin duplicar datos." },
+          { "titulo": "Por qué importa", "cuerpo": "Es el motor detrás de Supabase y de casi todo backend serio. Modelar bien los datos evita problemas que después cuestan caro." }
+        ]
+      },
+      "sql": {
+        "intro": "SQL es el lenguaje para preguntarle cosas a una base de datos y obtener justo los datos que necesitás.",
+        "bloques": [
+          { "titulo": "Cómo funciona", "cuerpo": "Escribís consultas que describen qué querés: filtrar, ordenar, contar o cruzar tablas. La base te devuelve el resultado." },
+          { "titulo": "Un ejemplo", "cuerpo": "`SELECT nombre FROM proyectos WHERE estado = 'publicado'` trae solo los nombres de los proyectos publicados." },
+          { "titulo": "Por qué importa", "cuerpo": "Cualquier app que guarde datos termina necesitando SQL. Es una habilidad que sirve igual en frontend, backend y análisis de datos." }
+        ]
+      },
+      "python": {
+        "intro": "Python es un lenguaje legible y versátil, favorito para datos e inteligencia artificial.",
+        "bloques": [
+          { "titulo": "Cómo funciona", "cuerpo": "Su sintaxis es cercana al inglés, así que se lee casi como una receta. Eso lo hace ideal para prototipar rápido y para analizar información." },
+          { "titulo": "Un ejemplo", "cuerpo": "`for proyecto in proyectos: print(proyecto)` recorre una lista y muestra cada elemento. Simple y directo." },
+          { "titulo": "Por qué importa", "cuerpo": "Es la puerta de entrada al mundo de datos e IA. Con Python analizás datasets y entrenás modelos sin pelearte con el lenguaje." }
+        ]
+      },
+      "ia_fundamentos": {
+        "intro": "Los fundamentos de IA explican cómo aprenden los modelos: en vez de programar reglas, les mostrás ejemplos y encuentran patrones.",
+        "bloques": [
+          { "titulo": "Cómo funciona", "cuerpo": "Un modelo de Machine Learning se entrena con muchos datos etiquetados y, a partir de ahí, hace predicciones sobre datos nuevos." },
+          { "titulo": "Un ejemplo", "cuerpo": "Mostrarle miles de correos marcados como 'spam' o 'no spam' hasta que aprenda a clasificar uno que nunca vio." },
+          { "titulo": "Por qué importa", "cuerpo": "Entender qué puede y qué no puede hacer un modelo te permite integrar IA en tus productos con criterio, sin magia ni miedo." }
+        ]
+      },
+      "ia_prompting": {
+        "intro": "El prompting profesional es el arte de pedirle bien a una IA para obtener resultados útiles y confiables.",
+        "bloques": [
+          { "titulo": "Cómo funciona", "cuerpo": "Un buen prompt da contexto, dice el rol, el formato de salida y ejemplos. Cuanto más claro sos, mejor responde el modelo." },
+          { "titulo": "Un ejemplo", "cuerpo": "En vez de 'escribí sobre React', pedí: 'Explicá React a un junior en 3 viñetas, con un ejemplo de código'. El resultado cambia por completo." },
+          { "titulo": "Por qué importa", "cuerpo": "Es la habilidad que multiplica a todas las demás: te permite usar la IA como copiloto en cualquier tarea, de código a diseño." }
+        ]
+      }
+    }
   },
   "marketplace_page": {
     "eyebrow": "MARKETPLACE",
