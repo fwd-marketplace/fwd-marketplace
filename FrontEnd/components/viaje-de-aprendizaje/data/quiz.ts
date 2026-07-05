@@ -13,7 +13,7 @@ export const QUIZ_DATA: Record<string, StarQuiz> = {
             { label: "pwd", correct: false },
             { label: "touch", correct: false },
           ],
-          explanation: "`ls` muestra el contenido del directorio. `cd` cambia de directorio, `pwd` muestra la ruta actual y `touch` crea archivos.",
+          explanation: "Descartá las otras: `cd` cambia de directorio, `pwd` muestra la ruta actual y `touch` crea archivos. Buscás el comando corto (dos letras) cuyo nombre viene de 'list'.",
         },
         {
           prompt: "¿Qué hace el comando `cd ..`?",
@@ -23,7 +23,7 @@ export const QUIZ_DATA: Record<string, StarQuiz> = {
             { label: "Crea una nueva carpeta", correct: false },
             { label: "Lista archivos ocultos", correct: false },
           ],
-          explanation: "`..` representa el directorio padre. `cd ..` te mueve un nivel hacia arriba en el árbol de carpetas.",
+          explanation: "`..` no borra ni crea nada: siempre representa 'el directorio de arriba'. Pensá qué pasa si a 'cambiar de directorio' le pedís ir hacia ese `..`.",
         },
         {
           prompt: "¿Cómo creás una carpeta llamada `proyecto`?",
@@ -33,7 +33,7 @@ export const QUIZ_DATA: Record<string, StarQuiz> = {
             { label: "create proyecto", correct: false },
             { label: "cd proyecto", correct: false },
           ],
-          explanation: "`mkdir` (make directory) crea carpetas. `touch` crea archivos vacíos, no carpetas.",
+          explanation: "Descartá las que no crean carpetas: `touch` hace archivos vacíos, `cd` solo te mueve entre directorios y `create` no es un comando real. La que buscás sirve para 'hacer un directorio' — su nombre abrevia esas dos palabras en inglés (make + directory).",
         },
       ],
       [
@@ -45,7 +45,7 @@ export const QUIZ_DATA: Record<string, StarQuiz> = {
             { label: "Lee el contenido de archivo.txt", correct: false },
             { label: "Ejecuta archivo.txt como script", correct: false },
           ],
-          explanation: "`>` redirige la salida estándar al archivo, sobreescribiéndolo. Para agregar sin borrar usás `>>`.",
+          explanation: "Fijate en el `>`: redirige la salida hacia el archivo. Un solo `>` pisa lo que había; recordá que para 'agregar al final' se usa el doble `>>`. Eso descarta esa opción.",
         },
         {
           prompt: "¿Qué hace el pipe `|` en `ls | grep '.js'`?",
@@ -55,7 +55,7 @@ export const QUIZ_DATA: Record<string, StarQuiz> = {
             { label: "Guarda la salida de ls en un archivo temporal", correct: false },
             { label: "Los ejecuta en orden sin conectar sus salidas", correct: false },
           ],
-          explanation: "El pipe conecta la salida estándar de un comando con la entrada estándar del siguiente. Es uno de los patrones más poderosos de Unix.",
+          explanation: "El pipe no corre comandos en paralelo ni crea archivos temporales — descartá esas. Su trabajo es encadenar: lo que produce el comando de la izquierda alimenta al de la derecha.",
         },
         {
           prompt: "¿Cuál de estos comandos mueve (o renombra) un archivo?",
@@ -65,7 +65,7 @@ export const QUIZ_DATA: Record<string, StarQuiz> = {
             { label: "rm archivo.txt", correct: false },
             { label: "ln archivo.txt nuevo.txt", correct: false },
           ],
-          explanation: "`mv` mueve o renombra. `cp` copia. `rm` elimina. `ln` crea un enlace (symlink o hard link).",
+          explanation: "`cp` copia (deja el original), `rm` borra y `ln` crea un enlace. Ninguno mueve. Buscás el comando de dos letras que abrevia 'move'.",
         },
       ],
       [
@@ -77,7 +77,7 @@ export const QUIZ_DATA: Record<string, StarQuiz> = {
             { label: "Lista todos los archivos en la carpeta logs/", correct: false },
             { label: "Elimina las líneas que contienen 'error'", correct: false },
           ],
-          explanation: "`grep -r` (recursive) busca un patrón en todos los archivos de un directorio. Sin `-r` solo busca en archivos específicos.",
+          explanation: "`grep` no modifica ni borra archivos, solo busca. La `-r` es de 'recursive': pensá qué implica sobre cuántos archivos revisa dentro de la carpeta.",
         },
         {
           prompt: "¿Qué hace `&&` al encadenar comandos, como en `npm install && npm start`?",
@@ -87,7 +87,7 @@ export const QUIZ_DATA: Record<string, StarQuiz> = {
             { label: "Ejecuta el segundo sin importar el resultado del primero", correct: false },
             { label: "Combina la salida de ambos en un solo stream", correct: false },
           ],
-          explanation: "`&&` es 'AND lógico': si el primer comando falla (exit code != 0), el segundo no se ejecuta. Para ejecutar siempre usás `;`.",
+          explanation: "`&&` es un 'AND lógico'. Pensá en la lógica: para que un AND se cumpla, el primero no puede fallar. Eso te dice bajo qué condición corre el segundo. (Para correrlo siempre existiría `;`.)",
         },
         {
           prompt: "¿Qué hace `chmod +x script.sh`?",
@@ -97,7 +97,7 @@ export const QUIZ_DATA: Record<string, StarQuiz> = {
             { label: "Lo copia a /usr/local/bin", correct: false },
             { label: "Lo comprime en formato .gz", correct: false },
           ],
-          explanation: "`chmod` cambia los permisos. `+x` agrega el bit de ejecución. Sin esto, aunque el archivo tenga código bash, el sistema se niega a ejecutarlo.",
+          explanation: "`chmod` cambia permisos (change mode), no oculta, copia ni comprime. La `+x` agrega algo: pensá qué necesita un `.sh` para poder correr.",
         },
       ],
     ],
@@ -115,7 +115,7 @@ export const QUIZ_DATA: Record<string, StarQuiz> = {
             { label: "git push → git commit → git add", correct: false },
             { label: "git add → git push → git commit", correct: false },
           ],
-          explanation: "Primero preparás los cambios (add), luego los guardás localmente (commit) y finalmente los subís al remoto (push).",
+          explanation: "Seguí el flujo lógico: primero preparás los cambios, luego los sellás en tu máquina y al final los mandás al remoto. Descartá cualquier orden que suba (`push`) antes de tener un commit.",
         },
         {
           prompt: "¿Qué es una rama (branch) en Git?",
@@ -125,7 +125,7 @@ export const QUIZ_DATA: Record<string, StarQuiz> = {
             { label: "Un servidor remoto donde se guarda el código", correct: false },
             { label: "Un archivo de configuración del proyecto", correct: false },
           ],
-          explanation: "Las ramas permiten trabajar en features o fixes de forma aislada sin afectar la rama principal.",
+          explanation: "Una rama no es un backup, ni un servidor, ni un archivo. Pensá en un camino que se separa del principal para trabajar sin afectar al resto: esa imagen te lleva a la correcta.",
         },
         {
           prompt: "¿Qué hace `git clone <url>`?",
@@ -135,7 +135,7 @@ export const QUIZ_DATA: Record<string, StarQuiz> = {
             { label: "Fusiona dos ramas en una", correct: false },
             { label: "Elimina el historial de commits", correct: false },
           ],
-          explanation: "`git clone` descarga el repositorio completo, incluyendo todo su historial, en tu máquina local.",
+          explanation: "`clone` no fusiona ni borra nada, y tampoco parte de vacío (eso sería `init`). El nombre lo sugiere: hace un 'clon' de algo que ya existe en el remoto, con todo su historial.",
         },
       ],
       [
@@ -147,7 +147,7 @@ export const QUIZ_DATA: Record<string, StarQuiz> = {
             { label: "Crea un commit automático con los cambios actuales", correct: false },
             { label: "Sube los cambios al repositorio remoto", correct: false },
           ],
-          explanation: "`git stash` apila tus cambios locales y limpia el working tree. `git stash pop` los restaura.",
+          explanation: "`stash` no borra ni sube nada, y no crea un commit. Pensá en 'guardar en un cajón' tus cambios para dejar el área limpia y recuperarlos después con `stash pop`.",
         },
         {
           prompt: "¿Cuál es la diferencia entre `git merge` y `git rebase`?",
@@ -157,7 +157,7 @@ export const QUIZ_DATA: Record<string, StarQuiz> = {
             { label: "rebase es siempre más seguro que merge", correct: false },
             { label: "merge solo funciona en la rama main", correct: false },
           ],
-          explanation: "`merge` preserva el historial exacto de las dos ramas. `rebase` reescribe los commits sobre la rama base, produciendo un historial más lineal.",
+          explanation: "No son idénticos ni hay uno 'siempre más seguro'. La diferencia clave está en el historial: uno lo preserva agregando un commit de unión, el otro lo reordena para dejarlo lineal.",
         },
         {
           prompt: "¿Qué hace `git diff`?",
@@ -167,7 +167,7 @@ export const QUIZ_DATA: Record<string, StarQuiz> = {
             { label: "Crea una rama con los cambios pendientes", correct: false },
             { label: "Revierte todos los cambios del directorio", correct: false },
           ],
-          explanation: "`git diff` sin argumentos muestra cambios en el working tree que aún no están staged. `git diff --staged` muestra los cambios staged.",
+          explanation: "`diff` no borra, ni crea ramas, ni revierte: solo muestra. Pensá qué 'diferencia' te enseñaría entre lo que editaste y lo último que guardaste.",
         },
       ],
       [
@@ -179,7 +179,7 @@ export const QUIZ_DATA: Record<string, StarQuiz> = {
             { label: "--hard solo funciona en branches secundarias", correct: false },
             { label: "--soft elimina el historial completo del repo", correct: false },
           ],
-          explanation: "`--soft` deshace el commit pero mantiene los cambios staged. `--hard` los descarta permanentemente —peligroso si no tenés backup.",
+          explanation: "No son equivalentes. Pensá en la intensidad de las palabras: 'soft' (suave) es más conservador con tus cambios que 'hard' (duro). Eso te dice cuál conserva y cuál descarta.",
         },
         {
           prompt: "¿Qué es un conflicto de merge y cómo se resuelve?",
@@ -189,7 +189,7 @@ export const QUIZ_DATA: Record<string, StarQuiz> = {
             { label: "El repo está lleno; se resuelve borrando commits", correct: false },
             { label: "Una rama corrupta; se resuelve borrándola", correct: false },
           ],
-          explanation: "Git marca el conflicto con `<<<<<<<`, `=======` y `>>>>>>>`. Editás el archivo para quedarte con la versión correcta, luego `git add` + `git commit`.",
+          explanation: "No tiene que ver con la red, el espacio en disco ni ramas corruptas. Ocurre cuando dos cambios tocan exactamente la misma línea: pensá quién debe decidir con cuál quedarse.",
         },
         {
           prompt: "¿Qué hace `git cherry-pick <hash>`?",
@@ -199,7 +199,7 @@ export const QUIZ_DATA: Record<string, StarQuiz> = {
             { label: "Borra commits seleccionados del historial", correct: false },
             { label: "Mueve todos los commits de una rama a otra", correct: false },
           ],
-          explanation: "Cherry-pick es útil para traer un fix específico de otra rama sin hacer merge completo.",
+          explanation: "No elige 'el mejor' solo, ni borra, ni mueve todos los commits. Como 'elegir una cereza', toma UN commit puntual (por su hash) y lo trae a tu rama actual.",
         },
       ],
     ],
@@ -217,7 +217,7 @@ export const QUIZ_DATA: Record<string, StarQuiz> = {
             { label: "<title>", correct: false },
             { label: "<strong>", correct: false },
           ],
-          explanation: "`<h1>` es el encabezado de nivel 1, el más importante semánticamente. `<title>` define el título de la pestaña, no el contenido visible.",
+          explanation: "`<header>` es una zona de la página, `<title>` va en la pestaña del navegador y `<strong>` solo resalta texto. Buscás el encabezado de nivel 1: su nombre lleva la letra 'h' y el número más chico.",
         },
         {
           prompt: "¿Qué propiedad CSS controla el espacio ENTRE el borde y el contenido de un elemento?",
@@ -227,7 +227,7 @@ export const QUIZ_DATA: Record<string, StarQuiz> = {
             { label: "border", correct: false },
             { label: "gap", correct: false },
           ],
-          explanation: "`padding` es el espacio interior. `margin` es el espacio exterior entre el elemento y sus vecinos.",
+          explanation: "`margin` es el espacio hacia afuera (entre vecinos), `border` es la línea del borde y `gap` separa hijos en flex/grid. Buscás el espacio interior, entre el borde y el contenido.",
         },
         {
           prompt: "¿Cuál es la diferencia entre `display: block` y `display: inline`?",
@@ -237,7 +237,7 @@ export const QUIZ_DATA: Record<string, StarQuiz> = {
             { label: "Inline ocupa toda la fila; block solo el ancho del contenido", correct: false },
             { label: "No hay diferencia visual entre ambos", correct: false },
           ],
-          explanation: "Los elementos block (como `<div>`) fuerzan salto de línea y ocupan el 100% del ancho. Los inline (como `<span>`) fluyen con el texto.",
+          explanation: "Sí hay diferencia visual. Pensá en un `<div>` (uno) vs un `<span>` (el otro): uno se apodera de toda la fila y el otro fluye con el texto ocupando lo justo. Cuidado con la opción que lo dice al revés.",
         },
       ],
       [
@@ -249,7 +249,7 @@ export const QUIZ_DATA: Record<string, StarQuiz> = {
             { label: "absolute siempre se posiciona respecto al body", correct: false },
             { label: "relative fija el elemento al hacer scroll", correct: false },
           ],
-          explanation: "Un elemento `absolute` busca el ancestro más cercano con `position` distinto a `static`. Si no encuentra, se posiciona respecto al viewport.",
+          explanation: "No son intercambiables y no siempre se ancla al `body`. Uno mueve el elemento pero le guarda su lugar en el flujo; el otro lo saca y lo ubica respecto a un ancestro posicionado.",
         },
         {
           prompt: "¿Qué es la 'especificidad' en CSS?",
@@ -259,7 +259,7 @@ export const QUIZ_DATA: Record<string, StarQuiz> = {
             { label: "El orden en que se importan los archivos de estilos", correct: false },
             { label: "La cantidad de selectores en un archivo CSS", correct: false },
           ],
-          explanation: "Un selector ID (#id) tiene más peso que una clase (.clase), que tiene más que un elemento (div). `!important` rompe este sistema.",
+          explanation: "No tiene que ver con velocidad, ni con el orden de importación, ni con cuántos selectores hay en total. Cuando dos reglas chocan sobre el mismo elemento, algo decide cuál gana: pensá en 'pesos'.",
         },
         {
           prompt: "¿Para qué sirve `z-index`?",
@@ -269,7 +269,7 @@ export const QUIZ_DATA: Record<string, StarQuiz> = {
             { label: "Controla el tamaño máximo de un elemento", correct: false },
             { label: "Define el nivel de opacidad del elemento", correct: false },
           ],
-          explanation: "`z-index` solo funciona en elementos con `position` distinto a `static`. Mayor valor = más al frente.",
+          explanation: "No controla zoom, tamaño ni opacidad. La 'z' es el eje que sale de la pantalla hacia vos: pensá qué elemento queda delante y cuál detrás.",
         },
       ],
       [
@@ -281,7 +281,7 @@ export const QUIZ_DATA: Record<string, StarQuiz> = {
             { label: "Son idénticos en resultado", correct: false },
             { label: "flex permite más columnas que grid", correct: false },
           ],
-          explanation: "Flexbox es ideal para layouts de una dimensión (una fila o columna). CSS Grid es ideal para layouts completos de dos dimensiones.",
+          explanation: "Ambos tienen amplio soporte y no son idénticos. La diferencia está en las dimensiones: uno maneja un solo eje a la vez, el otro filas y columnas juntas.",
         },
         {
           prompt: "¿Qué es el 'box model' en CSS?",
@@ -291,7 +291,7 @@ export const QUIZ_DATA: Record<string, StarQuiz> = {
             { label: "La forma en que CSS carga desde el servidor", correct: false },
             { label: "El sistema de grillas predeterminado del navegador", correct: false },
           ],
-          explanation: "Con `box-sizing: border-box` (recomendado), `width` incluye padding y border. Con `content-box` (default), los suma encima.",
+          explanation: "No es un modelo de color ni un sistema de grillas. Pensá en las 'capas' que rodean el contenido de una caja (relleno, borde, margen): de eso trata.",
         },
         {
           prompt: "¿Qué son las CSS Custom Properties (variables CSS)?",
@@ -301,7 +301,7 @@ export const QUIZ_DATA: Record<string, StarQuiz> = {
             { label: "Clases CSS que se generan automáticamente", correct: false },
             { label: "Propiedades exclusivas de Sass/SCSS", correct: false },
           ],
-          explanation: "Las variables CSS son en cascada y se pueden cambiar desde JavaScript. Son la base de sistemas de tokens de diseño como el de este proyecto.",
+          explanation: "No vienen de JavaScript ni son exclusivas de Sass: son nativas de CSS. Fijate en la sintaxis que empieza con `--` y se lee con `var(...)`.",
         },
       ],
     ],
@@ -319,7 +319,7 @@ export const QUIZ_DATA: Record<string, StarQuiz> = {
             { label: "`const` es más lento que `let`", correct: false },
             { label: "No hay diferencia, son sinónimos", correct: false },
           ],
-          explanation: "Con `const` declarás una referencia constante. Usá `const` por defecto; `let` solo cuando necesités reasignar.",
+          explanation: "No son sinónimos ni hay uno más lento. Pensá en qué significa 'constante': una vez que le asignás un valor, no podés apuntarla a otro.",
         },
         {
           prompt: "¿Qué devuelve `typeof null`?",
@@ -329,7 +329,7 @@ export const QUIZ_DATA: Record<string, StarQuiz> = {
             { label: '"undefined"', correct: false },
             { label: '"boolean"', correct: false },
           ],
-          explanation: "Es uno de los bugs históricos de JS: `typeof null === 'object'`. Ocurrió en la implementación original y se mantuvo por compatibilidad retroactiva.",
+          explanation: "Cuidado: la respuesta 'lógica' (`'null'`) es justamente la trampa. Es un bug histórico de JavaScript que nunca se corrigió; `typeof` de `null` devuelve algo inesperado relacionado con objetos.",
         },
         {
           prompt: "¿Qué hace `Array.prototype.map()`?",
@@ -339,7 +339,7 @@ export const QUIZ_DATA: Record<string, StarQuiz> = {
             { label: "Reduce el array a un único valor", correct: false },
             { label: "Ordena el array alfabéticamente", correct: false },
           ],
-          explanation: "`map` no muta el array original; retorna uno nuevo. Para filtrar usás `filter`; para reducir a un valor, `reduce`.",
+          explanation: "Filtrar es `filter`, reducir a un valor es `reduce` y ordenar es `sort`. La que buscás recorre y transforma cada elemento, devolviendo un array nuevo del mismo tamaño.",
         },
       ],
       [
@@ -351,7 +351,7 @@ export const QUIZ_DATA: Record<string, StarQuiz> = {
             { label: "Un tipo especial de array para operaciones matemáticas", correct: false },
             { label: "Una clase que reemplaza a los callbacks en todos los casos", correct: false },
           ],
-          explanation: "Una Promise puede estar en tres estados: pending, fulfilled o rejected. `async/await` es azúcar sintáctica sobre Promises.",
+          explanation: "No es una función que corre ya, ni un array, ni reemplaza a todos los callbacks. Pensá en una 'promesa' real: algo que todavía no está, pero que llegará (o fallará) más adelante.",
         },
         {
           prompt: "¿Qué hace `Object.keys(obj)`?",
@@ -361,7 +361,7 @@ export const QUIZ_DATA: Record<string, StarQuiz> = {
             { label: "Elimina todas las claves del objeto", correct: false },
             { label: "Convierte el objeto a formato JSON", correct: false },
           ],
-          explanation: "`Object.keys` devuelve solo las claves propias (no las heredadas). `Object.values` devuelve los valores; `Object.entries` devuelve pares [clave, valor].",
+          explanation: "No bloquea, no borra ni convierte a JSON. La pista está en el nombre: `keys` = 'llaves'. Pensá qué parte de un par clave-valor te devolvería.",
         },
         {
           prompt: "¿Cuál es la diferencia entre `==` y `===` en JavaScript?",
@@ -371,7 +371,7 @@ export const QUIZ_DATA: Record<string, StarQuiz> = {
             { label: "`===` es más lento pero más preciso", correct: false },
             { label: "`==` solo funciona con números", correct: false },
           ],
-          explanation: "`'5' == 5` es `true` porque JS convierte el string. `'5' === 5` es `false`. Siempre usá `===` salvo que necesités coerción explícita.",
+          explanation: "No son equivalentes y el de dos signos no es solo para números. El de tres signos es más estricto: compara además el tipo, sin convertir. Pensá qué pasa con `'5'` y `5`.",
         },
       ],
       [
@@ -383,7 +383,7 @@ export const QUIZ_DATA: Record<string, StarQuiz> = {
             { label: "Un error que ocurre al llamar una función sin paréntesis", correct: false },
             { label: "Una técnica para importar funciones entre archivos", correct: false },
           ],
-          explanation: "Los closures son fundamentales en JS: los hooks de React, los módulos y muchos patrones dependen de que las funciones 'recuerden' su scope.",
+          explanation: "No es cerrar una función ni un error de sintaxis. Pensá en una función que 'se lleva puesto' el scope donde nació y sigue recordando esas variables aunque ya no existan afuera.",
         },
         {
           prompt: "¿Qué hace `Promise.all([p1, p2, p3])`?",
@@ -393,7 +393,7 @@ export const QUIZ_DATA: Record<string, StarQuiz> = {
             { label: "Retorna la primera promesa que resuelva", correct: false },
             { label: "Cancela todas las promesas si alguna falla antes de empezar", correct: false },
           ],
-          explanation: "Para ejecutar en paralelo y obtener la primera en resolver usás `Promise.race()`. Para tolerar fallos individuales usás `Promise.allSettled()`.",
+          explanation: "No corre en secuencia ni devuelve la primera (eso es `race`). El nombre `all` es la pista: espera a todas... y si una sola falla, el conjunto falla.",
         },
         {
           prompt: "¿Qué es el 'event bubbling' en el DOM?",
@@ -403,7 +403,7 @@ export const QUIZ_DATA: Record<string, StarQuiz> = {
             { label: "La velocidad de procesamiento de eventos del browser", correct: false },
             { label: "Un tipo especial de evento de animación CSS", correct: false },
           ],
-          explanation: "Un click en un `<button>` dentro de un `<div>` también dispara el evento en el `<div>`. Usás `event.stopPropagation()` para evitarlo.",
+          explanation: "No es anticipación, ni velocidad, ni animación. Como una burbuja que sube, pensá en qué dirección viaja el evento: del elemento clickeado hacia sus contenedores.",
         },
       ],
     ],
@@ -421,7 +421,7 @@ export const QUIZ_DATA: Record<string, StarQuiz> = {
             { label: "Una clase de JavaScript que extiende HTMLElement", correct: false },
             { label: "Un script que modifica el DOM directamente", correct: false },
           ],
-          explanation: "En React moderno, los componentes son funciones. Reciben `props` como parámetros y retornan JSX que describe la UI.",
+          explanation: "En React moderno no es un CSS, ni un Web Component (`HTMLElement`), ni manipulación directa del DOM. Pensá en lo más simple: algo que recibe `props` y devuelve JSX.",
         },
         {
           prompt: "¿Para qué sirve `useState`?",
@@ -431,7 +431,7 @@ export const QUIZ_DATA: Record<string, StarQuiz> = {
             { label: "Para definir las rutas de la aplicación", correct: false },
             { label: "Para compartir estilos entre componentes", correct: false },
           ],
-          explanation: "`useState(valorInicial)` retorna `[valor, setter]`. Cuando llamás el setter, React re-renderiza el componente con el nuevo valor.",
+          explanation: "No es para hacer fetch, ni para rutas, ni para estilos. La palabra 'state' te lo dice: sirve para guardar y actualizar un valor que cambia dentro del componente.",
         },
         {
           prompt: "¿Cuándo usarías `useEffect`?",
@@ -441,7 +441,7 @@ export const QUIZ_DATA: Record<string, StarQuiz> = {
             { label: "Para definir el HTML inicial de la página", correct: false },
             { label: "Siempre que necesitás actualizar el estado", correct: false },
           ],
-          explanation: "`useEffect` es para efectos secundarios. Para valores derivados usás `useMemo`; para actualizaciones de estado, `useState`.",
+          explanation: "No es para valores derivados (eso es `useMemo`) ni para cada cambio de estado. Su nombre habla de 'efectos': sincronizar con algo de afuera, como una API, un timer o una suscripción.",
         },
       ],
       [
@@ -453,7 +453,7 @@ export const QUIZ_DATA: Record<string, StarQuiz> = {
             { label: "El proceso de compilar JSX a JavaScript", correct: false },
             { label: "Una forma de inyectar estilos CSS en componentes", correct: false },
           ],
-          explanation: "El prop drilling hace el código difícil de mantener. Las soluciones son Context API, estado global (Zustand, Redux) o composición de componentes.",
+          explanation: "No tiene que ver con imágenes, compilación ni estilos. Imaginá una prop que 'perfora' varios niveles de componentes que ni la usan, solo para llegar a uno más profundo.",
         },
         {
           prompt: "¿Para qué sirve `useCallback`?",
@@ -463,7 +463,7 @@ export const QUIZ_DATA: Record<string, StarQuiz> = {
             { label: "Para suscribirse a cambios de contexto", correct: false },
             { label: "Para manejar errores en componentes hijo", correct: false },
           ],
-          explanation: "`useCallback` es útil cuando pasás funciones como props a componentes memoizados. Sin él, la función nueva cada render fuerza re-renders de los hijos.",
+          explanation: "No es para el montaje, el contexto ni los errores. Pensá en 'callback' = función: sirve para conservar la MISMA función entre renders y que no se recree. (Su primo `useMemo` hace lo mismo con valores.)",
         },
         {
           prompt: "¿Qué es un 'controlled component' en React?",
@@ -473,7 +473,7 @@ export const QUIZ_DATA: Record<string, StarQuiz> = {
             { label: "Un componente con estilos en línea controlados", correct: false },
             { label: "Un componente que solo puede ser renderizado una vez", correct: false },
           ],
-          explanation: "Con un controlled input, el valor siempre viene del estado React y se actualiza con el setter. Es el patrón recomendado con react-hook-form.",
+          explanation: "No tiene que ver con rutas, estilos ni renders únicos. La palabra clave es 'controlado': ¿quién manda sobre el valor del input, el estado de React o el DOM?",
         },
       ],
       [
@@ -485,7 +485,7 @@ export const QUIZ_DATA: Record<string, StarQuiz> = {
             { label: "useMemo es para efectos secundarios; useCallback para cálculos puros", correct: false },
             { label: "useCallback solo funciona en componentes de clase", correct: false },
           ],
-          explanation: "`useMemo(() => calcular(), [deps])` cachea el resultado. `useCallback(() => fn(), [deps])` cachea la referencia de la función.",
+          explanation: "No son equivalentes ni sirven para efectos o clases. Ambos memorizan, pero cosas distintas: uno un valor ya calculado, el otro una función. Sus nombres ('memo' y 'callback') te orientan.",
         },
         {
           prompt: "¿Qué problema resuelve el Context API de React?",
@@ -495,7 +495,7 @@ export const QUIZ_DATA: Record<string, StarQuiz> = {
             { label: "Gestiona el enrutamiento entre páginas", correct: false },
             { label: "Optimiza el rendimiento de re-renderizados automáticamente", correct: false },
           ],
-          explanation: "Context es ideal para datos globales: tema, idioma, usuario autenticado. Para estado complejo con muchas actualizaciones, preferís Zustand u otro store.",
+          explanation: "No maneja HTTP ni rutas, y no optimiza renders por arte de magia. Es la respuesta directa al problema del prop drilling: compartir datos sin ir prop por prop en cada nivel.",
         },
         {
           prompt: "¿Qué hace `React.memo()`?",
@@ -505,7 +505,7 @@ export const QUIZ_DATA: Record<string, StarQuiz> = {
             { label: "Previene que el componente sea desmontado del DOM", correct: false },
             { label: "Agrega lazy loading automático al componente", correct: false },
           ],
-          explanation: "`React.memo` hace una comparación superficial de las props. Si pasás objetos/funciones nuevas en cada render del padre, memo no ayuda sin `useMemo`/`useCallback`.",
+          explanation: "No memoriza el valor de una función (eso es `useMemo`) ni agrega lazy loading. Envuelve un componente entero y evita que se vuelva a renderizar cuando sus props no cambiaron.",
         },
       ],
     ],
@@ -523,7 +523,7 @@ export const QUIZ_DATA: Record<string, StarQuiz> = {
             { label: "Elimina la necesidad de escribir funciones", correct: false },
             { label: "Reemplaza a CSS para los estilos", correct: false },
           ],
-          explanation: "TypeScript transpila a JavaScript. Su mayor valor es la detección temprana de errores y el autocompletado en el editor.",
+          explanation: "No corre más rápido (transpila a JS), no elimina funciones ni toca los estilos. Su valor aparece ANTES de ejecutar: pensá en qué momento te avisa de un error de tipo.",
         },
         {
           prompt: "¿Cómo tipás el parámetro de esta función? `function saludar(nombre) { ... }`",
@@ -533,7 +533,7 @@ export const QUIZ_DATA: Record<string, StarQuiz> = {
             { label: "function saludar<string>(nombre) { ... }", correct: false },
             { label: "string function saludar(nombre) { ... }", correct: false },
           ],
-          explanation: "TypeScript usa la sintaxis `nombre: Tipo` para anotar parámetros, variables y retornos.",
+          explanation: "TypeScript no pone el tipo antes del nombre (eso es Java/C) ni usa `<>` para un parámetro simple. La forma es `nombre: Tipo`, con dos puntos después del identificador.",
         },
         {
           prompt: "¿Qué es una `interface` en TypeScript?",
@@ -543,7 +543,7 @@ export const QUIZ_DATA: Record<string, StarQuiz> = {
             { label: "Una función que valida datos en tiempo de ejecución", correct: false },
             { label: "Un archivo de configuración del compilador", correct: false },
           ],
-          explanation: "Las interfaces definen contratos de forma. Son solo para TypeScript, no generan código JavaScript en la compilación.",
+          explanation: "No es una clase, no valida en runtime (desaparece al compilar) ni configura nada. Pensá en un 'contrato de forma': qué propiedades y tipos debe cumplir un objeto.",
         },
       ],
       [
@@ -555,7 +555,7 @@ export const QUIZ_DATA: Record<string, StarQuiz> = {
             { label: "`interface` es más rápida en compilación", correct: false },
             { label: "No hay diferencia, son completamente intercambiables", correct: false },
           ],
-          explanation: "En general, `interface` es preferida para definir la forma de objetos porque es extendible. `type` es necesario para uniones y otras construcciones.",
+          explanation: "No son totalmente intercambiables ni hay uno 'más rápido'. Los dos describen objetos, pero uno llega más lejos: uniones, primitivos, tuplas. ¿Cuál de los dos?",
         },
         {
           prompt: "¿Qué es un 'union type' en TypeScript?",
@@ -565,7 +565,7 @@ export const QUIZ_DATA: Record<string, StarQuiz> = {
             { label: "Un tipo que hereda de múltiples clases", correct: false },
             { label: "Un error de compilación al mezclar tipos", correct: false },
           ],
-          explanation: "`type Status = 'pending' | 'done' | 'locked'` es un union type. TypeScript garantiza que solo puedas asignar uno de esos valores.",
+          explanation: "No es fusionar interfaces ni herencia, y no es un error. Fijate en el símbolo `|` (el 'o' lógico): describe un valor que puede ser de uno entre varios tipos.",
         },
         {
           prompt: "¿Qué hace el operador `as` en TypeScript?",
@@ -575,7 +575,7 @@ export const QUIZ_DATA: Record<string, StarQuiz> = {
             { label: "Convierte un tipo en su equivalente JavaScript en runtime", correct: false },
             { label: "Compara dos tipos y retorna el más específico", correct: false },
           ],
-          explanation: "`as` no hace conversión en runtime, solo le dice al compilador 'confía en mí'. Usalo solo cuando sabés más que TypeScript.",
+          explanation: "No importa con alias ni convierte nada en runtime. Es una 'aserción': le decís al compilador 'confiá, este valor es de este tipo', pasando por encima de su inferencia.",
         },
       ],
       [
@@ -587,7 +587,7 @@ export const QUIZ_DATA: Record<string, StarQuiz> = {
             { label: "Valores por defecto para parámetros de funciones", correct: false },
             { label: "Una forma de ignorar errores de tipo temporalmente", correct: false },
           ],
-          explanation: "`function identidad<T>(valor: T): T` es un genérico. `T` se resuelve en el sitio de llamada: `identidad<string>('hola')` retorna `string`.",
+          explanation: "No son tipos globales, ni valores por defecto, ni una forma de silenciar errores. Pensá en un 'parámetro' pero de tipo (la clásica `<T>`), para que una función sirva con muchos tipos.",
         },
         {
           prompt: "¿Qué hace `Partial<T>` en TypeScript?",
@@ -597,7 +597,7 @@ export const QUIZ_DATA: Record<string, StarQuiz> = {
             { label: "Elimina propiedades undefined de T", correct: false },
             { label: "Hace todas las propiedades de T de solo lectura", correct: false },
           ],
-          explanation: "`Partial<User>` convierte `{ name: string; email: string }` en `{ name?: string; email?: string }`. Útil para objetos de actualización parcial.",
+          explanation: "No selecciona 'algunas' propiedades ni las hace de solo lectura. La palabra 'partial' sugiere algo incompleto: pensá qué le pasa a CADA propiedad de `T`.",
         },
         {
           prompt: "¿Qué hace el operador `keyof` en TypeScript?",
@@ -607,7 +607,7 @@ export const QUIZ_DATA: Record<string, StarQuiz> = {
             { label: "Filtra propiedades undefined de un tipo", correct: false },
             { label: "Ordena las propiedades de un objeto alfabéticamente", correct: false },
           ],
-          explanation: "`keyof User` con `{ name: string; age: number }` produce `'name' | 'age'`. Muy útil para funciones genéricas que acceden propiedades dinámicamente.",
+          explanation: "No cuenta en runtime, no filtra ni ordena. 'key' = clave: pensá qué obtenés si juntás los NOMBRES de las propiedades de un tipo en una sola unión.",
         },
       ],
     ],
@@ -625,7 +625,7 @@ export const QUIZ_DATA: Record<string, StarQuiz> = {
             { label: "Una librería de animaciones para transiciones entre páginas", correct: false },
             { label: "Un servidor de base de datos incluido con Next.js", correct: false },
           ],
-          explanation: "Con el App Router, el nombre de la carpeta define la URL. `app/proyectos/page.tsx` genera la ruta `/proyectos`.",
+          explanation: "No se configura en un JSON, no es de animaciones ni una base de datos. La clave está en la carpeta `app/`: la estructura de carpetas define las URLs.",
         },
         {
           prompt: "¿Qué es un Server Component en React/Next.js?",
@@ -635,7 +635,7 @@ export const QUIZ_DATA: Record<string, StarQuiz> = {
             { label: "Un componente con acceso a la base de datos del servidor de diseño", correct: false },
             { label: "Cualquier componente que use `useEffect`", correct: false },
           ],
-          explanation: "Los Server Components (por defecto en Next.js App Router) renderizan en el servidor. Para interactividad agregás `'use client'`.",
+          explanation: "No es 'solo en producción' ni 'cualquiera que use `useEffect`' (justamente ese necesitaría cliente). Pensá dónde se renderiza y qué JS termina, o no, en el navegador.",
         },
         {
           prompt: "¿Para qué sirve el archivo `layout.tsx`?",
@@ -645,7 +645,7 @@ export const QUIZ_DATA: Record<string, StarQuiz> = {
             { label: "Lista las dependencias del proyecto", correct: false },
             { label: "Define las variables de entorno del servidor", correct: false },
           ],
-          explanation: "`layout.tsx` persiste entre navegaciones, ideal para header, footer, sidebar. Se anida: un layout de `/app` envuelve a uno de `/app/dashboard`.",
+          explanation: "No configura Tailwind, ni lista dependencias, ni define variables de entorno. Pensá en la UI que se mantiene alrededor de las páginas (header, sidebar) mientras navegás.",
         },
       ],
       [
@@ -657,7 +657,7 @@ export const QUIZ_DATA: Record<string, StarQuiz> = {
             { label: "Una función que configura los parámetros de la API REST", correct: false },
             { label: "Un método para validar los params de una ruta dinámica", correct: false },
           ],
-          explanation: "Para una ruta como `/proyectos/[id]`, `generateStaticParams` lista los IDs a pre-renderizar. El resto se renderiza on-demand.",
+          explanation: "No genera IDs, ni configura una API, ni valida. Para una ruta como `/proyectos/[id]`, pensá qué valores le dirías a Next para armarlos de antemano en el build.",
         },
         {
           prompt: "¿Cuándo usarías `'use client'` en un componente de Next.js?",
@@ -667,7 +667,7 @@ export const QUIZ_DATA: Record<string, StarQuiz> = {
             { label: "Cuando el componente tiene más de 50 líneas", correct: false },
             { label: "Cuando el componente usa estilos con Tailwind", correct: false },
           ],
-          explanation: "Los Server Components pueden hacer fetch directamente. Solo agregás `'use client'` cuando necesitás `useState`, `useEffect`, `onClick`, etc.",
+          explanation: "No depende del largo, ni de Tailwind, y hacer fetch no lo obliga (los Server Components ya pueden). Lo pedís cuando necesitás interactividad del navegador: `useState`, `onClick`, efectos.",
         },
         {
           prompt: "¿Qué es el archivo `loading.tsx` en Next.js App Router?",
@@ -677,7 +677,7 @@ export const QUIZ_DATA: Record<string, StarQuiz> = {
             { label: "Define los datos de carga inicial de la aplicación", correct: false },
             { label: "Importa las fuentes y estilos al inicio", correct: false },
           ],
-          explanation: "`loading.tsx` usa React Suspense internamente. Next.js lo muestra automáticamente mientras el `page.tsx` espera datos asíncronos.",
+          explanation: "No es un timeout, ni datos iniciales, ni fuentes. El nombre lo dice: es lo que ve el usuario MIENTRAS la página termina de traer sus datos.",
         },
       ],
       [
@@ -689,7 +689,7 @@ export const QUIZ_DATA: Record<string, StarQuiz> = {
             { label: "force-cache es obligatorio en producción", correct: false },
             { label: "Son equivalentes, Next.js decide automáticamente", correct: false },
           ],
-          explanation: "Next.js extiende la API de `fetch` nativa. `force-cache` es el default: cachea la respuesta indefinidamente hasta que la revalidés.",
+          explanation: "No son equivalentes y `no-store` no evita la red (al contrario). Leé los nombres: uno dice 'no guardes' (siempre fresco) y el otro 'forzá el cache' (reutiliza la respuesta).",
         },
         {
           prompt: "¿Qué hace `revalidatePath()` o `revalidateTag()` en Next.js?",
@@ -699,7 +699,7 @@ export const QUIZ_DATA: Record<string, StarQuiz> = {
             { label: "Recarga el módulo CSS de esa ruta", correct: false },
             { label: "Reinicia el servidor de Next.js", correct: false },
           ],
-          explanation: "Se llaman desde Server Actions o Route Handlers. Por ejemplo, tras guardar un proyecto, `revalidatePath('/marketplace')` asegura datos frescos.",
+          explanation: "No redirige, no recarga CSS ni reinicia nada. 'Revalidate' = volver a validar: pensá qué le pasa al cache de esa ruta para que la próxima vez traiga datos frescos.",
         },
         {
           prompt: "¿Cuál es la diferencia entre un Route Handler (`route.ts`) y una Server Action?",
@@ -709,7 +709,7 @@ export const QUIZ_DATA: Record<string, StarQuiz> = {
             { label: "Server Actions son más rápidas pero menos seguras", correct: false },
             { label: "Route Handlers solo funcionan con GET; Server Actions con POST", correct: false },
           ],
-          explanation: "Los Route Handlers son endpoints REST clásicos. Las Server Actions permiten llamar código del servidor desde formularios o eventos del cliente sin definir una URL.",
+          explanation: "No son idénticos y no se dividen por GET/POST. Uno expone una URL/endpoint HTTP clásico; el otro te deja llamar código del servidor desde un form sin definir una ruta.",
         },
       ],
     ],
@@ -727,7 +727,7 @@ export const QUIZ_DATA: Record<string, StarQuiz> = {
             { label: "flex center-x center-y", correct: false },
             { label: "flex place-center", correct: false },
           ],
-          explanation: "`items-center` alinea en el eje cruzado y `justify-center` en el eje principal. Juntos centran en ambos ejes.",
+          explanation: "Tailwind no tiene clases como `center-x` ni `place-center` para esto. Con flex, una clase alinea el eje principal y otra el cruzado: buscá el par `items-*` + `justify-*`.",
         },
         {
           prompt: "¿Cómo aplicás un estilo solo desde pantallas medianas en adelante?",
@@ -737,7 +737,7 @@ export const QUIZ_DATA: Record<string, StarQuiz> = {
             { label: "Usando `@media (min-width: 768px)` en el className", correct: false },
             { label: "Con la clase `responsive-md text-xl`", correct: false },
           ],
-          explanation: "Tailwind es mobile-first: `md:` activa la clase en pantallas de 768px o más. Sin prefijo = aplica siempre (desde móvil).",
+          explanation: "No se usa un sufijo, ni `@media` dentro del className, ni una clase 'responsive'. Tailwind es mobile-first con PREFIJOS de breakpoint: pensá en `md:` delante de la utilidad.",
         },
         {
           prompt: "¿Qué hace la clase `truncate` en Tailwind?",
@@ -747,7 +747,7 @@ export const QUIZ_DATA: Record<string, StarQuiz> = {
             { label: "Reduce el tamaño de la fuente automáticamente", correct: false },
             { label: "Oculta el elemento con `display: none`", correct: false },
           ],
-          explanation: "`truncate` aplica `overflow: hidden`, `text-overflow: ellipsis` y `white-space: nowrap`. Ideal para textos en tarjetas.",
+          explanation: "No borra el elemento ni cambia el tamaño de la fuente. 'Truncate' = recortar: pensá qué pasa con un texto largo que no entra, y esos tres puntitos `...`.",
         },
       ],
       [
@@ -759,7 +759,7 @@ export const QUIZ_DATA: Record<string, StarQuiz> = {
             { label: "Usando `style={{ color: '#hex' }}` en el elemento", correct: false },
             { label: "Creando un archivo de variables separado e importándolo", correct: false },
           ],
-          explanation: "Tailwind v4 migra la configuración del archivo JS al CSS. En `@theme { --color-primary: #0A6CB9; }` y luego `bg-primary` funciona automáticamente.",
+          explanation: "En v4 la config se mudó del `tailwind.config.js` al CSS. Pensá en un bloque especial del CSS (`@theme`) donde definís variables y Tailwind genera las clases solo.",
         },
         {
           prompt: "¿Qué significa la clase `group` y `group-hover:` en Tailwind?",
@@ -769,7 +769,7 @@ export const QUIZ_DATA: Record<string, StarQuiz> = {
             { label: "Agrupa estilos para reutilizarlos con un nombre", correct: false },
             { label: "Es una variante para aplicar estilos a múltiples elementos a la vez", correct: false },
           ],
-          explanation: "Ejemplo: `<div class='group'><span class='group-hover:text-blue-500'>...</span></div>`. El span cambia al hacer hover en el div padre.",
+          explanation: "No es para animaciones ni para nombrar estilos reutilizables. Pensá en una relación padre-hijo: uno marca al contenedor y el otro reacciona en el hijo cuando el contenedor tiene hover.",
         },
         {
           prompt: "¿Qué hace `@apply` en Tailwind?",
@@ -779,7 +779,7 @@ export const QUIZ_DATA: Record<string, StarQuiz> = {
             { label: "Importa la configuración de Tailwind de otro archivo", correct: false },
             { label: "Genera variantes personalizadas de clases existentes", correct: false },
           ],
-          explanation: "`@apply` es útil para componentes que se repiten mucho. Pero en React, generalmente preferís extraer un componente en vez de usar `@apply`.",
+          explanation: "No usa JavaScript, no importa config ni genera variantes. Pensá en 'aplicar' varias utilidades de Tailwind dentro de un selector CSS propio para no repetirlas.",
         },
       ],
       [
@@ -791,7 +791,7 @@ export const QUIZ_DATA: Record<string, StarQuiz> = {
             { label: "gap solo funciona con CSS Grid, no con Flexbox", correct: false },
             { label: "space-x es más moderno y reemplaza a gap y margin", correct: false },
           ],
-          explanation: "`gap` es la opción moderna y preferida. `space-x` agrega `margin-left` a todos los hijos excepto el primero, lo que puede causar problemas con flex-wrap.",
+          explanation: "No son equivalentes y `gap` sí funciona en Flexbox (no solo Grid). Pensá cómo separa cada uno: uno como propiedad del contenedor, otro metiendo margen a los hijos, otro a mano.",
         },
         {
           prompt: "¿Cómo crearías un valor arbitrario en Tailwind, como un padding de exactamente 17px?",
@@ -801,7 +801,7 @@ export const QUIZ_DATA: Record<string, StarQuiz> = {
             { label: "Solo es posible con estilos en línea: `style={{ padding: '17px' }}`", correct: false },
             { label: "Con la clase `p-custom-17`", correct: false },
           ],
-          explanation: "Los valores arbitrarios `[valor]` permiten usar cualquier valor CSS sin modificar la configuración. Ideales para casos puntuales, no para valores del sistema de diseño.",
+          explanation: "No hace falta tocar el config ni caer en estilos inline. Tailwind permite meter un valor exacto con una sintaxis de corchetes `[...]` pegada a la utilidad.",
         },
         {
           prompt: "¿Qué hace la variante `dark:` en Tailwind?",
@@ -811,7 +811,7 @@ export const QUIZ_DATA: Record<string, StarQuiz> = {
             { label: "Es un alias de `hover:` para elementos con fondo negro", correct: false },
             { label: "Requiere JavaScript para funcionar", correct: false },
           ],
-          explanation: "`dark:bg-gray-900` se activa con `prefers-color-scheme: dark` (por defecto) o cuando el elemento raíz tiene la clase `.dark` (con `darkMode: 'class'`).",
+          explanation: "No detecta fondos oscuros solo, no es un alias de `hover:` y no necesita JS para lo básico. Pensá cuándo se activa: cuando el modo oscuro está puesto (por el sistema o por una clase en la raíz).",
         },
       ],
     ],
@@ -829,7 +829,7 @@ export const QUIZ_DATA: Record<string, StarQuiz> = {
             { label: "Una base de datos NoSQL basada en JavaScript", correct: false },
             { label: "Un lenguaje de programación distinto a JavaScript", correct: false },
           ],
-          explanation: "Node.js usa el motor V8 de Chrome para correr JavaScript en el servidor. Permite hacer backends, scripts, CLIs y más con el mismo lenguaje que el frontend.",
+          explanation: "No es un framework de frontend, ni una base de datos, ni un lenguaje nuevo (sigue siendo JavaScript). Pensá dónde te deja correr ese JS: fuera del navegador.",
         },
         {
           prompt: "¿Qué es `npm`?",
@@ -839,7 +839,7 @@ export const QUIZ_DATA: Record<string, StarQuiz> = {
             { label: "El lenguaje de templates de Node.js", correct: false },
             { label: "Una herramienta para compilar TypeScript a JavaScript", correct: false },
           ],
-          explanation: "`npm` instala librerías de npmjs.com, las registra en `package.json` y las guarda en `node_modules`.",
+          explanation: "No es un servidor, ni un lenguaje de plantillas, ni un compilador. Pensá qué usás para instalar librerías y anotarlas en `package.json`.",
         },
         {
           prompt: "¿Qué es el Event Loop en Node.js?",
@@ -849,7 +849,7 @@ export const QUIZ_DATA: Record<string, StarQuiz> = {
             { label: "Una función que se ejecuta cada segundo para chequear el estado", correct: false },
             { label: "El proceso que compila el código TypeScript", correct: false },
           ],
-          explanation: "Node es single-thread pero no bloqueante: cuando espera I/O (DB, red), el Event Loop sigue procesando otras peticiones y retoma cuando el I/O termina.",
+          explanation: "No es un `for` literal, ni un timer que corre cada segundo, ni un compilador. Es lo que hace que Node, siendo un solo hilo, atienda otras cosas mientras espera I/O.",
         },
       ],
       [
@@ -861,7 +861,7 @@ export const QUIZ_DATA: Record<string, StarQuiz> = {
             { label: "Un archivo de configuración de Express", correct: false },
             { label: "Un tipo de ruta que solo acepta peticiones autenticadas", correct: false },
           ],
-          explanation: "Un middleware recibe `(req, res, next)`. Llama `next()` para pasar al siguiente, o envía una respuesta para cortar la cadena.",
+          explanation: "No es una capa de base de datos, ni un archivo de config, ni un tipo de ruta. 'Middle' = en el medio: pensá en una función entre el request y el response que recibe `(req, res, next)`.",
         },
         {
           prompt: "¿Cuál es la diferencia entre `require()` y `import` en Node.js?",
@@ -871,7 +871,7 @@ export const QUIZ_DATA: Record<string, StarQuiz> = {
             { label: "import solo funciona con paquetes de npm", correct: false },
             { label: "require es más moderno y reemplaza a import", correct: false },
           ],
-          explanation: "El ecosistema de Node está migrando hacia ES Modules. Con TypeScript, siempre usás `import`/`export` y el compilador se encarga de la conversión.",
+          explanation: "No son equivalentes y `require` no es 'lo más moderno' (es al revés). Uno es CommonJS, el otro ES Modules: pensá cuál es el estándar nuevo que permite tree shaking.",
         },
         {
           prompt: "¿Qué es `process.env` en Node.js?",
@@ -881,7 +881,7 @@ export const QUIZ_DATA: Record<string, StarQuiz> = {
             { label: "Un objeto para leer archivos del sistema de archivos", correct: false },
             { label: "La configuración del gestor de paquetes npm", correct: false },
           ],
-          explanation: "`process.env.PORT` lee la variable PORT del entorno. Nunca hardcodeés valores sensibles en el código; usá `.env` + `dotenv` o las variables del servidor.",
+          explanation: "No es la CPU, ni para leer archivos, ni la config de npm. 'env' = environment: pensá dónde leés variables como `PORT` o claves sin hardcodearlas.",
         },
       ],
       [
@@ -893,7 +893,7 @@ export const QUIZ_DATA: Record<string, StarQuiz> = {
             { label: "Una conexión persistente con WebSockets", correct: false },
             { label: "Un módulo para gestionar múltiples procesos de Node", correct: false },
           ],
-          explanation: "Los streams evitan cargar todo el archivo en memoria. `fs.createReadStream('archivo.csv').pipe(res)` envía el archivo al cliente trozo a trozo.",
+          explanation: "No es un loop, ni WebSockets, ni multiproceso. Pensá en un 'chorro' de datos que procesás por partes, sin cargar todo el archivo en memoria de golpe.",
         },
         {
           prompt: "¿Cuál es la diferencia entre `setImmediate()` y `process.nextTick()` en Node.js?",
@@ -903,7 +903,7 @@ export const QUIZ_DATA: Record<string, StarQuiz> = {
             { label: "setImmediate es más rápido en todos los casos", correct: false },
             { label: "nextTick es un alias de setTimeout(fn, 0)", correct: false },
           ],
-          explanation: "`process.nextTick` tiene prioridad máxima. Abusar de él puede bloquear el Event Loop. `setImmediate` es más predecible para diferir trabajo.",
+          explanation: "No son equivalentes ni uno es un `setTimeout(fn, 0)`. Pensá en la prioridad: uno suena a 'ya mismo, antes del I/O'; el otro se difiere a la próxima vuelta del loop.",
         },
         {
           prompt: "¿Qué son las 'mejores prácticas de seguridad' básicas para un servidor Express?",
@@ -913,7 +913,7 @@ export const QUIZ_DATA: Record<string, StarQuiz> = {
             { label: "Encriptar todas las respuestas JSON", correct: false },
             { label: "Ejecutar el servidor como root para tener todos los permisos", correct: false },
           ],
-          explanation: "`helmet` agrega headers HTTP de seguridad. Nunca expongas `err.stack` en producción. El middleware central de errores es el lugar correcto para loggear.",
+          explanation: "HTTPS solo no alcanza, encriptar todo el JSON no es la práctica, y correr como root es lo contrario a seguro. Buscá la opción que combina varias defensas (headers, validar inputs, no filtrar stack traces).",
         },
       ],
     ],
@@ -931,7 +931,7 @@ export const QUIZ_DATA: Record<string, StarQuiz> = {
             { label: "PUT", correct: false },
             { label: "DELETE", correct: false },
           ],
-          explanation: "GET lee, POST crea, PUT/PATCH actualiza, DELETE elimina. Es la convención REST, no técnicamente obligatoria, pero todos la esperan.",
+          explanation: "`GET` lee, `PUT` actualiza y `DELETE` elimina. Para dar de alta un recurso nuevo queda el verbo que 'envía' datos al servidor para crearlo.",
         },
         {
           prompt: "¿Qué código de estado HTTP indica que se creó un recurso exitosamente?",
@@ -941,7 +941,7 @@ export const QUIZ_DATA: Record<string, StarQuiz> = {
             { label: "204 No Content", correct: false },
             { label: "301 Moved Permanently", correct: false },
           ],
-          explanation: "200 es para lecturas exitosas. 201 se usa cuando el servidor crea un recurso nuevo. 204 indica éxito sin cuerpo de respuesta.",
+          explanation: "`200` es un éxito genérico (lectura), `204` es éxito sin cuerpo y `301` es una redirección. Para 'algo nuevo se creó' hay un 2xx específico distinto de 200.",
         },
         {
           prompt: "¿Qué significa que una API sea 'stateless' (sin estado)?",
@@ -951,7 +951,7 @@ export const QUIZ_DATA: Record<string, StarQuiz> = {
             { label: "La API solo acepta peticiones GET", correct: false },
             { label: "La API no devuelve errores", correct: false },
           ],
-          explanation: "REST es stateless: el servidor no recuerda peticiones anteriores. Toda la autenticación y contexto va en cada request (ej: token en el header).",
+          explanation: "No significa 'sin base de datos', ni 'solo GET', ni 'sin errores'. 'Stateless' = sin estado: pensá si el servidor recuerda algo de una petición a la siguiente.",
         },
       ],
       [
@@ -963,7 +963,7 @@ export const QUIZ_DATA: Record<string, StarQuiz> = {
             { label: "PATCH borra el recurso; PUT lo actualiza", correct: false },
             { label: "PUT es más seguro porque valida todos los campos", correct: false },
           ],
-          explanation: "Con PUT, si no enviás un campo, ese campo queda vacío. Con PATCH, solo cambian los campos que mandás. PATCH es preferido para actualizaciones parciales.",
+          explanation: "No son equivalentes y ninguno borra. Uno reemplaza el recurso entero (lo que no mandes se pierde), el otro toca solo los campos que enviás. Pensá cuál es 'parcial'.",
         },
         {
           prompt: "¿Qué es la autenticación con JWT (JSON Web Token)?",
@@ -973,7 +973,7 @@ export const QUIZ_DATA: Record<string, StarQuiz> = {
             { label: "Un protocolo de encriptación para bases de datos", correct: false },
             { label: "Un formato de respuesta para APIs seguras", correct: false },
           ],
-          explanation: "El JWT contiene claims (payload) firmados. El servidor verifica la firma sin necesitar consultar una DB de sesiones, lo que escala bien.",
+          explanation: "No es una cookie de sesión del servidor, ni encriptación de base de datos, ni un formato de respuesta. Pensá en un 'token firmado' que viaja en cada request y evita guardar sesión.",
         },
         {
           prompt: "¿Qué significa CORS y cuándo aparece?",
@@ -983,7 +983,7 @@ export const QUIZ_DATA: Record<string, StarQuiz> = {
             { label: "Un formato de compresión para respuestas HTTP", correct: false },
             { label: "Un protocolo de autenticación entre servicios", correct: false },
           ],
-          explanation: "CORS protege al usuario de que un sitio malicioso haga peticiones a tu API. El backend debe enviar los headers `Access-Control-Allow-Origin` correctos.",
+          explanation: "No es un error de base de datos, ni compresión, ni autenticación. La sigla habla de 'origen cruzado': pensá qué controla cuando un sitio llama a una API de otro dominio.",
         },
       ],
       [
@@ -995,7 +995,7 @@ export const QUIZ_DATA: Record<string, StarQuiz> = {
             { label: "La capacidad de una API de manejar múltiples idiomas", correct: false },
             { label: "Un método de compresión de respuestas HTTP", correct: false },
           ],
-          explanation: "Hacer DELETE dos veces al mismo recurso resulta en el mismo estado (el recurso no existe). POST dos veces puede crear dos recursos distintos.",
+          explanation: "No tiene que ver con velocidad, idiomas ni compresión. 'Idempotente' = repetir sin efectos nuevos: pensá cuál método, repetido, deja el mismo estado, y por qué `POST` no.",
         },
         {
           prompt: "¿Qué es 'rate limiting' en una API?",
@@ -1005,7 +1005,7 @@ export const QUIZ_DATA: Record<string, StarQuiz> = {
             { label: "Un tipo de paginación para listas largas", correct: false },
             { label: "La latencia mínima garantizada por la API", correct: false },
           ],
-          explanation: "Sin rate limiting, un atacante puede hacer miles de peticiones por segundo. Suele devolver 429 Too Many Requests al exceder el límite.",
+          explanation: "No es velocidad de transferencia, ni paginación, ni latencia. 'Rate' = tasa: pensá en poner un tope de cuántas peticiones por minuto para frenar el abuso (y el `429`).",
         },
         {
           prompt: "¿Qué diferencia hay entre autenticación y autorización?",
@@ -1015,7 +1015,7 @@ export const QUIZ_DATA: Record<string, StarQuiz> = {
             { label: "Autenticación es para usuarios; autorización es para servicios entre sí", correct: false },
             { label: "Autorización ocurre antes que la autenticación", correct: false },
           ],
-          explanation: "Primero autenticás (¿quién sos?), luego autorizás (¿tenés permiso para esto?). Supabase Auth maneja la autenticación; RLS maneja la autorización.",
+          explanation: "No son sinónimos y una no va necesariamente primero. Una responde '¿quién sos?' y la otra '¿qué te está permitido?'. Pensá cuál de las dos tiene que ocurrir antes.",
         },
       ],
     ],
@@ -1033,7 +1033,7 @@ export const QUIZ_DATA: Record<string, StarQuiz> = {
             { label: "MySQL", correct: false },
             { label: "SQLite", correct: false },
           ],
-          explanation: "Supabase es PostgreSQL con superpoderes: le agrega auth, storage, realtime y una API REST/GraphQL automática.",
+          explanation: "No es NoSQL (Mongo) ni SQLite, y tampoco MySQL. Supabase se construye sobre la base relacional open source con 'superpoderes' — la misma estrella `postgres` de este mapa.",
         },
         {
           prompt: "¿Qué es Row Level Security (RLS) en Supabase?",
@@ -1043,7 +1043,7 @@ export const QUIZ_DATA: Record<string, StarQuiz> = {
             { label: "Un índice especial para acelerar las queries", correct: false },
             { label: "Un límite de filas por tabla en el plan gratuito", correct: false },
           ],
-          explanation: "RLS permite decir 'los usuarios solo ven sus propias filas'. Se define con políticas SQL usando `auth.uid()` para identificar al usuario.",
+          explanation: "No son backups, ni un índice, ni un límite del plan. 'Row Level' = a nivel de fila: pensá en reglas que deciden quién puede leer o escribir cada fila.",
         },
         {
           prompt: "¿Cómo autentica un usuario con Supabase Auth?",
@@ -1053,7 +1053,7 @@ export const QUIZ_DATA: Record<string, StarQuiz> = {
             { label: "Enviando el password en texto plano al servidor", correct: false },
             { label: "Solo mediante OAuth (Google, GitHub), sin email/password", correct: false },
           ],
-          explanation: "Supabase Auth soporta email/password, magic links, OAuth y más. Devuelve un JWT que se usa para autenticar peticiones posteriores.",
+          explanation: "No se hace 'sin código' con una cookie mágica, no manda el password en texto plano, y no es solo OAuth. Buscá el método explícito de `auth` que valida credenciales y devuelve un JWT.",
         },
       ],
       [
@@ -1065,7 +1065,7 @@ export const QUIZ_DATA: Record<string, StarQuiz> = {
             { label: "Un trigger que se activa cuando se modifica una fila", correct: false },
             { label: "Una función de validación automática de campos", correct: false },
           ],
-          explanation: "Las Edge Functions de Supabase corren en Deno en servidores distribuidos globalmente. Son ideales para lógica custom sin servidor propio.",
+          explanation: "No es un trigger de la DB ni validación de campos, y 'edge' no se refiere al esquema. Pensá en 'el borde de la red': código serverless corriendo cerca del usuario.",
         },
         {
           prompt: "¿Cómo habilitarías RLS y crearías una política para que solo el owner vea sus filas?",
@@ -1075,7 +1075,7 @@ export const QUIZ_DATA: Record<string, StarQuiz> = {
             { label: "Configurándolo desde el dashboard sin SQL", correct: false },
             { label: "Usando supabase.rls.enable() en el cliente", correct: false },
           ],
-          explanation: "`auth.uid()` devuelve el ID del usuario autenticado. La política `USING (user_id = auth.uid())` aplica automáticamente a todo SELECT en esa tabla.",
+          explanation: "No se hace con un comentario `@rls` ni con `supabase.rls.enable()`, y no basta el dashboard. Es SQL de verdad: primero se habilita RLS en la tabla y luego una política que compara con `auth.uid()`.",
         },
         {
           prompt: "¿Para qué sirve `supabase.storage` en el cliente?",
@@ -1085,7 +1085,7 @@ export const QUIZ_DATA: Record<string, StarQuiz> = {
             { label: "Para hacer cache de las queries de base de datos", correct: false },
             { label: "Para configurar las variables de entorno del proyecto", correct: false },
           ],
-          explanation: "Supabase Storage soporta buckets públicos y privados con RLS. Ideal para avatares, portfolios y archivos adjuntos en aplicaciones.",
+          explanation: "No guarda la sesión, ni cachea queries, ni configura variables. 'Storage' = almacenamiento: pensá en archivos como avatares, imágenes o documentos.",
         },
       ],
       [
@@ -1097,7 +1097,7 @@ export const QUIZ_DATA: Record<string, StarQuiz> = {
             { label: "Son equivalentes en permisos, solo varía el nombre", correct: false },
             { label: "El anónimo es más rápido porque no valida permisos", correct: false },
           ],
-          explanation: "La `service_role` key NUNCA debe estar en el frontend. Solo en el servidor. Con ella, las políticas RLS se ignoran completamente.",
+          explanation: "No es 'prod vs dev' ni una cuestión de velocidad, y no son equivalentes. Uno obedece las políticas RLS; el otro las saltea por completo (por eso vive solo en el backend).",
         },
         {
           prompt: "¿Qué es el 'realtime' de Supabase?",
@@ -1107,7 +1107,7 @@ export const QUIZ_DATA: Record<string, StarQuiz> = {
             { label: "Un dashboard de monitoreo en tiempo real del servidor", correct: false },
             { label: "Una API REST que siempre devuelve datos frescos sin cache", correct: false },
           ],
-          explanation: "El realtime de Supabase usa PostgreSQL's logical replication. Podés escuchar inserts, updates y deletes en tablas específicas en tiempo real.",
+          explanation: "No es un cache que refresca cada segundo, ni un dashboard, ni REST sin cache. Pensá en suscribirte y recibir inserts/updates/deletes en el momento en que ocurren.",
         },
         {
           prompt: "¿Qué función tiene `supabase.auth.getUser(token)` en el backend?",
@@ -1117,7 +1117,7 @@ export const QUIZ_DATA: Record<string, StarQuiz> = {
             { label: "Elimina la sesión del usuario con ese token", correct: false },
             { label: "Genera un token nuevo si el anterior expiró", correct: false },
           ],
-          explanation: "El backend recibe el token del header `Authorization: Bearer <token>`, lo valida con `getUser(token)` y así sabe quién hace la petición.",
+          explanation: "No crea usuarios, no cierra sesión ni emite un token nuevo. Pensá qué hace el backend con el token del header `Authorization`: comprobar quién es y traer sus datos.",
         },
       ],
     ],
@@ -1135,7 +1135,7 @@ export const QUIZ_DATA: Record<string, StarQuiz> = {
             { label: "La contraseña de acceso a la base de datos", correct: false },
             { label: "Un índice opcional para acelerar búsquedas", correct: false },
           ],
-          explanation: "La PRIMARY KEY identifica de forma única cada fila. Suele ser un `id` autoincremental o un UUID. No puede haber dos filas con el mismo valor.",
+          explanation: "No es 'la primera columna' ni una contraseña, y no es opcional. Pensá en el identificador que hace única a cada fila: no se repite ni queda vacío (NULL).",
         },
         {
           prompt: "¿Qué hace un `JOIN` en SQL?",
@@ -1145,7 +1145,7 @@ export const QUIZ_DATA: Record<string, StarQuiz> = {
             { label: "Concatena el texto de dos columnas", correct: false },
             { label: "Copia datos de una tabla a otra", correct: false },
           ],
-          explanation: "`INNER JOIN` retorna las filas con coincidencia en ambas tablas. `LEFT JOIN` incluye todas las filas de la tabla izquierda aunque no haya coincidencia.",
+          explanation: "No une bases de datos, no concatena texto ni copia filas. 'Join' = unir: pensá en juntar filas de dos tablas que se relacionan por una condición.",
         },
         {
           prompt: "¿Cuál es la diferencia entre FOREIGN KEY y PRIMARY KEY?",
@@ -1155,7 +1155,7 @@ export const QUIZ_DATA: Record<string, StarQuiz> = {
             { label: "La FOREIGN KEY es la copia de seguridad de la PRIMARY KEY", correct: false },
             { label: "La FOREIGN KEY solo existe en tablas de usuarios", correct: false },
           ],
-          explanation: "La FK crea la relación entre tablas. `applications.project_id` es una FK que apunta a `projects.id`. Garantiza integridad referencial.",
+          explanation: "No son lo mismo, no es un backup ni exclusiva de usuarios. 'Foreign' = ajena: pensá en una columna que apunta a la clave primaria de OTRA tabla para relacionarlas.",
         },
       ],
       [
@@ -1167,7 +1167,7 @@ export const QUIZ_DATA: Record<string, StarQuiz> = {
             { label: "Actualiza el valor de la FK cuando cambia la PK referenciada", correct: false },
             { label: "Crea una copia de la fila antes de eliminarla", correct: false },
           ],
-          explanation: "Si eliminás un proyecto con `ON DELETE CASCADE`, sus postulaciones se eliminan automáticamente. Sin CASCADE, la eliminación fallaría por la FK.",
+          explanation: "No previene el borrado, no actualiza la FK ni copia nada. 'Cascade' = cascada: si borrás la fila padre, pensá qué pasa 'en cadena' con las que dependían de ella.",
         },
         {
           prompt: "¿Qué es un índice en PostgreSQL y cuándo conviene crearlo?",
@@ -1177,7 +1177,7 @@ export const QUIZ_DATA: Record<string, StarQuiz> = {
             { label: "Una restricción que evita duplicados en una columna", correct: false },
             { label: "Una vista materializada de una tabla", correct: false },
           ],
-          explanation: "Los índices aceleran lecturas pero ralentizan escrituras. PostgreSQL ya crea índices en PRIMARY KEY y UNIQUE constraints automáticamente.",
+          explanation: "No es un backup, ni una restricción de unicidad, ni una vista. Como el índice de un libro, sirve para encontrar más rápido: pensá en qué columnas (las que filtrás o joineás) conviene.",
         },
         {
           prompt: "¿Qué diferencia hay entre `VARCHAR(255)` y `TEXT` en PostgreSQL?",
@@ -1187,7 +1187,7 @@ export const QUIZ_DATA: Record<string, StarQuiz> = {
             { label: "TEXT no puede tener índices", correct: false },
             { label: "VARCHAR solo acepta caracteres ASCII", correct: false },
           ],
-          explanation: "A diferencia de MySQL, en PostgreSQL `TEXT` y `VARCHAR` tienen rendimiento similar. La comunidad PostgreSQL tiende a preferir `TEXT` sin límite.",
+          explanation: "Ojo, esto es específico de PostgreSQL: acá `TEXT` sí puede indexarse y `VARCHAR` no se limita a ASCII. Pensá en la diferencia REAL de rendimiento entre ambos en Postgres.",
         },
       ],
       [
@@ -1199,7 +1199,7 @@ export const QUIZ_DATA: Record<string, StarQuiz> = {
             { label: "Un log de auditoría de cambios en la base de datos", correct: false },
             { label: "Un tipo de constraint para asegurar consistencia", correct: false },
           ],
-          explanation: "Las transacciones garantizan atomicidad: si algo falla, `ROLLBACK` deshace todo. Crítico para operaciones que deben ser consistentes, como debitar y acreditar.",
+          explanation: "No es una sola query, ni un log, ni un constraint. Pensá en 'todo o nada': un bloque entre `BEGIN` y `COMMIT` que, si algo falla, se deshace con `ROLLBACK`.",
         },
         {
           prompt: "¿Qué hace `EXPLAIN ANALYZE` en PostgreSQL?",
@@ -1209,7 +1209,7 @@ export const QUIZ_DATA: Record<string, StarQuiz> = {
             { label: "Genera estadísticas globales de la base de datos", correct: false },
             { label: "Explica en lenguaje natural qué hace la query", correct: false },
           ],
-          explanation: "`EXPLAIN` muestra el plan previsto. `EXPLAIN ANALYZE` lo ejecuta realmente y muestra tiempos reales. Úsalo para encontrar queries lentas y falta de índices.",
+          explanation: "No solo valida sintaxis, no da stats globales ni traduce a lenguaje natural. El `ANALYZE` es la pista: la corre de verdad y te muestra el plan con tiempos reales.",
         },
         {
           prompt: "¿Qué es un 'trigger' en PostgreSQL?",
@@ -1219,7 +1219,7 @@ export const QUIZ_DATA: Record<string, StarQuiz> = {
             { label: "Un índice especial que se actualiza automáticamente", correct: false },
             { label: "Una restricción de validación a nivel de fila", correct: false },
           ],
-          explanation: "Supabase usa triggers internamente para replicación en tiempo real. También podés crearlos para auditoría (guardar quién modificó qué y cuándo).",
+          explanation: "No es una alerta para vos, ni un índice, ni un constraint. 'Trigger' = gatillo: pensá en algo que se dispara solo antes o después de un INSERT/UPDATE/DELETE.",
         },
       ],
     ],
@@ -1237,7 +1237,7 @@ export const QUIZ_DATA: Record<string, StarQuiz> = {
             { label: "FILTER", correct: false },
             { label: "LIMIT", correct: false },
           ],
-          explanation: "`WHERE` filtra antes de agrupar. `HAVING` filtra después de `GROUP BY`. `LIMIT` limita la cantidad de filas devueltas.",
+          explanation: "`HAVING` filtra grupos (después de `GROUP BY`), `LIMIT` corta la cantidad de filas y `FILTER` no es la cláusula base. Buscás la que filtra filas ANTES de agrupar.",
         },
         {
           prompt: "¿Qué hace `GROUP BY`?",
@@ -1247,7 +1247,7 @@ export const QUIZ_DATA: Record<string, StarQuiz> = {
             { label: "Une dos tablas en una sola", correct: false },
             { label: "Elimina filas duplicadas del resultado", correct: false },
           ],
-          explanation: "`GROUP BY status` agrupa todas las filas por estado y te permite contar cuántas hay de cada tipo con `COUNT(*)`. Para ordenar usás `ORDER BY`.",
+          explanation: "No ordena (eso es `ORDER BY`), no une tablas (`JOIN`) ni quita duplicados (`DISTINCT`). Pensá en juntar filas que comparten un valor para contarlas o sumarlas.",
         },
         {
           prompt: "¿Qué diferencia hay entre `COUNT(*)` y `COUNT(columna)`?",
@@ -1257,7 +1257,7 @@ export const QUIZ_DATA: Record<string, StarQuiz> = {
             { label: "`COUNT(*)` es más lento que `COUNT(columna)`", correct: false },
             { label: "`COUNT(columna)` suma los valores numéricos de la columna", correct: false },
           ],
-          explanation: "`COUNT(*)` cuenta absolutamente todas las filas. `COUNT(columna)` cuenta solo las filas donde esa columna no es NULL. Para sumar valores numéricos usás `SUM()`.",
+          explanation: "No son idénticos y `COUNT` no suma valores (eso es `SUM`). Pensá qué pasa con las filas donde esa columna es `NULL`: una versión las cuenta, la otra las ignora.",
         },
       ],
       [
@@ -1269,7 +1269,7 @@ export const QUIZ_DATA: Record<string, StarQuiz> = {
             { label: "Son equivalentes cuando todas las filas tienen coincidencia", correct: false },
             { label: "INNER JOIN incluye NULL; LEFT JOIN los excluye", correct: false },
           ],
-          explanation: "`LEFT JOIN` retorna todas las filas de la tabla izquierda, con NULL en las columnas de la derecha cuando no hay coincidencia. Útil para encontrar filas huérfanas.",
+          explanation: "No es cuestión de velocidad y no siempre son equivalentes. Pensá qué pasa cuando NO hay coincidencia: uno descarta esas filas, el otro conserva las de la tabla de la izquierda con `NULL`.",
         },
         {
           prompt: "¿Qué hace la cláusula `HAVING`?",
@@ -1279,7 +1279,7 @@ export const QUIZ_DATA: Record<string, StarQuiz> = {
             { label: "Filtra columnas antes de que se aplique SELECT", correct: false },
             { label: "Ordena los resultados después de GROUP BY", correct: false },
           ],
-          explanation: "`WHERE` no puede usar funciones de agregación como `COUNT`. `HAVING COUNT(*) > 5` filtra grupos que tengan más de 5 filas.",
+          explanation: "No es un simple alias de `WHERE` ni ordena nada. La clave: `WHERE` no puede usar `COUNT`/`SUM`. Pensá cuál filtra DESPUÉS de agrupar, sobre valores ya agregados.",
         },
         {
           prompt: "¿Qué hace `DISTINCT` en un SELECT?",
@@ -1289,7 +1289,7 @@ export const QUIZ_DATA: Record<string, StarQuiz> = {
             { label: "Ordena los resultados de forma aleatoria", correct: false },
             { label: "Filtra NULL de las columnas seleccionadas", correct: false },
           ],
-          explanation: "`SELECT DISTINCT ciudad FROM usuarios` devuelve cada ciudad solo una vez, sin importar cuántos usuarios haya por ciudad.",
+          explanation: "No ordena al azar ni filtra `NULL`. 'Distinct' = distintos: pensá qué hace con las filas repetidas del resultado.",
         },
       ],
       [
@@ -1301,7 +1301,7 @@ export const QUIZ_DATA: Record<string, StarQuiz> = {
             { label: "Un tipo de índice para queries frecuentes", correct: false },
             { label: "Una restricción de integridad a nivel de tabla", correct: false },
           ],
-          explanation: "`WITH activos AS (SELECT * FROM proyectos WHERE status = 'active') SELECT * FROM activos WHERE ...` es una CTE. Son más legibles que las subqueries.",
+          explanation: "No es una tabla en disco, ni un índice, ni un constraint. Fijate en el `WITH`: define un resultado temporal con nombre para hacer más legibles las queries complejas.",
         },
         {
           prompt: "¿Cuál es la diferencia entre `UNION` y `UNION ALL`?",
@@ -1311,7 +1311,7 @@ export const QUIZ_DATA: Record<string, StarQuiz> = {
             { label: "Son equivalentes en resultado", correct: false },
             { label: "UNION es más rápido porque no valida tipos", correct: false },
           ],
-          explanation: "`UNION` agrega un paso de deduplicación que lo hace más lento. Usá `UNION ALL` cuando sepás que no habrá duplicados o no te importen.",
+          explanation: "No son equivalentes y `UNION` no es el más rápido. Pensá qué paso extra hace uno de ellos con los duplicados — ese paso es justo lo que lo vuelve más lento.",
         },
         {
           prompt: "¿Qué es una subquery (subconsulta) correlacionada?",
@@ -1321,7 +1321,7 @@ export const QUIZ_DATA: Record<string, StarQuiz> = {
             { label: "Una subquery usada solo en la cláusula FROM", correct: false },
             { label: "Una subquery que se ejecuta una sola vez antes que la query principal", correct: false },
           ],
-          explanation: "Las subqueries correlacionadas pueden ser lentas porque se ejecutan N veces (una por cada fila). A veces un JOIN es más eficiente.",
+          explanation: "No da siempre el mismo resultado ni corre una sola vez. 'Correlacionada' = atada a la query externa: pensá cuántas veces se ejecuta si depende de cada fila de afuera.",
         },
       ],
     ],
@@ -1339,7 +1339,7 @@ export const QUIZ_DATA: Record<string, StarQuiz> = {
             { label: "fn nombre_funcion(params) =>", correct: false },
             { label: "func nombre_funcion(params):", correct: false },
           ],
-          explanation: "Python usa `def`. La indentación (4 espacios por convención PEP 8) define el cuerpo de la función, no las llaves {}.",
+          explanation: "Python no usa `function`, ni `fn`, ni llaves `{}`. Su palabra clave son tres letras y el cuerpo se marca con indentación y dos puntos. Cuidado con el impostor `func`.",
         },
         {
           prompt: "¿Cuál es la diferencia entre una lista `[]` y una tupla `()` en Python?",
@@ -1349,7 +1349,7 @@ export const QUIZ_DATA: Record<string, StarQuiz> = {
             { label: "No hay diferencia, es solo una cuestión de estilo", correct: false },
             { label: "Las tuplas pueden tener elementos duplicados; las listas no", correct: false },
           ],
-          explanation: "Podés agregar/quitar elementos de una lista. Una tupla, una vez creada, no puede modificarse. Usá tuplas para datos que no deben cambiar (coordenadas, configuración).",
+          explanation: "No se dividen por tipo de dato ni por permitir duplicados, y sí hay diferencia. Pensá en `[]` vs `()`: una se puede modificar después de creada y la otra queda fija.",
         },
         {
           prompt: "¿Qué hace `enumerate()` en un bucle for?",
@@ -1359,7 +1359,7 @@ export const QUIZ_DATA: Record<string, StarQuiz> = {
             { label: "Ordena la lista antes de iterar", correct: false },
             { label: "Convierte todos los elementos a números enteros", correct: false },
           ],
-          explanation: "`for i, valor in enumerate(lista):` te da el índice sin necesitar `range(len(lista))`. Es más Pythónico y legible.",
+          explanation: "No cuenta, no ordena ni convierte a enteros. Te evita el `range(len(...))`: pensá qué PAR de cosas te entrega en cada vuelta del `for`.",
         },
       ],
       [
@@ -1371,7 +1371,7 @@ export const QUIZ_DATA: Record<string, StarQuiz> = {
             { label: "Una función integrada para copiar listas", correct: false },
             { label: "La documentación inline de una lista", correct: false },
           ],
-          explanation: "`[x * 2 for x in range(10) if x % 2 == 0]` es más conciso y Pythónico que un bucle for con append. También existen dict y set comprehensions.",
+          explanation: "No es una lista sin duplicados (eso es un `set`), ni una función de copia, ni documentación. Pensá en armar una lista en UNA línea con un `for` (y un `if` opcional) dentro de los corchetes.",
         },
         {
           prompt: "¿Cuál es la diferencia entre un diccionario `{}` y un conjunto (`set`) en Python?",
@@ -1381,7 +1381,7 @@ export const QUIZ_DATA: Record<string, StarQuiz> = {
             { label: "Un set puede tener duplicados; un dict no", correct: false },
             { label: "Los dict son más rápidos para búsquedas", correct: false },
           ],
-          explanation: "`{1, 2, 3}` es un set (valores únicos). `{'a': 1}` es un dict. Ambos usan hash tables internamente para búsquedas O(1).",
+          explanation: "No son equivalentes y un `set` NO admite duplicados. Pensá qué guarda cada uno: uno pares clave-valor (`{'a': 1}`), el otro solo valores únicos (`{1, 2, 3}`).",
         },
         {
           prompt: "¿Qué hace el decorador `@property` en Python?",
@@ -1391,7 +1391,7 @@ export const QUIZ_DATA: Record<string, StarQuiz> = {
             { label: "Hace que un método sea estático (no accede a self)", correct: false },
             { label: "Cachea el resultado del método para no recalcularlo", correct: false },
           ],
-          explanation: "`@property` permite encapsular la lógica de acceso. `objeto.nombre` puede ejecutar validaciones en vez de exponer el atributo directamente.",
+          explanation: "No marca algo como privado, ni estático, ni cachea. Pensá en acceder a `objeto.nombre` (sin paréntesis) pero corriendo por detrás un getter con lógica.",
         },
       ],
       [
@@ -1403,7 +1403,7 @@ export const QUIZ_DATA: Record<string, StarQuiz> = {
             { label: "Un tipo de lista que solo acepta números", correct: false },
             { label: "Una clase que genera instancias de otras clases", correct: false },
           ],
-          explanation: "Un generator de un millón de números no carga nada en memoria hasta que pedís el siguiente valor. Ideal para procesar datasets grandes o streams.",
+          explanation: "No genera código ni instancias, y no es una lista. La palabra clave es `yield`: produce valores de a uno, bajo demanda, sin cargar todo en memoria.",
         },
         {
           prompt: "¿Qué hace `*args` y `**kwargs` en una función de Python?",
@@ -1413,7 +1413,7 @@ export const QUIZ_DATA: Record<string, StarQuiz> = {
             { label: "Son exclusivos de funciones de librerías externas", correct: false },
             { label: "*args es para funciones sync; **kwargs para async", correct: false },
           ],
-          explanation: "`def f(*args, **kwargs)` puede recibir cualquier cantidad de argumentos. Muy usado para decoradores y wrappers.",
+          explanation: "No multiplican nada, no son exclusivos de librerías ni distinguen sync/async. Uno junta los argumentos posicionales de más (como tupla), el otro los nombrados (como dict).",
         },
         {
           prompt: "¿Qué es el GIL (Global Interpreter Lock) en Python?",
@@ -1423,7 +1423,7 @@ export const QUIZ_DATA: Record<string, StarQuiz> = {
             { label: "La interfaz global para llamar funciones del sistema operativo", correct: false },
             { label: "Un bloqueo de archivos que Python usa para lecturas", correct: false },
           ],
-          explanation: "El GIL hace que el threading en Python no logre paralelismo real en CPU-bound tasks. La solución es `multiprocessing` (procesos separados) o async/await para I/O-bound.",
+          explanation: "No es seguridad de imports, ni una interfaz al sistema operativo, ni un bloqueo de archivos. Es un 'lock' global: pensá cuántos threads pueden correr bytecode Python a la vez.",
         },
       ],
     ],
@@ -1441,7 +1441,7 @@ export const QUIZ_DATA: Record<string, StarQuiz> = {
             { label: "Descargar el modelo desde internet", correct: false },
             { label: "Probarlo con datos de prueba para ver si funciona", correct: false },
           ],
-          explanation: "El entrenamiento es iterativo: el modelo hace predicciones, compara con los resultados correctos y ajusta sus pesos internos para reducir el error.",
+          explanation: "No es escribir reglas a mano, ni descargarlo, ni la fase de prueba (eso es evaluar). Pensá en el proceso donde el modelo, con datos, va ajustando sus parámetros para aprender.",
         },
         {
           prompt: "¿Qué es un LLM (Large Language Model)?",
@@ -1451,7 +1451,7 @@ export const QUIZ_DATA: Record<string, StarQuiz> = {
             { label: "Un lenguaje de programación creado para IA", correct: false },
             { label: "Un servidor especializado en procesar lenguaje de máquina", correct: false },
           ],
-          explanation: "Modelos como Claude, GPT-4 o Gemini son LLMs. Aprenden patrones del lenguaje humano y pueden generar texto, código, análisis y más.",
+          explanation: "No es almacenamiento, ni un lenguaje de programación, ni un servidor. Descifrá la sigla: Large **Language** Model. Pensá qué genera y entiende.",
         },
         {
           prompt: "¿Qué es 'overfitting' (sobreajuste) en un modelo de ML?",
@@ -1461,7 +1461,7 @@ export const QUIZ_DATA: Record<string, StarQuiz> = {
             { label: "Cuando el modelo tarda demasiado en entrenarse", correct: false },
             { label: "Cuando se usan demasiados datos de entrenamiento", correct: false },
           ],
-          explanation: "Un modelo sobreajustado tiene muy buen performance en training pero malo en producción. Es como memorizar respuestas sin entender el tema.",
+          explanation: "No es lo contrario (demasiado simple), ni tardar mucho, ni usar muchos datos. 'Over-fit' = ajustarse de más: pensá en memorizar el training y fallar con lo nuevo.",
         },
       ],
       [
@@ -1473,7 +1473,7 @@ export const QUIZ_DATA: Record<string, StarQuiz> = {
             { label: "Son enfoques equivalentes con diferente terminología", correct: false },
             { label: "No supervisado siempre da mejores resultados que supervisado", correct: false },
           ],
-          explanation: "Clasificación de spam (supervisado) vs clustering de clientes por comportamiento (no supervisado). El aprendizaje por refuerzo es un tercer paradigma.",
+          explanation: "No se trata de cuánta gente interviene, no son equivalentes y ninguno es 'siempre mejor'. La clave está en las etiquetas: ¿los datos vienen con la respuesta correcta o no?",
         },
         {
           prompt: "¿Qué es 'fine-tuning' de un modelo de IA?",
@@ -1483,7 +1483,7 @@ export const QUIZ_DATA: Record<string, StarQuiz> = {
             { label: "Optimizar el código de inferencia para mayor velocidad", correct: false },
             { label: "Reducir el tamaño del modelo sin perder precisión", correct: false },
           ],
-          explanation: "Fine-tuning es más económico que entrenar desde cero. Usás un modelo base (como GPT o Claude) y lo especializás con tus propios ejemplos.",
+          explanation: "No es tocar hiperparámetros, ni acelerar la inferencia, ni achicar el modelo. Pensá en tomar un modelo ya entrenado y seguir entrenándolo con TUS datos para especializarlo.",
         },
         {
           prompt: "¿Qué es el 'contexto' de un LLM?",
@@ -1493,7 +1493,7 @@ export const QUIZ_DATA: Record<string, StarQuiz> = {
             { label: "El servidor donde corre el modelo", correct: false },
             { label: "El idioma principal en que fue entrenado el modelo", correct: false },
           ],
-          explanation: "El contexto tiene un límite (context window). Todo lo que quiera 'recordar' el modelo debe estar en el contexto activo. Claude 3 tiene hasta 200K tokens.",
+          explanation: "No es una base de datos, ni el servidor, ni el idioma. Pensá en su 'memoria de trabajo': el texto que tiene a la vista en ese momento para responder (con un límite: el context window).",
         },
       ],
       [
@@ -1505,7 +1505,7 @@ export const QUIZ_DATA: Record<string, StarQuiz> = {
             { label: "El número de tokens que el modelo puede generar", correct: false },
             { label: "Un parámetro que controla el idioma de la respuesta", correct: false },
           ],
-          explanation: "Temperatura 0 = siempre la misma respuesta (determinista). Temperatura 1 = más variado y creativo. Para código se recomienda temperatura baja.",
+          explanation: "No es velocidad, ni cantidad de tokens, ni idioma. Pensá en el 'calor' como aleatoriedad: baja = repetible y estable, alta = más variada y creativa.",
         },
         {
           prompt: "¿Qué es RAG (Retrieval-Augmented Generation)?",
@@ -1515,7 +1515,7 @@ export const QUIZ_DATA: Record<string, StarQuiz> = {
             { label: "Una técnica de compresión de modelos para dispositivos móviles", correct: false },
             { label: "Un protocolo de comunicación entre modelos de IA", correct: false },
           ],
-          explanation: "RAG resuelve el problema de que los LLMs no conocen información reciente o privada. Buscás documentos relevantes y los das como contexto al modelo.",
+          explanation: "No es un modelo multimodal, ni compresión, ni un protocolo entre modelos. La 'R' es de Retrieval (recuperar): buscás documentos y se los das al modelo como contexto.",
         },
         {
           prompt: "¿Qué son los 'tokens' en el contexto de los LLMs?",
@@ -1525,7 +1525,7 @@ export const QUIZ_DATA: Record<string, StarQuiz> = {
             { label: "Los pesos internos del modelo", correct: false },
             { label: "Las respuestas parciales generadas en streaming", correct: false },
           ],
-          explanation: "La facturación de APIs de LLMs se basa en tokens. 'hola mundo' = aprox. 3 tokens. El contexto, el prompt y la respuesta todos consumen tokens.",
+          explanation: "No son las claves de API, ni los pesos del modelo, ni los fragmentos del streaming. Pensá en las piezas mínimas de texto en que se corta lo que entra y sale (y por las que te facturan).",
         },
       ],
     ],
@@ -1543,7 +1543,7 @@ export const QUIZ_DATA: Record<string, StarQuiz> = {
             { label: "El mayor texto posible para dar más información al modelo", correct: false },
             { label: "Solo la pregunta directa, sin contexto adicional", correct: false },
           ],
-          explanation: "Un buen prompt define: quién sos (rol/contexto), qué querés (instrucción), en qué formato (JSON, lista, párrafo) y qué NO debe hacer el modelo.",
+          explanation: "No son 'palabras mágicas', ni escribir lo más largo posible, ni soltar la pregunta pelada. Pensá en darle al modelo contexto, una instrucción clara, el formato esperado y los límites.",
         },
         {
           prompt: "¿Qué es 'chain-of-thought prompting'?",
@@ -1553,7 +1553,7 @@ export const QUIZ_DATA: Record<string, StarQuiz> = {
             { label: "Usar el historial de conversación anterior en el prompt actual", correct: false },
             { label: "Dividir un prompt largo en varios más cortos", correct: false },
           ],
-          explanation: "Agregar 'pensá paso a paso' o 'razoná antes de responder' mejora significativamente la calidad en tareas de razonamiento. Es una técnica probada.",
+          explanation: "No es encadenar varios modelos, ni reusar el historial, ni partir el prompt. 'Chain of thought' = cadena de pensamiento: pensá en pedirle que razone paso a paso antes de responder.",
         },
         {
           prompt: "¿Cuál es una buena práctica al integrar IA en un producto en producción?",
@@ -1563,7 +1563,7 @@ export const QUIZ_DATA: Record<string, StarQuiz> = {
             { label: "Mostrar el prompt completo al usuario para transparencia", correct: false },
             { label: "Usar el modelo más grande disponible siempre, sin importar el costo", correct: false },
           ],
-          explanation: "Los LLMs pueden alucinar. En producción: validá el output, manejá errores, implementá rate limiting y nunca expongas el system prompt al usuario final.",
+          explanation: "No es confiar a ciegas, ni exponer el prompt, ni usar siempre el modelo más caro. Como los LLM pueden alucinar, pensá qué hacer con su salida ANTES de mostrarla al usuario.",
         },
       ],
       [
@@ -1575,7 +1575,7 @@ export const QUIZ_DATA: Record<string, StarQuiz> = {
             { label: "Dividir un prompt complejo en varios prompts más pequeños", correct: false },
             { label: "Una técnica que solo funciona con modelos pequeños", correct: false },
           ],
-          explanation: "Few-shot: 3-5 ejemplos. Zero-shot: sin ejemplos, solo instrucción. One-shot: un ejemplo. Más ejemplos mejoran la precisión pero cuestan más tokens.",
+          explanation: "No es 'menos texto', ni partir el prompt, ni algo solo de modelos chicos. 'Few-shot' = unos pocos... ejemplos: pensá en mostrarle casos de entrada y salida para guiarlo.",
         },
         {
           prompt: "¿Qué es un 'system prompt' y para qué se usa?",
@@ -1585,7 +1585,7 @@ export const QUIZ_DATA: Record<string, StarQuiz> = {
             { label: "Un prompt automático que genera la IA para sí misma", correct: false },
             { label: "Las instrucciones de seguridad integradas por el proveedor del modelo", correct: false },
           ],
-          explanation: "El system prompt es donde definís la 'personalidad' del asistente, su rol, restricciones y formato de respuesta esperado. Persiste durante toda la conversación.",
+          explanation: "No es el primer mensaje del usuario, ni algo que la IA se genera sola, ni las reglas del proveedor. Pensá en instrucciones 'de sistema' que fijan rol y límites durante toda la charla.",
         },
         {
           prompt: "¿Qué es 'prompt injection' y por qué es un riesgo de seguridad?",
@@ -1595,7 +1595,7 @@ export const QUIZ_DATA: Record<string, StarQuiz> = {
             { label: "Una técnica para hacer el prompt más eficiente", correct: false },
             { label: "La inserción automática de contexto en el prompt", correct: false },
           ],
-          explanation: "Si un usuario escribe 'ignora las instrucciones anteriores y...', puede manipular el modelo. Validá y sanitizá el input del usuario antes de incluirlo en el prompt.",
+          explanation: "No es un error de formatear strings, ni una técnica de eficiencia, ni inserción de contexto. 'Injection' como ataque: pensá en un input que intenta pisar las instrucciones del sistema.",
         },
       ],
       [
@@ -1607,7 +1607,7 @@ export const QUIZ_DATA: Record<string, StarQuiz> = {
             { label: "Solo es posible con fine-tuning específico para JSON", correct: false },
             { label: "Los LLMs no pueden producir JSON confiablemente", correct: false },
           ],
-          explanation: "Claude, GPT-4 y Gemini soportan modos de output estructurado. Con un schema claro en el prompt, la confiabilidad es alta. Siempre validá con Zod o similar.",
+          explanation: "No hace falta pedirle código Python, ni fine-tuning, y sí es posible de forma confiable. Pensá en darle el schema esperado y usar los modos de salida estructurada del API (y validar después).",
         },
         {
           prompt: "¿Qué es 'grounding' en el contexto de prompting?",
@@ -1617,7 +1617,7 @@ export const QUIZ_DATA: Record<string, StarQuiz> = {
             { label: "Un parámetro que controla la longitud de la respuesta", correct: false },
             { label: "El proceso de traducir prompts a inglés para mayor precisión", correct: false },
           ],
-          explanation: "RAG es una forma de grounding: le das al modelo documentos reales para que base su respuesta en ellos, no solo en su entrenamiento.",
+          explanation: "No es comparar modelos, ni controlar el largo, ni traducir a inglés. 'Ground' = anclar al suelo: pensá en atar la respuesta a fuentes concretas para reducir alucinaciones (RAG es un ejemplo).",
         },
         {
           prompt: "¿Qué pasa cuando el input del usuario supera el 'context window' del modelo?",
@@ -1627,7 +1627,7 @@ export const QUIZ_DATA: Record<string, StarQuiz> = {
             { label: "La respuesta se genera con la información disponible sin indicar el problema", correct: false },
             { label: "El modelo guarda el resto en memoria para la próxima conversación", correct: false },
           ],
-          explanation: "Distintos modelos manejan esto distinto: algunos truncan silenciosamente, otros dan error. Siempre diseñá tu aplicación para dividir contenidos largos proactivamente.",
+          explanation: "El modelo no expande su ventana solo, ni guarda el sobrante para después. Pensá qué pasa cuando ya no entra: o se recorta lo más viejo o el API falla — por eso conviene dividir el contenido.",
         },
       ],
     ],
