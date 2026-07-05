@@ -8,7 +8,7 @@ import { cn } from "@/lib/utils";
 
 const NAV_HREFS = [
   { key: "mi_empresa", href: "/perfil-empresa" },
-  { key: "mis_proyectos", href: "/dashboard" },
+  { key: "mis_proyectos", href: "/gestion" },
   { key: "matches", href: "/matches" },
 ] as const;
 

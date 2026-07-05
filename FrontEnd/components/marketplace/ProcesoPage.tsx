@@ -29,6 +29,7 @@ import {
   Send,
   Trash2,
   User,
+  Wallet,
   X,
   XCircle,
   Zap,
@@ -40,6 +41,7 @@ import {
   withdrawOfferAction,
 } from "@/lib/actions/marketplace";
 import { cn } from "@/lib/utils";
+import { formatCompensacion } from "@/lib/marketplace/compensation";
 import type {
   ApiProject,
   ApiRoleName,
@@ -130,7 +132,13 @@ function getAiResponse(question: string, project: ApiProject): string {
       ? `Este proyecto requiere: ${skills.join(", ")}. Mencioná tu experiencia con cada una en la propuesta.`
       : "El proyecto no especifica tecnologías obligatorias. Podés usar las que mejor dominés.";
   }
-  if (q.includes("pago") || q.includes("dinero") || q.includes("presupuest")) {
+  if (
+    q.includes("pago") || q.includes("dinero") || q.includes("presupuest") ||
+    q.includes("precio") || q.includes("compensa") || q.includes("gana") || q.includes("cobr")
+  ) {
+    if (project.compensacion != null) {
+      return `Este proyecto ofrece ${formatCompensacion(project.compensacion, project.moneda)} por el trabajo completo. El pago se coordina entre el junior adjudicado y la empresa, por fuera de la plataforma, y se libera contra entrega aprobada.`;
+    }
     return "El pago se coordina entre el junior adjudicado y la empresa. Se libera contra entrega aprobada.";
   }
   if (q.includes("propuesta") || q.includes("postul") || q.includes("aplicar")) {
@@ -520,6 +528,11 @@ export function ProcesoPage({
               {project.empresa && (
                 <span className="inline-flex items-center gap-2 rounded-full border border-border bg-surface px-4 py-2 font-body text-sm font-semibold text-ink-muted">
                   <Building2 className="size-4" aria-hidden="true" />{project.empresa.nombre_comercial}
+                </span>
+              )}
+              {project.compensacion != null && (
+                <span className="inline-flex items-center gap-2 rounded-full border border-accent/30 bg-accent/10 px-4 py-2 font-body text-sm font-bold text-accent">
+                  <Wallet className="size-4" aria-hidden="true" />{formatCompensacion(project.compensacion, project.moneda)}
                 </span>
               )}
               <span className="inline-flex items-center gap-2 rounded-full border border-border bg-surface px-4 py-2 font-body text-sm font-semibold text-ink-muted">

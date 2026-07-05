@@ -43,6 +43,7 @@ import type {
   CompanyProjectState,
   CreateProjectInput,
   EditOfferInput,
+  MarketplaceProjectFilters,
   ReplicaInput,
   ReviewOfferInput,
   SubmitEntregableInput,
@@ -212,8 +213,8 @@ export async function getMyProjectsAction() {
   return getMyProjects();
 }
 
-export async function getProjectsAction() {
-  return getProjects();
+export async function getProjectsAction(filters?: MarketplaceProjectFilters) {
+  return getProjects(filters);
 }
 
 export async function getSavedProjectsAction() {

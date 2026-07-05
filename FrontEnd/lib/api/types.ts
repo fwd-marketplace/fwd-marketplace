@@ -63,6 +63,12 @@ export type ApiProject = {
   condiciones?: string;
   usa_ia: boolean;
   plazo_dias: number;
+  /** Monto total declarado que la empresa pagará al junior por el proyecto (informativo). */
+  compensacion: number | null;
+  /** Moneda de la compensación. MVP: solo USD. */
+  moneda: string;
+  /** Última modificación de la compensación (transparencia para postulantes). */
+  compensacion_actualizada_en: string | null;
   tecnologias_extra?: string[];
   /** Idioma en que la empresa escribió el proyecto. */
   idioma_original?: AiLocale;
@@ -81,6 +87,20 @@ export type ProjectsResponse = {
   projects: ApiProject[];
 };
 
+/**
+ * Filtros server-side del listado de proyectos (los soporta el backend con índices en DB).
+ * El marketplace hoy filtra en el cliente por UX instantánea; estos filtros están disponibles
+ * para cuando el volumen justifique mover el filtrado al servidor.
+ */
+export type MarketplaceProjectFilters = {
+  area?: string;
+  skill?: string;
+  plazoMax?: number;
+  compensacionMin?: number;
+  compensacionMax?: number;
+  q?: string;
+};
+
 export type CreateProjectInput = {
   titulo: string;
   descripcion: string;
@@ -90,6 +110,8 @@ export type CreateProjectInput = {
   usa_ia: boolean;
   skills: string[];
   tecnologias_extra?: string[];
+  /** Monto total en USD que la empresa pagará al junior. Obligatorio al publicar. */
+  compensacion?: number;
   publicar: boolean;
 };
 
@@ -138,6 +160,8 @@ export type UpdateProjectInput = {
   usa_ia?: boolean;
   skills?: string[];
   tecnologias_extra?: string[];
+  /** Monto total en USD que la empresa pagará al junior. */
+  compensacion?: number;
 };
 
 export type SuggestStackInput = {
@@ -153,6 +177,24 @@ export type StackSuggestion = {
 
 export type SuggestStackResponse = {
   sugerencia: StackSuggestion;
+};
+
+export type SuggestCompensacionInput = {
+  titulo?: string;
+  descripcion: string;
+  id_area_negocio?: string;
+  plazo_dias?: number;
+  skills?: string[];
+};
+
+export type CompensacionSuggestion = {
+  /** Monto total sugerido en USD, ya acotado al rango permitido. */
+  compensacion: number;
+  justificacion: string;
+};
+
+export type SuggestCompensacionResponse = {
+  sugerencia: CompensacionSuggestion;
 };
 
 export type ProjectOffer = {

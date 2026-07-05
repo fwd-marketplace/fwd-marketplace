@@ -13,6 +13,7 @@ import type {
   EditOfferInput,
   Entregable,
   EntregablesResponse,
+  MarketplaceProjectFilters,
   MyOffersResponse,
   OfertaContacto,
   OfertaContactoResponse,
@@ -108,8 +109,26 @@ export function changeProjectState(projectId: string, estado: CompanyProjectStat
   });
 }
 
-export function getProjects(): Promise<Result<ProjectsResponse>> {
-  return asResult(() => apiAuth<ProjectsResponse>("/projects"));
+/** Arma el query string a partir de los filtros server-side (omite los vacíos). */
+function buildProjectsQuery(filters?: MarketplaceProjectFilters): string {
+  if (!filters) return "";
+  const params = new URLSearchParams();
+  if (filters.area) params.set("area", filters.area);
+  if (filters.skill) params.set("skill", filters.skill);
+  if (filters.plazoMax != null) params.set("plazoMax", String(filters.plazoMax));
+  if (filters.compensacionMin != null) params.set("compensacionMin", String(filters.compensacionMin));
+  if (filters.compensacionMax != null) params.set("compensacionMax", String(filters.compensacionMax));
+  if (filters.q) params.set("q", filters.q);
+  const query = params.toString();
+  return query ? `?${query}` : "";
+}
+
+/**
+ * Lista los proyectos publicados. Sin filtros trae todos (el marketplace filtra en el cliente).
+ * Con filtros, delega el filtrado al backend (usa los índices en DB) para escalar cuando haga falta.
+ */
+export function getProjects(filters?: MarketplaceProjectFilters): Promise<Result<ProjectsResponse>> {
+  return asResult(() => apiAuth<ProjectsResponse>(`/projects${buildProjectsQuery(filters)}`));
 }
 
 export function getProjectById(id: string): Promise<Result<ApiProject>> {

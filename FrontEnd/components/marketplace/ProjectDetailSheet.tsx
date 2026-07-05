@@ -11,12 +11,14 @@ import {
   Clock,
   ExternalLink,
   Lock,
+  Wallet,
   X,
   Zap,
   ChevronRight,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
+import { formatCompensacion } from "@/lib/marketplace/compensation";
 import type { ApiProject, ApiRoleName } from "@/lib/api/types";
 
 interface Props {
@@ -142,6 +144,12 @@ export function ProjectDetailSheet({
                   <span className="inline-flex items-center gap-1.5 rounded-full border border-border bg-surface px-3 py-1.5 font-body text-xs font-semibold text-ink-muted">
                     <Building2 className="size-3.5" aria-hidden="true" />
                     {project.empresa.nombre_comercial}
+                  </span>
+                )}
+                {project.compensacion != null && (
+                  <span className="inline-flex items-center gap-1.5 rounded-full border border-accent/30 bg-accent/10 px-3 py-1.5 font-body text-xs font-bold text-accent">
+                    <Wallet className="size-3.5" aria-hidden="true" />
+                    {formatCompensacion(project.compensacion, project.moneda)}
                   </span>
                 )}
                 <span className="inline-flex items-center gap-1.5 rounded-full border border-border bg-surface px-3 py-1.5 font-body text-xs font-semibold text-ink-muted">
