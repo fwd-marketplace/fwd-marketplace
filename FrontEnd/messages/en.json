@@ -1229,7 +1229,137 @@
     "tab_quiz_stage_done_body": "You earned a mastery point. {remaining} more to go.",
     "tab_quiz_stage_last_body": "You earned the last mastery point. Closing...",
     "tab_quiz_next_stage": "Go to part {n}",
-    "tab_quiz_continue": "Continue"
+    "tab_quiz_continue": "Continue",
+    "contenido": {
+      "terminal": {
+        "intro": "The terminal is a window where you type text commands to your computer, with no menus or buttons.",
+        "bloques": [
+          { "titulo": "How it works", "cuerpo": "You type a command, press Enter, and the machine runs it instantly. Each command is a verb: `ls` lists, `cd` enters a folder, `mkdir` creates one." },
+          { "titulo": "An example", "cuerpo": "To create a folder and step into it: `mkdir my-project` then `cd my-project`. Two lines do what would take several clicks with a mouse." },
+          { "titulo": "Why it matters", "cuerpo": "Almost every dev tool (Git, Node, npm) lives in the terminal. Getting comfortable here makes you much faster and is the first step to everything else." }
+        ]
+      },
+      "git": {
+        "intro": "Git records the history of your code: every change is saved, so you can go back whenever you need to.",
+        "bloques": [
+          { "titulo": "How it works", "cuerpo": "You work and, when something works, you make a `commit`: a snapshot of your project at that moment with a message explaining what changed." },
+          { "titulo": "An example", "cuerpo": "If you break something today, you can return to yesterday's commit without losing a thing. With `branches` you try new ideas without touching the version that already works." },
+          { "titulo": "Why it matters", "cuerpo": "It's how teams work on the same project without stepping on each other. Without Git, real collaboration is impossible." }
+        ]
+      },
+      "htmlcss": {
+        "intro": "HTML lays the bricks of a page; CSS paints and arranges them. Together they're the foundation of everything you see on the web.",
+        "bloques": [
+          { "titulo": "How it works", "cuerpo": "HTML describes content with tags (`<h1>` for a heading, `<button>` for a button). CSS decides how it looks: color, size, position." },
+          { "titulo": "An example", "cuerpo": "`<button>Send</button>` creates the button; in CSS, `button { background: blue; border-radius: 8px; }` makes it blue with rounded corners." },
+          { "titulo": "Why it matters", "cuerpo": "No interface exists without HTML and CSS. React, Next.js and Tailwind build on top of this, so knowing it well saves you pain later." }
+        ]
+      },
+      "javascript": {
+        "intro": "JavaScript brings the web to life: it makes pages react to what the user does.",
+        "bloques": [
+          { "titulo": "How it works", "cuerpo": "With JS you respond to events (a click, a keypress), change the page on the fly, and fetch data from a server without reloading." },
+          { "titulo": "An example", "cuerpo": "A button that shows a message on click: `button.addEventListener('click', () => alert('Hi!'))`. HTML draws it, JS makes it respond." },
+          { "titulo": "Why it matters", "cuerpo": "It's the only language that runs natively in the browser and also on the server (Node.js). The entire FWD stack leans on it." }
+        ]
+      },
+      "react": {
+        "intro": "React is a library for building interfaces out of reusable pieces called components.",
+        "bloques": [
+          { "titulo": "How it works", "cuerpo": "You split the screen into components (a button, a card, a form) and React updates only what changes when the data changes." },
+          { "titulo": "An example", "cuerpo": "A `<Card title=\"React\" />` component you reuse as many times as you want, each with its own content, without repeating code." },
+          { "titulo": "Why it matters", "cuerpo": "It's the heart of the frontend at FWD Talent. Almost everything you build on the visual side goes through React." }
+        ]
+      },
+      "typescript": {
+        "intro": "TypeScript is JavaScript with a safety net: you add types so errors show up before they reach the user.",
+        "bloques": [
+          { "titulo": "How it works", "cuerpo": "You tell each variable what kind of data it holds (text, number, list). If you get it wrong, the editor warns you as you type." },
+          { "titulo": "An example", "cuerpo": "`function greet(name: string)` makes it clear it expects text. Pass it a number and TypeScript flags it before anything runs." },
+          { "titulo": "Why it matters", "cuerpo": "In growing projects, types are living documentation and prevent tricky bugs. The FWD repo is `strict`, so it's part of daily work." }
+        ]
+      },
+      "nextjs": {
+        "intro": "Next.js is the React framework FWD uses: it gives you routing, server rendering and deployment ready for production.",
+        "bloques": [
+          { "titulo": "How it works", "cuerpo": "Each file inside the routes folder becomes a page. You can render on the server so it loads fast and looks good to search engines." },
+          { "titulo": "An example", "cuerpo": "Creating `app/projects/page.tsx` automatically gives you the `/projects` route, with nothing else to configure." },
+          { "titulo": "Why it matters", "cuerpo": "It's the base FWD Talent runs on. Learning it brings you straight to how the real product is built." }
+        ]
+      },
+      "tailwind": {
+        "intro": "Tailwind lets you design by applying utility classes right in your HTML, without jumping to separate CSS files.",
+        "bloques": [
+          { "titulo": "How it works", "cuerpo": "Instead of writing CSS, you compose styles from small classes: `p-4` adds padding, `rounded-full` rounds corners, `bg-primary` sets the background." },
+          { "titulo": "An example", "cuerpo": "`<button class=\"px-4 py-2 rounded-full bg-primary\">` is a fully styled button, without opening a `.css` file." },
+          { "titulo": "Why it matters", "cuerpo": "It speeds up design a lot and keeps everything consistent with the design tokens. It's the styling standard in the FWD repo." }
+        ]
+      },
+      "nodejs": {
+        "intro": "Node.js lets you run JavaScript outside the browser, on the server side. It's your gateway to the backend.",
+        "bloques": [
+          { "titulo": "How it works", "cuerpo": "The same language you use on the frontend now handles requests, reads databases and returns responses from a server." },
+          { "titulo": "An example", "cuerpo": "With a few lines you spin up a server that replies 'Hello' when someone visits an address. That's the building block of any API." },
+          { "titulo": "Why it matters", "cuerpo": "FWD's BackEnd runs on Node. Knowing it lets you work on both sides of the project with a single language." }
+        ]
+      },
+      "apis": {
+        "intro": "A REST API is the language the frontend and backend speak: one asks, the other answers.",
+        "bloques": [
+          { "titulo": "How it works", "cuerpo": "The frontend makes a request to an address (`GET /projects`) and the backend returns data, usually as JSON." },
+          { "titulo": "An example", "cuerpo": "`GET /projects` fetches the project list; `POST /projects` creates a new one. Each verb (GET, POST, PUT, DELETE) is a different intent." },
+          { "titulo": "Why it matters", "cuerpo": "This is exactly how FWD's FrontEnd and BackEnd talk. Understanding REST is understanding how data flows through the app." }
+        ]
+      },
+      "supabase": {
+        "intro": "Supabase is the database and login system FWD uses: Postgres with superpowers, ready to go.",
+        "bloques": [
+          { "titulo": "How it works", "cuerpo": "It gives you a Postgres database, user authentication and file storage, all reachable from your code." },
+          { "titulo": "An example", "cuerpo": "Signing up a user or saving a project are direct calls to Supabase, which handles security with row-level rules (RLS)." },
+          { "titulo": "Why it matters", "cuerpo": "It's FWD Talent's data layer. All the progress, profiles and projects live there." }
+        ]
+      },
+      "postgres": {
+        "intro": "PostgreSQL is a relational database: it stores information in orderly tables that relate to each other.",
+        "bloques": [
+          { "titulo": "How it works", "cuerpo": "You organize data into tables with columns and rows. Tables relate: a project belongs to a company, an application to a junior." },
+          { "titulo": "An example", "cuerpo": "A `projects` table and a `companies` table connect through an id, so each project knows which company it belongs to without duplicating data." },
+          { "titulo": "Why it matters", "cuerpo": "It's the engine behind Supabase and almost every serious backend. Modeling data well avoids problems that get expensive later." }
+        ]
+      },
+      "sql": {
+        "intro": "SQL is the language for asking a database questions and getting back exactly the data you need.",
+        "bloques": [
+          { "titulo": "How it works", "cuerpo": "You write queries that describe what you want: filter, sort, count or join tables. The database returns the result." },
+          { "titulo": "An example", "cuerpo": "`SELECT name FROM projects WHERE status = 'published'` returns just the names of published projects." },
+          { "titulo": "Why it matters", "cuerpo": "Any app that stores data ends up needing SQL. It's a skill that pays off in frontend, backend and data analysis alike." }
+        ]
+      },
+      "python": {
+        "intro": "Python is a readable, versatile language, a favorite for data and artificial intelligence.",
+        "bloques": [
+          { "titulo": "How it works", "cuerpo": "Its syntax reads almost like English, which makes it great for quick prototyping and for analyzing information." },
+          { "titulo": "An example", "cuerpo": "`for project in projects: print(project)` walks a list and shows each item. Simple and direct." },
+          { "titulo": "Why it matters", "cuerpo": "It's the gateway to the world of data and AI. With Python you analyze datasets and train models without fighting the language." }
+        ]
+      },
+      "ia_fundamentos": {
+        "intro": "AI fundamentals explain how models learn: instead of coding rules, you show them examples and they find patterns.",
+        "bloques": [
+          { "titulo": "How it works", "cuerpo": "A Machine Learning model trains on lots of labeled data and, from there, makes predictions about new data." },
+          { "titulo": "An example", "cuerpo": "Showing it thousands of emails marked 'spam' or 'not spam' until it learns to classify one it has never seen." },
+          { "titulo": "Why it matters", "cuerpo": "Understanding what a model can and can't do lets you bring AI into your products with judgment, no magic and no fear." }
+        ]
+      },
+      "ia_prompting": {
+        "intro": "Professional prompting is the craft of asking an AI well to get useful, reliable results.",
+        "bloques": [
+          { "titulo": "How it works", "cuerpo": "A good prompt gives context, states the role, the output format and examples. The clearer you are, the better the model responds." },
+          { "titulo": "An example", "cuerpo": "Instead of 'write about React', ask: 'Explain React to a junior in 3 bullet points, with a code example'. The result changes completely." },
+          { "titulo": "Why it matters", "cuerpo": "It's the skill that multiplies all the others: it lets you use AI as a copilot in any task, from code to design." }
+        ]
+      }
+    }
   },
   "marketplace_page": {
     "eyebrow": "MARKETPLACE",
