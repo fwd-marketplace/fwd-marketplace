@@ -1,7 +1,8 @@
 'use client';
 
 import { useCallback, useState } from 'react';
-import { useTranslations } from 'next-intl';
+import { useTranslations, useLocale } from 'next-intl';
+import Link from 'next/link';
 import {
   ArrowRight,
   BookOpen,
@@ -13,6 +14,7 @@ import {
   Trophy,
   type LucideIcon,
 } from 'lucide-react';
+import type { HeroJourneyData } from '@/lib/hero-journey/mock';
 
 type MilestoneId =
   | 'llamado'
@@ -45,15 +47,23 @@ const STAR_INNER_RADIUS = 15;
 const VALLEY_OFFSET_DEG = 36;
 const FULL_PROGRESS = 100;
 
-// Cada hito es una punta de la estrella. El color sale de un token FWD
-// (referencia a variable CSS, nunca un hex suelto).
-const MILESTONES: readonly MilestoneConfig[] = [
-  { id: 'llamado', icon: Compass, colorVar: 'var(--highlight)', status: 'done', progress: 100, tipAngle: -90 },
-  { id: 'preparacion', icon: BookOpen, colorVar: 'var(--accent)', status: 'done', progress: 100, tipAngle: -18 },
-  { id: 'desafio', icon: Mountain, colorVar: 'var(--warning)', status: 'progress', progress: 60, tipAngle: 54 },
-  { id: 'transformacion', icon: Sparkles, colorVar: 'var(--magenta)', status: 'pending', progress: 0, tipAngle: 126 },
-  { id: 'reconocimiento', icon: Trophy, colorVar: 'var(--primary)', status: 'pending', progress: 0, tipAngle: 198 },
+const MILESTONE_META: readonly Omit<MilestoneConfig, 'status' | 'progress'>[] = [
+  { id: 'llamado',        icon: Compass,  colorVar: 'var(--primary)',   tipAngle: -90  },
+  { id: 'preparacion',    icon: BookOpen, colorVar: 'var(--secondary)', tipAngle: -18  },
+  { id: 'desafio',        icon: Mountain, colorVar: 'var(--highlight)', tipAngle:  54  },
+  { id: 'transformacion', icon: Sparkles, colorVar: 'var(--accent)',    tipAngle: 126  },
+  { id: 'reconocimiento', icon: Trophy,   colorVar: 'var(--magenta)',   tipAngle: 198  },
 ];
+
+function buildMilestones(heroJourney: HeroJourneyData): readonly MilestoneConfig[] {
+  return MILESTONE_META.map((meta) => {
+    const data = heroJourney[meta.id];
+    const progress = meta.id === 'transformacion'
+      ? (data.learningPct ?? 0)
+      : data.status === 'done' ? 100 : 0;
+    return { ...meta, status: data.status, progress };
+  });
+}
 
 // Estrellas tenues decorativas (titilan, no interactuan). Posiciones fijas
 // para no provocar diferencias entre servidor y cliente.
@@ -75,13 +85,13 @@ function getTipPoint(milestone: MilestoneConfig): StarPoint {
   return toPolarPoint(milestone.tipAngle, STAR_OUTER_RADIUS);
 }
 
-// Diez segmentos del contorno: cada punta se une con sus dos valles vecinos.
-const STAR_EDGES: readonly { from: StarPoint; to: StarPoint }[] = MILESTONES.flatMap(
-  (milestone) => {
-    const tip = getTipPoint(milestone);
+// Diez segmentos del contorno: solo dependen de los angulos (estaticos).
+const STAR_EDGES: readonly { from: StarPoint; to: StarPoint }[] = MILESTONE_META.flatMap(
+  (meta) => {
+    const tip = toPolarPoint(meta.tipAngle, STAR_OUTER_RADIUS);
     return [
-      { from: tip, to: toPolarPoint(milestone.tipAngle - VALLEY_OFFSET_DEG, STAR_INNER_RADIUS) },
-      { from: tip, to: toPolarPoint(milestone.tipAngle + VALLEY_OFFSET_DEG, STAR_INNER_RADIUS) },
+      { from: tip, to: toPolarPoint(meta.tipAngle - VALLEY_OFFSET_DEG, STAR_INNER_RADIUS) },
+      { from: tip, to: toPolarPoint(meta.tipAngle + VALLEY_OFFSET_DEG, STAR_INNER_RADIUS) },
     ];
   }
 );
@@ -92,12 +102,18 @@ const STATUS_PILL_CLASS: Record<MilestoneStatus, string> = {
   pending: 'bg-white/10 text-white/70',
 };
 
-export function EstrellaProceso() {
+interface EstrellaProcesoProps {
+  heroJourney: HeroJourneyData;
+}
+
+export function EstrellaProceso({ heroJourney }: EstrellaProcesoProps) {
   const t = useTranslations('bienvenida.estrella');
+  const locale = useLocale();
 
   const [activeId, setActiveId] = useState<MilestoneId | null>(null);
   const [isPinned, setIsPinned] = useState(false);
 
+  const MILESTONES = buildMilestones(heroJourney);
   const doneCount = MILESTONES.filter((milestone) => milestone.status === 'done').length;
   const total = MILESTONES.length;
   const litPercent = Math.round((doneCount / total) * FULL_PROGRESS);
@@ -124,7 +140,7 @@ export function EstrellaProceso() {
   }, []);
 
   return (
-    <div className="estrella-panel relative overflow-hidden rounded-2xl border border-white/10 bg-constellation-sky p-6 text-white shadow-soft">
+    <div className="estrella-panel relative overflow-hidden rounded-2xl border border-white/10 bg-constellation-sky p-6 text-white shadow-soft flex-1 flex flex-col">
       {/* Estrellas tenues de ambiente */}
       <div className="estrella-starfield" aria-hidden="true">
         {FAINT_STARS.map((star) => (
@@ -172,25 +188,6 @@ export function EstrellaProceso() {
             />
           ))}
 
-          <circle className="estrella-ring" cx={STAR_CENTER.x} cy={STAR_CENTER.y} r="30" />
-          <circle className="estrella-ring" cx={STAR_CENTER.x} cy={STAR_CENTER.y} r="22" />
-          <circle className="estrella-ring" cx={STAR_CENTER.x} cy={STAR_CENTER.y} r="14" />
-          <circle className="estrella-core" cx={STAR_CENTER.x} cy={STAR_CENTER.y} r="14" />
-
-          {MILESTONES.map((milestone) => {
-            const tip = getTipPoint(milestone);
-            return (
-              <line
-                key={`ray-${milestone.id}`}
-                className="estrella-ray"
-                x1={STAR_CENTER.x}
-                y1={STAR_CENTER.y}
-                x2={tip.x}
-                y2={tip.y}
-              />
-            );
-          })}
-
           {STAR_EDGES.map((edge) => (
             <line
               key={`edge-${edge.from.x}-${edge.from.y}-${edge.to.x}-${edge.to.y}`}
@@ -203,11 +200,8 @@ export function EstrellaProceso() {
           ))}
         </svg>
 
-        {/* Centro: progreso global */}
-        <div className="estrella-center" aria-hidden="true">
-          <span className="estrella-center-title font-heading">{t('center_title')}</span>
-          <span className="estrella-center-sub">{t('center_sub', { done: doneCount, total })}</span>
-        </div>
+        {/* Centro: sin texto */}
+        <div className="estrella-center" aria-hidden="true" />
 
         {/* Nodos interactivos en cada punta */}
         {MILESTONES.map((milestone) => {
@@ -299,13 +293,16 @@ export function EstrellaProceso() {
 
             {activeMilestone.status === 'done' ? (
               <p className="mt-3 text-xs text-ink-subtle">
-                {t('lit_on', { date: t(`items.${activeMilestone.id}.date`) })}
+                {t('lit_on', { date: heroJourney[activeMilestone.id].date })}
               </p>
             ) : (
-              <p className="mt-4 inline-flex items-center gap-1.5 text-sm font-semibold text-primary">
+              <Link
+                href={`/${locale}${t(`next_links.${activeMilestone.id}`)}`}
+                className="mt-4 inline-flex items-center gap-1.5 text-sm font-semibold text-primary transition-opacity hover:opacity-80"
+              >
                 {t('next_hint')}
                 <ArrowRight className="h-4 w-4" />
-              </p>
+              </Link>
             )}
           </div>
         </div>

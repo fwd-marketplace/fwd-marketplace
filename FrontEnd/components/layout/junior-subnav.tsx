@@ -9,7 +9,7 @@ import { cn } from "@/lib/utils";
 const NAV_HREFS = [
   { key: "inicio", href: "/bienvenida" },
   { key: "marketplace", href: "/marketplace" },
-  { key: "viaje", href: "/viaje-de-aprendizaje" },
+  { key: "viaje", href: "/mapa-de-aprendizaje" },
   { key: "perfil", href: "/perfil-estudiante" },
 ] as const;
 

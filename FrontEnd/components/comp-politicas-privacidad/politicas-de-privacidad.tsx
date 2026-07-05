@@ -1,10 +1,11 @@
 'use client';
 
 import React, { useEffect } from 'react';
-import { Download, ChevronDown } from 'lucide-react';
+import { ArrowLeft, Download, ChevronDown } from 'lucide-react';
 import { useTranslations } from 'next-intl';
+import { useRouter } from 'next/navigation';
 import { Button } from '@/components/ui/button';
-import { CosmosBackground } from '@/components/ui/cosmos-background';
+import { CosmicBackdrop } from '@/components/ui/cosmic-backdrop';
 
 /** Forma de cada sección en messages (privacy_policy.sections). */
 type Section = {
@@ -14,10 +15,9 @@ type Section = {
   note?: string;
 };
 
-export function PoliticasDePrivacidad() {
+export function PoliticasDePrivacidad({ showBack = false }: { showBack?: boolean }) {
   const t = useTranslations('privacy_policy');
-  // t.raw devuelve el valor crudo del JSON (el array de secciones). La forma la
-  // garantiza el propio archivo de mensajes (es.json / en.json).
+  const router = useRouter();
   const sections = t.raw('sections') as Section[];
 
   useEffect(() => {
@@ -37,6 +37,18 @@ export function PoliticasDePrivacidad() {
 
   return (
     <div className="relative min-h-screen bg-secondary font-sans pb-20 pt-32 px-6 md:px-10 lg:px-16 overflow-hidden print:bg-transparent print:p-0 print:m-0 print:min-h-0 print:block">
+      {showBack && (
+        <div className="absolute left-6 top-6 z-20 print:hidden">
+          <button
+            type="button"
+            onClick={() => router.back()}
+            className="inline-flex items-center gap-2 rounded-full bg-white/10 px-4 py-2 font-body text-sm font-medium text-white/75 backdrop-blur-sm transition-colors duration-[var(--duration-fast)] ease-[var(--ease-out)] hover:bg-white/15 hover:text-white"
+          >
+            <ArrowLeft size={14} aria-hidden="true" />
+            {t('back')}
+          </button>
+        </div>
+      )}
       <style>{`
         @media print {
           header, nav, [data-navbar] { display: none !important; }
@@ -53,7 +65,17 @@ export function PoliticasDePrivacidad() {
         }
       `}</style>
       <div className="print:hidden">
-        <CosmosBackground showMoon />
+        <svg
+          className="pointer-events-none absolute right-0 top-0 h-full w-auto"
+          viewBox="0 0 440 900"
+          preserveAspectRatio="xMaxYMid meet"
+          aria-hidden="true"
+        >
+          <polygon points="0,-100 150,-100 300,450 150,1000 0,1000 150,450" fill="white" fillOpacity={0.04} />
+          <polygon points="150,-100 300,-100 450,450 300,1000 150,1000 300,450" fill="white" fillOpacity={0.07} />
+          <polygon points="300,-100 450,-100 600,450 450,1000 300,1000 450,450" fill="white" fillOpacity={0.11} />
+        </svg>
+        <CosmicBackdrop />
       </div>
       <div className="relative z-10 mx-auto max-w-4xl bg-surface rounded-xl p-8 md:p-12 shadow-[0_0_40px_rgba(0,0,0,0.2)] border border-white/10 print:bg-transparent print:shadow-none print:border-none print:p-0">
         <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-8 gap-4">

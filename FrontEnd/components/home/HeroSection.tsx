@@ -11,6 +11,8 @@ export default async function HeroSection({ locale }: { locale: string }) {
   return (
     <section className="relative overflow-hidden bg-secondary py-20 text-secondary-foreground lg:py-32">
       <ConstellationBackdrop />
+      {/* gradiente inferior para fusionar con la siguiente sección */}
+      <div className="pointer-events-none absolute bottom-0 left-0 right-0 z-20 h-28 bg-gradient-to-b from-transparent to-secondary" aria-hidden="true" />
 
       <div className="relative z-10 mx-auto flex w-full max-w-7xl flex-col items-center gap-12 px-6 md:px-10 lg:flex-row lg:gap-24">
         {/* Left Column */}
@@ -35,7 +37,7 @@ export default async function HeroSection({ locale }: { locale: string }) {
               {t('cta_projects')}
               <ArrowRight className="ml-2 h-5 w-5" />
             </Link>
-            <ScrollToSection targetId="como-funciona" label={t('cta_company')} />
+            <ScrollToSection targetId="marketplace-preview" label={t('cta_company')} />
           </div>
         </div>
 

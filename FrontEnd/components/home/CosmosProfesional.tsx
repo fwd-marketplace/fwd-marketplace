@@ -1,17 +1,51 @@
 'use client';
 
 import React, { useCallback, useEffect, useRef, useState } from 'react';
-import { useTranslations } from 'next-intl';
+import Link from 'next/link';
+import { ArrowRight } from 'lucide-react';
+import { useLocale, useTranslations } from 'next-intl';
 import { ConstellationBackdrop } from '@/components/home/ConstellationBackdrop';
 
-const STAR_FORM_DELAY_MS = 100;
 const CARD_VIEWPORT_GAP_PX = 16;
 const CARD_EDGE_MARGIN_PX = 12;
 const CARD_CARET_INSET_PX = 13;
 const SPARKLE_POINT_COUNT = 8;
 const SPARKLE_INNER_RATIO = 0.34;
 const SPARKLE_CORE_SCALE = 1.7;
-const STAR_REVEAL_STEP_MS = 150;
+const EDGE_DRAW_MS = 520; // duración del trazo de cada arista
+
+// ── Secuencia de animación ─────────────────────────────────────────────────
+// "star" → enciende la estrella idx
+// "edge" → traza la arista idx (ver array edges más abajo)
+// at  → ms desde que la sección entra en el viewport
+type AnimStep =
+  | { at: number; action: 'star'; idx: number }
+  | { at: number; action: 'edge'; idx: number };
+
+// Solo las 6 aristas del flujo principal. Sin conexiones secundarias
+// que aparecerían "volviendo" a estrellas ya iluminadas.
+const SEQUENCE: AnimStep[] = [
+  { at: 0,    action: 'star', idx: 0 }, // Egresado  "Crea tu cuenta"
+  { at: 250,  action: 'star', idx: 1 }, // Empresa   "Crea tu cuenta"
+  { at: 650,  action: 'edge', idx: 1 }, // arista [1→2] Empresa crea → publica
+  { at: 1200, action: 'star', idx: 2 }, // Empresa   "Publica el proyecto"
+  // Dos aristas salen de star[2] al mismo tiempo
+  { at: 1450, action: 'edge', idx: 6 }, // arista [2→3] Publica → Envía propuesta
+  { at: 1450, action: 'edge', idx: 0 }, // arista [0→3] Egresado crea → envía
+  { at: 2000, action: 'star', idx: 3 }, // Egresado  "Envía tu propuesta"
+  // [2→4] y [3→4] salen al mismo tiempo: las dos llegan juntas a "Recibe propuestas"
+  { at: 2300, action: 'edge', idx: 2 }, // arista [3→4] Egresado envía → Empresa recibe
+  { at: 2300, action: 'edge', idx: 7 }, // arista [2→4] Publica → Recibe propuestas
+  { at: 2850, action: 'star', idx: 4 }, // Empresa   "Recibe propuestas"
+  { at: 3150, action: 'edge', idx: 3 }, // arista [4→5] Empresa recibe → Egresado mejora
+  { at: 3700, action: 'star', idx: 5 }, // Egresado  "Mejora tu propuesta"
+  // Las dos aristas que llegan a star[6] salen exactamente al mismo tiempo
+  { at: 4000, action: 'edge', idx: 4 }, // arista [5→6] Egresado mejora → Adjudicado
+  { at: 4000, action: 'edge', idx: 5 }, // arista [4→6] Empresa recibe → Adjudicado
+  { at: 4550, action: 'star', idx: 6 }, // "Proyecto adjudicado"
+];
+
+type LabelSide = 'left' | 'right' | 'center';
 
 interface ConstellationStar {
   readonly id: number;
@@ -21,6 +55,7 @@ interface ConstellationStar {
   readonly isBright: boolean;
   readonly title: string;
   readonly description: string;
+  readonly labelSide: LabelSide;
 }
 
 interface CardPlacement {
@@ -30,10 +65,6 @@ interface CardPlacement {
   readonly caretLeft: number;
 }
 
-/**
- * Construye los puntos de un destello de 4 brazos (estrella ✦) centrado en el
- * origen, listo para usar como `points` de un `<polygon>`.
- */
 function buildSparklePoints(radius: number): string {
   const innerRadius = radius * SPARKLE_INNER_RATIO;
   const points: string[] = [];
@@ -45,36 +76,112 @@ function buildSparklePoints(radius: number): string {
   return points.join(' ');
 }
 
-/**
- * Constelacion interactiva del Home: las estrellas representan a los estudiantes
- * y cada una revela un punto clave de la plataforma al pasar el cursor o el foco.
- */
 export default function CosmosProfesional() {
   const t = useTranslations('cosmos_profesional');
+  const locale = useLocale();
+
   const [activeStarIndex, setActiveStarIndex] = useState<number | null>(null);
   const [cardPlacement, setCardPlacement] = useState<CardPlacement | null>(null);
-  const [hasFormed, setHasFormed] = useState(false);
 
-  const cardRef = useRef<HTMLDivElement>(null);
-  const starsRef = useRef<(SVGGElement | null)[]>([]);
+  // ── Estado de animación por elemento ──────────────────────────────────────
+  // litStars[i]       → opacidad de la estrella i (false=0, true=1)
+  // edgeVisible[i]    → si la arista i está en el DOM con opacidad 1
+  // edgeDashoffset[i] → 1 = sin trazar, 0 = trazada (CSS transition la anima)
+  const [litStars,      setLitStars]      = useState<boolean[]>(() => Array(7).fill(false));
+  const [edgeVisible,   setEdgeVisible]   = useState<boolean[]>(() => Array(8).fill(false));
+  const [edgeDashoffset,setEdgeDashoffset]= useState<number[]>( () => Array(8).fill(1));
 
+  const sectionRef     = useRef<HTMLElement>(null);
+  const animStartedRef = useRef(false);
+  const timersRef      = useRef<ReturnType<typeof setTimeout>[]>([]);
+  const cardRef        = useRef<HTMLDivElement>(null);
+  const starsRef       = useRef<(SVGGElement | null)[]>([]);
+
+  // ── Estrellas y aristas ───────────────────────────────────────────────────
   const stars: ConstellationStar[] = [
-    { id: 0, x: 12, y: 32, color: 'var(--accent)', isBright: false, title: t('stars.0.title'), description: t('stars.0.desc') },
-    { id: 1, x: 32, y: 19, color: 'var(--primary)', isBright: false, title: t('stars.1.title'), description: t('stars.1.desc') },
-    { id: 2, x: 50, y: 43, color: 'var(--highlight)', isBright: true, title: t('stars.2.title'), description: t('stars.2.desc') },
-    { id: 3, x: 68, y: 19, color: 'var(--magenta)', isBright: false, title: t('stars.3.title'), description: t('stars.3.desc') },
-    { id: 4, x: 88, y: 32, color: 'var(--warning)', isBright: true, title: t('stars.4.title'), description: t('stars.4.desc') },
+    { id: 0, x: 16, y: 13, color: 'var(--accent)',    isBright: false, labelSide: 'left',   title: t('stars.0.title'), description: t('stars.0.desc') },
+    { id: 1, x: 80, y: 13, color: 'var(--primary)',   isBright: false, labelSide: 'right',  title: t('stars.1.title'), description: t('stars.1.desc') },
+    { id: 2, x: 68, y: 38, color: 'var(--highlight)', isBright: true,  labelSide: 'right',  title: t('stars.2.title'), description: t('stars.2.desc') },
+    { id: 3, x: 16, y: 55, color: 'var(--warning)',   isBright: false, labelSide: 'left',   title: t('stars.3.title'), description: t('stars.3.desc') },
+    { id: 4, x: 74, y: 70, color: 'var(--magenta)',   isBright: true,  labelSide: 'right',  title: t('stars.4.title'), description: t('stars.4.desc') },
+    { id: 5, x: 14, y: 86, color: 'var(--accent)',    isBright: false, labelSide: 'left',   title: t('stars.5.title'), description: t('stars.5.desc') },
+    { id: 6, x: 50, y: 100, color: 'var(--highlight)', isBright: true, labelSide: 'center', title: t('stars.6.title'), description: t('stars.6.desc') },
   ];
 
   const edges: ReadonlyArray<readonly [number, number]> = [
-    [0, 1], [1, 2], [2, 3], [3, 4],
+    [0, 3], // 0 Egresado cuenta  → Envía propuesta
+    [1, 2], // 1 Empresa cuenta   → Publica proyecto
+    [3, 4], // 2 Egresado envía   → Empresa recibe
+    [4, 5], // 3 Empresa recibe   → Egresado mejora
+    [5, 6], // 4 Egresado mejora  → Adjudicado
+    [4, 6], // 5 Empresa recibe   → Adjudicado
+    [2, 3], // 6 Publica proyecto → Envía propuesta
+    [2, 4], // 7 Publica proyecto → Recibe propuestas
   ];
 
-  useEffect(() => {
-    const timer = setTimeout(() => setHasFormed(true), STAR_FORM_DELAY_MS);
-    return () => clearTimeout(timer);
+  // ── Arrancar animación ────────────────────────────────────────────────────
+  const startAnimation = useCallback(() => {
+    if (animStartedRef.current) return;
+    animStartedRef.current = true;
+
+    SEQUENCE.forEach((step) => {
+      if (step.action === 'star') {
+        const starIdx = step.idx;
+        timersRef.current.push(
+          setTimeout(() => {
+            setLitStars((prev) => {
+              const next = [...prev];
+              next[starIdx] = true;
+              return next;
+            });
+          }, step.at),
+        );
+      } else {
+        // 'edge': primero hacerla visible con dashoffset=1 (presente pero vacía),
+        // luego—un frame después—mover dashoffset a 0 para que CSS anime el trazo.
+        const edgeIdx = step.idx;
+        timersRef.current.push(
+          setTimeout(() => {
+            setEdgeVisible((prev) => {
+              const next = [...prev];
+              next[edgeIdx] = true;
+              return next;
+            });
+            // Un frame de pausa garantiza que el browser pinte el estado
+            // inicial (dashoffset=1) antes de iniciar la transición a 0.
+            setTimeout(() => {
+              setEdgeDashoffset((prev) => {
+                const next = [...prev];
+                next[edgeIdx] = 0;
+                return next;
+              });
+            }, 20);
+          }, step.at),
+        );
+      }
+    });
   }, []);
 
+  // ── IntersectionObserver ──────────────────────────────────────────────────
+  useEffect(() => {
+    const section = sectionRef.current;
+    if (!section) return;
+
+    const observer = new IntersectionObserver(
+      (entries) => {
+        if (entries[0]?.isIntersecting) startAnimation();
+      },
+      { threshold: 0.12 },
+    );
+
+    observer.observe(section);
+    return () => {
+      observer.disconnect();
+      timersRef.current.forEach(clearTimeout);
+    };
+  }, [startAnimation]);
+
+  // ── Tooltip ───────────────────────────────────────────────────────────────
   const positionCard = useCallback((starIndex: number) => {
     const starElement = starsRef.current[starIndex];
     const cardElement = cardRef.current;
@@ -99,51 +206,45 @@ export default function CosmosProfesional() {
       CARD_EDGE_MARGIN_PX,
       Math.min(centerX - cardWidth / 2, viewportWidth - cardWidth - CARD_EDGE_MARGIN_PX),
     );
-
-    const rawY = isBelow ? centerY + CARD_VIEWPORT_GAP_PX : centerY - cardHeight - CARD_VIEWPORT_GAP_PX;
+    const rawY = isBelow
+      ? centerY + CARD_VIEWPORT_GAP_PX
+      : centerY - cardHeight - CARD_VIEWPORT_GAP_PX;
     const clampedY = Math.max(CARD_EDGE_MARGIN_PX, Math.min(rawY, viewportHeight - cardHeight - CARD_EDGE_MARGIN_PX));
-
     const caretLeft = Math.max(CARD_CARET_INSET_PX, Math.min(centerX - clampedX, cardWidth - CARD_CARET_INSET_PX));
 
     setCardPlacement({ x: clampedX, y: clampedY, isBelow, caretLeft });
   }, []);
 
-  const handleStarEnter = useCallback(
-    (starIndex: number) => {
-      setActiveStarIndex(starIndex);
-      positionCard(starIndex);
-    },
-    [positionCard],
-  );
+  const handleStarEnter = useCallback((starIndex: number) => {
+    setActiveStarIndex(starIndex);
+    positionCard(starIndex);
+  }, [positionCard]);
 
-  const handleStarLeave = useCallback(() => {
-    setActiveStarIndex(null);
-  }, []);
+  const handleStarLeave = useCallback(() => setActiveStarIndex(null), []);
 
   useEffect(() => {
-    if (activeStarIndex !== null) {
-      positionCard(activeStarIndex);
-    }
-    const handleResize = () => {
-      if (activeStarIndex !== null) {
-        positionCard(activeStarIndex);
-      }
-    };
-    window.addEventListener('resize', handleResize);
-    return () => window.removeEventListener('resize', handleResize);
+    if (activeStarIndex !== null) positionCard(activeStarIndex);
+    const onResize = () => { if (activeStarIndex !== null) positionCard(activeStarIndex); };
+    window.addEventListener('resize', onResize);
+    return () => window.removeEventListener('resize', onResize);
   }, [activeStarIndex, positionCard]);
 
   const activeStar = activeStarIndex !== null ? stars[activeStarIndex] : null;
   const cardAccentColor = activeStar ? activeStar.color : 'var(--highlight)';
+  const headersVisible = litStars[0] === true || litStars[1] === true;
 
   return (
     <section
-      className={`relative flex min-h-screen w-full flex-col items-center overflow-hidden bg-secondary px-[4vw] py-[7vh] text-secondary-foreground ${hasFormed ? 'formed' : ''}`}
+      id="como-funciona"
+      ref={sectionRef}
+      className="relative flex min-h-screen w-full flex-col items-center overflow-hidden bg-secondary px-[4vw] py-[7vh] text-secondary-foreground"
       aria-label={t('screen_label')}
     >
+      <div className="pointer-events-none absolute top-0 left-0 right-0 z-20 h-20 bg-gradient-to-b from-secondary to-transparent" aria-hidden="true" />
       <ConstellationBackdrop />
       <Meteors />
 
+      {/* ── Encabezado ─────────────────────────────────────────────────── */}
       <header className="relative z-10 mx-auto max-w-3xl text-center">
         <p className="font-body text-sm font-bold uppercase tracking-widest text-highlight">{t('eyebrow')}</p>
         <h2 className="mt-3 font-heading text-4xl font-extrabold tracking-tight text-secondary-foreground md:text-5xl lg:text-6xl">
@@ -153,16 +254,20 @@ export default function CosmosProfesional() {
         <p className="mx-auto mt-4 max-w-2xl text-base text-secondary-foreground/80 md:text-lg">{t('description')}</p>
       </header>
 
-      <div className="relative z-10 mt-10 aspect-[100/58] max-h-[58vh] w-[min(1360px,94vw)] max-md:aspect-[88/116] max-md:max-h-none">
+      {/* ── Diagrama SVG ───────────────────────────────────────────────── */}
+      <div className="relative z-10 mt-8 aspect-[100/112] max-h-[88vh] w-[min(1400px,96vw)] max-md:aspect-auto max-md:max-h-none max-md:w-full max-md:px-2">
         <svg
-          className="absolute inset-0 block h-full w-full overflow-visible"
-          viewBox="0 0 100 62"
+          className="absolute inset-0 block h-full w-full overflow-visible max-md:relative max-md:inset-auto max-md:aspect-[100/112] max-md:h-auto"
+          viewBox="0 0 100 112"
           role="group"
           aria-label={t('screen_label')}
         >
           <defs>
-            <filter id="cosmosEdgeGlow" x="-50%" y="-50%" width="200%" height="200%">
-              <feGaussianBlur stdDeviation="0.35" result="blurred" />
+            {/* filterUnits="userSpaceOnUse": evita el caso donde una línea
+                perfectamente vertical tiene bounding-box width=0 y el filtro
+                basado en porcentajes recorta la salida a nada. */}
+            <filter id="cosmosEdgeGlow" filterUnits="userSpaceOnUse" x="-3" y="-3" width="106" height="118">
+              <feGaussianBlur stdDeviation="0.4" result="blurred" />
               <feMerge>
                 <feMergeNode in="blurred" />
                 <feMergeNode in="SourceGraphic" />
@@ -173,35 +278,87 @@ export default function CosmosProfesional() {
             </filter>
           </defs>
 
+          {/* Cabeceras de columna */}
+          <g
+            style={{
+              opacity: headersVisible ? 1 : 0,
+              transition: 'opacity 600ms ease-out',
+            }}
+            aria-hidden="true"
+          >
+            <text
+              className="fill-[var(--starlight)] font-heading font-bold text-[2px] uppercase tracking-[0.22em]"
+              x={16} y={7}
+              textAnchor="middle"
+              fillOpacity={0.5}
+            >
+              {t('col_egresado')}
+            </text>
+            <text
+              className="fill-[var(--starlight)] font-heading font-bold text-[2px] uppercase tracking-[0.22em]"
+              x={80} y={7}
+              textAnchor="middle"
+              fillOpacity={0.45}
+            >
+              {t('col_empresa')}
+            </text>
+          </g>
+
+          {/* Aristas — <path> con pathLength="1" para animación de trazo */}
           <g className="edges">
             {edges.map((pair, edgeIndex) => {
               const fromStar = stars[pair[0]];
-              const toStar = stars[pair[1]];
+              const toStar   = stars[pair[1]];
               if (!fromStar || !toStar) return null;
               return (
                 <path
                   key={edgeIndex}
-                  className="fill-none stroke-[var(--starlight)] stroke-[0.15] opacity-40 transition-all duration-[800ms] [stroke-dasharray:1] [stroke-dashoffset:1] [stroke-linecap:round] [.formed_&]:[stroke-dashoffset:0]"
-                  style={{ filter: 'url(#cosmosEdgeGlow)', transitionDelay: `${edgeIndex * STAR_REVEAL_STEP_MS}ms` }}
+                  fill="none"
+                  stroke="var(--starlight)"
+                  strokeWidth={0.18}
+                  strokeLinecap="round"
                   d={`M${fromStar.x} ${fromStar.y} L${toStar.x} ${toStar.y}`}
                   pathLength="1"
+                  style={{
+                    filter: 'url(#cosmosEdgeGlow)',
+                    opacity: edgeVisible[edgeIndex] ? 0.5 : 0,
+                    strokeDasharray: 1,
+                    strokeDashoffset: edgeDashoffset[edgeIndex],
+                    // opacity sin transición (aparece al instante);
+                    // stroke-dashoffset anima el trazo
+                    transition: `stroke-dashoffset ${EDGE_DRAW_MS}ms ease-in-out`,
+                  }}
                 />
               );
             })}
           </g>
 
+          {/* Estrellas */}
           <g className="stars">
             {stars.map((star, starIndex) => {
-              const coreRadius = star.isBright ? 0.78 : 0.52;
-              const glowRadius = star.isBright ? 2.0 : 1.4;
-              const ringRadius = star.isBright ? 2.3 : 1.7;
-              const isActive = activeStarIndex === starIndex;
+              const isLit    = litStars[starIndex] === true;
+              const coreRadius = star.isBright ? 1.2  : 0.82;
+              const glowRadius = star.isBright ? 3.2  : 2.2;
+              const ringRadius = star.isBright ? 3.8  : 2.8;
+              const isActive   = activeStarIndex === starIndex;
+
+              const textX = star.labelSide === 'left'   ? -4.5
+                          : star.labelSide === 'right'  ? 4.5
+                          : 0;
+              const textY = star.labelSide === 'center' ? ringRadius + 3.6 : 0;
+              const textAnchor = star.labelSide === 'left'   ? 'end'
+                               : star.labelSide === 'right'  ? 'start'
+                               : 'middle';
+              const dominantBaseline = star.labelSide === 'center' ? 'auto' : 'middle';
 
               return (
                 <g key={star.id} transform={`translate(${star.x} ${star.y})`}>
                   <g
-                    className={`cursor-pointer opacity-0 outline-none [.formed_&]:opacity-100 ${isActive ? 'active' : ''}`}
-                    style={{ transition: 'opacity 0.5s var(--ease-out)', transitionDelay: `${starIndex * STAR_REVEAL_STEP_MS}ms` }}
+                    className={`cursor-pointer outline-none ${isActive ? 'active' : ''}`}
+                    style={{
+                      opacity: isLit ? 1 : 0,
+                      transition: 'opacity 450ms ease-out',
+                    }}
                     tabIndex={0}
                     role="button"
                     aria-label={star.title}
@@ -209,42 +366,40 @@ export default function CosmosProfesional() {
                     onMouseLeave={handleStarLeave}
                     onFocus={() => handleStarEnter(starIndex)}
                     onBlur={handleStarLeave}
-                    ref={(element) => {
-                      starsRef.current[starIndex] = element;
-                    }}
+                    ref={(element) => { starsRef.current[starIndex] = element; }}
                   >
                     <circle
-                      className="opacity-55 transition-opacity duration-[var(--duration-base)] ease-[var(--ease-out)] hover:opacity-95 [.active_&]:opacity-95"
+                      style={{ opacity: 0.55 }}
+                      className="transition-opacity duration-[var(--duration-base)] ease-[var(--ease-out)] [.active_&]:opacity-95 hover:opacity-95"
                       r={glowRadius}
                       fill={star.color}
                       filter="url(#cosmosStarGlow)"
                     />
                     <circle
-                      className="cosmos-star-ring fill-none opacity-0 [.active_&]:animate-[cosmos-ring-pulse_1.7s_ease-out_infinite] [.formed_&]:animate-[cosmos-ring-pulse_2.6s_ease-out_infinite]"
+                      className={`cosmos-star-ring fill-none opacity-0 [.active_&]:animate-[cosmos-ring-pulse_1.7s_ease-out_infinite] ${isLit ? 'animate-[cosmos-ring-pulse_2.6s_ease-out_infinite]' : ''}`}
                       style={{ transformOrigin: 'center', transformBox: 'fill-box', animationDelay: `${starIndex * 0.08 + 0.4}s` }}
                       r={ringRadius}
                       stroke={star.color}
                       strokeWidth={0.24}
                     />
                     <circle
-                      className="cosmos-star-ring fill-none opacity-0 [.active_&]:animate-[cosmos-ring-pulse_1.7s_ease-out_infinite] [.formed_&]:animate-[cosmos-ring-pulse_2.6s_ease-out_infinite]"
+                      className={`cosmos-star-ring fill-none opacity-0 [.active_&]:animate-[cosmos-ring-pulse_1.7s_ease-out_infinite] ${isLit ? 'animate-[cosmos-ring-pulse_2.6s_ease-out_infinite]' : ''}`}
                       style={{ transformOrigin: 'center', transformBox: 'fill-box', animationDelay: `${starIndex * 0.08 + 1.7}s` }}
                       r={ringRadius}
                       stroke={star.color}
                       strokeWidth={0.2}
                     />
-
                     <polygon points={buildSparklePoints(coreRadius * SPARKLE_CORE_SCALE)} fill="var(--starlight)" />
-
                     <text
-                      className={`pointer-events-none fill-[var(--starlight)] font-body font-semibold tracking-wide [fill-opacity:0.85] [paint-order:stroke] [stroke-linejoin:round] [stroke:color-mix(in_oklab,var(--secondary)_55%,var(--ink-strong))] stroke-[0.14px] ${star.isBright ? 'text-[1.6px]' : 'text-[1.45px]'}`}
-                      x={0}
-                      y={ringRadius + 2.6}
-                      textAnchor="middle"
+                      className={`pointer-events-none fill-[var(--starlight)] font-body font-semibold tracking-wide [fill-opacity:0.9] [paint-order:stroke] [stroke-linejoin:round] [stroke:color-mix(in_oklab,var(--secondary)_55%,var(--ink-strong))] stroke-[0.22px] ${star.isBright ? 'text-[2.4px]' : 'text-[2.1px]'}`}
+                      x={textX}
+                      y={textY}
+                      textAnchor={textAnchor}
+                      dominantBaseline={dominantBaseline}
                     >
                       {star.title}
                     </text>
-                    <circle className="cosmos-hit fill-transparent" r={4.6} />
+                    <circle className="cosmos-hit fill-transparent" r={6} />
                   </g>
                 </g>
               );
@@ -253,6 +408,30 @@ export default function CosmosProfesional() {
         </svg>
       </div>
 
+      {/* ── CTA final ──────────────────────────────────────────────────── */}
+      <div className="relative z-10 mt-14 flex w-full max-w-xl flex-col items-center gap-6 text-center">
+        <div className="h-px w-32 bg-white/20" aria-hidden="true" />
+        <p className="font-body text-base text-secondary-foreground/75 md:text-lg">
+          {t('cta_question')}
+        </p>
+        <div className="flex flex-wrap items-center justify-center gap-4">
+          <Link
+            href={`/${locale}/register`}
+            className="inline-flex h-12 items-center gap-2 rounded-full bg-highlight px-8 font-semibold text-[#1a1000] transition-opacity hover:opacity-90"
+          >
+            {t('cta_junior')}
+            <ArrowRight size={16} aria-hidden="true" />
+          </Link>
+          <Link
+            href={`/${locale}/register`}
+            className="inline-flex h-12 items-center rounded-full border border-white/30 px-8 font-semibold text-white transition-colors hover:bg-white/10"
+          >
+            {t('cta_empresa')}
+          </Link>
+        </div>
+      </div>
+
+      {/* Tooltip flotante */}
       <div
         ref={cardRef}
         role="dialog"
@@ -270,21 +449,14 @@ export default function CosmosProfesional() {
           className={`absolute h-[13px] w-[13px] rotate-45 bg-surface ${
             cardPlacement?.isBelow ? '-top-[6px] border-l-[3px] border-t-[3px]' : '-bottom-[6px]'
           }`}
-          style={{
-            left: cardPlacement ? `${cardPlacement.caretLeft}px` : '50%',
-            marginLeft: '-6px',
-            borderColor: cardAccentColor,
-          }}
+          style={{ left: cardPlacement ? `${cardPlacement.caretLeft}px` : '50%', marginLeft: '-6px', borderColor: cardAccentColor }}
         />
         {activeStar && (
           <div className="relative">
             <h3 className="mb-1.5 flex items-center gap-2 font-heading text-[18px] font-extrabold tracking-tight text-ink-strong">
               <span
                 className="h-[9px] w-[9px] flex-none rounded-full"
-                style={{
-                  backgroundColor: activeStar.color,
-                  boxShadow: `0 0 0 3px color-mix(in oklch, ${activeStar.color} 22%, var(--surface))`,
-                }}
+                style={{ backgroundColor: activeStar.color, boxShadow: `0 0 0 3px color-mix(in oklch, ${activeStar.color} 22%, var(--surface))` }}
               />
               {activeStar.title}
             </h3>
@@ -295,6 +467,8 @@ export default function CosmosProfesional() {
     </section>
   );
 }
+
+// ── Meteoros decorativos ───────────────────────────────────────────────────
 
 const METEOR_INITIAL_DELAY_MS = 600;
 const METEOR_BURST_CHANCE = 0.6;
@@ -312,10 +486,6 @@ interface FallingMeteor {
   readonly length: string;
 }
 
-/**
- * Meteoros decorativos que cruzan la seccion de forma esporadica. Se desactivan
- * por completo si la persona prefiere menos movimiento.
- */
 function Meteors() {
   const [meteors, setMeteors] = useState<FallingMeteor[]>([]);
   const idCounterRef = useRef(0);
@@ -350,12 +520,7 @@ function Meteors() {
     };
 
     const initialTimer = setTimeout(loop, METEOR_INITIAL_DELAY_MS);
-
-    return () => {
-      clearTimeout(initialTimer);
-      clearTimeout(burstTimer);
-      clearTimeout(loopTimer);
-    };
+    return () => { clearTimeout(initialTimer); clearTimeout(burstTimer); clearTimeout(loopTimer); };
   }, []);
 
   return (
@@ -364,29 +529,15 @@ function Meteors() {
         <div
           key={meteor.id}
           className="absolute"
-          style={{
-            top: meteor.top,
-            left: meteor.left,
-            animation: `cosmos-meteor-fall ${meteor.duration} linear forwards`,
-            willChange: 'transform, opacity',
-          }}
+          style={{ top: meteor.top, left: meteor.left, animation: `cosmos-meteor-fall ${meteor.duration} linear forwards`, willChange: 'transform, opacity' }}
         >
           <span
             className="block origin-left rounded-sm"
-            style={{
-              width: meteor.length,
-              height: '2px',
-              transform: 'rotate(155deg)',
-              backgroundImage: 'linear-gradient(90deg, transparent, var(--starlight))',
-            }}
+            style={{ width: meteor.length, height: '2px', transform: 'rotate(155deg)', backgroundImage: 'linear-gradient(90deg, transparent, var(--starlight))' }}
           >
             <span
               className="absolute right-[-1px] top-1/2 h-1 w-1 -translate-y-1/2 rounded-full"
-              style={{
-                backgroundColor: 'var(--starlight)',
-                boxShadow:
-                  '0 0 8px 2px color-mix(in oklab, var(--starlight) 85%, transparent), 0 0 16px 4px color-mix(in oklab, var(--starlight) 40%, transparent)',
-              }}
+              style={{ backgroundColor: 'var(--starlight)', boxShadow: '0 0 8px 2px color-mix(in oklab, var(--starlight) 85%, transparent), 0 0 16px 4px color-mix(in oklab, var(--starlight) 40%, transparent)' }}
             />
           </span>
         </div>

@@ -25,14 +25,14 @@
     "description": "Freelance project marketplace for junior graduates of Fundación Forward Costa Rica."
   },
   "site_footer": {
-    "brand_name": "FWD Talent Marketplace",
+    "brand_name": "FWD Marketplace",
     "logo_alt": "Fundación Forward Costa Rica logo",
     "description": "We connect junior talent who graduated from Fundación Forward with companies looking to build real projects.",
     "links_title": "Resources",
     "terms": "Terms of use",
     "privacy": "Privacy policy",
     "copyright": "© 2026 Fundación Forward Costa Rica",
-    "rights": "FWD Talent Marketplace • All rights reserved",
+    "rights": "FWD Marketplace • All rights reserved",
     "facebook": "Follow Fundación Forward on Facebook",
     "linkedin": "Follow Fundación Forward on LinkedIn"
   },
@@ -55,7 +55,7 @@
       "title": "Your first freelance project",
       "description": "Connect with real companies, build your portfolio and start your professional career.",
       "cta_projects": "Join the community",
-      "cta_company": "Learn how it works",
+      "cta_company": "Take a quick look",
       "card_eyebrow": "Featured project",
       "card_title": "Analytics Dashboard",
       "card_company": "TechFlow Systems",
@@ -144,11 +144,12 @@
     "mfa_submit": "Verify and sign in",
     "mfa_back": "Back",
     "terms_prefix": "By signing in you agree to the",
-    "terms_link": "Terms of Service",
+    "terms_link": "Terms and Conditions",
     "terms_connector": "and the",
     "privacy_link": "Privacy Policy",
     "no_account": "Don't have an account?",
-    "register_link": "Sign up here"
+    "register_link": "Create one",
+    "back_home": "Back to home"
   },
   "oauth_callback": {
     "loading": "Completing sign in...",
@@ -157,8 +158,13 @@
     "error_suspended": "Your account is suspended or rejected.",
     "back_to_login": "Back to sign in"
   },
+  "auth_footer": {
+    "privacy": "Privacy Policy",
+    "terms": "Terms and Conditions",
+    "copyright": "© 2026 FWD Marketplace. Secure encrypted connection."
+  },
   "reset_password": {
-    "brand": "FWD Talent",
+    "brand": "FWD Marketplace",
     "back_to_login": "Back to login",
     "title": "Reset your password",
     "description": "Enter your email and we'll send you a secure link to set a new password.",
@@ -193,11 +199,11 @@
     "footer_privacy": "Privacy Policy",
     "footer_terms": "Terms of Service",
     "footer_security": "Security Center",
-    "footer_copyright": "© 2026 FWD Talent. Secure encrypted connection."
+    "footer_copyright": "© 2026 FWD Marketplace. Secure encrypted connection."
   },
   "register": {
     "brand": "FWD",
-    "brand_suffix": "Talent",
+    "brand_suffix": "Marketplace",
     "nav": {
       "step_counter": "Step {current} of {total}",
       "back": "Back",
@@ -240,10 +246,11 @@
       "submitting": "Creating account...",
       "passwords_mismatch": "Passwords do not match",
       "terms_prefix": "By signing up you agree to the",
-      "terms_link": "Terms of Service",
+      "terms_link": "Terms and Conditions",
       "terms_connector": "and the",
       "privacy_link": "Privacy Policy",
       "login_link": "Sign in",
+      "already_account": "Already have an account?",
       "back_home": "Back to home",
       "amcham_badge": "Endorsed by AmCham Costa Rica"
     },
@@ -549,7 +556,7 @@
     "nav_privacy": "Privacy",
     "settings": "Settings",
     "learning_map": "Learning map",
-    "logo_alt": "FWD Talent logo",
+    "logo_alt": "FWD Marketplace logo",
     "profile_link": "View profile",
     "open_menu": "Open menu",
     "nav_gestion": "Projects",
@@ -881,12 +888,12 @@
     "back": "Back to marketplace",
     "inicio": "Home",
     "marketplace": "Marketplace",
-    "viaje": "My journey",
+    "viaje": "Map",
     "perfil": "My profile"
   },
   "viaje": {
     "title": "Your sky",
-    "eyebrow": "Learning journey",
+    "eyebrow": "Learning map",
     "back_label": "Back to profile",
     "sky_lit": "{pct}% of the sky lit",
     "xp_label": "XP",
@@ -1134,7 +1141,7 @@
   },
   "bienvenida": {
     "hero": {
-      "welcome": "WELCOME TO FWD TALENT!",
+      "welcome": "WELCOME TO FWD MARKETPLACE!",
       "greeting_morning": "Good morning",
       "greeting_afternoon": "Good afternoon",
       "greeting_evening": "Good evening",
@@ -1170,7 +1177,8 @@
       "match": "High match"
     },
     "progress": {
-      "title": "Your progress at FWD",
+      "title": "My Hero's Journey",
+      "subtitle": "Every badge you earn is a real step in your career. Complete the challenges and unlock the next chapter of your professional story.",
       "step1_title": "Profile completed",
       "step1_desc": "Excellent! Your profile is at 100%.",
       "step2_title": "Stack defined",
@@ -1186,10 +1194,10 @@
       "btn_profile": "View my profile"
     },
     "estrella": {
-      "eyebrow": "Your constellation",
+      "eyebrow": "My progress",
       "aria_stage": "Your hero's journey constellation",
       "center_title": "Your Progress",
-      "center_sub": "{done} of {total} milestones",
+      "center_sub": "{done} of {total} badges",
       "lit_label": "Stars lit",
       "status": {
         "done": "Completed",
@@ -1201,7 +1209,19 @@
       "progress_label": "Progress",
       "lit_on": "Lit on {date}",
       "next_hint": "Your next step",
+      "next_links": {
+        "llamado": "/bienvenida",
+        "preparacion": "/perfil-estudiante",
+        "desafio": "/marketplace",
+        "transformacion": "/mapa-de-aprendizaje",
+        "reconocimiento": "/gestion"
+      },
       "close": "Close",
+      "activity_title": "Journey achievements",
+      "activity_map_btn": "Go to Learning Map",
+      "unlocked_on": "Unlocked on {date}",
+      "to_unlock": "To unlock:",
+      "learning_pct": "{pct}% of the Learning Map",
       "items": {
         "llamado": {
           "name": "The Call",
@@ -1234,6 +1254,11 @@
           "date": ""
         }
       }
+    },
+    "llamado_toast": {
+      "title": "First badge unlocked",
+      "desc": "Welcome to the Hero's Journey. You created your account and your adventure has already begun.",
+      "dismiss": "Dismiss"
     },
     "companies": {
       "title": "Interested companies",
@@ -1340,6 +1365,7 @@
   },
   "terms": {
     "title": "Terms and Conditions",
+    "back": "Back",
     "download": "Download as PDF",
     "sections": [
       { "title": "1. Introduction and Acceptance", "paragraphs": ["Welcome to the FWD Talent Freelance Projects Marketplace, an initiative of Fundación Forward Costa Rica. This document constitutes a legally binding agreement between you (the \"User\") and Fundación Forward Costa Rica (\"the Foundation\"). By using this platform, you fully accept these Terms and Conditions."] },
@@ -1368,6 +1394,7 @@
   },
   "privacy_policy": {
     "title": "Privacy Policy",
+    "back": "Back",
     "download": "Download as PDF",
     "sections": [
       {
@@ -1871,41 +1898,140 @@
     "preferences": "Preferences"
   },
   "cosmos_profesional": {
-    "screen_label": "Important points constellation",
-    "eyebrow": "FWD constellation",
-    "title": "Students are the stars",
-    "description": "Here you get a glimpse of everything you'll find on the platform. Hover over each star to see how FWD connects you with real projects.",
-    "controls": {
-      "style_aria": "Star style",
-      "style_diamante": "◆ Diamond",
-      "style_circulo": "● Circle",
-      "style_punta4": "✦ 4 points",
-      "style_punta6": "✶ 6 points",
-      "style_destello": "✧ Sparkle",
-      "style_anillo": "◌ Ring",
-      "toggle_aria": "Show or hide paths",
-      "trazos": "Paths"
-    },
+    "screen_label": "FWD process diagram",
+    "eyebrow": "How it works",
+    "title": "From idea to reality",
+    "description": "Two roles, one shared path: from concept to real project on FWD Talent.",
+    "col_egresado": "FWD Graduate",
+    "col_empresa": "Company",
+    "cta_question": "Ready for your first real project?",
+    "cta_junior": "Join as a graduate",
+    "cta_empresa": "Publish a project",
     "stars": {
       "0": {
-        "title": "Real projects",
-        "desc": "Work on company challenges, not practice exercises."
+        "title": "Create your account",
+        "desc": "Sign up as an FWD graduate, complete your profile, and start exploring available projects."
       },
       "1": {
-        "title": "Companies publish",
-        "desc": "Upload projects and briefs designed for junior talent."
+        "title": "Create your account",
+        "desc": "Sign up as a company, describe your organization, and the kind of talent you need."
       },
       "2": {
-        "title": "Match your skills",
-        "desc": "We show you opportunities based on what you know how to do."
+        "title": "Publish the project",
+        "desc": "Define the scope, required stack, and budget. The FWD team reviews and activates the project."
       },
       "3": {
-        "title": "Notifications",
-        "desc": "Find out as soon as a project that fits you opens."
+        "title": "Submit your proposal",
+        "desc": "Choose the project that best fits your skills and write your cover letter."
       },
       "4": {
-        "title": "Publish yourself",
-        "desc": "Make yourself visible like a star in the sky."
+        "title": "Receive proposals",
+        "desc": "Review applications, request adjustments if needed, and choose the ideal graduate for your project."
+      },
+      "5": {
+        "title": "Refine your proposal",
+        "desc": "If the company requests changes, polish your proposal and demonstrate your ability to iterate."
+      },
+      "6": {
+        "title": "Project awarded",
+        "desc": "The project is awarded: the graduate gains real experience and the company receives the finished work."
+      }
+    }
+  },
+  "marketplace_preview": {
+    "eyebrow": "Projects available now",
+    "title": "Real projects. Not simulations",
+    "description": "Companies post concrete projects with a defined stack, clear budget, and real scope. You pick what fits your skills, send your proposal, and build your first professional portfolio.",
+    "cta_hint": "But what's the process?",
+    "cta": "Learn how it works",
+    "remote": "Remote",
+    "weeks": "wks",
+    "new_badge": "New",
+    "projects": {
+      "0": {
+        "title": "Landing page for a wellness startup",
+        "company": "BioTech CR",
+        "stack": "React · Tailwind · Framer Motion",
+        "duration": "3",
+        "budget": "$250 – $400",
+        "desc": "Design and build a responsive landing page with an animated hero section and a lead-capture form."
+      },
+      "1": {
+        "title": "REST API for a delivery app",
+        "company": "FoodRush",
+        "stack": "Node.js · Express · Supabase",
+        "duration": "4",
+        "budget": "$300 – $500",
+        "desc": "Build order, user, and notification endpoints for the MVP of a home-delivery application."
+      },
+      "2": {
+        "title": "Sales metrics dashboard",
+        "company": "DataLab",
+        "stack": "Next.js · TypeScript · Chart.js",
+        "duration": "5",
+        "budget": "$400 – $650",
+        "desc": "Control panel with daily sales charts, active users, and real-time conversion rate tracking."
+      }
+    }
+  },
+  "diferenciadores": {
+    "eyebrow": "Why FWD Talent?",
+    "title": "We are not Upwork",
+    "description": "We built a space for junior talent in Costa Rica to prove their worth. Every detail of the process is designed so both sides win.",
+    "items": {
+      "0": {
+        "title": "Validated projects",
+        "desc": "Every listing goes through an FWD team review before appearing in the marketplace. No noise — only real opportunities."
+      },
+      "1": {
+        "title": "Verified talent",
+        "desc": "FWD graduates only, with proven skills and a real portfolio. Zero empty profiles."
+      },
+      "2": {
+        "title": "Guided process",
+        "desc": "Support at every stage: from application to final delivery. You never navigate alone."
+      },
+      "3": {
+        "title": "Direct contact",
+        "desc": "No middlemen between graduate and company. Direct contact from the very first project."
+      }
+    }
+  },
+  "faq": {
+    "eyebrow": "Frequently asked questions",
+    "title": "Everything you want to know",
+    "items": {
+      "0": {
+        "q": "Do I need work experience to apply?",
+        "a": "No. FWD Talent is designed for graduates without formal experience. What matters is what you learned in the program and what you can demonstrate with your portfolio."
+      },
+      "1": {
+        "q": "How does the company pay me?",
+        "a": "Payment is coordinated directly between you and the company. FWD facilitates the contact and the process, but does not process payments. You can agree on bank transfer, PayPal, or other methods with each company."
+      },
+      "2": {
+        "q": "Can I apply to several projects at the same time?",
+        "a": "You can explore as many projects as you like, but you can only have one active application at a time. We recommend personalizing your cover letter to increase your chances."
+      },
+      "3": {
+        "q": "How much does it cost to post a project as a company?",
+        "a": "Access is free during the beta phase. Pricing plans based on posting volume are coming soon."
+      },
+      "4": {
+        "q": "How do I know the graduate has the skills I need?",
+        "a": "Each profile shows completed FWD projects, the stack they've mastered, and their program evaluation. You can review their portfolio before awarding the project."
+      },
+      "5": {
+        "q": "How long does it take for my listing to be reviewed?",
+        "a": "The FWD team reviews each listing within 48 business hours. You receive a notification when the project goes live in the marketplace."
+      },
+      "6": {
+        "q": "What happens if I'm not satisfied with the delivered work?",
+        "a": "The process includes a revision round before closing. You can request corrections through the platform. The FWD team can mediate if needed."
+      },
+      "7": {
+        "q": "In which countries is FWD Talent available?",
+        "a": "We currently operate in Costa Rica. Expansion to other Central American and LATAM countries is on the roadmap for the second half of the year."
       }
     }
   },

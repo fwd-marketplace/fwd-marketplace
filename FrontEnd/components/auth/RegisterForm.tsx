@@ -7,6 +7,7 @@ import Link from "next/link";
 import { ArrowLeft, Eye, EyeOff } from "lucide-react";
 import { FwdGeoBackdrop } from "@/components/ui/fwd-geo-backdrop";
 import { CosmicBackdrop } from "@/components/ui/cosmic-backdrop";
+import { AuthFooterLinks } from "@/components/auth/AuthFooterLinks";
 import { registerUser, startOAuth } from "@/lib/actions/auth";
 
 function GoogleIcon() {
@@ -95,9 +96,19 @@ export function RegisterForm({ badge }: RegisterFormProps) {
       <FwdGeoBackdrop />
       <CosmicBackdrop />
 
-      <div className="relative flex min-h-[100dvh] flex-col items-center justify-center px-4 py-10">
-        {badge && <div className="absolute top-4 right-4">{badge}</div>}
-        <div className="w-full max-w-md rounded-[2rem] bg-surface px-6 py-8 shadow-elevated sm:px-10 sm:py-12">
+      <div className="absolute left-6 top-6 z-10">
+        <Link
+          href={`/${locale}/home`}
+          className="inline-flex items-center gap-2 rounded-full bg-white/10 px-4 py-2 font-body text-sm font-medium text-white/75 backdrop-blur-sm transition-colors duration-[var(--duration-fast)] ease-[var(--ease-out)] hover:bg-white/15 hover:text-white"
+        >
+          <ArrowLeft size={14} aria-hidden="true" />
+          {t("back_home")}
+        </Link>
+      </div>
+
+      <div className="relative flex min-h-[100dvh] flex-col items-center justify-center px-6 py-16">
+        {badge && <div className="absolute top-6 right-6">{badge}</div>}
+        <div className="w-full max-w-xl rounded-[2rem] bg-surface px-8 py-10 shadow-elevated sm:px-14 sm:py-12">
           <p className="mb-3 text-center font-heading text-[0.65rem] font-bold uppercase tracking-[0.2em] text-ink-muted">
             {t("eyebrow")}
           </p>
@@ -210,12 +221,6 @@ export function RegisterForm({ badge }: RegisterFormProps) {
               {isPending ? t("submitting") : t("submit")}
             </button>
 
-            <Link
-              href={`/${locale}/login`}
-              className="flex w-full items-center justify-center rounded-full border border-border-strong bg-surface px-6 py-3 font-body text-sm font-semibold text-ink-strong transition-colors duration-[--duration-fast] hover:bg-surface-sunken"
-            >
-              {t("login_link")}
-            </Link>
           </form>
 
           <p className="mt-6 text-center font-body text-xs text-ink-subtle">
@@ -229,19 +234,18 @@ export function RegisterForm({ badge }: RegisterFormProps) {
             </a>
             .
           </p>
-
-          <div className="mt-6 border-t border-border pt-6">
-            <Link
-              href={`/${locale}/home`}
-              className="flex w-full items-center justify-center gap-2 rounded-full px-6 py-3 font-body text-sm font-medium text-ink-muted transition-colors duration-[--duration-fast] hover:bg-surface-sunken hover:text-ink-strong"
-            >
-              <ArrowLeft size={16} strokeWidth={2} aria-hidden="true" />
-              {t("back_home")}
-            </Link>
-          </div>
         </div>
 
-
+        <p className="mt-5 text-center font-body text-sm text-white/60">
+          {t("already_account")}{" "}
+          <Link
+            href={`/${locale}/login`}
+            className="font-semibold text-white/90 underline underline-offset-2 hover:text-white"
+          >
+            {t("login_link")}
+          </Link>
+        </p>
+        <AuthFooterLinks />
       </div>
     </div>
   );

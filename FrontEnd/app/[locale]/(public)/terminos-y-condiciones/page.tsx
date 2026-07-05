@@ -11,9 +11,9 @@ export default async function TerminosPage() {
 
   return (
     <div className="flex min-h-[100dvh] flex-col bg-canvas">
-      <AppHeader userName={userName} avatarUrl={avatarUrl} tone="public" {...(role ? { role } : {})} />
+      {profile && <AppHeader userName={userName} avatarUrl={avatarUrl} tone="public" {...(role ? { role } : {})} />}
       <main className="flex-1">
-        <TerminosYCondiciones />
+        <TerminosYCondiciones showBack={!profile} />
       </main>
     </div>
   );
