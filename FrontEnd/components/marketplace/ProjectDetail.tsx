@@ -14,11 +14,13 @@ import {
   Clock,
   ExternalLink,
   Languages,
+  Wallet,
   Zap,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { submitOfferAction } from "@/lib/actions/marketplace";
 import { cn } from "@/lib/utils";
+import { formatCompensacion, compensacionUpdatedAfterPublish } from "@/lib/marketplace/compensation";
 import type { ApiProject, ApiRoleName, ProjectState, SubmitOfferInput } from "@/lib/api/types";
 
 const optionalUrl = z.union([z.string().url(), z.literal(""), z.undefined()]);
@@ -229,6 +231,10 @@ export function ProjectDetail({ project, role }: Props) {
   const descripcionMostrada = traducible ? traducible.descripcion : project.descripcion;
 
   const skills = project.skills.flatMap((s) => (s.skill ? [s.skill] : []));
+  const compUpdatedAt = compensacionUpdatedAfterPublish(
+    project.compensacion_actualizada_en,
+    project.fecha_publicacion,
+  );
   const stateLabel = STATE_LABELS[project.estado.nombre] ?? project.estado.nombre.replace(/_/g, " ");
   const stateClass = STATE_CLASS[project.estado.nombre] ?? "bg-ink-muted/10 text-ink-muted border-border";
 
@@ -301,6 +307,12 @@ export function ProjectDetail({ project, role }: Props) {
 
           {/* Meta chips */}
           <div className="mt-4 flex flex-wrap gap-2">
+            {project.compensacion != null && (
+              <span className="inline-flex items-center gap-1.5 rounded-full border border-accent/30 bg-accent/10 px-3 py-1.5 font-body text-xs font-bold text-accent">
+                <Wallet className="size-3.5" aria-hidden="true" />
+                {formatCompensacion(project.compensacion, project.moneda)}
+              </span>
+            )}
             <span className="inline-flex items-center gap-1.5 rounded-full border border-border bg-canvas px-3 py-1.5 font-body text-xs font-semibold text-ink-muted">
               <Clock className="size-3.5" aria-hidden="true" />
               {t("duration", { days: project.plazo_dias })}
@@ -435,6 +447,25 @@ export function ProjectDetail({ project, role }: Props) {
                   Resumen
                 </h3>
                 <dl className="space-y-2.5 font-body text-sm">
+                  {project.compensacion != null && (
+                    <div className="flex justify-between gap-2">
+                      <dt className="text-ink-muted">Compensación</dt>
+                      <dd className="font-bold text-accent text-right">
+                        {formatCompensacion(project.compensacion, project.moneda)}
+                      </dd>
+                    </div>
+                  )}
+                  {compUpdatedAt && (
+                    <p className="text-[11px] text-ink-muted">
+                      {t("compensation_updated", {
+                        date: new Date(compUpdatedAt).toLocaleDateString(locale, {
+                          day: "numeric",
+                          month: "long",
+                          year: "numeric",
+                        }),
+                      })}
+                    </p>
+                  )}
                   <div className="flex justify-between gap-2">
                     <dt className="text-ink-muted">Duración</dt>
                     <dd className="font-semibold text-ink-strong text-right">

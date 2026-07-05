@@ -8,6 +8,7 @@ import {
   generarPropuesta,
   mejorarMensaje,
   sugerirStack,
+  sugerirCompensacion,
 } from "../controllers/ai.controller";
 
 const MINUTE = 60 * 1000;
@@ -31,5 +32,6 @@ router.post("/chat-proyecto/:id", authenticate, aiLimiter, asyncHandler(chatProy
 router.post("/mejorar-mensaje", authenticate, aiLimiter, asyncHandler(mejorarMensaje));
 router.post("/generar-propuesta", authenticate, aiLimiter, asyncHandler(generarPropuesta));
 router.post("/sugerir-stack", authenticate, aiLimiter, asyncHandler(sugerirStack));
+router.post("/sugerir-compensacion", authenticate, aiLimiter, asyncHandler(sugerirCompensacion));
 
 export default router;

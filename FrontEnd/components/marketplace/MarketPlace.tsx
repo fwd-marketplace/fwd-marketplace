@@ -32,15 +32,18 @@ import { ProjectPreviewModal } from '@/components/marketplace/ProjectPreviewModa
 const CONTENT_SPARKLE_POINTS = buildSparklePoints(12, 12, 12);
 import { Button } from '@/components/ui/button';
 import { saveProjectAction, unsaveProjectAction } from '@/lib/actions/marketplace';
+import { formatCompensacion, isInCompensacionBucket, type CompensacionBucket } from '@/lib/marketplace/compensation';
 import type { ApiProject, ApiRoleName, CatalogsResponse } from '@/lib/api/types';
 
 const PAGE_SIZE = 9;
 
 
+// Los proyectos tienen un plazo de 5 a 15 días (CHECK en DB). Los buckets se ajustan a
+// ese rango real; con los valores viejos (0-30/31-60/61+) "medio" y "amplio" quedaban vacíos.
 const DURATION_RANGES = {
-    short: { min: 0, max: 30 },
-    medium: { min: 31, max: 60 },
-    long: { min: 61, max: Number.POSITIVE_INFINITY },
+    short: { min: 5, max: 7 },
+    medium: { min: 8, max: 11 },
+    long: { min: 12, max: 15 },
 } as const;
 
 type DurationBucket = keyof typeof DURATION_RANGES;
@@ -175,6 +178,7 @@ export default function MarketPlace({ initialProjects, catalogs, role = 'student
     const [searchQuery, setSearchQuery] = useState('');
     const [activeArea, setActiveArea] = useState<string | null>(null);
     const [activeDuration, setActiveDuration] = useState<string | null>(null);
+    const [activePrice, setActivePrice] = useState<string | null>(null);
     const [activeSkill, setActiveSkill] = useState<string | null>(null);
     const [showAiOnly, setShowAiOnly] = useState(false);
     const [sortOrder, setSortOrder] = useState<SortOrder>('sort_recent_desc');
@@ -192,6 +196,12 @@ export default function MarketPlace({ initialProjects, catalogs, role = 'student
         { value: 'short', label: t('duration_short') },
         { value: 'medium', label: t('duration_medium') },
         { value: 'long', label: t('duration_long') },
+    ];
+
+    const priceOptions: FilterOption[] = [
+        { value: 'low', label: t('budget_low') },
+        { value: 'mid', label: t('budget_mid') },
+        { value: 'high', label: t('budget_high') },
     ];
 
     const sortOptions: FilterOption[] = [
@@ -220,6 +230,7 @@ export default function MarketPlace({ initialProjects, catalogs, role = 'student
                 if (!range || project.plazo_dias < range.min || project.plazo_dias > range.max) return false;
             }
             if (activeSkill && !project.skills.some((s) => s.skill?.id === activeSkill)) return false;
+            if (activePrice && !isInCompensacionBucket(project.compensacion, activePrice as CompensacionBucket)) return false;
             if (showAiOnly && !project.usa_ia) return false;
             return true;
         });
@@ -230,7 +241,7 @@ export default function MarketPlace({ initialProjects, catalogs, role = 'student
         return [...matching].sort((a, b) =>
             (b.fecha_publicacion ?? '').localeCompare(a.fecha_publicacion ?? ''),
         );
-    }, [projects, searchQuery, activeArea, activeDuration, activeSkill, showAiOnly, sortOrder]);
+    }, [projects, searchQuery, activeArea, activeDuration, activePrice, activeSkill, showAiOnly, sortOrder]);
 
     const totalResults = filteredProjects.length;
     const totalPages = Math.max(1, Math.ceil(totalResults / PAGE_SIZE));
@@ -240,6 +251,7 @@ export default function MarketPlace({ initialProjects, catalogs, role = 'student
         searchQuery !== '' ||
         activeArea !== null ||
         activeDuration !== null ||
+        activePrice !== null ||
         activeSkill !== null ||
         showAiOnly;
 
@@ -251,6 +263,7 @@ export default function MarketPlace({ initialProjects, catalogs, role = 'student
         setSearchQuery('');
         setActiveArea(null);
         setActiveDuration(null);
+        setActivePrice(null);
         setActiveSkill(null);
         setShowAiOnly(false);
         resetToFirstPage();
@@ -341,6 +354,13 @@ export default function MarketPlace({ initialProjects, catalogs, role = 'student
                             options={durationOptions}
                             allLabel={t('filter_all')}
                             onChange={(v) => { setActiveDuration(v); resetToFirstPage(); }}
+                        />
+                        <FilterDropdown
+                            triggerLabel={t('filter_budget')}
+                            value={activePrice}
+                            options={priceOptions}
+                            allLabel={t('filter_all')}
+                            onChange={(v) => { setActivePrice(v); resetToFirstPage(); }}
                         />
                         <FilterDropdown
                             triggerLabel={t('filter_skills')}
@@ -498,10 +518,12 @@ export default function MarketPlace({ initialProjects, catalogs, role = 'student
                                     <div className="grid grid-cols-2 gap-4 mb-5">
                                         <div>
                                             <p className="text-[10px] font-bold text-ink-subtle uppercase tracking-wider mb-1">
-                                                {t('business_area_label')}
+                                                {t('compensation_label')}
                                             </p>
-                                            <p className="text-sm font-semibold text-ink-strong">
-                                                {project.area?.nombre ?? '—'}
+                                            <p className="text-sm font-bold text-accent">
+                                                {project.compensacion != null
+                                                    ? formatCompensacion(project.compensacion, project.moneda)
+                                                    : '—'}
                                             </p>
                                         </div>
                                         <div>

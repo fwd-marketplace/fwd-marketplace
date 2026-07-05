@@ -2,7 +2,8 @@
 
 import { useRouter } from 'next/navigation';
 import { useLocale, useTranslations } from 'next-intl';
-import { X, Building2, Zap, Clock, ExternalLink } from 'lucide-react';
+import { X, Building2, Zap, Clock, ExternalLink, Wallet } from 'lucide-react';
+import { formatCompensacion } from '@/lib/marketplace/compensation';
 import type { ApiProject } from '@/lib/api/types';
 
 interface Props {
@@ -64,6 +65,12 @@ export function ProjectPreviewModal({ project, onClose }: Props) {
         <div className="overflow-y-auto flex-1 px-6 pb-6 space-y-5">
           {/* Meta */}
           <div className="flex items-center gap-4 text-sm text-ink-muted">
+            {project.compensacion != null && (
+              <span className="flex items-center gap-1.5 font-semibold text-accent">
+                <Wallet className="size-3.5" />
+                {formatCompensacion(project.compensacion, project.moneda)}
+              </span>
+            )}
             <span className="flex items-center gap-1.5">
               <Clock className="size-3.5" />
               {project.plazo_dias} {t('days')}

@@ -55,7 +55,7 @@ export function OAuthCallback() {
         if (role === "admin") {
           router.replace(`/${locale}/admin`);
         } else if (role === "company" || role === "empresa" || role === "emprendedor") {
-          router.replace(`/${locale}/dashboard`);
+          router.replace(`/${locale}/gestion`);
         } else if (role === "student" || role === "junior") {
           router.replace(`/${locale}/bienvenida`);
         } else {

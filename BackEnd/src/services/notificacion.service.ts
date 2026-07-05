@@ -54,6 +54,8 @@ export const MENSAJES_NOTIFICACION = {
   // Junior → recibe cuando una empresa lo invita a postular a un proyecto
   invitacionProyecto: (empresa: string, titulo: string): string =>
     `${empresa} te invitó a postular a su proyecto "${titulo}". Revisalo y enviá tu propuesta.`,
+  compensacionAumentada: (titulo: string, monto: string): string =>
+    `La compensación del proyecto "${titulo}" aumentó a ${monto}. Revisalo en gestión.`,
 } as const;
 
 /** Tipo por mensaje para el icono correcto en el panel. */
@@ -70,6 +72,7 @@ export const TIPO_POR_MENSAJE: Record<keyof typeof MENSAJES_NOTIFICACION, TipoNo
   proyectoEliminado:            TIPO_CAMBIO_ESTADO,
   nuevoMensaje:                 "nuevo_mensaje" as TipoNotificacion,
   invitacionProyecto:           "invitacion" as TipoNotificacion,
+  compensacionAumentada:        TIPO_CAMBIO_ESTADO,
 } as const;
 
 /**

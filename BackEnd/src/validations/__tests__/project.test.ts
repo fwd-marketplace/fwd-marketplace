@@ -34,6 +34,38 @@ describe("CreateProjectSchema", () => {
   it("rechaza skills con un valor que no es UUID", () => {
     expect(CreateProjectSchema.safeParse({ ...valido, skills: ["no-uuid"] }).success).toBe(false);
   });
+
+  it("acepta borrador sin compensacion", () => {
+    expect(CreateProjectSchema.safeParse({ ...valido, publicar: false }).success).toBe(true);
+  });
+
+  it("rechaza publicar sin compensacion", () => {
+    expect(CreateProjectSchema.safeParse({ ...valido, publicar: true }).success).toBe(false);
+  });
+
+  it("acepta publicar con compensacion valida", () => {
+    expect(
+      CreateProjectSchema.safeParse({ ...valido, publicar: true, compensacion: 750 }).success,
+    ).toBe(true);
+  });
+
+  it("rechaza compensacion menor al minimo", () => {
+    expect(
+      CreateProjectSchema.safeParse({ ...valido, publicar: true, compensacion: 25 }).success,
+    ).toBe(false);
+  });
+
+  it("rechaza compensacion mayor al maximo", () => {
+    expect(
+      CreateProjectSchema.safeParse({ ...valido, publicar: true, compensacion: 20_000 }).success,
+    ).toBe(false);
+  });
+
+  it("rechaza compensacion con centavos (debe ser entera)", () => {
+    expect(
+      CreateProjectSchema.safeParse({ ...valido, publicar: true, compensacion: 500.5 }).success,
+    ).toBe(false);
+  });
 });
 
 describe("ChangeProjectStateSchema", () => {

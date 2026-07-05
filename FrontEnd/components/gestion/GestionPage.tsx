@@ -3,7 +3,9 @@
 import { useState, useRef, useEffect, useCallback, type ReactNode } from "react";
 import { useLocale, useTranslations } from "next-intl";
 import { ProjectMatchPanel } from "@/components/gestion/ProjectMatchPanel";
+import { ChatPanel } from "@/components/features/proyecto/ChatPanel";
 import {
+  AlertCircle,
   ArrowLeft,
   Ban,
   Calendar,
@@ -28,6 +30,7 @@ import {
   Star,
   Trash2,
   Upload,
+  Wallet,
   Wand2,
   X,
   Zap,
@@ -54,7 +57,8 @@ import {
   getMyOffersAction,
   uploadDocumentoAction,
 } from "@/lib/actions/marketplace";
-import { generateProposalAction, suggestStackAction } from "@/lib/actions/ai";
+import { generateProposalAction, suggestStackAction, suggestCompensacionAction } from "@/lib/actions/ai";
+import { formatCompensacion, compensacionUpdatedAfterPublish, COMPENSACION_MIN, COMPENSACION_MAX } from "@/lib/marketplace/compensation";
 import { streamAssistant, toAiLocale } from "@/lib/api/ai-client";
 import { getProjectMensajesAction, sendMensajeAction, getMyConversacionesAction } from "@/lib/actions/mensajes";
 import { MejorarMensajeButton } from "@/components/gestion/MejorarMensajeButton";
@@ -74,6 +78,7 @@ import type {
   ProjectOffer,
   ProjectProposal,
   SuggestStackInput,
+  SuggestCompensacionInput,
   UpdateProjectInput,
 } from "@/lib/api/types";
 
@@ -426,28 +431,42 @@ export function GestionPage({ role, userId, initialProjectId, initialSection: in
     );
   }, [section, selectedId]);
 
-  const handleSaveProject = async (data: CreateProjectInput | UpdateProjectInput) => {
+  // Devuelve un mensaje de error si el guardado falla (para mostrarlo en el formulario), o null si
+  // salió bien. El try/finally garantiza que `formSaving` siempre se libere (botón nunca queda trabado).
+  const handleSaveProject = async (
+    data: CreateProjectInput | UpdateProjectInput,
+  ): Promise<string | null> => {
     setFormSaving(true);
-    if (formMode === "create") {
-      const r = await createProjectAction(data as CreateProjectInput);
-      if (r.ok) {
+    try {
+      if (formMode === "create") {
+        const r = await createProjectAction(data as CreateProjectInput);
+        if (!r.ok) return r.error;
         const pr = await getMyProjectsAction();
         if (pr.ok) setSidebarProjects(pr.data.projects);
         setSelectedId(r.data.id);
         setSelectedProject(null);
         setSection("info");
         setFormMode(null);
+        return null;
       }
-    } else if (formMode === "edit" && selectedId) {
-      const r = await updateProjectAction(selectedId, data as UpdateProjectInput);
-      if (r.ok) {
+      if (formMode === "edit" && selectedId) {
+        const r = await updateProjectAction(selectedId, data as UpdateProjectInput);
+        if (!r.ok) return r.error;
         setSelectedProject(r.data);
         const pr = await getMyProjectsAction();
         if (pr.ok) setSidebarProjects(pr.data.projects);
         setFormMode(null);
+        // Republicar en un paso: si el proyecto estaba pausado y ahora tiene compensación,
+        // ofrecer reactivarlo (el diálogo de reactivación confirma y lo vuelve a publicar).
+        if (r.data.estado.nombre === "pausado" && r.data.compensacion != null) {
+          setProjectActionKind("resume");
+        }
+        return null;
       }
+      return null;
+    } finally {
+      setFormSaving(false);
     }
-    setFormSaving(false);
   };
 
   const handleDeleteProject = async () => {
@@ -875,7 +894,6 @@ export function GestionPage({ role, userId, initialProjectId, initialSection: in
                 <ChatPanel
                   isEmpresa={isEmpresa}
                   project={selectedProject}
-                  t={t}
                   userId={userId}
                 />
               ) : (
@@ -1132,10 +1150,17 @@ function InfoPanel({
 }) {
   if (!project) return null;
   const skills = project.skills.filter((s) => s.skill != null);
-  const canEdit = isEmpresa && (project.estado.nombre === "borrador" || project.estado.nombre === "en_recepcion");
+  const compUpdatedAt = compensacionUpdatedAfterPublish(
+    project.compensacion_actualizada_en,
+    project.fecha_publicacion,
+  );
   const isFinal = project.estado.nombre === "cerrado" || project.estado.nombre === "cancelado";
   const isPaused = project.estado.nombre === "pausado";
-  const canResume = isEmpresa && isPaused;
+  const missingCompensacion = project.compensacion == null;
+  // Los pausados también se editan: es como la empresa agrega la compensación que falta para republicar.
+  const canEdit = isEmpresa && (project.estado.nombre === "borrador" || project.estado.nombre === "en_recepcion" || isPaused);
+  // Reactivar exige compensación (el backend la pide); sin precio se guía con el aviso a agregarla primero.
+  const canResume = isEmpresa && isPaused && !missingCompensacion;
   const canPause = isEmpresa && !isFinal && !isPaused;
   const canCancel = isEmpresa && !isFinal;
   return (
@@ -1203,6 +1228,12 @@ function InfoPanel({
         )}
       </div>
       <div className="mb-6 flex flex-wrap gap-2">
+        {project.compensacion != null && (
+          <span className="inline-flex items-center gap-1.5 rounded-full border border-accent/30 bg-accent/10 px-3 py-1.5 font-body text-sm font-semibold text-accent">
+            <Wallet className="size-3.5" aria-hidden="true" />
+            {formatCompensacion(project.compensacion, project.moneda)}
+          </span>
+        )}
         <span className="inline-flex items-center gap-1.5 rounded-full border border-border bg-surface px-3 py-1.5 font-body text-sm text-ink-muted">
           <Clock className="size-3.5" aria-hidden="true" />
           {project.plazo_dias} {t("days")}
@@ -1220,6 +1251,30 @@ function InfoPanel({
           </span>
         )}
       </div>
+      {compUpdatedAt && (
+        <p className="mb-6 -mt-3 font-body text-xs text-ink-muted">
+          {t("compensation_updated", {
+            date: new Date(compUpdatedAt).toLocaleDateString(locale, {
+              day: "numeric",
+              month: "long",
+              year: "numeric",
+            }),
+          })}
+        </p>
+      )}
+      {isEmpresa && isPaused && missingCompensacion && (
+        <div className="mb-4 flex flex-wrap items-center gap-3 rounded-2xl border border-warning/30 bg-warning/10 p-4">
+          <AlertCircle className="size-5 shrink-0 text-warning" aria-hidden="true" />
+          <p className="min-w-0 flex-1 font-body text-sm text-ink">{t("paused_no_price_notice")}</p>
+          <button
+            type="button"
+            onClick={onEdit}
+            className="shrink-0 rounded-full bg-warning px-4 py-2 font-body text-sm font-semibold text-white transition-colors duration-[var(--duration-fast)] ease-[var(--ease-out)] hover:bg-warning/85"
+          >
+            {t("paused_no_price_cta")}
+          </button>
+        </div>
+      )}
       <div className="mb-4 rounded-2xl border border-border bg-surface p-5">
         <p className="mb-3 font-body text-xs font-bold uppercase tracking-wider text-ink-muted">{t("description_label")}</p>
         <p className="font-body text-base leading-relaxed text-ink">{project.descripcion}</p>
@@ -1254,299 +1309,6 @@ function InfoPanel({
 
 function formatChatTime(iso: string) {
   return new Date(iso).toLocaleTimeString("es-CR", { hour: "2-digit", minute: "2-digit" });
-}
-
-function juniorDisplayName(u: { nombre: string; apellido1: string | null } | null | undefined) {
-  if (!u) return "Junior";
-  return u.apellido1 ? `${u.nombre} ${u.apellido1}` : u.nombre;
-}
-
-function ChatPanel({
-  isEmpresa, project, t, userId,
-}: {
-  isEmpresa: boolean;
-  project: ApiProject | null;
-  t: T;
-  userId: string | null;
-}) {
-  const [rawMsgs, setRawMsgs] = useState<ApiMensaje[]>([]);
-  const [draft, setDraft] = useState("");
-  const [sending, setSending] = useState(false);
-  const [sendError, setSendError] = useState("");
-  const [selectedJuniorId, setSelectedJuniorId] = useState<string | null>(null);
-  const bottomRef = useRef<HTMLDivElement>(null);
-
-  // Load + poll every 4 s
-  useEffect(() => {
-    if (!project?.id || !userId) return;
-    let active = true;
-    setRawMsgs([]);
-
-    const load = async () => {
-      try {
-        const r = await getProjectMensajesAction(project.id);
-        if (!active) return;
-        if (r.ok) setRawMsgs(r.data);
-      } catch {
-        // Ignora fallos transitorios del transporte de Server Actions (p. ej. durante Fast Refresh
-        // en dev). El siguiente poll reintenta; los errores reales ya llegan como Result.err.
-      }
-    };
-
-    void load();
-    const timer = setInterval(() => { void load(); }, 4000);
-    return () => { active = false; clearInterval(timer); };
-  }, [project?.id, userId]);
-
-  // Derive unique juniors for empresa multi-tab
-  const juniors = (() => {
-    if (!isEmpresa || !userId) return [];
-    const map = new Map<string, { id: string; nombre: string; apellido1: string | null }>();
-    rawMsgs.forEach((m) => {
-      const isMine = m.remitente?.id === userId;
-      const juniorUser = !isMine ? m.remitente : m.destinatario_info;
-      if (juniorUser && !map.has(juniorUser.id)) map.set(juniorUser.id, juniorUser);
-    });
-    return [...map.values()];
-  })();
-
-  // (no auto-select — empresa must pick a junior from the list)
-
-  // Reset junior selection when project changes
-  useEffect(() => {
-    setSelectedJuniorId(null);
-  }, [project?.id]);
-
-  // Filter messages for the selected junior (empresa) or all (junior)
-  const visibleMsgs = isEmpresa && selectedJuniorId
-    ? rawMsgs.filter((m) => {
-        const isMine = m.remitente?.id === userId;
-        return isMine
-          ? m.destinatario_info?.id === selectedJuniorId
-          : m.remitente?.id === selectedJuniorId;
-      })
-    : rawMsgs;
-
-  useEffect(() => {
-    bottomRef.current?.scrollIntoView({ behavior: "smooth" });
-  }, [visibleMsgs]);
-
-  // Header display info
-  const otherName    = isEmpresa
-    ? (selectedJuniorId ? juniorDisplayName(juniors.find((j) => j.id === selectedJuniorId)) : t("chat_label_junior"))
-    : (project?.empresa?.nombre_comercial ?? t("chat_label_empresa"));
-  const otherInitial = isEmpresa
-    ? (selectedJuniorId ? (juniors.find((j) => j.id === selectedJuniorId)?.nombre[0]?.toUpperCase() ?? "J") : "J")
-    : (project?.empresa?.nombre_comercial?.[0]?.toUpperCase() ?? "E");
-
-  const send = async () => {
-    const text = draft.trim();
-    if (!text || sending) return;
-    if (!project?.id || !userId) return;
-    if (isEmpresa && !selectedJuniorId) return;
-
-    setSending(true);
-    setSendError("");
-    try {
-      const r = await sendMensajeAction(project.id, text, isEmpresa ? (selectedJuniorId ?? undefined) : undefined);
-      if (r.ok) {
-        setDraft("");
-        // Reload to get server-confirmed message
-        const reload = await getProjectMensajesAction(project.id);
-        if (reload.ok) setRawMsgs(reload.data);
-      } else {
-        setSendError(t("chat_send_error"));
-      }
-    } catch {
-      setSendError(t("chat_send_error"));
-    } finally {
-      setSending(false);
-    }
-  };
-
-  const handleKey = (e: React.KeyboardEvent<HTMLTextAreaElement>) => {
-    if (e.key === "Enter" && !e.shiftKey) { e.preventDefault(); void send(); }
-  };
-
-  return (
-    <div className="flex h-full flex-col">
-      {/* Empresa: sin conversaciones aún */}
-      {isEmpresa && juniors.length === 0 && (
-        <div className="flex flex-1 flex-col items-center justify-center gap-3 p-8 text-center">
-          <div className="flex size-14 items-center justify-center rounded-2xl bg-primary/10">
-            <MessageSquare className="size-7 text-primary" aria-hidden="true" />
-          </div>
-          <p className="font-body text-sm text-ink-muted">{t("chat_sin_conversaciones")}</p>
-        </div>
-      )}
-
-      {/* Empresa: lista de juniors para seleccionar (sin junior seleccionado) */}
-      {isEmpresa && juniors.length > 0 && !selectedJuniorId && (
-        <div className="flex-1 overflow-y-auto">
-          <div className="border-b border-border bg-surface px-6 py-4">
-            <p className="font-body text-xs font-bold uppercase tracking-wider text-ink-muted">
-              {t("chat_seleccionar_junior")}
-            </p>
-            {project?.titulo && (
-              <p className="mt-0.5 truncate font-heading text-sm font-bold text-ink-strong">
-                {project.titulo}
-              </p>
-            )}
-          </div>
-          <div className="flex flex-col gap-2 p-4">
-            {juniors.map((j) => {
-              const jMsgs = rawMsgs.filter(
-                (m) => m.remitente?.id === j.id || m.destinatario_info?.id === j.id,
-              );
-              const lastMsg = jMsgs[jMsgs.length - 1];
-              return (
-                <button
-                  key={j.id}
-                  type="button"
-                  onClick={() => setSelectedJuniorId(j.id)}
-                  className="flex items-center gap-3 rounded-xl border border-border bg-surface p-4 text-left transition-colors duration-[var(--duration-fast)] ease-[var(--ease-out)] hover:border-secondary/30 hover:bg-secondary/5"
-                >
-                  <div className="flex size-10 shrink-0 items-center justify-center rounded-full bg-secondary/15 font-heading text-sm font-bold text-secondary">
-                    {j.nombre[0]?.toUpperCase() ?? "J"}
-                  </div>
-                  <div className="min-w-0 flex-1">
-                    <p className="truncate font-body text-sm font-bold text-ink-strong">{juniorDisplayName(j)}</p>
-                    {lastMsg && (
-                      <p className="truncate font-body text-xs text-ink-muted">{lastMsg.contenido}</p>
-                    )}
-                  </div>
-                  <ChevronRight className="size-4 shrink-0 text-ink-muted" aria-hidden="true" />
-                </button>
-              );
-            })}
-          </div>
-        </div>
-      )}
-
-      {/* Empresa: tabs cuando hay junior seleccionado */}
-      {isEmpresa && juniors.length > 0 && selectedJuniorId && (
-        <div className="shrink-0 flex gap-0 border-b border-border bg-surface overflow-x-auto">
-          <button
-            type="button"
-            onClick={() => setSelectedJuniorId(null)}
-            className="shrink-0 px-4 py-3 font-body text-sm font-semibold text-ink-muted transition-colors duration-[var(--duration-fast)] ease-[var(--ease-out)] hover:text-ink border-b-2 border-transparent"
-          >
-            ←
-          </button>
-          {juniors.map((j) => (
-            <button
-              key={j.id}
-              type="button"
-              onClick={() => setSelectedJuniorId(j.id)}
-              className={cn(
-                "shrink-0 px-4 py-3 font-body text-sm font-semibold transition-colors duration-[var(--duration-fast)] ease-[var(--ease-out)] border-b-2",
-                selectedJuniorId === j.id
-                  ? "border-secondary text-secondary"
-                  : "border-transparent text-ink-muted hover:text-ink hover:border-border",
-              )}
-            >
-              {juniorDisplayName(j)}
-            </button>
-          ))}
-        </div>
-      )}
-
-      {/* Header con nombre del interlocutor */}
-      {(!isEmpresa || selectedJuniorId) && (
-        <div className="shrink-0 flex items-center gap-3 border-b border-border bg-surface px-6 py-4">
-          <div className="flex size-9 shrink-0 items-center justify-center rounded-full bg-secondary/15 font-heading text-sm font-bold text-secondary">
-            {otherInitial}
-          </div>
-          <div className="min-w-0">
-            <p className="truncate font-body text-sm font-bold text-ink-strong">{otherName}</p>
-            <p className="font-body text-xs text-ink-muted">{project?.titulo ?? ""}</p>
-          </div>
-        </div>
-      )}
-
-      {/* Mensajes */}
-      {(!isEmpresa || selectedJuniorId) && (
-        <div className="flex-1 overflow-y-auto px-6 py-6">
-          {visibleMsgs.length === 0 ? (
-            <div className="flex h-full flex-col items-center justify-center gap-3 text-center">
-              <div className="flex size-14 items-center justify-center rounded-2xl bg-primary/10">
-                <MessageSquare className="size-7 text-primary" aria-hidden="true" />
-              </div>
-              <p className="font-body text-sm text-ink-muted">{t("chat_empty")}</p>
-            </div>
-          ) : (
-            <div className="flex flex-col gap-5">
-              {visibleMsgs.map((msg) => {
-                const isMine = msg.remitente?.id === userId;
-                return (
-                  <div key={msg.id} className={cn("flex items-end gap-2.5", isMine ? "flex-row-reverse" : "flex-row")}>
-                    {!isMine && (
-                      <div className="mb-1 flex size-8 shrink-0 items-center justify-center rounded-full bg-secondary/15 font-heading text-xs font-bold text-secondary">
-                        {otherInitial}
-                      </div>
-                    )}
-                    <div className={cn("flex max-w-[72%] flex-col gap-1", isMine ? "items-end" : "items-start")}>
-                      <div
-                        className={cn(
-                          "rounded-2xl px-4 py-3 font-body text-sm leading-relaxed",
-                          isMine
-                            ? "rounded-br-sm bg-secondary text-white"
-                            : "rounded-bl-sm border border-border bg-surface text-ink",
-                        )}
-                      >
-                        {msg.contenido}
-                      </div>
-                      <span className="flex items-center gap-1.5 px-1 font-body text-[11px] text-ink-muted">
-                        {formatChatTime(msg.fecha_envio)}
-                        {!isMine && <ReportarMensajeButton mensajeId={msg.id} />}
-                      </span>
-                    </div>
-                  </div>
-                );
-              })}
-              <div ref={bottomRef} />
-            </div>
-          )}
-        </div>
-      )}
-
-      {/* Input */}
-      {(!isEmpresa || selectedJuniorId) && (
-        <div className="shrink-0 border-t border-border bg-surface px-4 py-3">
-          <div className="flex items-end gap-2">
-            <textarea
-              value={draft}
-              onChange={(e) => setDraft(e.target.value)}
-              onKeyDown={handleKey}
-              placeholder={t("chat_placeholder")}
-              rows={2}
-              className="min-h-[64px] flex-1 resize-none rounded-xl border border-border bg-canvas px-4 py-3 font-body text-sm leading-relaxed text-ink placeholder:text-ink-muted/60 focus:border-secondary focus:outline-none focus:ring-2 focus:ring-secondary/20"
-              style={{ maxHeight: 200, overflowY: "auto" }}
-            />
-            <button
-              onClick={() => { void send(); }}
-              disabled={!draft.trim() || sending}
-              aria-label={t("chat_send")}
-              className={cn(
-                "flex size-[42px] shrink-0 items-center justify-center rounded-xl transition-colors duration-[var(--duration-fast)]",
-                draft.trim() && !sending
-                  ? "bg-secondary text-white hover:bg-secondary/80"
-                  : "bg-border text-ink-muted cursor-not-allowed",
-              )}
-            >
-              <Send className="size-4" aria-hidden="true" />
-            </button>
-          </div>
-          {/* Junior y empresa: reescribir el borrador con IA antes de enviarlo (Nivel 2) */}
-          {project && (
-            <MejorarMensajeButton draft={draft} projectId={project.id} onReplace={setDraft} />
-          )}
-          {sendError && <p className="mt-1.5 px-1 font-body text-[11px] text-magenta">{sendError}</p>}
-          <p className="mt-1.5 px-1 font-body text-[11px] text-ink-muted">{t("chat_hint")}</p>
-        </div>
-      )}
-    </div>
-  );
 }
 
 // ── Junior: asistente del proyecto + chat humano gateado ────────────────────────
@@ -3147,6 +2909,7 @@ interface FormData {
   condiciones: string;
   id_area_negocio: string;
   plazo_dias: string;
+  compensacion: string;
   usa_ia: boolean;
   skills: string[];
   tecnologias_extra: string[];
@@ -3165,7 +2928,7 @@ function ProjectFormContent({
   project: ApiProject | null;
   catalogs: { areas: CatalogArea[]; skills: CatalogSkill[] };
   saving: boolean;
-  onSave: (data: CreateProjectInput | UpdateProjectInput) => void;
+  onSave: (data: CreateProjectInput | UpdateProjectInput) => Promise<string | null>;
   onClose: () => void;
 }) {
   const [form, setForm] = useState<FormData>(() => ({
@@ -3174,6 +2937,7 @@ function ProjectFormContent({
     condiciones: project?.condiciones ?? "",
     id_area_negocio: project?.area?.id ?? "",
     plazo_dias: project ? String(project.plazo_dias) : "10",
+    compensacion: project?.compensacion != null ? String(project.compensacion) : "",
     usa_ia: project?.usa_ia ?? false,
     skills: project?.skills.flatMap((s) => s.skill ? [s.skill.id] : []) ?? [],
     tecnologias_extra: project?.tecnologias_extra ?? [],
@@ -3181,11 +2945,16 @@ function ProjectFormContent({
   }));
   const [otrosInput, setOtrosInput] = useState("");
   const [isSuggestingStack, setIsSuggestingStack] = useState(false);
+  const [isSuggestingPrice, setIsSuggestingPrice] = useState(false);
+  const [priceSuggestion, setPriceSuggestion] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
 
   const techSkills = catalogs.skills.filter((s) => s.tipo === "tecnologia");
 
   function applyProposal(proposal: ProjectProposal) {
+    const skillIds = proposal.habilidades
+      .map((h) => h.id)
+      .filter((id) => techSkills.some((s) => s.id === id));
     setForm((prev) => ({
       ...prev,
       titulo: proposal.nombre || prev.titulo,
@@ -3196,10 +2965,22 @@ function ProjectFormContent({
           : prev.id_area_negocio,
       plazo_dias: proposal.plazo_dias ? String(proposal.plazo_dias) : prev.plazo_dias,
       usa_ia: proposal.usa_ia,
-      skills: proposal.habilidades
-        .map((h) => h.id)
-        .filter((id) => techSkills.some((s) => s.id === id)),
+      skills: skillIds,
     }));
+
+    // Auto-sugerir el precio con los datos de la propuesta (solo si el campo sigue vacío). Ya
+    // tenemos descripción + plazo + stack, que es justo lo que la sugerencia necesita para anclar.
+    const descripcion = (proposal.descripcion || proposal.objetivo || "").trim();
+    if (!form.compensacion.trim() && descripcion.length >= 10) {
+      const input: SuggestCompensacionInput = { descripcion };
+      if (proposal.nombre?.trim()) input.titulo = proposal.nombre.trim();
+      if (proposal.id_area_negocio && catalogs.areas.some((a) => a.id === proposal.id_area_negocio)) {
+        input.id_area_negocio = proposal.id_area_negocio;
+      }
+      if (proposal.plazo_dias) input.plazo_dias = proposal.plazo_dias;
+      if (skillIds.length > 0) input.skills = skillIds;
+      void runPriceSuggestion(input);
+    }
   }
 
   async function handleSuggestStack() {
@@ -3218,6 +2999,33 @@ function ProjectFormContent({
         .filter((id) => techSkills.some((s) => s.id === id));
       setForm((prev) => ({ ...prev, skills: suggested }));
     }
+  }
+
+  // Núcleo de la sugerencia de precio (recibe el input explícito para poder llamarse tanto desde
+  // el botón como al aplicar una propuesta de IA, sin depender del estado `form` aún sin actualizar).
+  async function runPriceSuggestion(input: SuggestCompensacionInput) {
+    if (isSuggestingPrice) return;
+    setIsSuggestingPrice(true);
+    const result = await suggestCompensacionAction(input);
+    setIsSuggestingPrice(false);
+    if (result.ok) {
+      setForm((prev) => ({ ...prev, compensacion: String(result.data.compensacion) }));
+      setPriceSuggestion(result.data.justificacion || null);
+    } else {
+      setPriceSuggestion(result.error);
+    }
+  }
+
+  async function handleSuggestPrice() {
+    const descripcion = form.descripcion.trim();
+    if (descripcion.length < 10) return;
+    const input: SuggestCompensacionInput = { descripcion };
+    if (form.titulo.trim()) input.titulo = form.titulo.trim();
+    if (form.id_area_negocio) input.id_area_negocio = form.id_area_negocio;
+    const plazo = parseInt(form.plazo_dias, 10);
+    if (plazo) input.plazo_dias = plazo;
+    if (form.skills.length > 0) input.skills = form.skills;
+    await runPriceSuggestion(input);
   }
 
   function addOtraTecnologia() {
@@ -3240,37 +3048,54 @@ function ProjectFormContent({
     }));
   }
 
-  function handleSubmit() {
+  async function handleSubmit() {
     if (!form.titulo.trim()) { setError("El título es obligatorio"); return; }
     if (!form.descripcion.trim()) { setError("La descripción es obligatoria"); return; }
     if (!form.id_area_negocio) { setError("Seleccioná un área de negocio"); return; }
     const plazo = parseInt(form.plazo_dias, 10);
     if (!plazo || plazo < 5 || plazo > 15) { setError("El plazo debe ser entre 5 y 15 días"); return; }
-    setError(null);
-    if (mode === "create") {
-      onSave({
-        titulo: form.titulo.trim(),
-        descripcion: form.descripcion.trim(),
-        id_area_negocio: form.id_area_negocio,
-        plazo_dias: plazo,
-        usa_ia: form.usa_ia,
-        skills: form.skills,
-        ...(form.tecnologias_extra.length > 0 ? { tecnologias_extra: form.tecnologias_extra } : {}),
-        ...(form.condiciones.trim() ? { condiciones: form.condiciones.trim() } : {}),
-        publicar: form.publicar,
-      } satisfies CreateProjectInput);
-    } else {
-      onSave({
-        titulo: form.titulo.trim(),
-        descripcion: form.descripcion.trim(),
-        id_area_negocio: form.id_area_negocio,
-        plazo_dias: plazo,
-        usa_ia: form.usa_ia,
-        skills: form.skills,
-        ...(form.tecnologias_extra.length > 0 ? { tecnologias_extra: form.tecnologias_extra } : {}),
-        ...(form.condiciones.trim() ? { condiciones: form.condiciones.trim() } : {}),
-      } satisfies UpdateProjectInput);
+    const compRaw = form.compensacion.trim();
+    let compensacion: number | undefined;
+    if (compRaw) {
+      const parsed = Number(compRaw);
+      if (!Number.isInteger(parsed) || parsed < COMPENSACION_MIN || parsed > COMPENSACION_MAX) {
+        setError(
+          `La compensación debe ser un monto entero entre $${COMPENSACION_MIN.toLocaleString("en-US")} y $${COMPENSACION_MAX.toLocaleString("en-US")} USD`,
+        );
+        return;
+      }
+      compensacion = parsed;
     }
+    if (mode === "create" && form.publicar && compensacion == null) {
+      setError("La compensación es obligatoria para publicar el proyecto");
+      return;
+    }
+    setError(null);
+    const saveError = mode === "create"
+      ? await onSave({
+          titulo: form.titulo.trim(),
+          descripcion: form.descripcion.trim(),
+          id_area_negocio: form.id_area_negocio,
+          plazo_dias: plazo,
+          usa_ia: form.usa_ia,
+          skills: form.skills,
+          ...(form.tecnologias_extra.length > 0 ? { tecnologias_extra: form.tecnologias_extra } : {}),
+          ...(form.condiciones.trim() ? { condiciones: form.condiciones.trim() } : {}),
+          ...(compensacion != null ? { compensacion } : {}),
+          publicar: form.publicar,
+        } satisfies CreateProjectInput)
+      : await onSave({
+          titulo: form.titulo.trim(),
+          descripcion: form.descripcion.trim(),
+          id_area_negocio: form.id_area_negocio,
+          plazo_dias: plazo,
+          usa_ia: form.usa_ia,
+          skills: form.skills,
+          ...(form.tecnologias_extra.length > 0 ? { tecnologias_extra: form.tecnologias_extra } : {}),
+          ...(form.condiciones.trim() ? { condiciones: form.condiciones.trim() } : {}),
+          ...(compensacion != null ? { compensacion } : {}),
+        } satisfies UpdateProjectInput);
+    if (saveError) setError(saveError);
   }
 
   return (
@@ -3392,6 +3217,60 @@ function ProjectFormContent({
             </div>
           </div>
 
+          {/* Compensación */}
+          <div className="space-y-1">
+            <div className="flex flex-wrap items-center justify-between gap-2">
+              <label htmlFor="pf-compensacion" className="block font-body text-xs font-bold uppercase tracking-wider text-ink-muted">
+                Compensación (USD)
+              </label>
+              <Button
+                type="button"
+                variant="accent"
+                size="sm"
+                onClick={() => void handleSuggestPrice()}
+                disabled={isSuggestingPrice || form.descripcion.trim().length < 10}
+                className="gap-1.5"
+              >
+                {isSuggestingPrice ? <Loader2 className="size-3.5 animate-spin" /> : <Wand2 className="size-3.5" />}
+                {isSuggestingPrice ? "Sugiriendo..." : "Sugerir precio"}
+              </Button>
+            </div>
+            <div className="relative">
+              <span className="pointer-events-none absolute left-3.5 top-1/2 -translate-y-1/2 font-body text-sm font-semibold text-ink-muted" aria-hidden="true">$</span>
+              <input
+                id="pf-compensacion"
+                type="number"
+                min={COMPENSACION_MIN}
+                max={COMPENSACION_MAX}
+                step={10}
+                inputMode="numeric"
+                value={form.compensacion}
+                onChange={(e) => {
+                  // Solo dígitos y hasta 5 (el máximo es $10.000): evita montos absurdos y decimales.
+                  const value = e.target.value;
+                  if (value === "" || /^\d{1,5}$/.test(value)) {
+                    setForm((p) => ({ ...p, compensacion: value }));
+                  }
+                }}
+                placeholder="Ej: 500"
+                className="w-full rounded-xl border border-border bg-surface-sunken py-2 pl-7 pr-14 font-body text-sm text-ink-strong outline-none focus:ring-2 focus:ring-primary/20"
+              />
+              <span className="pointer-events-none absolute right-3.5 top-1/2 -translate-y-1/2 font-body text-xs font-semibold text-ink-muted" aria-hidden="true">USD</span>
+            </div>
+            <p className="font-body text-[11px] text-ink-muted">
+              Monto total que pagarás al junior por el proyecto (entre ${COMPENSACION_MIN.toLocaleString("en-US")} y ${COMPENSACION_MAX.toLocaleString("en-US")}). Obligatorio para publicar. El pago se coordina por fuera de la plataforma.
+            </p>
+            {form.compensacion.trim() !== "" &&
+              (Number(form.compensacion) < COMPENSACION_MIN || Number(form.compensacion) > COMPENSACION_MAX) && (
+                <p className="font-body text-[11px] font-semibold text-magenta">
+                  El monto debe estar entre ${COMPENSACION_MIN.toLocaleString("en-US")} y ${COMPENSACION_MAX.toLocaleString("en-US")} USD.
+                </p>
+              )}
+            {priceSuggestion && (
+              <p className="font-body text-[11px] text-accent">{priceSuggestion}</p>
+            )}
+          </div>
+
           {/* Skills */}
           {techSkills.length > 0 && (
             <fieldset className="space-y-2">
@@ -3496,7 +3375,7 @@ function ProjectFormContent({
         </button>
         <button
           type="button"
-          onClick={handleSubmit}
+          onClick={() => void handleSubmit()}
           disabled={saving}
           className="flex-1 rounded-full bg-primary px-4 py-2.5 font-body text-sm font-semibold text-white transition-colors hover:bg-secondary disabled:opacity-60"
         >

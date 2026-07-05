@@ -81,3 +81,24 @@ export const StackRawSchema = z.object({
 });
 
 export type StackRaw = z.infer<typeof StackRawSchema>;
+
+/** Cuerpo de `POST /ai/sugerir-compensacion` (flujo manual: la empresa ya describió el proyecto). */
+export const SugerirCompensacionRequestSchema = z.object({
+  titulo: z.string().max(255).optional(),
+  descripcion: z.string().min(10).max(5000),
+  id_area_negocio: z.string().uuid().optional(),
+  plazo_dias: z.number().int().min(5).max(15).optional(),
+  skills: z.array(z.string().uuid()).max(30).optional(),
+  locale: LocaleSchema.default("es"),
+});
+
+export type SugerirCompensacionInput = z.infer<typeof SugerirCompensacionRequestSchema>;
+
+/** Validación del JSON que devuelve el modelo para la sugerencia de compensación. */
+export const CompensacionRawSchema = z.object({
+  // El modelo a veces devuelve el monto como número y a veces como texto ("500").
+  compensacion: z.union([z.number(), z.string()]).optional(),
+  justificacion: z.string().optional(),
+});
+
+export type CompensacionRaw = z.infer<typeof CompensacionRawSchema>;

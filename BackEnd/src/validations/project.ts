@@ -1,24 +1,46 @@
 import { z } from "zod";
 import { LocaleSchema } from "./ai";
 
+/** Monto mínimo y máximo de compensación declarada por proyecto (USD). */
+export const COMPENSACION_MIN = 50;
+export const COMPENSACION_MAX = 10_000;
+
+export const CompensacionSchema = z
+  .number()
+  .int("La compensación debe ser un monto entero en USD (sin centavos)")
+  .min(COMPENSACION_MIN, `La compensación mínima es $${COMPENSACION_MIN} USD`)
+  .max(COMPENSACION_MAX, `La compensación máxima es $${COMPENSACION_MAX} USD`);
+
 /** Cuerpo para crear un proyecto (empresa). Nombres alineados con la BD. */
-export const CreateProjectSchema = z.object({
-  titulo: z.string().min(1).max(255),
-  descripcion: z.string().min(1),
-  // Condiciones y preguntas frecuentes (texto libre opcional). Contexto del chatbot del proyecto.
-  condiciones: z.string().max(5000).optional(),
-  id_area_negocio: z.string().uuid(),
-  plazo_dias: z.number().int().min(5).max(15),
-  usa_ia: z.boolean().optional(),
-  // ids de skills del catálogo (tecnologías requeridas por el proyecto).
-  skills: z.array(z.string().uuid()).optional(),
-  // Tecnologías "Otros" escritas a mano (no están en el catálogo de skills).
-  tecnologias_extra: z.array(z.string().trim().min(1).max(50)).max(20).optional(),
-  // true -> se publica (en_recepcion); false/omitido -> queda en borrador.
-  publicar: z.boolean().optional(),
-  // Idioma en que la empresa escribió el proyecto; define idioma_original y el destino de traducción.
-  locale: LocaleSchema.default("es"),
-});
+export const CreateProjectSchema = z
+  .object({
+    titulo: z.string().min(1).max(255),
+    descripcion: z.string().min(1),
+    // Condiciones y preguntas frecuentes (texto libre opcional). Contexto del chatbot del proyecto.
+    condiciones: z.string().max(5000).optional(),
+    id_area_negocio: z.string().uuid(),
+    plazo_dias: z.number().int().min(5).max(15),
+    usa_ia: z.boolean().optional(),
+    // Monto total declarado que la empresa pagará al junior (USD). Obligatorio al publicar.
+    compensacion: CompensacionSchema.optional(),
+    // ids de skills del catálogo (tecnologías requeridas por el proyecto).
+    skills: z.array(z.string().uuid()).optional(),
+    // Tecnologías "Otros" escritas a mano (no están en el catálogo de skills).
+    tecnologias_extra: z.array(z.string().trim().min(1).max(50)).max(20).optional(),
+    // true -> se publica (en_recepcion); false/omitido -> queda en borrador.
+    publicar: z.boolean().optional(),
+    // Idioma en que la empresa escribió el proyecto; define idioma_original y el destino de traducción.
+    locale: LocaleSchema.default("es"),
+  })
+  .superRefine((data, ctx) => {
+    if (data.publicar && data.compensacion == null) {
+      ctx.addIssue({
+        code: "custom",
+        message: "La compensación es obligatoria para publicar",
+        path: ["compensacion"],
+      });
+    }
+  });
 
 export type CreateProjectInput = z.infer<typeof CreateProjectSchema>;
 
@@ -50,6 +72,7 @@ export const UpdateProjectSchema = z.object({
   id_area_negocio: z.string().uuid().optional(),
   plazo_dias: z.number().int().min(5).max(15).optional(),
   usa_ia: z.boolean().optional(),
+  compensacion: CompensacionSchema.optional(),
   skills: z.array(z.string().uuid()).optional(),
   tecnologias_extra: z.array(z.string().trim().min(1).max(50)).max(20).optional(),
   // Idioma del editor; si cambia el texto, se re-traduce al idioma opuesto.

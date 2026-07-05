@@ -70,11 +70,75 @@ async function getOfertaRecipients(
   return [...new Set(ids)];
 }
 
+/** Estados en los que la empresa puede editar datos del proyecto (incluye pausado para agregar compensación). */
+const ESTADOS_EDITABLES = new Set(["borrador", "en_recepcion", "pausado"]);
+
+/** Ofertas que bloquean reducir compensación o reciben aviso si sube. */
+const OFERTAS_ACTIVAS = ["enviada", "en_revision", "solicitar_cambios"] as const;
+
+export type CompensacionUpdateDecision =
+  | { allowed: true; notifyIncrease: boolean }
+  | { allowed: false; statusCode: number; message: string };
+
+/** Reglas de negocio para cambiar compensacion (función pura, testeable). */
+export function resolveCompensacionUpdate(
+  estadoActual: string,
+  compensacionActual: number | null,
+  compensacionNueva: number,
+  tienePostulacionesActivas: boolean,
+): CompensacionUpdateDecision {
+  if (!ESTADOS_EDITABLES.has(estadoActual)) {
+    return {
+      allowed: false,
+      statusCode: 409,
+      message: "No podés editar la compensación en este estado",
+    };
+  }
+  if (
+    compensacionActual != null &&
+    compensacionNueva < compensacionActual &&
+    tienePostulacionesActivas
+  ) {
+    return {
+      allowed: false,
+      statusCode: 400,
+      message: "No podés reducir la compensación mientras haya postulaciones activas",
+    };
+  }
+  const notifyIncrease =
+    estadoActual === "en_recepcion" &&
+    compensacionActual != null &&
+    compensacionNueva > compensacionActual &&
+    tienePostulacionesActivas;
+  return { allowed: true, notifyIncrease };
+}
+
+function formatCompensacionUsd(amount: number): string {
+  return `$${amount.toLocaleString("en-US", { maximumFractionDigits: 0 })} USD`;
+}
+
+/** Cuenta ofertas activas (enviada, en_revision, solicitar_cambios) de un proyecto. */
+async function countActiveOffers(client: Client, projectId: string): Promise<number> {
+  const { data, error } = await client
+    .from("oferta")
+    .select("id, estado:estado_oferta(nombre)")
+    .eq("id_proyecto", projectId);
+  if (error) {
+    logger.warn("No se pudieron contar postulaciones activas", { error: error.message });
+    return 0;
+  }
+  return (data ?? []).filter((o) =>
+    (OFERTAS_ACTIVAS as readonly string[]).includes(o.estado?.nombre ?? ""),
+  ).length;
+}
+
 /** Filtros opcionales del listado de proyectos. */
 export type ProjectFilters = {
   area?: string | undefined; // id_area_negocio
   skill?: string | undefined; // id_skill
   plazoMax?: number | undefined; // plazo_dias <= plazoMax
+  compensacionMin?: number | undefined;
+  compensacionMax?: number | undefined;
   q?: string | undefined; // búsqueda en el título
 };
 
@@ -88,6 +152,9 @@ export const PROJECT_SELECT = `
   titulo,
   descripcion,
   condiciones,
+  compensacion,
+  moneda,
+  compensacion_actualizada_en,
   usa_ia,
   plazo_dias,
   tecnologias_extra,
@@ -142,6 +209,8 @@ export async function listProjects(accessToken: string, filters: ProjectFilters)
     .select(PROJECT_SELECT)
     // Solo proyectos activamente en recepción (estado exacto en DB)
     .eq("id_estado", estadoRec.id)
+    // Solo proyectos con compensación declarada (transparencia para juniors)
+    .not("compensacion", "is", null)
     // Excluir proyectos cuyo plazo ya venció (fecha_cierre en el pasado)
     .or(`fecha_cierre.is.null,fecha_cierre.gt.${now}`)
     .order("fecha_publicacion", { ascending: false, nullsFirst: false });
@@ -151,6 +220,12 @@ export async function listProjects(accessToken: string, filters: ProjectFilters)
   }
   if (filters.plazoMax !== undefined) {
     query = query.lte("plazo_dias", filters.plazoMax);
+  }
+  if (filters.compensacionMin !== undefined) {
+    query = query.gte("compensacion", filters.compensacionMin);
+  }
+  if (filters.compensacionMax !== undefined) {
+    query = query.lte("compensacion", filters.compensacionMax);
   }
   if (filters.q) {
     query = query.ilike("titulo", `%${filters.q}%`);
@@ -260,6 +335,10 @@ export async function createProject(
     throw new ApiError(403, "Solo las empresas pueden publicar proyectos");
   }
 
+  if (input.publicar && input.compensacion == null) {
+    throw new ApiError(400, "La compensación es obligatoria para publicar");
+  }
+
   // 3. Resolver el estado destino (borrador o en_recepcion).
   const estadoNombre = input.publicar ? "en_recepcion" : "borrador";
   const { data: estado, error: estadoError } = await client
@@ -282,6 +361,7 @@ export async function createProject(
   }
 
   // 5. Crear el proyecto.
+  const ahoraIso = new Date().toISOString();
   const { data: proyecto, error: insertError } = await client
     .from("proyecto")
     .insert({
@@ -296,6 +376,13 @@ export async function createProject(
       tecnologias_extra: input.tecnologias_extra ?? [],
       fecha_publicacion: fechaPublicacion,
       fecha_cierre: fechaCierre,
+      ...(input.compensacion != null
+        ? {
+            compensacion: input.compensacion,
+            moneda: "USD",
+            compensacion_actualizada_en: ahoraIso,
+          }
+        : {}),
     })
     .select("id, titulo, estado:estado_proyecto(nombre)")
     .single();
@@ -340,13 +427,17 @@ export async function changeProjectState(
   // 1. El proyecto debe existir y pertenecer al usuario.
   const { data: proyecto, error: projError } = await client
     .from("proyecto")
-    .select("id, titulo, empresa:empresario(id_usuario)")
+    .select("id, titulo, compensacion, empresa:empresario(id_usuario)")
     .eq("id", projectId)
     .maybeSingle();
   if (projError) throw new ApiError(500, projError.message);
   if (!proyecto) throw new ApiError(404, "Proyecto no encontrado");
   if (proyecto.empresa?.id_usuario !== userId) {
     throw new ApiError(403, "Este proyecto no es tuyo");
+  }
+
+  if (input.estado === "en_recepcion" && proyecto.compensacion == null) {
+    throw new ApiError(400, "Agregá la compensación antes de abrir el proyecto a postulaciones");
   }
 
   // 2. Resolver el id del estado destino y actualizar.
@@ -389,7 +480,9 @@ export async function updateProject(
   // 1. El proyecto debe existir y pertenecer al usuario.
   const { data: proyecto, error: projError } = await client
     .from("proyecto")
-    .select("id, titulo, descripcion, condiciones, empresa:empresario(id_usuario), estado:estado_proyecto(nombre)")
+    .select(
+      "id, titulo, descripcion, condiciones, compensacion, empresa:empresario(id_usuario), estado:estado_proyecto(nombre)",
+    )
     .eq("id", projectId)
     .maybeSingle();
   if (projError) throw new ApiError(500, projError.message);
@@ -399,8 +492,24 @@ export async function updateProject(
   }
 
   const estadoActual = proyecto.estado?.nombre;
-  if (estadoActual !== "borrador" && estadoActual !== "en_recepcion") {
-    throw new ApiError(409, "Solo podés editar proyectos en borrador o en recepción");
+  if (!estadoActual || !ESTADOS_EDITABLES.has(estadoActual)) {
+    throw new ApiError(409, "Solo podés editar proyectos en borrador, recepción o pausados");
+  }
+
+  let notifyCompensacionIncrease = false;
+
+  if (input.compensacion !== undefined) {
+    const activas = await countActiveOffers(client, projectId);
+    const decision = resolveCompensacionUpdate(
+      estadoActual,
+      proyecto.compensacion,
+      input.compensacion,
+      activas > 0,
+    );
+    if (!decision.allowed) {
+      throw new ApiError(decision.statusCode, decision.message);
+    }
+    notifyCompensacionIncrease = decision.notifyIncrease;
   }
 
   // 2. Construir el payload de actualización con los campos enviados.
@@ -412,6 +521,11 @@ export async function updateProject(
   if (input.plazo_dias !== undefined) updatePayload.plazo_dias = input.plazo_dias;
   if (input.usa_ia !== undefined) updatePayload.usa_ia = input.usa_ia;
   if (input.tecnologias_extra !== undefined) updatePayload.tecnologias_extra = input.tecnologias_extra;
+  if (input.compensacion !== undefined) {
+    updatePayload.compensacion = input.compensacion;
+    updatePayload.moneda = "USD";
+    updatePayload.compensacion_actualizada_en = new Date().toISOString();
+  }
 
   if (Object.keys(updatePayload).length > 0) {
     const { error: updateError } = await client
@@ -457,6 +571,17 @@ export async function updateProject(
     );
   }
 
+  if (notifyCompensacionIncrease && input.compensacion != null) {
+    const destinatarios = await getOfertaRecipients(client, projectId, [...OFERTAS_ACTIVAS]);
+    await crearNotificaciones(
+      accessToken,
+      destinatarios,
+      MENSAJES_NOTIFICACION.compensacionAumentada(proyecto.titulo, formatCompensacionUsd(input.compensacion)),
+      TIPO_POR_MENSAJE.compensacionAumentada,
+      projectId,
+    );
+  }
+
   // 4. Devolver el proyecto actualizado con la misma forma que el resto de endpoints.
   const { data, error } = await client
     .from("proyecto")
@@ -481,7 +606,9 @@ export async function resumeMyProject(accessToken: string, userId: string, proje
 
   const { data: proyecto, error: projError } = await client
     .from("proyecto")
-    .select("id, titulo, estado:estado_proyecto(nombre), empresa:empresario(id_usuario)")
+    .select(
+      "id, titulo, plazo_dias, compensacion, estado:estado_proyecto(nombre), empresa:empresario(id_usuario)",
+    )
     .eq("id", projectId)
     .maybeSingle();
   if (projError) throw new ApiError(500, projError.message);
@@ -492,11 +619,22 @@ export async function resumeMyProject(accessToken: string, userId: string, proje
   if (proyecto.estado?.nombre !== "pausado") {
     throw new ApiError(409, "Solo se puede reactivar un proyecto pausado");
   }
+  if (proyecto.compensacion == null) {
+    throw new ApiError(400, "Agregá la compensación antes de reactivar el proyecto");
+  }
 
   const estadoId = await getEstadoProyectoId(client, "en_recepcion");
+  const ahora = new Date();
+  const cierre = new Date(ahora);
+  cierre.setDate(cierre.getDate() + proyecto.plazo_dias);
+
   const { data, error } = await client
     .from("proyecto")
-    .update({ id_estado: estadoId })
+    .update({
+      id_estado: estadoId,
+      fecha_publicacion: ahora.toISOString(),
+      fecha_cierre: cierre.toISOString(),
+    })
     .eq("id", projectId)
     .select("id, estado:estado_proyecto(nombre)")
     .single();

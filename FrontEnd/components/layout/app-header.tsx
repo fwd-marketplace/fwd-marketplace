@@ -18,7 +18,7 @@ import { Switch } from "@/components/ui/switch";
 
 const HOME_HREF: Record<string, string> = {
   student: "/bienvenida",
-  company: "/dashboard",
+  company: "/gestion",
   admin: "/admin/dashboard",
 };
 
@@ -116,13 +116,19 @@ function NavStars() {
 type NavItem = { key: string; href: string };
 
 function buildNavLinks(role?: ApiRoleName): NavItem[] {
-  const links: NavItem[] = [
-    { key: "nav_home", href: role ? (HOME_HREF[role] ?? "/bienvenida") : "/home" },
-    { key: "nav_marketplace", href: "/marketplace" },
-  ];
-  // La gestión (info, chat y proceso) aplica a junior y empresa con sesión.
-  if (role === "student" || role === "company") {
+  const links: NavItem[] = [];
+  if (role === "company") {
+    // Para la empresa, /gestion ES su home (retiramos /dashboard). Se muestra "Gestión" como
+    // entrada principal y NO un "Inicio" aparte, para no tener dos links al mismo destino.
     links.push({ key: "nav_gestion", href: "/gestion" });
+    links.push({ key: "nav_marketplace", href: "/marketplace" });
+  } else {
+    links.push({ key: "nav_home", href: role ? (HOME_HREF[role] ?? "/bienvenida") : "/home" });
+    links.push({ key: "nav_marketplace", href: "/marketplace" });
+    // El junior sí tiene un "Inicio" propio (/bienvenida) distinto de /gestion, así que se agrega.
+    if (role === "student") {
+      links.push({ key: "nav_gestion", href: "/gestion" });
+    }
   }
   // El perfil se mueve junto al avatar — no va en la barra de nav.
   links.push(

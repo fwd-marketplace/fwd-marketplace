@@ -1048,6 +1048,8 @@ export type Database = {
       }
       proyecto: {
         Row: {
+          compensacion: number | null
+          compensacion_actualizada_en: string | null
           condiciones: string
           descripcion: string
           fecha_cierre: string | null
@@ -1057,6 +1059,7 @@ export type Database = {
           id_empresario: string
           id_estado: string
           idioma_original: string
+          moneda: string
           plazo_dias: number
           tecnologias_extra: string[]
           titulo: string
@@ -1064,6 +1067,8 @@ export type Database = {
           usa_ia: boolean
         }
         Insert: {
+          compensacion?: number | null
+          compensacion_actualizada_en?: string | null
           condiciones?: string
           descripcion: string
           fecha_cierre?: string | null
@@ -1073,6 +1078,7 @@ export type Database = {
           id_empresario: string
           id_estado: string
           idioma_original?: string
+          moneda?: string
           plazo_dias: number
           tecnologias_extra?: string[]
           titulo: string
@@ -1080,6 +1086,8 @@ export type Database = {
           usa_ia?: boolean
         }
         Update: {
+          compensacion?: number | null
+          compensacion_actualizada_en?: string | null
           condiciones?: string
           descripcion?: string
           fecha_cierre?: string | null
@@ -1089,6 +1097,7 @@ export type Database = {
           id_empresario?: string
           id_estado?: string
           idioma_original?: string
+          moneda?: string
           plazo_dias?: number
           tecnologias_extra?: string[]
           titulo?: string

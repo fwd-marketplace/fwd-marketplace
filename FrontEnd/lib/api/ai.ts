@@ -3,9 +3,12 @@ import { err, ok, type Result } from "@/lib/result";
 import type {
   AiChatMessage,
   AiLocale,
+  CompensacionSuggestion,
   GenerateProposalResponse,
   ProjectProposal,
   StackSuggestion,
+  SuggestCompensacionInput,
+  SuggestCompensacionResponse,
   SuggestStackInput,
   SuggestStackResponse,
 } from "@/lib/api/types";
@@ -43,6 +46,20 @@ export function suggestStack(
 ): Promise<Result<StackSuggestion>> {
   return asResult(async () => {
     const response = await apiAuth<SuggestStackResponse>("/ai/sugerir-stack", {
+      method: "POST",
+      body: JSON.stringify({ ...input, locale }),
+    });
+    return response.sugerencia;
+  });
+}
+
+/** Sugiere un pago total en USD para el formulario manual (no es streaming). */
+export function suggestCompensacion(
+  input: SuggestCompensacionInput,
+  locale: AiLocale,
+): Promise<Result<CompensacionSuggestion>> {
+  return asResult(async () => {
+    const response = await apiAuth<SuggestCompensacionResponse>("/ai/sugerir-compensacion", {
       method: "POST",
       body: JSON.stringify({ ...input, locale }),
     });
