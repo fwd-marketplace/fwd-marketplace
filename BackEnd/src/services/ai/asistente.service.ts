@@ -5,14 +5,19 @@ import type { Json } from "../../types/database.types";
 import {
   ProposalRawSchema,
   StackRawSchema,
+  CompensacionRawSchema,
   type AppLocale,
   type ProposalRaw,
   type StackRaw,
+  type CompensacionRaw,
 } from "../../validations/ai";
 import {
   buildSystemPromptConversacion,
   buildSystemPromptPropuesta,
   buildSystemPromptStack,
+  buildSystemPromptCompensacion,
+  COMPENSACION_MAX_USD,
+  COMPENSACION_MIN_USD,
   PLAZO_MAX_DIAS,
   PLAZO_MIN_DIAS,
   type CatalogArea,
@@ -555,6 +560,163 @@ export async function sugerirStack(params: SugerirStackParams): Promise<StackSug
   const raw = parseStack(completion.content);
   return {
     habilidades: mapHabilidades(raw.habilidades, catalog),
+    justificacion: raw.justificacion?.trim() ?? "",
+  };
+}
+
+/** Sugerencia de compensación (pago total en USD) para el formulario manual de crear proyecto. */
+export interface CompensacionSuggestion {
+  compensacion: number;
+  justificacion: string;
+}
+
+export interface SugerirCompensacionParams {
+  titulo?: string;
+  descripcion: string;
+  areaId?: string;
+  plazoDias?: number;
+  skillIds?: string[];
+  userId: string;
+  accessToken: string;
+  /** Idioma en el que debe responder la IA (locale del usuario). */
+  locale: AppLocale;
+  signal?: AbortSignal;
+}
+
+/** Coacciona el monto a un entero dentro del rango permitido (50-10000 USD). */
+function clampCompensacion(value: number | string | undefined): number {
+  const parsed = typeof value === "number" ? value : Number.parseFloat(String(value ?? ""));
+  if (!Number.isFinite(parsed)) {
+    return COMPENSACION_MIN_USD;
+  }
+  return Math.min(COMPENSACION_MAX_USD, Math.max(COMPENSACION_MIN_USD, Math.round(parsed)));
+}
+
+/** Parsea y valida el JSON de la sugerencia de compensación; lanza 502 si no es usable. */
+function parseCompensacion(content: string): CompensacionRaw {
+  const candidate = extractJsonObject(content);
+  const mensajeError = "No se pudo sugerir un monto. Escribí la compensación manualmente.";
+  if (!candidate) {
+    throw new ApiError(502, mensajeError);
+  }
+  let parsed: unknown;
+  try {
+    parsed = JSON.parse(candidate);
+  } catch {
+    throw new ApiError(502, mensajeError);
+  }
+  const result = CompensacionRawSchema.safeParse(parsed);
+  if (!result.success) {
+    throw new ApiError(502, mensajeError);
+  }
+  return result.data;
+}
+
+/** Cuántos proyectos reales anclan la sugerencia de precio. */
+const MAX_PRICE_EXEMPLARS = 5;
+
+/**
+ * Trae compensaciones de proyectos reales YA PUBLICADOS para anclar la sugerencia en datos de la
+ * propia plataforma (no en la conjetura del modelo). Prioriza los de la misma área y completa con
+ * los más recientes. La visibilidad la garantiza el RLS (publicados o propios). Best-effort: ante
+ * cualquier error devuelve null y la sugerencia cae en las bandas orientativas del prompt. Es lo
+ * que hace que el precio "evolucione con el uso": a más proyectos con precio, mejores anclas.
+ */
+async function loadCompensacionExemplars(
+  accessToken: string,
+  areaNombre: string | null,
+): Promise<string | null> {
+  const client = supabaseForToken(accessToken);
+  const { data, error } = await client
+    .from("proyecto")
+    .select("titulo, plazo_dias, compensacion, moneda, area:area_negocio(nombre)")
+    .not("compensacion", "is", null)
+    .order("fecha_publicacion", { ascending: false, nullsFirst: false })
+    .limit(20);
+  if (error || !data || data.length === 0) {
+    return null;
+  }
+
+  // Priorizar la misma área (mejores comparables), completar con el resto de los más recientes.
+  const mismaArea = areaNombre ? data.filter((p) => p.area?.nombre === areaNombre) : [];
+  const resto = data.filter((p) => !mismaArea.includes(p));
+  const elegidos = [...mismaArea, ...resto].slice(0, MAX_PRICE_EXEMPLARS);
+  if (elegidos.length === 0) {
+    return null;
+  }
+
+  const lineas = elegidos.map(
+    (p) =>
+      `- ${p.titulo} (${p.area?.nombre ?? "sin área"}, ${p.plazo_dias} días): $${(p.compensacion ?? 0).toLocaleString("en-US")} ${p.moneda}`,
+  );
+  return `Precios de proyectos reales comparables ya publicados en la plataforma. Usalos como
+referencia PRINCIPAL para calibrar tu sugerencia (por sobre las bandas orientativas); adaptate al
+alcance de ESTE proyecto y respetá siempre el rango permitido:
+${lineas.join("\n")}`;
+}
+
+/**
+ * A partir de la descripción de un proyecto (flujo manual), sugiere un pago total en USD para el
+ * junior, dentro del rango del sistema, con una justificación corta para alguien sin perfil técnico.
+ * Ancla la sugerencia en precios de proyectos reales comparables de la plataforma (best-effort). El
+ * monto se acota al rango permitido por si el modelo se sale. Es informativo: la empresa decide.
+ */
+export async function sugerirCompensacion(
+  params: SugerirCompensacionParams,
+): Promise<CompensacionSuggestion> {
+  const catalog = await loadProjectCatalog(params.accessToken);
+  const areaNombre = params.areaId
+    ? (catalog.areas.find((area) => area.id === params.areaId)?.nombre ?? null)
+    : null;
+  const skillNombres = (params.skillIds ?? [])
+    .map((id) => catalog.skills.find((skill) => skill.id === id)?.nombre)
+    .filter((nombre): nombre is string => Boolean(nombre));
+
+  // Anclar en datos reales de la plataforma (best-effort: si falla, se usan las bandas del prompt).
+  let ejemplos: string | null = null;
+  try {
+    ejemplos = await loadCompensacionExemplars(params.accessToken, areaNombre);
+  } catch (error) {
+    logger.warn("ai_compensacion_ejemplos_load_failed", {
+      reason: error instanceof Error ? error.message : String(error),
+    });
+  }
+
+  const contexto = [
+    params.titulo ? `Título: ${params.titulo}` : null,
+    areaNombre ? `Área: ${areaNombre}` : null,
+    params.plazoDias ? `Plazo: ${params.plazoDias} días` : null,
+    skillNombres.length > 0 ? `Stack: ${skillNombres.join(", ")}` : null,
+    `Descripción: ${params.descripcion}`,
+  ]
+    .filter((linea): linea is string => linea !== null)
+    .join("\n");
+
+  const messages: ChatMessage[] = [
+    { role: "system", content: buildSystemPromptCompensacion(catalog, params.locale) },
+    ...(ejemplos ? [{ role: "system" as const, content: ejemplos }] : []),
+    { role: "user", content: `${contexto}\n\nSugerí la compensación en el JSON pedido.` },
+  ];
+
+  const completion = await createChatCompletion({
+    messages,
+    temperature: TEMPERATURE_PROPUESTA,
+    json: true,
+    signal: params.signal,
+  });
+
+  logger.info("ai_usage", {
+    userId: params.userId,
+    action: "sugerir_compensacion",
+    provider: completion.provider,
+    model: completion.model,
+    totalTokens: completion.usage?.totalTokens ?? null,
+    latencyMs: completion.latencyMs,
+  });
+
+  const raw = parseCompensacion(completion.content);
+  return {
+    compensacion: clampCompensacion(raw.compensacion),
     justificacion: raw.justificacion?.trim() ?? "",
   };
 }

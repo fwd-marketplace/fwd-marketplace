@@ -7,11 +7,13 @@ import {
   AsistenteRequestSchema,
   MejorarMensajeRequestSchema,
   SugerirStackRequestSchema,
+  SugerirCompensacionRequestSchema,
 } from "../validations/ai";
 import {
   streamAsistente,
   generarPropuesta as generarPropuestaService,
   sugerirStack as sugerirStackService,
+  sugerirCompensacion as sugerirCompensacionService,
 } from "../services/ai/asistente.service";
 import { streamChatProyecto } from "../services/ai/chat-proyecto.service";
 import { mejorarMensaje as mejorarMensajeService } from "../services/ai/mejorar-mensaje.service";
@@ -188,6 +190,33 @@ export async function sugerirStack(req: Request, res: Response): Promise<void> {
     titulo: input.titulo,
     descripcion: input.descripcion,
     areaId: input.id_area_negocio,
+    userId: req.user.id,
+    accessToken: req.accessToken,
+    locale: input.locale,
+  });
+
+  res.status(200).json({ sugerencia });
+}
+
+/**
+ * POST /api/ai/sugerir-compensacion
+ *
+ * Para el formulario manual: a partir de la descripción del proyecto (y opcionalmente área, plazo
+ * y stack), sugiere un pago total en USD para el junior, dentro del rango del sistema, con una
+ * justificación corta. Es orientativo; la empresa decide el monto final.
+ */
+export async function sugerirCompensacion(req: Request, res: Response): Promise<void> {
+  if (!req.user || !req.accessToken) {
+    throw new ApiError(401, "No autenticado");
+  }
+  const input = parseBody(SugerirCompensacionRequestSchema, req.body);
+
+  const sugerencia = await sugerirCompensacionService({
+    titulo: input.titulo,
+    descripcion: input.descripcion,
+    areaId: input.id_area_negocio,
+    plazoDias: input.plazo_dias,
+    skillIds: input.skills,
     userId: req.user.id,
     accessToken: req.accessToken,
     locale: input.locale,

@@ -43,7 +43,7 @@ vi.mock("../../config/supabase", () => ({
   }),
 }));
 
-import { changeProjectState, listMyProjects } from "../proyecto.service";
+import { changeProjectState, listMyProjects, resolveCompensacionUpdate } from "../proyecto.service";
 
 const TOKEN = "token";
 const USER = "550e8400-e29b-41d4-a716-446655440000";
@@ -107,5 +107,44 @@ describe("listMyProjects", () => {
   it("rechaza (403) si el usuario no tiene perfil de empresa", async () => {
     reads["empresario"] = { data: null, error: null };
     await expect(listMyProjects(TOKEN, USER)).rejects.toMatchObject({ statusCode: 403 });
+  });
+});
+
+describe("resolveCompensacionUpdate", () => {
+  it("permite subir compensacion en recepcion con postulaciones", () => {
+    expect(resolveCompensacionUpdate("en_recepcion", 500, 800, true)).toEqual({
+      allowed: true,
+      notifyIncrease: true,
+    });
+  });
+
+  it("bloquea bajar compensacion con postulaciones activas", () => {
+    expect(resolveCompensacionUpdate("en_recepcion", 800, 500, true)).toEqual({
+      allowed: false,
+      statusCode: 400,
+      message: "No podés reducir la compensación mientras haya postulaciones activas",
+    });
+  });
+
+  it("permite bajar compensacion sin postulaciones", () => {
+    expect(resolveCompensacionUpdate("en_recepcion", 800, 500, false)).toEqual({
+      allowed: true,
+      notifyIncrease: false,
+    });
+  });
+
+  it("permite editar compensacion en pausado", () => {
+    expect(resolveCompensacionUpdate("pausado", null, 750, false)).toEqual({
+      allowed: true,
+      notifyIncrease: false,
+    });
+  });
+
+  it("bloquea editar compensacion en adjudicado", () => {
+    expect(resolveCompensacionUpdate("adjudicado", 750, 900, false)).toEqual({
+      allowed: false,
+      statusCode: 409,
+      message: "No podés editar la compensación en este estado",
+    });
   });
 });

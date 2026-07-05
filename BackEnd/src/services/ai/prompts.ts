@@ -25,6 +25,10 @@ export interface ProjectCatalog {
 export const PLAZO_MIN_DIAS = 5;
 export const PLAZO_MAX_DIAS = 15;
 
+/** Rango de compensación permitido en USD (debe coincidir con `validations/project.ts`). */
+export const COMPENSACION_MIN_USD = 50;
+export const COMPENSACION_MAX_USD = 10_000;
+
 /** Idioma de respuesta de la IA (coincide con `AppLocale` de `validations/ai`). */
 export type AiLocale = "es" | "en";
 
@@ -242,6 +246,42 @@ ${languageDirective(locale)}`;
 }
 
 /**
+ * Sugerencia de compensación para el flujo MANUAL: la empresa ya describió su proyecto y necesita
+ * saber cuánto pagarle al junior. Devuelve solo el JSON con un monto en USD dentro del rango del
+ * sistema + una justificación corta para alguien sin perfil técnico. Es orientativa: la empresa
+ * la puede ajustar. No hay procesamiento de pagos; el cobro se coordina por fuera de la plataforma.
+ */
+export function buildSystemPromptCompensacion(catalog: ProjectCatalog, locale: AiLocale): string {
+  return `Sos un consultor del marketplace FWD Talent que ayuda a una empresa —muchas veces sin
+perfil técnico— a definir un pago JUSTO y realista para un proyecto que hará un desarrollador junior.
+
+Respondé ÚNICAMENTE con un objeto JSON válido, sin texto antes ni después y sin markdown:
+{
+  "compensacion": 500,
+  "justificacion": "1 o 2 frases, en lenguaje claro y cercano, explicando el monto sugerido"
+}
+
+Reglas estrictas:
+- "compensacion": un ENTERO en dólares estadounidenses (USD), entre ${COMPENSACION_MIN_USD} y ${COMPENSACION_MAX_USD}. Es el
+  PAGO TOTAL por el proyecto completo (no por hora). Estimalo según el alcance descrito, el plazo
+  (${PLAZO_MIN_DIAS} a ${PLAZO_MAX_DIAS} días) y la cantidad y complejidad del stack. Lo realiza talento JUNIOR: montos
+  accesibles y proporcionales al trabajo, no tarifas de un profesional senior.
+- Como referencia orientativa: un proyecto simple y corto ronda los $150 a $400; uno de complejidad
+  media, $400 a $1.200; uno amplio o con varias integraciones, de $1.200 en adelante. Ajustá con criterio.
+- Si más abajo te paso "Precios de proyectos reales comparables" de la plataforma, usalos como
+  referencia PRINCIPAL (por sobre las bandas de arriba): calibrá el monto según esos casos reales,
+  ajustando por el alcance, el plazo y el stack de ESTE proyecto.
+- Nunca te salgas del rango de ${COMPENSACION_MIN_USD} a ${COMPENSACION_MAX_USD} USD bajo ninguna circunstancia.
+- "justificacion": breve, para alguien SIN perfil técnico; explicá en simple por qué ese monto y
+  aclará que es una SUGERENCIA orientativa que la empresa puede ajustar.
+
+Áreas de negocio del sistema (contexto):
+${buildAreaListText(catalog.areas)}
+
+${languageDirective(locale)}`;
+}
+
+/**
  * Etiqueta que el bot del proyecto agrega (en una línea aparte, al final) cuando no puede
  * responder con la información disponible o la duda requiere a la empresa. El FrontEnd la
  * detecta para resaltar el botón "Hablar con la empresa" y la quita del texto visible.
@@ -254,6 +294,10 @@ export interface ProyectoContexto {
   empresa: string | null;
   area: string | null;
   plazoDias: number;
+  /** Compensación total declarada (USD). `null` si la empresa no la cargó. */
+  compensacion: number | null;
+  /** Moneda de la compensación (MVP: USD). */
+  moneda: string;
   descripcion: string;
   usaIa: boolean;
   /** Skills del catálogo + tecnologías extra escritas por la empresa, ya unificadas. */
@@ -275,6 +319,11 @@ function buildProyectoContextoText(contexto: ProyectoContexto): string {
     lineas.push(`[Área] ${contexto.area}`);
   }
   lineas.push(`[Plazo] ${contexto.plazoDias} días`);
+  if (contexto.compensacion != null) {
+    lineas.push(
+      `[Compensación] $${contexto.compensacion.toLocaleString("en-US")} ${contexto.moneda} en total por el proyecto completo`,
+    );
+  }
   lineas.push(`[Usa inteligencia artificial] ${contexto.usaIa ? "sí" : "no"}`);
   if (contexto.tecnologias.length > 0) {
     lineas.push(`[Tecnologías requeridas] ${contexto.tecnologias.join(", ")}`);
@@ -319,10 +368,14 @@ Reglas (importantes, seguilas siempre):
   exacta ${ESCALATION_TAG} en una línea aparte (no la expliques).
 - Si dudás si una pregunta es técnica o no, asumí que es técnica y respondé vos; escalá solo
   cuando sea claramente un tema para la empresa.
-- NO hables de pago, salario ni remuneración entre la empresa y el junior: eso se coordina por
-  fuera y no es parte de esta etapa. Si te preguntan por eso, aclaralo con amabilidad y derivá a
-  la empresa con ${ESCALATION_TAG}. (Sí podés explicar métodos o pasarelas de pago cuando son una
-  FUNCIONALIDAD del proyecto a construir, por ejemplo una app de ventas que procesa cobros.)
+- Sobre el PAGO al junior: si arriba figura [Compensación], podés informar ese monto con
+  naturalidad (es público) y aclarar que es el pago TOTAL por el proyecto completo y que se
+  coordina por fuera de la plataforma; no es por hora. Si NO figura, decí con honestidad que la
+  empresa todavía no lo definió. Ahora bien, vos solo INFORMÁS el monto: no lo negociés, no
+  prometas cambios ni acuerdes otra cifra o forma de pago. Si el junior quiere negociar el monto,
+  pedir un adelanto o acordar condiciones de pago, derivá a la empresa con ${ESCALATION_TAG}.
+  (Además, podés explicar métodos o pasarelas de pago cuando son una FUNCIONALIDAD del proyecto a
+  construir, por ejemplo una app de ventas que procesa cobros.)
 - NUNCA escribas la postulación, la carta de presentación ni la propuesta del junior: eso lo
   redacta siempre él. Podés darle consejos de qué resaltar, pero no se la escribas.
 - Mantenete en el tema de ESTE proyecto. Si te preguntan algo ajeno, redirigí con amabilidad.

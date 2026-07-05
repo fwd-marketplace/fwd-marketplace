@@ -24,10 +24,12 @@ Para selects y filtros (onboarding y marketplace).
 
 ### GET /api/projects  (Bearer)
 Listado visible (publicados + los propios de la empresa). Query opcional:
-`area` (uuid), `skill` (uuid), `plazoMax` (5-15), `q` (texto en el título).
+`area` (uuid), `skill` (uuid), `plazoMax` (5-15), `compensacionMin` (50-10000),
+`compensacionMax` (50-10000), `q` (texto en el título).
 ```json
 { "projects": [{
   "id": "uuid", "titulo": "...", "descripcion": "...", "usa_ia": false,
+  "compensacion": 750, "moneda": "USD", "compensacion_actualizada_en": null,
   "plazo_dias": 10, "tecnologias_extra": ["Rust"], "fecha_publicacion": "...", "fecha_cierre": "...",
   "estado": { "id": "uuid", "nombre": "en_recepcion" },
   "area":   { "id": "uuid", "nombre": "..." },
@@ -35,6 +37,7 @@ Listado visible (publicados + los propios de la empresa). Query opcional:
   "skills": [{ "skill": { "id": "uuid", "nombre": "React", "tipo": "tecnologia", "categoria": "Frontend" } }]
 }] }
 ```
+Solo se listan proyectos en `en_recepcion` con `compensacion` definida.
 
 ### GET /api/projects/mias  (Bearer — empresa)
 Solo los proyectos PROPIOS de la empresa, incluyendo borradores. Para "Mis Proyectos".
@@ -47,17 +50,24 @@ Misma forma de item que `GET /projects`. → `{ "projects": [ ... ] }`
 ### POST /api/projects  (Bearer — empresa con cuenta activa)
 ```json
 { "titulo": "Landing", "descripcion": "...", "id_area_negocio": "uuid",
-  "plazo_dias": 10, "usa_ia": false, "skills": ["uuid"],
+  "plazo_dias": 10, "usa_ia": false, "compensacion": 750, "skills": ["uuid"],
   "tecnologias_extra": ["Rust", "GraphQL"], "publicar": true }
 ```
 - `titulo`: 1-255 caracteres. `descripcion`: mínimo 1.
 - `plazo_dias`: entero **entre 5 y 15** (fuera de rango → `400`).
+- `compensacion`: número **entre 50 y 10000** (USD). **Obligatorio si `publicar: true`**.
 - `id_area_negocio`: uuid del catálogo. `skills`: lista de uuids del catálogo (opcional).
 - `tecnologias_extra`: tecnologías "Otros" escritas a mano que NO están en el catálogo de skills
   (opcional, hasta 20, cada una 1-50 caracteres). Se guardan por-proyecto, no en el catálogo global.
 - `publicar: true` → estado `en_recepcion` (visible) y calcula `fecha_cierre`.
-- `publicar: false`/omitido → queda en `borrador`.
+- `publicar: false`/omitido → queda en `borrador` (compensacion opcional).
 → `201 { "project": { "id": "uuid", "titulo": "...", "estado": { "nombre": "en_recepcion" } } }`
+
+### PATCH /api/projects/:id  (Bearer — empresa dueña)
+Edita datos del proyecto en `borrador`, `en_recepcion` o `pausado`.
+- `compensacion`: 50-10000 USD. En `en_recepcion`: se puede **subir** con postulaciones activas
+  (notifica a postulantes); **bajar** solo si no hay postulaciones activas.
+- Proyectos `pausado` sin compensación: agregar `compensacion` y luego `PATCH .../reactivar`.
 
 ### PATCH /api/projects/:id/estado  (Bearer — empresa dueña del proyecto)
 La empresa gestiona el ciclo de vida de su proyecto. `estado` debe ser uno de:

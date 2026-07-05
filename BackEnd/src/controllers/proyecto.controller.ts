@@ -11,6 +11,8 @@ const listQuerySchema = z.object({
   area: z.string().uuid().optional(),
   skill: z.string().uuid().optional(),
   plazoMax: z.coerce.number().int().min(5).max(15).optional(),
+  compensacionMin: z.coerce.number().min(50).max(10_000).optional(),
+  compensacionMax: z.coerce.number().min(50).max(10_000).optional(),
   q: z.string().trim().min(1).max(100).optional(),
 });
 

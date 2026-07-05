@@ -42,7 +42,7 @@ async function loadProyectoContexto(
   const { data, error } = await client
     .from("proyecto")
     .select(
-      `titulo, descripcion, condiciones, usa_ia, plazo_dias, tecnologias_extra,
+      `titulo, descripcion, condiciones, usa_ia, plazo_dias, tecnologias_extra, compensacion, moneda,
        area:area_negocio(nombre),
        empresa:empresario(nombre_comercial),
        skills:project_skills(skill:skills(nombre))`,
@@ -62,6 +62,8 @@ async function loadProyectoContexto(
     empresa: data.empresa?.nombre_comercial ?? null,
     area: data.area?.nombre ?? null,
     plazoDias: data.plazo_dias,
+    compensacion: data.compensacion,
+    moneda: data.moneda,
     descripcion: data.descripcion,
     usaIa: data.usa_ia,
     tecnologias,
