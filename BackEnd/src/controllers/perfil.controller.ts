@@ -15,6 +15,7 @@ import {
   deletePortafolioItem,
   getPublicEmpresaProfile,
   getPublicEmpresaProjects,
+  listEmpresasActivas,
   getPublicJuniorProfile,
 } from "../services/perfil.service";
 import { triggerVisitaPerfil } from "../services/notificacionTriggers.service";
@@ -110,6 +111,12 @@ export async function removePortafolioItem(req: Request, res: Response) {
   if (!id) throw new ApiError(400, "id requerido");
   await deletePortafolioItem(token, userId, id);
   res.status(204).send();
+}
+
+/** GET /api/perfil/empresas — directorio público de empresas con proyectos publicados */
+export async function getPublicEmpresas(_req: Request, res: Response) {
+  const empresas = await listEmpresasActivas();
+  res.status(200).json({ empresas });
 }
 
 /** GET /api/perfil/empresa/:id — perfil público de empresa/emprendedor */

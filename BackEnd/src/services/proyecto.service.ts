@@ -267,20 +267,32 @@ export async function listMyProjects(accessToken: string, userId: string) {
     .order("fecha_publicacion", { ascending: false, nullsFirst: false });
   if (error) throw new ApiError(500, error.message);
 
-  // 3. Contar ofertas por proyecto en una sola consulta.
+  // 3. Contar ofertas por proyecto en una sola consulta: total y "por revisar".
+  //    "Por revisar" = postulaciones pendientes de la DECISIÓN de la empresa (enviada o en
+  //    revisión); excluye 'solicitar_cambios' (espera al junior) y las ya resueltas
+  //    (adjudicada / no_seleccionada). Es la cola accionable del empresario.
   const projectIds = (data ?? []).map((p) => p.id);
   const countMap = new Map<string, number>();
+  const porRevisarMap = new Map<string, number>();
   if (projectIds.length > 0) {
     const { data: ofertaRows } = await client
       .from("oferta")
-      .select("id_proyecto")
+      .select("id_proyecto, estado:estado_oferta(nombre)")
       .in("id_proyecto", projectIds);
     for (const row of ofertaRows ?? []) {
       countMap.set(row.id_proyecto, (countMap.get(row.id_proyecto) ?? 0) + 1);
+      const estado = row.estado?.nombre;
+      if (estado === "enviada" || estado === "en_revision") {
+        porRevisarMap.set(row.id_proyecto, (porRevisarMap.get(row.id_proyecto) ?? 0) + 1);
+      }
     }
   }
 
-  return (data ?? []).map((p) => ({ ...p, n_ofertas: countMap.get(p.id) ?? 0 }));
+  return (data ?? []).map((p) => ({
+    ...p,
+    n_ofertas: countMap.get(p.id) ?? 0,
+    n_por_revisar: porRevisarMap.get(p.id) ?? 0,
+  }));
 }
 
 /** Devuelve un proyecto por id, o 404 si no existe / no es visible para el usuario. */

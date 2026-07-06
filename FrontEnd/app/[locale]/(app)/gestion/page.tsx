@@ -50,7 +50,7 @@ export default async function GestionRoute({ params, searchParams }: Props) {
       role={role}
       userId={userId}
       initialProjectId={proyecto ?? null}
-      initialSection={seccion === "chat" ? "chat" : null}
+      initialSection={seccion === "chat" ? "chat" : seccion === "proceso" ? "proceso" : null}
       disponible={disponible}
       initialOffers={initialOffers}
       initialProject={initialProject}

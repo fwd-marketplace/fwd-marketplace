@@ -91,15 +91,6 @@ export function createProject(
   });
 }
 
-export function decideOffer(offerId: string, accion: "aceptar" | "rechazar"): Promise<Result<void>> {
-  return asResult(async () => {
-    await apiAuth(`/ofertas/${offerId}`, {
-      method: "PATCH",
-      body: JSON.stringify({ accion }),
-    });
-  });
-}
-
 export function changeProjectState(projectId: string, estado: CompanyProjectState): Promise<Result<void>> {
   return asResult(async () => {
     await apiAuth(`/projects/${projectId}/estado`, {
@@ -158,7 +149,7 @@ export function submitEntregable(input: SubmitEntregableInput): Promise<Result<E
 
 export function reviewEntregable(
   entregableId: string,
-  accion: "revisar" | "aprobar" | "solicitar_cambios",
+  accion: "aprobar" | "solicitar_cambios",
   comentario?: string,
 ): Promise<Result<void>> {
   return asResult(async () => {

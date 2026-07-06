@@ -100,8 +100,25 @@ describe("listMyProjects", () => {
     reads["empresario"] = { data: { id: "emp-1" }, error: null };
     lists["proyecto"] = { data: [{ id: PROJECT, titulo: "Landing" }], error: null };
     const result = await listMyProjects(TOKEN, USER);
-    // listMyProjects agrega n_ofertas (conteo de postulaciones) a cada proyecto.
-    expect(result).toEqual([{ id: PROJECT, titulo: "Landing", n_ofertas: 0 }]);
+    // listMyProjects agrega n_ofertas (total) y n_por_revisar (pendientes de decisión) a cada proyecto.
+    expect(result).toEqual([{ id: PROJECT, titulo: "Landing", n_ofertas: 0, n_por_revisar: 0 }]);
+  });
+
+  it("cuenta n_por_revisar solo con ofertas en enviada/en_revision", async () => {
+    reads["empresario"] = { data: { id: "emp-1" }, error: null };
+    lists["proyecto"] = { data: [{ id: PROJECT, titulo: "Landing" }], error: null };
+    lists["oferta"] = {
+      data: [
+        { id_proyecto: PROJECT, estado: { nombre: "enviada" } },
+        { id_proyecto: PROJECT, estado: { nombre: "en_revision" } },
+        { id_proyecto: PROJECT, estado: { nombre: "solicitar_cambios" } },
+        { id_proyecto: PROJECT, estado: { nombre: "adjudicada" } },
+        { id_proyecto: PROJECT, estado: { nombre: "no_seleccionada" } },
+      ],
+      error: null,
+    };
+    const result = await listMyProjects(TOKEN, USER);
+    expect(result).toEqual([{ id: PROJECT, titulo: "Landing", n_ofertas: 5, n_por_revisar: 2 }]);
   });
 
   it("rechaza (403) si el usuario no tiene perfil de empresa", async () => {

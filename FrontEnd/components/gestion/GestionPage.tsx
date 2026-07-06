@@ -22,6 +22,7 @@ import {
   Lock,
   Mail,
   MessageSquare,
+  PackageCheck,
   PauseCircle,
   Pencil,
   Plus,
@@ -56,6 +57,8 @@ import {
   getMyProjectsAction,
   getMyOffersAction,
   uploadDocumentoAction,
+  getProjectEntregablesAction,
+  reviewEntregableAction,
 } from "@/lib/actions/marketplace";
 import { generateProposalAction, suggestStackAction, suggestCompensacionAction } from "@/lib/actions/ai";
 import { formatCompensacion, compensacionUpdatedAfterPublish, COMPENSACION_MIN, COMPENSACION_MAX } from "@/lib/marketplace/compensation";
@@ -73,6 +76,8 @@ import type {
   CatalogSkill,
   ConversacionItem,
   CreateProjectInput,
+  Entregable,
+  EntregableState,
   MyOffer,
   OfferState,
   ProjectOffer,
@@ -579,7 +584,7 @@ export function GestionPage({ role, userId, initialProjectId, initialSection: in
 
       {/* ── Sidebar ── */}
       <aside
-        aria-label="Proyectos"
+        aria-label={t("aria_proyectos")}
         className={cn(
           "flex shrink-0 flex-col overflow-hidden bg-secondary transition-[width] duration-[var(--duration-base)] ease-[var(--ease-out)]",
           "md:w-72 md:border-r md:border-white/10",
@@ -603,7 +608,7 @@ export function GestionPage({ role, userId, initialProjectId, initialSection: in
                       if (formMode === "edit") { setPendingNav({ type: "create" }); return; }
                       setFormMode("create");
                     }}
-                    aria-label="Nuevo proyecto"
+                    aria-label={t("aria_nuevo_proyecto")}
                     className="flex size-8 items-center justify-center rounded-full bg-white/10 text-white transition-colors duration-[var(--duration-fast)] ease-[var(--ease-out)] hover:bg-highlight hover:text-secondary"
                   >
                     <Plus className="size-4" aria-hidden="true" />
@@ -663,7 +668,7 @@ export function GestionPage({ role, userId, initialProjectId, initialSection: in
                                 <button
                                   type="button"
                                   onClick={(e) => { e.stopPropagation(); setDeleteTarget(proyecto.id); }}
-                                  aria-label="Eliminar proyecto"
+                                  aria-label={t("aria_eliminar_proyecto")}
                                   className="mr-2 hidden size-7 shrink-0 items-center justify-center rounded-full text-white/30 transition-colors hover:bg-magenta/20 hover:text-magenta group-hover:flex"
                                 >
                                   <Trash2 className="size-3.5" aria-hidden="true" />
@@ -784,7 +789,7 @@ export function GestionPage({ role, userId, initialProjectId, initialSection: in
                 </p>
               )}
             </div>
-            <nav className="flex flex-col gap-0.5 p-3" aria-label="Secciones del proyecto">
+            <nav className="flex flex-col gap-0.5 p-3" aria-label={t("aria_secciones_proyecto")}>
               {(["info", "chat", "proceso"] as const).map((key) => {
                 const Icon  = key === "info" ? FileText : key === "chat" ? MessageSquare : GitBranch;
                 const label = key === "info" ? t("section_info") : key === "chat" ? t("section_chat") : t("section_proceso");
@@ -847,7 +852,7 @@ export function GestionPage({ role, userId, initialProjectId, initialSection: in
           />
         ) : projectLoading && !selectedProject ? (
           <div className="flex flex-1 items-center justify-center py-20">
-            <Loader2 className="size-7 animate-spin text-primary" aria-label="Cargando proyecto" />
+            <Loader2 className="size-7 animate-spin text-primary" aria-label={t("aria_cargando_proyecto")} />
           </div>
         ) : (
           <>
@@ -995,6 +1000,7 @@ function WelcomePanel({
   // ── Empresa dashboard ────────────────────────────────────────────────────────
   if (isEmpresa && hasProjects) {
     const totalPropuestas = projects.reduce((acc, p) => acc + (p.n_ofertas ?? 0), 0);
+    const totalPorRevisar = projects.reduce((acc, p) => acc + (p.n_por_revisar ?? 0), 0);
     const activos = projects.filter(
       (p) => p.estado.nombre !== "cerrado" && p.estado.nombre !== "cancelado",
     ).length;
@@ -1024,7 +1030,7 @@ function WelcomePanel({
         </div>
 
         {/* Analíticas */}
-        <div className="mb-8 grid grid-cols-3 gap-4">
+        <div className="mb-8 grid grid-cols-2 gap-4 md:grid-cols-4">
           <div className="rounded-xl border border-border bg-surface p-5 text-center shadow-[var(--shadow-soft)]">
             <p className="font-heading text-4xl font-black text-secondary">{projects.length}</p>
             <p className="mt-1 font-body text-xs font-semibold text-ink-muted">{t("analytics_projects")}</p>
@@ -1032,6 +1038,17 @@ function WelcomePanel({
           <div className="rounded-xl border border-border bg-surface p-5 text-center shadow-[var(--shadow-soft)]">
             <p className="font-heading text-4xl font-black text-primary">{totalPropuestas}</p>
             <p className="mt-1 font-body text-xs font-semibold text-ink-muted">{t("analytics_proposals")}</p>
+          </div>
+          <div
+            className={cn(
+              "rounded-xl border p-5 text-center shadow-[var(--shadow-soft)]",
+              totalPorRevisar > 0 ? "border-warning/30 bg-warning/5" : "border-border bg-surface",
+            )}
+          >
+            <p className={cn("font-heading text-4xl font-black", totalPorRevisar > 0 ? "text-warning" : "text-ink-muted")}>
+              {totalPorRevisar}
+            </p>
+            <p className="mt-1 font-body text-xs font-semibold text-ink-muted">{t("analytics_por_revisar")}</p>
           </div>
           <div className="rounded-xl border border-border bg-surface p-5 text-center shadow-[var(--shadow-soft)]">
             <p className="font-heading text-4xl font-black text-accent">{activos}</p>
@@ -1069,8 +1086,13 @@ function WelcomePanel({
                   {p.area?.nombre ?? "—"} · {p.n_ofertas ?? 0} {t("proposals_count", { count: p.n_ofertas ?? 0 }).replace(/^\d+ /, "")}
                 </p>
               </div>
+              {(p.n_por_revisar ?? 0) > 0 && (
+                <span className="shrink-0 rounded-full bg-warning/10 px-2.5 py-1 font-body text-[10px] font-bold text-warning">
+                  {t("por_revisar_badge", { count: p.n_por_revisar ?? 0 })}
+                </span>
+              )}
               <span className={cn("shrink-0 rounded-full px-2.5 py-1 font-body text-[10px] font-bold", estadoColor[p.estado.nombre] ?? estadoColor.en_recepcion)}>
-                {p.estado.nombre === "en_recepcion" ? t("welcome_state_published") : p.estado.nombre.replace(/_/g, " ")}
+                {p.estado.nombre === "en_recepcion" ? t("welcome_state_published") : t(`state_${p.estado.nombre}`)}
               </span>
               <ChevronRight className="size-4 shrink-0 text-ink-muted/40 transition-colors group-hover:text-primary" aria-hidden="true" />
             </button>
@@ -1181,7 +1203,7 @@ function InfoPanel({
                 <button
                   type="button"
                   onClick={onEdit}
-                  aria-label="Editar proyecto"
+                  aria-label={t("aria_editar_proyecto")}
                   className="flex size-8 items-center justify-center rounded-full border border-border text-ink-muted transition-colors duration-[var(--duration-fast)] ease-[var(--ease-out)] hover:border-primary/30 hover:text-primary"
                 >
                   <Pencil className="size-3.5" aria-hidden="true" />
@@ -2110,6 +2132,199 @@ function JuniorProcesoView({
   );
 }
 
+// ── Revisión de entregables (empresa) ─────────────────────────────────────────
+
+const ENTREGABLE_REVIEW_CLASS: Record<EntregableState, string> = {
+  enviado:             "bg-primary/10 text-primary",
+  aprobado:            "bg-accent/10 text-accent",
+  cambios_solicitados: "bg-warning/10 text-warning",
+};
+
+/**
+ * Lista los entregables del proyecto (más reciente primero) y permite a la empresa
+ * aprobarlos o solicitar cambios (con comentario). Solo se muestra para el junior
+ * adjudicado. Datos reales vía GET /projects/:id/entregables + PATCH /entregables/:id.
+ */
+function EntregablesReview({
+  projectId, locale, t,
+}: {
+  projectId: string;
+  locale: string;
+  t: T;
+}) {
+  const [entregables, setEntregables] = useState<Entregable[] | null>(null);
+  const [loading, setLoading] = useState(true);
+  const [cambiosFor, setCambiosFor] = useState<string | null>(null);
+  const [comentario, setComentario] = useState("");
+  const [pendingId, setPendingId] = useState<string | null>(null);
+  const [error, setError] = useState<string | null>(null);
+
+  const load = useCallback(async () => {
+    const result = await getProjectEntregablesAction(projectId);
+    if (result.ok) setEntregables(result.data.entregables);
+    else setError(result.error);
+    setLoading(false);
+  }, [projectId]);
+
+  useEffect(() => { void load(); }, [load]);
+
+  const handleReview = async (id: string, accion: "aprobar" | "solicitar_cambios") => {
+    if (accion === "solicitar_cambios" && !comentario.trim()) return;
+    setPendingId(id);
+    setError(null);
+    const result = await reviewEntregableAction(
+      id,
+      accion,
+      accion === "solicitar_cambios" ? comentario.trim() : undefined,
+    );
+    if (result.ok) {
+      setCambiosFor(null);
+      setComentario("");
+      await load();
+    } else {
+      setError(result.error);
+    }
+    setPendingId(null);
+  };
+
+  const sorted = entregables ? [...entregables].sort((a, b) => b.version - a.version) : [];
+
+  return (
+    <div className="mt-4 rounded-xl border border-primary/20 bg-primary/5 p-4">
+      <p className="mb-3 flex items-center gap-1.5 font-body text-[10px] font-bold uppercase tracking-wider text-primary">
+        <PackageCheck className="size-3.5" aria-hidden="true" />
+        {t("proceso_entregables_label")}
+      </p>
+
+      {loading ? (
+        <div className="flex items-center gap-2 py-2 font-body text-sm text-ink-muted">
+          <Loader2 className="size-4 animate-spin" aria-hidden="true" />
+          {t("entregables_review_cargando")}
+        </div>
+      ) : sorted.length === 0 ? (
+        <p className="py-2 font-body text-sm text-ink-muted">{t("proceso_entregables_empty")}</p>
+      ) : (
+        <ul className="flex flex-col gap-2">
+          {sorted.map((ent) => {
+            const stateClass = ENTREGABLE_REVIEW_CLASS[ent.estado.nombre] ?? ENTREGABLE_REVIEW_CLASS.enviado;
+            const isPendiente = ent.estado.nombre === "enviado";
+            const isBusy = pendingId === ent.id;
+            return (
+              <li key={ent.id} className="flex flex-col gap-2 rounded-lg border border-border bg-surface px-3 py-2.5">
+                <div className="flex flex-wrap items-center justify-between gap-2">
+                  <div className="flex flex-wrap items-center gap-2">
+                    <span className="font-body text-[10px] font-bold uppercase tracking-wider text-ink-muted">
+                      v{ent.version} &middot; {t(`entregable_tipo_${ent.tipo}`)}
+                    </span>
+                    <span className={cn("rounded-full px-2.5 py-0.5 font-body text-[11px] font-semibold", stateClass)}>
+                      {t(`entregable_state_${ent.estado.nombre}`)}
+                    </span>
+                    <span className="font-body text-[11px] text-ink-subtle">
+                      {new Date(ent.fecha).toLocaleDateString(locale, { day: "numeric", month: "short" })}
+                    </span>
+                  </div>
+                  <div className="flex items-center gap-3">
+                    {ent.url && (
+                      <a
+                        href={ent.url}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="inline-flex items-center gap-1 font-body text-xs font-semibold text-primary hover:underline"
+                      >
+                        {t("entregables_review_ver")}
+                        <ExternalLink className="size-3" aria-hidden="true" />
+                      </a>
+                    )}
+                    {ent.url_github && (
+                      <a
+                        href={ent.url_github}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="inline-flex items-center gap-1 font-body text-xs font-semibold text-ink-muted hover:text-ink"
+                      >
+                        <GitBranch className="size-3" aria-hidden="true" />
+                        GitHub
+                      </a>
+                    )}
+                  </div>
+                </div>
+
+                {/* Comentario que la empresa dejó al pedir cambios */}
+                {ent.estado.nombre === "cambios_solicitados" && ent.comentario_revision && (
+                  <p className="rounded-lg border border-warning/20 bg-warning/5 px-3 py-2 font-body text-xs leading-relaxed text-ink">
+                    {ent.comentario_revision}
+                  </p>
+                )}
+
+                {/* Acciones de revisión: solo sobre entregables recién enviados */}
+                {isPendiente && (
+                  cambiosFor === ent.id ? (
+                    <div className="flex flex-col gap-2">
+                      <textarea
+                        value={comentario}
+                        onChange={(e) => setComentario(e.target.value)}
+                        rows={2}
+                        placeholder={t("entregables_review_cambios_placeholder")}
+                        className="block w-full resize-y rounded-xl border border-border bg-canvas p-3 font-body text-sm text-ink placeholder:text-ink-muted/60 focus:border-warning focus:outline-none focus:ring-2 focus:ring-warning/20"
+                      />
+                      <div className="flex gap-2">
+                        <button
+                          type="button"
+                          disabled={!comentario.trim() || isBusy}
+                          onClick={() => { void handleReview(ent.id, "solicitar_cambios"); }}
+                          className="inline-flex items-center gap-1.5 rounded-full bg-warning px-4 py-2 font-body text-xs font-semibold text-white transition-colors duration-[var(--duration-fast)] hover:bg-warning/85 disabled:opacity-50"
+                        >
+                          {isBusy && <Loader2 className="size-3.5 animate-spin" aria-hidden="true" />}
+                          {t("entregables_review_enviar_cambios")}
+                        </button>
+                        <button
+                          type="button"
+                          disabled={isBusy}
+                          onClick={() => { setCambiosFor(null); setComentario(""); }}
+                          className="rounded-full border border-border bg-surface px-4 py-2 font-body text-xs font-semibold text-ink-muted transition-colors duration-[var(--duration-fast)] hover:border-ink-muted disabled:opacity-50"
+                        >
+                          {t("entregables_review_cancelar")}
+                        </button>
+                      </div>
+                    </div>
+                  ) : (
+                    <div className="flex gap-2">
+                      <button
+                        type="button"
+                        disabled={isBusy}
+                        onClick={() => { void handleReview(ent.id, "aprobar"); }}
+                        className="inline-flex items-center gap-1.5 rounded-full bg-accent px-4 py-2 font-body text-xs font-semibold text-white transition-colors duration-[var(--duration-fast)] hover:bg-accent/85 disabled:opacity-50"
+                      >
+                        {isBusy ? <Loader2 className="size-3.5 animate-spin" aria-hidden="true" /> : <Check className="size-3.5" aria-hidden="true" />}
+                        {t("entregables_review_aprobar")}
+                      </button>
+                      <button
+                        type="button"
+                        disabled={isBusy}
+                        onClick={() => { setCambiosFor(ent.id); setComentario(""); }}
+                        className="rounded-full border border-warning/40 bg-surface px-4 py-2 font-body text-xs font-semibold text-warning transition-colors duration-[var(--duration-fast)] hover:bg-warning/10 disabled:opacity-50"
+                      >
+                        {t("entregables_review_solicitar_cambios")}
+                      </button>
+                    </div>
+                  )
+                )}
+              </li>
+            );
+          })}
+        </ul>
+      )}
+
+      {error && (
+        <p className="mt-2 flex items-center gap-1.5 font-body text-xs text-magenta">
+          <AlertCircle className="size-3.5" aria-hidden="true" />
+          {error}
+        </p>
+      )}
+    </div>
+  );
+}
+
 // ── Empresa proceso view ──────────────────────────────────────────────────────
 
 function EmpresaProcesoView({
@@ -2638,6 +2853,11 @@ function EmpresaProcesoView({
                         </div>
                       );
                     })}
+
+                    {/* Revisión de entregables: solo para el junior adjudicado */}
+                    {isAdj && project && (
+                      <EntregablesReview projectId={project.id} locale={locale} t={t} />
+                    )}
                   </div>
                 )}
               </div>
@@ -2682,6 +2902,7 @@ function TypingIndicator({ label }: { label: string }) {
 
 function AiAssistant({ onApply }: { onApply: (proposal: ProjectProposal) => void }) {
   const locale = useLocale();
+  const t = useTranslations("gestion_page");
   const [idea, setIdea] = useState("");
   const [messages, setMessages] = useState<AiChatMessage[]>([]);
   const [streamingText, setStreamingText] = useState("");
@@ -2805,7 +3026,7 @@ function AiAssistant({ onApply }: { onApply: (proposal: ProjectProposal) => void
               id="ai-idea"
               value={idea}
               onChange={(e) => setIdea(e.target.value)}
-              placeholder="Ej: Necesito una app web para gestionar turnos de una clínica pequeña..."
+              placeholder={t("ai_idea_placeholder")}
               rows={3}
               className="w-full resize-none rounded-xl border border-border bg-surface-sunken px-3.5 py-2 font-body text-sm text-ink-strong placeholder:text-ink-muted outline-none focus:ring-2 focus:ring-primary/20"
             />
@@ -2875,10 +3096,10 @@ function AiAssistant({ onApply }: { onApply: (proposal: ProjectProposal) => void
                 onChange={(e) => setReply(e.target.value)}
                 onKeyDown={(e) => { if (e.key === "Enter") { e.preventDefault(); void sendReply(); } }}
                 disabled={isStreaming}
-                placeholder="Respondé al asistente..."
+                placeholder={t("ai_reply_placeholder")}
                 className="w-full rounded-xl border border-border bg-surface-sunken px-3.5 py-2 font-body text-sm text-ink-strong placeholder:text-ink-muted outline-none focus:ring-2 focus:ring-primary/20 disabled:opacity-60"
               />
-              <Button type="button" size="icon" onClick={() => void sendReply()} disabled={!reply.trim() || isStreaming} aria-label="Enviar">
+              <Button type="button" size="icon" onClick={() => void sendReply()} disabled={!reply.trim() || isStreaming} aria-label={t("aria_enviar")}>
                 <Send className="size-4" />
               </Button>
             </div>
@@ -2931,6 +3152,7 @@ function ProjectFormContent({
   onSave: (data: CreateProjectInput | UpdateProjectInput) => Promise<string | null>;
   onClose: () => void;
 }) {
+  const t = useTranslations("gestion_page");
   const [form, setForm] = useState<FormData>(() => ({
     titulo: project?.titulo ?? "",
     descripcion: project?.descripcion ?? "",
@@ -3109,7 +3331,7 @@ function ProjectFormContent({
         <button
           type="button"
           onClick={onClose}
-          aria-label="Cancelar"
+          aria-label={t("aria_cancelar")}
           className="flex size-9 items-center justify-center rounded-full text-ink-muted hover:bg-surface-sunken hover:text-ink-strong"
         >
           <X className="size-5" aria-hidden="true" />
@@ -3148,7 +3370,7 @@ function ProjectFormContent({
               type="text"
               value={form.titulo}
               onChange={(e) => setForm((p) => ({ ...p, titulo: e.target.value }))}
-              placeholder="Nombre del proyecto"
+              placeholder={t("form_titulo_placeholder")}
               className="w-full rounded-xl border border-border bg-surface-sunken px-3.5 py-2 font-body text-sm text-ink-strong outline-none focus:ring-2 focus:ring-primary/20"
             />
           </div>
@@ -3162,7 +3384,7 @@ function ProjectFormContent({
               rows={5}
               value={form.descripcion}
               onChange={(e) => setForm((p) => ({ ...p, descripcion: e.target.value }))}
-              placeholder="Describí el proyecto, objetivos y entregables esperados"
+              placeholder={t("form_descripcion_placeholder")}
               className="min-h-28 w-full resize-none rounded-xl border border-border bg-surface-sunken px-3.5 py-2 font-body text-sm text-ink-strong outline-none focus:ring-2 focus:ring-primary/20"
             />
           </div>
@@ -3176,7 +3398,7 @@ function ProjectFormContent({
               rows={4}
               value={form.condiciones}
               onChange={(e) => setForm((p) => ({ ...p, condiciones: e.target.value }))}
-              placeholder="Opcional: aclaraciones, expectativas y dudas comunes del proyecto. El asistente del proyecto las usa para responderle a los juniors."
+              placeholder={t("form_condiciones_placeholder")}
               className="min-h-24 w-full resize-none rounded-xl border border-border bg-surface-sunken px-3.5 py-2 font-body text-sm text-ink-strong outline-none focus:ring-2 focus:ring-primary/20"
             />
             <p className="font-body text-[11px] text-ink-muted">
@@ -3252,7 +3474,7 @@ function ProjectFormContent({
                     setForm((p) => ({ ...p, compensacion: value }));
                   }
                 }}
-                placeholder="Ej: 500"
+                placeholder={t("form_compensacion_placeholder")}
                 className="w-full rounded-xl border border-border bg-surface-sunken py-2 pl-7 pr-14 font-body text-sm text-ink-strong outline-none focus:ring-2 focus:ring-primary/20"
               />
               <span className="pointer-events-none absolute right-3.5 top-1/2 -translate-y-1/2 font-body text-xs font-semibold text-ink-muted" aria-hidden="true">USD</span>
@@ -3315,7 +3537,7 @@ function ProjectFormContent({
                     value={otrosInput}
                     onChange={(e) => setOtrosInput(e.target.value)}
                     onKeyDown={(e) => { if (e.key === "Enter") { e.preventDefault(); addOtraTecnologia(); } }}
-                    placeholder="Otra tecnología no listada..."
+                    placeholder={t("form_otros_placeholder")}
                     className="w-full rounded-xl border border-border bg-surface-sunken px-3.5 py-2 font-body text-sm text-ink-strong placeholder:text-ink-muted outline-none focus:ring-2 focus:ring-primary/20"
                   />
                   <Button type="button" variant="outline" size="sm" onClick={addOtraTecnologia} disabled={!otrosInput.trim()}>
@@ -3395,20 +3617,21 @@ function UnsavedChangesDialog({
   onConfirm: () => void;
   onCancel: () => void;
 }) {
+  const t = useTranslations("gestion_page");
   return (
     <>
       <div className="fixed inset-0 z-40 bg-ink-strong/50 backdrop-blur-sm" aria-hidden="true" onClick={onCancel} />
       <div
         role="dialog"
         aria-modal="true"
-        aria-label="Cambios sin guardar"
+        aria-label={t("unsaved_title")}
         className="fixed left-1/2 top-1/2 z-50 w-full max-w-sm -translate-x-1/2 -translate-y-1/2 rounded-2xl border border-border bg-canvas p-6 shadow-[var(--shadow-elevated)]"
       >
         <h3 className="font-heading text-lg font-extrabold tracking-tight text-ink-strong">
-          Cambios sin guardar<span className="text-warning" aria-hidden="true">.</span>
+          {t("unsaved_title")}<span className="text-warning" aria-hidden="true">.</span>
         </h3>
         <p className="mt-1 font-body text-sm text-ink-muted">
-          Si salís ahora, los cambios del formulario se van a perder. ¿Seguro que querés continuar?
+          {t("unsaved_body")}
         </p>
         <div className="mt-5 flex gap-3">
           <button
@@ -3416,14 +3639,14 @@ function UnsavedChangesDialog({
             onClick={onCancel}
             className="flex-1 rounded-full border border-border px-4 py-2.5 font-body text-sm font-semibold text-ink-muted transition-colors hover:bg-surface-sunken"
           >
-            Seguir editando
+            {t("unsaved_keep_editing")}
           </button>
           <button
             type="button"
             onClick={onConfirm}
             className="flex-1 rounded-full bg-warning px-4 py-2.5 font-body text-sm font-semibold text-white transition-colors hover:bg-warning/80"
           >
-            Salir sin guardar
+            {t("unsaved_leave")}
           </button>
         </div>
       </div>
@@ -3627,6 +3850,7 @@ function ConfirmDeleteDialog({
   onConfirm: () => void;
   onCancel: () => void;
 }) {
+  const t = useTranslations("gestion_page");
   return (
     <>
       <div
@@ -3637,17 +3861,20 @@ function ConfirmDeleteDialog({
       <div
         role="dialog"
         aria-modal="true"
-        aria-label="Confirmar eliminación"
+        aria-label={t("delete_aria")}
         className="fixed left-1/2 top-1/2 z-50 w-full max-w-sm -translate-x-1/2 -translate-y-1/2 rounded-2xl border border-border bg-canvas p-6 shadow-[var(--shadow-elevated)]"
       >
         <div className="mb-1 flex size-10 items-center justify-center rounded-full bg-magenta/10">
           <Trash2 className="size-5 text-magenta" aria-hidden="true" />
         </div>
         <h3 className="mt-3 font-heading text-lg font-extrabold tracking-tight text-ink-strong">
-          Eliminar proyecto<span className="text-magenta" aria-hidden="true">.</span>
+          {t("delete_title")}<span className="text-magenta" aria-hidden="true">.</span>
         </h3>
         <p className="mt-1 font-body text-sm text-ink-muted">
-          ¿Seguro que querés eliminar <span className="font-semibold text-ink">{projectTitle}</span>? Esta acción no se puede deshacer.
+          {t.rich("delete_body", {
+            titulo: projectTitle,
+            strong: (chunks) => <span className="font-semibold text-ink">{chunks}</span>,
+          })}
         </p>
         {error && (
           <p className="mt-3 rounded-xl bg-magenta/10 px-3 py-2 font-body text-sm font-semibold text-magenta">
@@ -3660,7 +3887,7 @@ function ConfirmDeleteDialog({
             onClick={onCancel}
             className="flex-1 rounded-full border border-border px-4 py-2.5 font-body text-sm font-semibold text-ink-muted transition-colors hover:bg-surface-sunken"
           >
-            Cancelar
+            {t("delete_cancel")}
           </button>
           <button
             type="button"
@@ -3668,7 +3895,7 @@ function ConfirmDeleteDialog({
             disabled={deleting}
             className="flex-1 rounded-full bg-magenta px-4 py-2.5 font-body text-sm font-semibold text-white transition-colors hover:bg-magenta/80 disabled:opacity-60"
           >
-            {deleting ? "Eliminando..." : "Eliminar"}
+            {deleting ? t("delete_deleting") : t("delete_confirm")}
           </button>
         </div>
       </div>

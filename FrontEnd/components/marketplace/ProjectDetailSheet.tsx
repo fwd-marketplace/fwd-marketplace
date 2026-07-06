@@ -266,7 +266,7 @@ export function ProjectDetailSheet({
                     {t("owner_banner_desc")}
                   </p>
                   <Link
-                    href={`/${locale}/postulaciones`}
+                    href={`/${locale}/gestion?proyecto=${project.id}&seccion=proceso`}
                     className="mt-4 inline-flex items-center gap-1.5 rounded-full bg-primary px-4 py-2 font-body text-sm font-semibold text-white transition-colors hover:bg-secondary"
                   >
                     <ArrowUpRight className="size-4" aria-hidden="true" />

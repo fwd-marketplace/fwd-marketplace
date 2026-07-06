@@ -40,11 +40,10 @@ const STATE_CONFIG: Record<OfferState, { label: string; className: string }> = {
   no_seleccionada:   { label: "No seleccionada",     className: "bg-ink-muted/10 text-ink-muted border-border" },
 };
 
-const ENTREGABLE_STATE_CONFIG: Record<EntregableState, { label: string; className: string }> = {
-  pendiente:   { label: "Pendiente",   className: "bg-ink-muted/10 text-ink-muted" },
-  enviado:     { label: "Enviado",     className: "bg-primary/10 text-primary" },
-  en_revision: { label: "En revisión", className: "bg-warning/10 text-warning" },
-  aprobado:    { label: "Aprobado",    className: "bg-accent/10 text-accent" },
+const ENTREGABLE_STATE_CLASS: Record<EntregableState, string> = {
+  enviado:             "bg-primary/10 text-primary",
+  aprobado:            "bg-accent/10 text-accent",
+  cambios_solicitados: "bg-warning/10 text-warning",
 };
 
 function hoursUntil(fechaCierre: string | null | undefined): number | null {
@@ -77,8 +76,12 @@ function EntregableSection({
 
   const sorted = [...localEntregables].sort((a, b) => b.version - a.version);
   const latest = sorted[0];
-  // Allow new submission only if no entregable yet, or latest is approved
-  const canSubmitNew = !latest || latest.estado.nombre === "aprobado";
+  // Nuevo envío permitido si no hay entregable, si el último fue aprobado (parcial → final)
+  // o si la empresa pidió cambios (el junior sube la versión corregida).
+  const canSubmitNew =
+    !latest ||
+    latest.estado.nombre === "aprobado" ||
+    latest.estado.nombre === "cambios_solicitados";
 
   function handleSubmit(e: React.FormEvent<HTMLFormElement>) {
     e.preventDefault();
@@ -112,36 +115,46 @@ function EntregableSection({
       {sorted.length > 0 && (
         <div className="mb-3 flex flex-col gap-2">
           {sorted.map((ent) => {
-            const cfg = ENTREGABLE_STATE_CONFIG[ent.estado.nombre] ?? ENTREGABLE_STATE_CONFIG.enviado;
+            const stateClass = ENTREGABLE_STATE_CLASS[ent.estado.nombre] ?? ENTREGABLE_STATE_CLASS.enviado;
+            const showFeedback =
+              ent.estado.nombre === "cambios_solicitados" && Boolean(ent.comentario_revision);
             return (
               <div
                 key={ent.id}
-                className="flex flex-wrap items-center justify-between gap-2 rounded-lg border border-border bg-surface px-3 py-2"
+                className="flex flex-col gap-2 rounded-lg border border-border bg-surface px-3 py-2"
               >
-                <div className="flex flex-wrap items-center gap-2">
-                  <span className="font-body text-[10px] font-bold uppercase tracking-wider text-ink-muted">
-                    v{ent.version} &middot; {t(`entregable_tipo_${ent.tipo}`)}
-                  </span>
-                  <span className={cn("rounded-full px-2.5 py-0.5 font-body text-[11px] font-semibold", cfg.className)}>
-                    {cfg.label}
-                  </span>
-                  <span className="font-body text-[11px] text-ink-subtle">
-                    {new Date(ent.fecha).toLocaleDateString(locale, {
-                      day: "numeric",
-                      month: "short",
-                    })}
-                  </span>
+                <div className="flex flex-wrap items-center justify-between gap-2">
+                  <div className="flex flex-wrap items-center gap-2">
+                    <span className="font-body text-[10px] font-bold uppercase tracking-wider text-ink-muted">
+                      v{ent.version} &middot; {t(`entregable_tipo_${ent.tipo}`)}
+                    </span>
+                    <span className={cn("rounded-full px-2.5 py-0.5 font-body text-[11px] font-semibold", stateClass)}>
+                      {t(`entregable_state_${ent.estado.nombre}`)}
+                    </span>
+                    <span className="font-body text-[11px] text-ink-subtle">
+                      {new Date(ent.fecha).toLocaleDateString(locale, {
+                        day: "numeric",
+                        month: "short",
+                      })}
+                    </span>
+                  </div>
+                  {ent.url && (
+                    <a
+                      href={ent.url}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="inline-flex items-center gap-1 font-body text-xs font-semibold text-primary hover:underline"
+                    >
+                      {t("entregable_view_link")}
+                      <ExternalLink className="size-3" aria-hidden="true" />
+                    </a>
+                  )}
                 </div>
-                {ent.url && (
-                  <a
-                    href={ent.url}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="inline-flex items-center gap-1 font-body text-xs font-semibold text-primary hover:underline"
-                  >
-                    {t("entregable_view_link")}
-                    <ExternalLink className="size-3" aria-hidden="true" />
-                  </a>
+                {showFeedback && (
+                  <p className="rounded-lg border border-warning/20 bg-warning/5 px-3 py-2 font-body text-xs leading-relaxed text-ink">
+                    <span className="font-semibold text-warning">{t("entregable_feedback_label")}</span>{" "}
+                    {ent.comentario_revision}
+                  </p>
                 )}
               </div>
             );
@@ -633,7 +646,7 @@ export function MisPostulaciones({ ofertas: initialOfertas, entregables }: Props
             <ul className="flex flex-col gap-4">
               {ofertas.map((oferta) => {
                 const projectEntregables = entregables.filter(
-                  (e) => e.id_proyecto === oferta.proyecto?.id,
+                  (e) => e.proyecto?.id === oferta.proyecto?.id,
                 );
                 return (
                   <OfertaCard

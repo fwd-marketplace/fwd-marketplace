@@ -1,21 +1,14 @@
-import { setRequestLocale } from "next-intl/server";
-import { PostulacionesEmpresa } from "@/components/comp-perfil-empresa/PostulacionesEmpresa";
-import { getMyProjects } from "@/lib/api/marketplace";
+import { redirect } from "next/navigation";
 
 interface Props {
   params: Promise<{ locale: string }>;
 }
 
+/**
+ * La revisión de postulaciones se consolidó en `/gestion` (sección "Proceso" por proyecto, más
+ * completa). Esta ruta se conserva solo para redirigir enlaces antiguos que apuntaban acá.
+ */
 export default async function PostulacionesPage({ params }: Props) {
   const { locale } = await params;
-  setRequestLocale(locale);
-  const projectsResult = await getMyProjects();
-
-  return (
-    <main className="min-h-screen bg-canvas py-8">
-        <div className="mx-auto max-w-7xl px-4 md:px-6">
-          <PostulacionesEmpresa initialProjects={projectsResult.ok ? projectsResult.data.projects : []} />
-        </div>
-    </main>
-  );
+  redirect(`/${locale}/gestion`);
 }
