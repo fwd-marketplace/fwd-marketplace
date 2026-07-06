@@ -5,102 +5,48 @@ import { useTranslations, useLocale } from 'next-intl';
 import Link from 'next/link';
 import {
   ArrowRight,
-  ChevronRight,
-  ChevronLeft,
   Folder,
   Building2,
   Send,
-  LineChart,
-  GraduationCap,
-  BarChart,
   Compass,
   BookOpen,
   Mountain,
   Sparkles,
-  Trophy,
-  Eye,
-  Gift,
-  Star
+  Trophy
 } from 'lucide-react';
 import { FwdGeoBackdrop } from '@/components/ui/fwd-geo-backdrop';
-import { Button } from '@/components/ui/button';
 import { EstrellaProceso } from '@/components/comp-bienvenida/EstrellaProceso';
 import { ViajeActivity } from '@/components/comp-bienvenida/ViajeActivity';
 import { LlamadoToast } from '@/components/comp-bienvenida/LlamadoToast';
 import type { HeroJourneyData } from '@/lib/hero-journey/mock';
+import type { ApiNotificacion, MiInvitacion, RecommendedProject } from '@/lib/api/types';
+import { formatCompensacion } from '@/lib/marketplace/compensation';
 
-// TODO: replace with real API data once backend integration is complete
-const recommendedProjects = [
-  {
-    id: 1,
-    title: 'Rediseño App Fintech',
-    company: 'FinPay',
-    badge: 'urgent' as const,
-    match: 93,
-    duration: 6,
-    modality: 'remote' as const,
-    tags: ['React', 'TypeScript', 'Tailwind'],
-    icon: 'line-chart'
-  },
-  {
-    id: 2,
-    title: 'Plataforma Educativa',
-    company: 'EduConnect',
-    badge: 'high_match' as const,
-    match: 91,
-    duration: 8,
-    modality: 'remote' as const,
-    tags: ['Next.js', 'Supabase', 'PostgreSQL'],
-    icon: 'graduation-cap'
-  },
-  {
-    id: 3,
-    title: 'Dashboard Analytics',
-    company: 'DataNova',
-    badge: 'new' as const,
-    match: 85,
-    duration: 4,
-    modality: 'hybrid' as const,
-    tags: ['React', 'Node.js', 'MongoDB'],
-    icon: 'bar-chart'
-  }
-];
+/** Datos reales del inicio del junior (los provee la página vía props; cero mock). */
+export interface BienvenidaData {
+  stats: {
+    proyectosDisponibles: number;
+    empresasActivas: number;
+    matchTop: number;
+    misPostulaciones: number;
+  };
+  recomendados: RecommendedProject[];
+  actividad: ApiNotificacion[];
+  invitaciones: MiInvitacion[];
+}
 
-const interestedCompanies = [
-  { id: 1, name: 'TechNova', searching: 'Buscando Frontend Developer', initials: 'TN', color: 'bg-secondary' },
-  { id: 2, name: 'Forward Labs', searching: 'Buscando talento en IA y Datos', initials: 'FL', color: 'bg-accent' },
-  { id: 3, name: 'Data Studio', searching: 'Buscando Fullstack Developer', initials: 'DS', color: 'bg-primary' }
-];
+/** Iniciales (máx 2) para el avatar de una empresa. */
+function empresaIniciales(nombre: string): string {
+  return nombre
+    .split(/\s+/)
+    .filter(Boolean)
+    .slice(0, 2)
+    .map((p) => p[0]?.toUpperCase() ?? '')
+    .join('');
+}
 
-const recentActivity = [
-  {
-    id: 1,
-    title: 'Nuevo proyecto compatible',
-    desc: 'Plataforma Educativa tiene 91% de match con tu perfil.',
-    time: 'Hace 1 hora',
-    icon: Gift,
-    iconColor: 'text-secondary',
-    bgColor: 'bg-secondary/10'
-  },
-  {
-    id: 2,
-    title: 'Empresa visitó tu perfil',
-    desc: 'EduConnect revisó tu perfil completo.',
-    time: 'Hace 3 horas',
-    icon: Eye,
-    iconColor: 'text-accent',
-    bgColor: 'bg-accent/10'
-  },
-  {
-    id: 3,
-    title: 'Nueva vacante publicada',
-    desc: 'Dashboard Analytics se publicó hoy.',
-    time: 'Ayer',
-    icon: Star,
-    iconColor: 'text-warning',
-    bgColor: 'bg-warning/10'
-  }
-];
+/** Colores de acento que rotan para los avatares de empresas (tokens FWD). */
+const CARD_ACCENTS = ['bg-secondary', 'bg-accent', 'bg-primary', 'bg-warning'] as const;
 
 type GreetingKey = 'greeting_morning' | 'greeting_afternoon' | 'greeting_evening';
 
@@ -114,11 +60,13 @@ function greetingForHour(hour: number): GreetingKey {
 interface BienvenidaDashboardProps {
   isJunior: boolean;
   heroJourney: HeroJourneyData;
+  data: BienvenidaData;
 }
 
-export function BienvenidaDashboard({ isJunior, heroJourney }: BienvenidaDashboardProps) {
+export function BienvenidaDashboard({ isJunior, heroJourney, data }: BienvenidaDashboardProps) {
   const t = useTranslations('bienvenida');
   const locale = useLocale();
+  const { stats, recomendados, actividad, invitaciones } = data;
 
   // Se calcula tras montar (useEffect) para usar la hora del navegador del
   // usuario y evitar el mismatch de hidratación: el servidor no conoce su zona.
@@ -127,12 +75,6 @@ export function BienvenidaDashboard({ isJunior, heroJourney }: BienvenidaDashboa
   useEffect(() => {
     setGreetingKey(greetingForHour(new Date().getHours()));
   }, []);
-
-  const modalityLabel: Record<string, string> = {
-    remote: t('modality.remote'),
-    hybrid: t('modality.hybrid'),
-    onsite: t('modality.onsite'),
-  };
 
   return (
     <>
@@ -316,16 +258,16 @@ export function BienvenidaDashboard({ isJunior, heroJourney }: BienvenidaDashboa
               <Folder className="h-6 w-6" />
             </div>
             <div>
-              <div className="font-heading text-3xl font-bold">18</div>
+              <div className="font-heading text-3xl font-bold">{stats.proyectosDisponibles}</div>
               <div className="text-sm font-medium text-ink-strong">{t('stats.projects')}</div>
-              <Link href="#" className="text-xs text-primary font-medium hover:underline flex items-center mt-1">
+              <Link href={`/${locale}/marketplace`} className="text-xs text-primary font-medium hover:underline flex items-center mt-1">
                 {t('stats.view_all')} <ArrowRight className="h-3 w-3 ml-1" />
               </Link>
             </div>
           </div>
           <div className="bg-surface rounded-xl p-6 shadow-soft flex items-center gap-4">
             <div className="relative flex h-14 w-14 items-center justify-center rounded-full border-4 border-accent text-accent">
-              <span className="font-bold text-lg">92%</span>
+              <span className="font-bold text-lg">{stats.matchTop}%</span>
             </div>
             <div>
               <div className="text-sm font-bold text-ink-strong mb-1">{t('stats.match')}</div>
@@ -337,9 +279,11 @@ export function BienvenidaDashboard({ isJunior, heroJourney }: BienvenidaDashboa
               <Building2 className="h-6 w-6" />
             </div>
             <div>
-              <div className="font-heading text-3xl font-bold">4</div>
-              <div className="text-sm font-medium text-ink-strong">{t('stats.companies')}</div>
-              <div className="text-xs text-ink-muted mt-1">{t('stats.companies_desc')}</div>
+              <div className="font-heading text-3xl font-bold">{stats.empresasActivas}</div>
+              <div className="text-sm font-medium text-ink-strong">{t('stats.active_companies')}</div>
+              <Link href={`/${locale}/empresas`} className="text-xs text-primary font-medium hover:underline flex items-center mt-1">
+                {t('stats.view_companies')} <ArrowRight className="h-3 w-3 ml-1" />
+              </Link>
             </div>
           </div>
           <div className="bg-surface rounded-xl p-6 shadow-soft flex items-center gap-4">
@@ -347,74 +291,85 @@ export function BienvenidaDashboard({ isJunior, heroJourney }: BienvenidaDashboa
               <Send className="h-6 w-6" />
             </div>
             <div>
-              <div className="font-heading text-3xl font-bold">3</div>
+              <div className="font-heading text-3xl font-bold">{stats.misPostulaciones}</div>
               <div className="text-sm font-medium text-ink-strong">{t('stats.applications')}</div>
-              <Link href="#" className="text-xs text-primary font-medium hover:underline flex items-center mt-1">
+              <Link href={`/${locale}/gestion`} className="text-xs text-primary font-medium hover:underline flex items-center mt-1">
                 {t('stats.view_applications')} <ArrowRight className="h-3 w-3 ml-1" />
               </Link>
             </div>
           </div>
         </div>
 
-        {/* Recommended Projects */}
+        {/* Recommended Projects — ranking real por afinidad (matching contra el perfil) */}
         <section>
           <div className="flex items-center justify-between mb-4">
             <h2 className="text-xl font-bold text-ink-strong">{t('recommended.title')}</h2>
-            <Link href="#" className="text-sm font-medium text-primary hover:underline flex items-center">
+            <Link href={`/${locale}/marketplace`} className="text-sm font-medium text-primary hover:underline flex items-center">
               {t('recommended.view_all')} <ArrowRight className="ml-1 h-4 w-4" />
             </Link>
           </div>
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-6 relative">
-            <button className="absolute -left-4 top-1/2 -translate-y-1/2 flex h-8 w-8 items-center justify-center rounded-full bg-surface shadow-soft border border-border z-10 hidden lg:flex hover:bg-canvas">
-              <ChevronLeft className="h-4 w-4 text-ink" />
-            </button>
-            <button className="absolute -right-4 top-1/2 -translate-y-1/2 flex h-8 w-8 items-center justify-center rounded-full bg-surface shadow-soft border border-border z-10 hidden lg:flex hover:bg-canvas">
-              <ChevronRight className="h-4 w-4 text-ink" />
-            </button>
-
-            {recommendedProjects.map((project) => (
-              <div key={project.id} className="bg-surface rounded-xl p-6 shadow-soft border border-border">
-                <div className="mb-3">
-                  <span className={`text-[10px] font-bold uppercase tracking-wider px-2 py-1 rounded bg-canvas ${project.badge === 'urgent' ? 'text-magenta' : project.badge === 'high_match' ? 'text-accent' : 'text-primary'}`}>
-                    {t(`recommended.badges.${project.badge as 'urgent' | 'high_match' | 'new'}`)}
-                  </span>
-                </div>
-                <div className="flex items-start gap-4 mb-4">
-                  <div className={`flex h-10 w-10 shrink-0 items-center justify-center rounded-lg ${project.badge === 'urgent' ? 'bg-magenta/10 text-magenta' : project.badge === 'high_match' ? 'bg-accent/10 text-accent' : 'bg-primary/10 text-primary'}`}>
-                    {project.icon === 'line-chart' && <LineChart className="h-5 w-5" />}
-                    {project.icon === 'graduation-cap' && <GraduationCap className="h-5 w-5" />}
-                    {project.icon === 'bar-chart' && <BarChart className="h-5 w-5" />}
-                  </div>
-                  <div>
-                    <h3 className="font-heading font-bold text-ink-strong">{project.title}</h3>
-                    <div className="text-sm text-ink-muted flex items-center gap-1">
-                      <Building2 className="h-3 w-3" /> {project.company}
+          {recomendados.length === 0 ? (
+            <div className="bg-surface rounded-xl p-8 shadow-soft border border-border text-center">
+              <p className="text-sm text-ink-muted">{t('recommended.empty')}</p>
+            </div>
+          ) : (
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+              {recomendados.map((project) => {
+                const badgeKey = project.score >= 85 ? 'high_match' : 'new';
+                const skills = project.skills.flatMap((s) => (s.skill ? [s.skill.nombre] : [])).slice(0, 3);
+                return (
+                  <Link
+                    key={project.id}
+                    href={`/${locale}/marketplace/${project.id}`}
+                    className="bg-surface rounded-xl p-6 shadow-soft border border-border transition-colors duration-[var(--duration-fast)] ease-[var(--ease-out)] hover:border-primary/40"
+                  >
+                    <div className="mb-3">
+                      <span className={`text-[10px] font-bold uppercase tracking-wider px-2 py-1 rounded bg-canvas ${badgeKey === 'high_match' ? 'text-accent' : 'text-primary'}`}>
+                        {t(`recommended.badges.${badgeKey}`)}
+                      </span>
                     </div>
-                  </div>
-                </div>
-                <div className="flex flex-wrap gap-2 mb-6">
-                  {project.tags.map(tag => (
-                    <span key={tag} className="px-2 py-1 bg-canvas border border-border rounded-md text-xs text-ink">
-                      {tag}
-                    </span>
-                  ))}
-                </div>
-                <div className="flex items-center justify-between pt-4 border-t border-border">
-                  <div className="flex items-center gap-3 text-xs text-ink-muted">
-                    <span>{project.duration} {t('recommended.weeks')}</span>
-                    <span className="h-1 w-1 rounded-full bg-ink-subtle"></span>
-                    <span>{modalityLabel[project.modality]}</span>
-                  </div>
-                  <div className="flex flex-col items-center">
-                    <div className="relative flex h-12 w-12 items-center justify-center rounded-full border-4 border-accent text-accent font-bold text-sm">
-                      {project.match}%
+                    <div className="flex items-start gap-4 mb-4">
+                      <div className={`flex h-10 w-10 shrink-0 items-center justify-center rounded-lg ${badgeKey === 'high_match' ? 'bg-accent/10 text-accent' : 'bg-primary/10 text-primary'}`}>
+                        <Folder className="h-5 w-5" />
+                      </div>
+                      <div className="min-w-0">
+                        <h3 className="font-heading font-bold text-ink-strong truncate">{project.titulo}</h3>
+                        <div className="text-sm text-ink-muted flex items-center gap-1 truncate">
+                          <Building2 className="h-3 w-3 shrink-0" /> {project.empresa?.nombre_comercial ?? '—'}
+                        </div>
+                      </div>
                     </div>
-                    <span className="text-[10px] text-accent mt-1 font-medium">{t('recommended.match')}</span>
-                  </div>
-                </div>
-              </div>
-            ))}
-          </div>
+                    <div className="flex flex-wrap gap-2 mb-6">
+                      {skills.map((tag) => (
+                        <span key={tag} className="px-2 py-1 bg-canvas border border-border rounded-md text-xs text-ink">
+                          {tag}
+                        </span>
+                      ))}
+                    </div>
+                    <div className="flex items-center justify-between pt-4 border-t border-border">
+                      <div className="flex items-center gap-3 text-xs text-ink-muted">
+                        <span>{project.plazo_dias} {t('recommended.days')}</span>
+                        {project.compensacion != null && (
+                          <>
+                            <span className="h-1 w-1 rounded-full bg-ink-subtle"></span>
+                            <span className="font-semibold text-accent">
+                              {formatCompensacion(project.compensacion, project.moneda)}
+                            </span>
+                          </>
+                        )}
+                      </div>
+                      <div className="flex flex-col items-center">
+                        <div className="relative flex h-12 w-12 items-center justify-center rounded-full border-4 border-accent text-accent font-bold text-sm">
+                          {project.score}%
+                        </div>
+                        <span className="text-[10px] text-accent mt-1 font-medium">{t('recommended.match')}</span>
+                      </div>
+                    </div>
+                  </Link>
+                );
+              })}
+            </div>
+          )}
         </section>
 
         {/* Viaje del Héroe — solo visible para juniors (role = student) */}
@@ -435,35 +390,77 @@ export function BienvenidaDashboard({ isJunior, heroJourney }: BienvenidaDashboa
           </div>
         )}
 
-        {/* Recent Activity */}
+        {/* Empresas interesadas — invitaciones reales que recibió el junior */}
         <section>
-          <div className="flex items-center justify-between mb-4">
-            <h2 className="text-xl font-bold text-ink-strong">{t('activity.title')}</h2>
-            <Link href="#" className="text-sm font-medium text-primary hover:underline flex items-center">
-              {t('activity.view_all')} <ArrowRight className="ml-1 h-4 w-4" />
-            </Link>
+          <div className="mb-4">
+            <h2 className="text-xl font-bold text-ink-strong">{t('companies.title')}</h2>
           </div>
-          <div className="bg-surface rounded-xl shadow-soft border border-border overflow-hidden">
-            <div className="divide-y divide-border">
-              {recentActivity.map((activity) => (
-                <div key={activity.id} className="p-4 flex items-center justify-between hover:bg-canvas/50 transition-colors cursor-pointer">
-                  <div className="flex items-center gap-4">
-                    <div className={`flex h-10 w-10 shrink-0 items-center justify-center rounded-xl ${activity.bgColor} ${activity.iconColor}`}>
-                      <activity.icon className="h-5 w-5" />
-                    </div>
-                    <div>
-                      <div className="font-bold text-sm text-ink-strong">{activity.title}</div>
-                      <div className="text-xs text-ink-muted">{activity.desc}</div>
-                    </div>
-                  </div>
-                  <div className="flex items-center gap-4 text-xs text-ink-muted">
-                    <span>{activity.time}</span>
-                    <ChevronRight className="h-4 w-4" />
-                  </div>
-                </div>
-              ))}
+          {invitaciones.length === 0 ? (
+            <div className="bg-surface rounded-xl p-8 shadow-soft border border-border text-center">
+              <p className="text-sm text-ink-muted">{t('companies.empty')}</p>
             </div>
+          ) : (
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+              {invitaciones.map((inv, i) => {
+                const nombre = inv.proyecto?.empresa?.nombre_comercial ?? t('companies.una_empresa');
+                const accent = CARD_ACCENTS[i % CARD_ACCENTS.length];
+                const card = (
+                  <div className="bg-surface rounded-xl p-5 shadow-soft border border-border flex items-center gap-4 h-full">
+                    <div className={`flex h-11 w-11 shrink-0 items-center justify-center rounded-full ${accent} font-heading text-sm font-bold text-white`}>
+                      {empresaIniciales(nombre)}
+                    </div>
+                    <div className="min-w-0">
+                      <div className="font-bold text-sm text-ink-strong truncate">{nombre}</div>
+                      <div className="text-xs text-ink-muted truncate">
+                        {t('companies.invited_to')} {inv.proyecto?.titulo ?? ''}
+                      </div>
+                    </div>
+                  </div>
+                );
+                return inv.proyecto ? (
+                  <Link
+                    key={inv.id}
+                    href={`/${locale}/marketplace/${inv.proyecto.id}`}
+                    className="transition-opacity duration-[var(--duration-fast)] ease-[var(--ease-out)] hover:opacity-90"
+                  >
+                    {card}
+                  </Link>
+                ) : (
+                  <div key={inv.id}>{card}</div>
+                );
+              })}
+            </div>
+          )}
+        </section>
+
+        {/* Recent Activity — notificaciones reales del junior */}
+        <section>
+          <div className="mb-4">
+            <h2 className="text-xl font-bold text-ink-strong">{t('activity.title')}</h2>
           </div>
+          {actividad.length === 0 ? (
+            <div className="bg-surface rounded-xl p-8 shadow-soft border border-border text-center">
+              <p className="text-sm text-ink-muted">{t('activity.empty')}</p>
+            </div>
+          ) : (
+            <div className="bg-surface rounded-xl shadow-soft border border-border overflow-hidden">
+              <div className="divide-y divide-border">
+                {actividad.slice(0, 5).map((n) => (
+                  <div key={n.id} className="p-4 flex items-center justify-between gap-4">
+                    <div className="flex items-center gap-4 min-w-0">
+                      <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-primary/10 text-primary">
+                        <Sparkles className="h-5 w-5" />
+                      </div>
+                      <div className="min-w-0 text-sm text-ink-strong">{n.mensaje}</div>
+                    </div>
+                    <span className="shrink-0 text-xs text-ink-muted">
+                      {new Date(n.fecha).toLocaleDateString(locale, { day: 'numeric', month: 'short' })}
+                    </span>
+                  </div>
+                ))}
+              </div>
+            </div>
+          )}
         </section>
 
       </div>

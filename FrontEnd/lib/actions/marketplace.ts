@@ -11,7 +11,6 @@ import {
   cancelProject,
   changeProjectState,
   createProject,
-  decideOffer,
   deleteProject,
   editOffer,
   getCatalogs,
@@ -113,13 +112,6 @@ export async function deleteProjectAction(projectId: string) {
   return result;
 }
 
-export async function decideOfferAction(offerId: string, accion: "aceptar" | "rechazar") {
-  const result = await decideOffer(offerId, accion);
-  if (result.ok) {
-    revalidatePath("/");
-  }
-  return result;
-}
 
 export async function reviewOfferAction(offerId: string, input: ReviewOfferInput) {
   const result = await reviewOffer(offerId, input);
@@ -167,7 +159,7 @@ export async function getProjectEntregablesAction(projectId: string) {
 
 export async function reviewEntregableAction(
   entregableId: string,
-  accion: "revisar" | "aprobar" | "solicitar_cambios",
+  accion: "aprobar" | "solicitar_cambios",
   comentario?: string,
 ) {
   const result = await reviewEntregable(entregableId, accion, comentario);

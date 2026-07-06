@@ -81,10 +81,42 @@ export type ApiProject = {
   empresa: { id?: string; nombre_comercial: string; tipo: "empresa" | "emprendedor" } | null;
   skills: Array<{ skill: CatalogSkill | null }>;
   n_ofertas?: number;
+  /** Propuestas pendientes de decisión (enviada/en_revision): cola de revisión de la empresa. */
+  n_por_revisar?: number;
 };
 
 export type ProjectsResponse = {
   projects: ApiProject[];
+};
+
+/** Proyecto recomendado al junior: el proyecto + su afinidad (score) contra el perfil. */
+export type RecommendedProject = ApiProject & {
+  score: number;
+  matchedSkills: string[];
+  missingSkills: string[];
+};
+
+export type RecommendedProjectsResponse = {
+  /** false si el admin desactivó el matching (enable_matching). */
+  enabled: boolean;
+  projects: RecommendedProject[];
+};
+
+/** Invitación que recibió el junior de una empresa para postular a un proyecto. */
+export type MiInvitacion = {
+  id: string;
+  mensaje: string | null;
+  estado: "pendiente" | "aceptada" | "rechazada";
+  fecha: string;
+  proyecto: {
+    id: string;
+    titulo: string;
+    empresa: { nombre_comercial: string | null; tipo: "empresa" | "emprendedor" } | null;
+  } | null;
+};
+
+export type MisInvitacionesResponse = {
+  invitaciones: MiInvitacion[];
 };
 
 /**
@@ -434,6 +466,16 @@ export type PublicEmpresaProfile = {
   url_logo: string | null;
 };
 
+/** Empresa/emprendedor en el directorio público, con sus proyectos publicados. */
+export type EmpresaDirectorio = {
+  id: string;
+  nombre_comercial: string | null;
+  tipo: "empresa" | "emprendedor";
+  descripcion: string | null;
+  url_logo: string | null;
+  proyectos: { id: string; titulo: string }[];
+};
+
 export type PublicJuniorProfile = {
   id: string;
   nombre: string;
@@ -715,18 +757,22 @@ export type EditOfferInput = {
   documentacion_url?: string | null;
 };
 
-export type EntregableState = "pendiente" | "enviado" | "en_revision" | "aprobado";
+// Estados reales en la BD (seed de estado_entregable): el junior envía ('enviado'),
+// la empresa aprueba ('aprobado') o pide cambios ('cambios_solicitados').
+export type EntregableState = "enviado" | "aprobado" | "cambios_solicitados";
 export type EntregableTipo = "parcial" | "final";
 
 export type Entregable = {
   id: string;
-  id_proyecto: string;
+  id_proyecto?: string;
+  group_id?: string;
   tipo: EntregableTipo;
   version: number;
   fecha: string;
   estado: { nombre: EntregableState };
   url: string | null;
   url_github: string | null;
+  comentario_revision?: string | null;
   junior?: { id: string; nombre: string; apellido1: string | null } | null;
   proyecto?: { id: string; titulo: string } | null;
 };

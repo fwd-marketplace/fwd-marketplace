@@ -414,7 +414,7 @@ export function ProjectDetail({ project, role }: Props) {
                     {t("owner_banner_desc")}
                   </p>
                   <Link
-                    href={`/${locale}/postulaciones`}
+                    href={`/${locale}/gestion?proyecto=${project.id}&seccion=proceso`}
                     className="inline-flex items-center gap-1.5 rounded-full bg-primary px-4 py-2 font-body text-sm font-semibold text-white transition-colors hover:bg-secondary"
                   >
                     <ExternalLink className="size-4" aria-hidden="true" />

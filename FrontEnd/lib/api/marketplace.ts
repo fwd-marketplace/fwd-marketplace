@@ -17,8 +17,12 @@ import type {
   MyOffersResponse,
   OfertaContacto,
   OfertaContactoResponse,
+  MiInvitacion,
+  MisInvitacionesResponse,
   ProjectDetailResponse,
   ProjectMatchesResponse,
+  RecommendedProject,
+  RecommendedProjectsResponse,
   ProjectOffer,
   ProjectOffersResponse,
   ProjectsResponse,
@@ -91,15 +95,6 @@ export function createProject(
   });
 }
 
-export function decideOffer(offerId: string, accion: "aceptar" | "rechazar"): Promise<Result<void>> {
-  return asResult(async () => {
-    await apiAuth(`/ofertas/${offerId}`, {
-      method: "PATCH",
-      body: JSON.stringify({ accion }),
-    });
-  });
-}
-
 export function changeProjectState(projectId: string, estado: CompanyProjectState): Promise<Result<void>> {
   return asResult(async () => {
     await apiAuth(`/projects/${projectId}/estado`, {
@@ -131,6 +126,22 @@ export function getProjects(filters?: MarketplaceProjectFilters): Promise<Result
   return asResult(() => apiAuth<ProjectsResponse>(`/projects${buildProjectsQuery(filters)}`));
 }
 
+/** Proyectos recomendados al junior por afinidad (ranking del matching contra su perfil). */
+export function getRecommendedProjects(): Promise<Result<RecommendedProject[]>> {
+  return asResult(async () => {
+    const res = await apiAuth<RecommendedProjectsResponse>("/projects/recomendados");
+    return res.projects;
+  });
+}
+
+/** Invitaciones que recibió el junior de empresas (empresas interesadas en su perfil). */
+export function getMisInvitaciones(): Promise<Result<MiInvitacion[]>> {
+  return asResult(async () => {
+    const res = await apiAuth<MisInvitacionesResponse>("/invitaciones/mias");
+    return res.invitaciones;
+  });
+}
+
 export function getProjectById(id: string): Promise<Result<ApiProject>> {
   return asResult(async () => {
     const res = await apiAuth<ProjectDetailResponse>(`/projects/${id}`);
@@ -158,7 +169,7 @@ export function submitEntregable(input: SubmitEntregableInput): Promise<Result<E
 
 export function reviewEntregable(
   entregableId: string,
-  accion: "revisar" | "aprobar" | "solicitar_cambios",
+  accion: "aprobar" | "solicitar_cambios",
   comentario?: string,
 ): Promise<Result<void>> {
   return asResult(async () => {
