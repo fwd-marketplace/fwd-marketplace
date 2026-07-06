@@ -2,6 +2,7 @@ import { supabaseForToken } from "../config/supabase";
 import { ApiError } from "../utils/ApiError";
 import { logger } from "../utils/logger";
 import { crearNotificaciones, MENSAJES_NOTIFICACION, TIPO_POR_MENSAJE } from "./notificacion.service";
+import { triggerNuevoProyectoCompatible } from "./notificacionTriggers.service";
 import { oppositeLocale, translateFields } from "./ai/translation.service";
 import type { Database, Json } from "../types/database.types";
 import type { AppLocale } from "../validations/ai";
@@ -406,6 +407,12 @@ export async function createProject(
     input.locale,
   );
 
+  // 8. Si el proyecto se publicó directamente (en_recepcion), notificar a los
+  //    juniors compatibles (best-effort, no bloquea la respuesta al cliente).
+  if (input.publicar) {
+    void triggerNuevoProyectoCompatible(proyecto.id, proyecto.titulo ?? input.titulo);
+  }
+
   return proyecto;
 }
 
@@ -459,6 +466,11 @@ export async function changeProjectState(
       MENSAJES_NOTIFICACION.proyectoCerrado(proyecto.titulo),
       TIPO_POR_MENSAJE.proyectoCerrado,
     );
+  }
+
+  // 4. Al pasar a en_recepcion (publicar desde borrador), notificar juniors compatibles.
+  if (input.estado === "en_recepcion") {
+    void triggerNuevoProyectoCompatible(projectId, proyecto.titulo ?? projectId);
   }
 
   return data;
