@@ -2,8 +2,6 @@ import { supabaseForToken } from "../config/supabase";
 import { ApiError } from "../utils/ApiError";
 import { readAppSettings } from "./settings.service";
 import { searchStudents } from "./estudiante.service";
-import { estudiantesOcupados } from "./oferta.service";
-import { listProjects } from "./proyecto.service";
 
 export interface MatchCandidate {
   id: string;
@@ -113,65 +111,4 @@ export async function matchStudentsForProject(
     .slice(0, MAX_CANDIDATOS);
 
   return { enabled: true, candidates };
-}
-
-/** Cuántos proyectos recomendados se devuelven (los de mayor afinidad). */
-const MAX_RECOMENDADOS = 6;
-
-/**
- * Proyectos publicados rankeados por afinidad para el estudiante autenticado. Es el inverso de
- * `matchStudentsForProject`: reutiliza la MISMA función pura `computeMatchScore` (cobertura de las
- * skills del proyecto contra las del junior, más su disponibilidad y reputación reales) y la
- * consulta del marketplace (`listProjects`) para respetar estado/compensación/RLS. Respeta el flag
- * global `enable_matching`.
- */
-export async function matchProjectsForStudent(accessToken: string, userId: string) {
-  const settings = await readAppSettings();
-  if (!settings.enable_matching) return { enabled: false, projects: [] };
-
-  const client = supabaseForToken(accessToken);
-
-  // El usuario debe tener perfil de estudiante.
-  const { data: estudiante, error: estError } = await client
-    .from("estudiante")
-    .select("id, reputacion")
-    .eq("id_usuario", userId)
-    .maybeSingle();
-  if (estError) throw new ApiError(500, estError.message);
-  if (!estudiante) throw new ApiError(403, "Solo los estudiantes tienen recomendaciones");
-
-  // Skills del estudiante (nombres).
-  const { data: skillLinks, error: skillsError } = await client
-    .from("student_skills")
-    .select("skill:skills(nombre)")
-    .eq("id_estudiante", estudiante.id);
-  if (skillsError) throw new ApiError(500, skillsError.message);
-  const studentSkills = (skillLinks ?? [])
-    .map((l) => l.skill?.nombre)
-    .filter((n): n is string => Boolean(n));
-
-  // Disponibilidad real: el junior NO tiene un proyecto activo.
-  const ocupados = await estudiantesOcupados(client, [userId]);
-  const disponible = !ocupados.has(userId);
-
-  // Proyectos publicados (misma consulta del marketplace: en_recepcion, con compensación, vigentes).
-  const proyectos = await listProjects(accessToken, {});
-
-  const projects = proyectos
-    .map((p) => {
-      const projectSkills = p.skills
-        .map((s) => s.skill?.nombre)
-        .filter((n): n is string => Boolean(n));
-      const { score, matchedSkills, missingSkills } = computeMatchScore(
-        projectSkills,
-        studentSkills,
-        disponible,
-        estudiante.reputacion,
-      );
-      return { ...p, score, matchedSkills, missingSkills };
-    })
-    .sort((a, b) => b.score - a.score)
-    .slice(0, MAX_RECOMENDADOS);
-
-  return { enabled: true, projects };
 }

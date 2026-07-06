@@ -68,21 +68,3 @@ export async function invitarEstudiante(
 
   return { ok: true };
 }
-
-/**
- * Invitaciones que recibió el estudiante autenticado, de más reciente a más antigua. El RLS
- * (invitacion_invitado_ver) garantiza que solo vea las suyas. Sirve para mostrarle en su inicio
- * las "empresas interesadas": las que lo invitaron a postular a alguno de sus proyectos.
- */
-export async function misInvitaciones(accessToken: string, userId: string) {
-  const client = supabaseForToken(accessToken);
-  const { data, error } = await client
-    .from("invitacion")
-    .select(
-      "id, mensaje, estado, fecha, proyecto:proyecto(id, titulo, empresa:empresario(nombre_comercial, tipo))",
-    )
-    .eq("id_usuario", userId)
-    .order("fecha", { ascending: false });
-  if (error) throw new ApiError(500, error.message);
-  return data ?? [];
-}

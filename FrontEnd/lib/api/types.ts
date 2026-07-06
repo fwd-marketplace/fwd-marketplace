@@ -89,36 +89,6 @@ export type ProjectsResponse = {
   projects: ApiProject[];
 };
 
-/** Proyecto recomendado al junior: el proyecto + su afinidad (score) contra el perfil. */
-export type RecommendedProject = ApiProject & {
-  score: number;
-  matchedSkills: string[];
-  missingSkills: string[];
-};
-
-export type RecommendedProjectsResponse = {
-  /** false si el admin desactivó el matching (enable_matching). */
-  enabled: boolean;
-  projects: RecommendedProject[];
-};
-
-/** Invitación que recibió el junior de una empresa para postular a un proyecto. */
-export type MiInvitacion = {
-  id: string;
-  mensaje: string | null;
-  estado: "pendiente" | "aceptada" | "rechazada";
-  fecha: string;
-  proyecto: {
-    id: string;
-    titulo: string;
-    empresa: { nombre_comercial: string | null; tipo: "empresa" | "emprendedor" } | null;
-  } | null;
-};
-
-export type MisInvitacionesResponse = {
-  invitaciones: MiInvitacion[];
-};
-
 /**
  * Filtros server-side del listado de proyectos (los soporta el backend con índices en DB).
  * El marketplace hoy filtra en el cliente por UX instantánea; estos filtros están disponibles

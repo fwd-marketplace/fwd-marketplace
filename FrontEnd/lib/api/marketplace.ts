@@ -17,12 +17,8 @@ import type {
   MyOffersResponse,
   OfertaContacto,
   OfertaContactoResponse,
-  MiInvitacion,
-  MisInvitacionesResponse,
   ProjectDetailResponse,
   ProjectMatchesResponse,
-  RecommendedProject,
-  RecommendedProjectsResponse,
   ProjectOffer,
   ProjectOffersResponse,
   ProjectsResponse,
@@ -124,22 +120,6 @@ function buildProjectsQuery(filters?: MarketplaceProjectFilters): string {
  */
 export function getProjects(filters?: MarketplaceProjectFilters): Promise<Result<ProjectsResponse>> {
   return asResult(() => apiAuth<ProjectsResponse>(`/projects${buildProjectsQuery(filters)}`));
-}
-
-/** Proyectos recomendados al junior por afinidad (ranking del matching contra su perfil). */
-export function getRecommendedProjects(): Promise<Result<RecommendedProject[]>> {
-  return asResult(async () => {
-    const res = await apiAuth<RecommendedProjectsResponse>("/projects/recomendados");
-    return res.projects;
-  });
-}
-
-/** Invitaciones que recibió el junior de empresas (empresas interesadas en su perfil). */
-export function getMisInvitaciones(): Promise<Result<MiInvitacion[]>> {
-  return asResult(async () => {
-    const res = await apiAuth<MisInvitacionesResponse>("/invitaciones/mias");
-    return res.invitaciones;
-  });
 }
 
 export function getProjectById(id: string): Promise<Result<ApiProject>> {

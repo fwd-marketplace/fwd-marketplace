@@ -1,7 +1,7 @@
 import type { Request, Response } from "express";
 import { z } from "zod";
 import * as projectService from "../services/proyecto.service";
-import { matchStudentsForProject, matchProjectsForStudent } from "../services/match.service";
+import { matchStudentsForProject } from "../services/match.service";
 import { invitarEstudiante } from "../services/invitacion.service";
 import { ApiError } from "../utils/ApiError";
 import { CreateProjectSchema, ChangeProjectStateSchema, UpdateProjectSchema } from "../validations/project";
@@ -94,13 +94,6 @@ export async function update(req: Request, res: Response) {
     bodyParsed.data,
   );
   res.status(200).json({ project });
-}
-
-/** GET /api/projects/recomendados (ruta protegida — estudiante): proyectos rankeados por afinidad */
-export async function recomendados(req: Request, res: Response) {
-  if (!req.user) throw new ApiError(401, "No autenticado");
-  const result = await matchProjectsForStudent(readToken(req), req.user.id);
-  res.status(200).json(result);
 }
 
 /** GET /api/projects/:id/matches (ruta protegida — empresa dueña): candidatos por afinidad */
