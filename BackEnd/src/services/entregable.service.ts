@@ -6,6 +6,24 @@ import type { Database } from "../types/database.types";
 type Client = ReturnType<typeof supabaseForToken>;
 type EntregableUpdate = Database["public"]["Tables"]["entregable"]["Update"];
 
+/**
+ * Acciones de revisión que la empresa puede tomar sobre un entregable, y el
+ * estado destino de cada una. Los nombres deben existir en el seed de
+ * `estado_entregable` (enviado | aprobado | cambios_solicitados). No hay estado
+ * intermedio "en revisión": la empresa aprueba o pide cambios.
+ */
+export type AccionRevisionEntregable = "aprobar" | "solicitar_cambios";
+
+const ESTADO_POR_ACCION: Record<AccionRevisionEntregable, string> = {
+  aprobar: "aprobado",
+  solicitar_cambios: "cambios_solicitados",
+};
+
+/** Estado destino (nombre en `estado_entregable`) para una acción de revisión. */
+export function estadoEntregablePorAccion(accion: AccionRevisionEntregable): string {
+  return ESTADO_POR_ACCION[accion];
+}
+
 /** Resuelve el id de un estado de entregable por nombre. */
 async function getEstadoEntregableId(client: Client, nombre: string): Promise<string> {
   const { data, error } = await client
@@ -149,12 +167,12 @@ export async function listProjectEntregables(
   return data;
 }
 
-/** La empresa revisa, aprueba o solicita cambios en un entregable. */
+/** La empresa aprueba o solicita cambios en un entregable. */
 export async function reviewEntregable(
   accessToken: string,
   userId: string,
   entregableId: string,
-  accion: "revisar" | "aprobar" | "solicitar_cambios",
+  accion: AccionRevisionEntregable,
   comentario?: string,
 ) {
   const client = supabaseForToken(accessToken);
@@ -178,14 +196,7 @@ export async function reviewEntregable(
     throw new ApiError(403, "No podés revisar este entregable");
   }
 
-  // Mapear acción a nombre de estado.
-  const estadoNombreMap: Record<typeof accion, string> = {
-    revisar: "en_revision",
-    aprobar: "aprobado",
-    solicitar_cambios: "enviado",
-  };
-  const estadoNombre = estadoNombreMap[accion];
-  const estadoId = await getEstadoEntregableId(client, estadoNombre);
+  const estadoId = await getEstadoEntregableId(client, estadoEntregablePorAccion(accion));
 
   const updatePayload: EntregableUpdate = { id_estado: estadoId };
   if (accion === "solicitar_cambios" && comentario) {

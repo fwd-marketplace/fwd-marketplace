@@ -34,7 +34,7 @@ const SubmitEntregableSchema = z.object({
 });
 
 const ReviewEntregableSchema = z.object({
-  accion: z.enum(["revisar", "aprobar", "solicitar_cambios"]),
+  accion: z.enum(["aprobar", "solicitar_cambios"]),
   comentario: z.string().optional(),
 });
 

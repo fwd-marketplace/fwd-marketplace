@@ -603,6 +603,84 @@ export async function getPublicEmpresaProjects(empresarioId: string) {
 }
 
 /**
+ * Directorio público de empresas/emprendedores con proyectos publicados. Toma los proyectos
+ * visibles del marketplace (en_recepcion, con compensación y no vencidos — mismo filtro que
+ * `listProjects`, para que cuadre con la cifra "empresas activas") y los agrupa por empresa,
+ * adjuntando su logo. Así el junior explora por empresa. Usa service role, como el resto de
+ * perfiles públicos.
+ */
+export async function listEmpresasActivas() {
+  const admin = supabaseAdmin();
+
+  const { data: estadoRec, error: estadoError } = await admin
+    .from("estado_proyecto")
+    .select("id")
+    .eq("nombre", "en_recepcion")
+    .maybeSingle();
+  if (estadoError) throw new ApiError(500, estadoError.message);
+  if (!estadoRec) return [];
+
+  const now = new Date().toISOString();
+  const { data: proyectos, error } = await admin
+    .from("proyecto")
+    .select("id, titulo, empresa:empresario(id, nombre_comercial, tipo, descripcion)")
+    .eq("id_estado", estadoRec.id)
+    .not("compensacion", "is", null)
+    .or(`fecha_cierre.is.null,fecha_cierre.gt.${now}`)
+    .order("fecha_publicacion", { ascending: false, nullsFirst: false });
+  if (error) throw new ApiError(500, error.message);
+
+  type DirectorioEmpresa = {
+    id: string;
+    nombre_comercial: string | null;
+    tipo: string;
+    descripcion: string | null;
+    url_logo: string | null;
+    proyectos: { id: string; titulo: string }[];
+  };
+  const byEmpresa = new Map<string, DirectorioEmpresa>();
+  for (const p of proyectos ?? []) {
+    const emp = p.empresa;
+    if (!emp) continue;
+    let entry = byEmpresa.get(emp.id);
+    if (!entry) {
+      entry = {
+        id: emp.id,
+        nombre_comercial: emp.nombre_comercial,
+        tipo: emp.tipo,
+        descripcion: emp.descripcion,
+        url_logo: null,
+        proyectos: [],
+      };
+      byEmpresa.set(emp.id, entry);
+    }
+    entry.proyectos.push({ id: p.id, titulo: p.titulo });
+  }
+  const empresas = [...byEmpresa.values()];
+
+  // Logos en una sola consulta para todas las empresas listadas.
+  const ids = empresas.map((e) => e.id);
+  if (ids.length > 0) {
+    const { data: logos } = await admin
+      .from("files")
+      .select("id_empresario, storage_path")
+      .in("id_empresario", ids)
+      .eq("tipo", "logo");
+    const logoByEmp = new Map<string, string>();
+    for (const l of logos ?? []) {
+      if (l.id_empresario && !logoByEmp.has(l.id_empresario)) {
+        logoByEmp.set(l.id_empresario, l.storage_path);
+      }
+    }
+    for (const e of empresas) e.url_logo = logoByEmp.get(e.id) ?? null;
+  }
+
+  // Las más activas (con más proyectos) primero.
+  empresas.sort((a, b) => b.proyectos.length - a.proyectos.length);
+  return empresas;
+}
+
+/**
  * Devuelve el perfil público de un junior por users.id.
  * Solo incluye items de portafolio con visibilidad = 'publico'.
  */
