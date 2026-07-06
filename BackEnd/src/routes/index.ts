@@ -18,6 +18,7 @@ import guardadoRoutes from "./guardado.routes";
 import publicPerfilRoutes from "./public-perfil.routes";
 import viajeRoutes from "./viaje.routes";
 import juniorRoutes from "./junior.routes";
+import egresadoRoutes from "./egresado.routes";
 import { asyncHandler } from "../utils/asyncHandler";
 import { isDatabaseReachable } from "../services/health.service";
 
@@ -54,5 +55,6 @@ router.use("/guardados", guardadoRoutes);
 router.use("/perfil", publicPerfilRoutes);
 router.use("/viaje", viajeRoutes);
 router.use("/junior", juniorRoutes);
+router.use("/egresados", egresadoRoutes);
 
 export default router;
