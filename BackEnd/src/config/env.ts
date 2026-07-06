@@ -63,6 +63,15 @@ export const env = {
     logoUrl: process.env.EMAIL_LOGO_URL ?? "",
   },
 
+  // Registro externo de egresados FWD (segundo proyecto Supabase, base simulada).
+  // El onboarding del junior coteja su cédula contra `verificar_egresado` para marcarlo
+  // 'verificado' automáticamente. Opcional: si faltan, la verificación degrada y la
+  // cuenta queda 'pendiente' (nunca bloquea el registro).
+  registry: {
+    url: process.env.FWD_REGISTRY_URL ?? "",
+    key: process.env.FWD_REGISTRY_KEY ?? "",
+  },
+
   // Asistente de IA para crear proyectos. Proveedor principal Groq (endpoint
   // compatible con OpenAI). La key NO es obligatoria para arrancar: si falta, el
   // asistente degrada con un error claro y el usuario completa el formulario a mano.

@@ -1,6 +1,8 @@
-import { supabaseForToken } from "../config/supabase";
+import { supabaseForToken, supabaseAdmin } from "../config/supabase";
 import { ApiError } from "../utils/ApiError";
+import { logger } from "../utils/logger";
 import { readAppSettings } from "./settings.service";
+import { verificarEgresado } from "./egresado.service";
 import type {
   JuniorOnboarding,
   EmpresaOnboarding,
@@ -66,6 +68,29 @@ export async function onboardJunior(
     p_tech_stack: input.tech_stack,
   });
   if (error) mapOnboardingError(error);
+
+  // Verificación de egresado FWD: si la cédula está en el registro externo, la cuenta
+  // queda 'verificado' de una (sin revisión manual del admin) y se guarda su título FWD.
+  // Opción A: si no coincide o el registro no responde, se deja 'pendiente' y el registro
+  // NUNCA se bloquea; por eso el cotejo va en un try/catch que solo loguea.
+  try {
+    const match = await verificarEgresado(input.cedula);
+    if (match.elegible) {
+      const { error: updateError } = await supabaseAdmin()
+        .from("estudiante")
+        .update({ estado_verificacion: "verificado", titulo_fwd: match.titulo })
+        .eq("id_usuario", userId);
+      if (updateError) {
+        logger.error("no se pudo marcar al egresado como verificado", {
+          error: updateError.message,
+        });
+      }
+    }
+  } catch (cause) {
+    logger.error("cotejo de egresado falló; la cuenta queda pendiente", {
+      error: (cause as Error).message,
+    });
+  }
 
   return { role: "student", estado_cuenta: "pendiente" };
 }
