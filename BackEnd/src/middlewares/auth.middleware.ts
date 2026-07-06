@@ -15,8 +15,26 @@ export const authenticate = asyncHandler(async (req, _res, next) => {
 
   const token = header.slice("Bearer ".length).trim();
   req.user = await getUserFromToken(token);
-  // Guardamos el token para que los services puedan crear un cliente Supabase
-  // con la identidad del usuario (necesario para que el RLS aplique por usuario).
   req.accessToken = token;
+  next();
+});
+
+/**
+ * Middleware opcional: si llega un Bearer token válido lo inyecta en req.user/
+ * req.accessToken (igual que `authenticate`), pero si no hay token o es inválido
+ * simplemente continúa sin usuario. Usado en rutas públicas que quieren saber
+ * quién llama cuando están autenticados (ej. perfil público del junior).
+ */
+export const optionalAuthenticate = asyncHandler(async (req, _res, next) => {
+  const header = req.headers.authorization;
+  if (header?.startsWith("Bearer ")) {
+    const token = header.slice("Bearer ".length).trim();
+    try {
+      req.user = await getUserFromToken(token);
+      req.accessToken = token;
+    } catch {
+      // Token inválido o expirado — continúa como anónimo.
+    }
+  }
   next();
 });

@@ -73,6 +73,51 @@ const FAINT_STARS: readonly StarPoint[] = [
   { x: 50, y: 96 }, { x: 18, y: 92 }, { x: 84, y: 16 }, { x: 6, y: 44 }, { x: 94, y: 40 },
 ];
 
+interface BgParticle {
+  x: number; y: number; size: number; op: number; dur: number; delay: number;
+}
+
+// Puntos y estrellitas de fondo. Posiciones fijas (sin Math.random).
+// Perspectiva: cuanto más cerca del centro de la estrella (50,48), más pequeño.
+const BG_DOTS: readonly BgParticle[] = [
+  // Perimetro (dist > 55) — tamaño máximo
+  { x: 3,  y: 5,  size: 5,   op: 0.7,  dur: 3.5, delay: 0.2 },
+  { x: 15, y: 3,  size: 4.5, op: 0.65, dur: 4.2, delay: 1.1 },
+  { x: 88, y: 10, size: 5,   op: 0.7,  dur: 4.5, delay: 0.4 },
+  { x: 97, y: 22, size: 4.5, op: 0.65, dur: 3.2, delay: 2.1 },
+  { x: 98, y: 55, size: 5,   op: 0.7,  dur: 5,   delay: 0.9 },
+  { x: 92, y: 88, size: 4.5, op: 0.65, dur: 4.1, delay: 0.3 },
+  { x: 10, y: 90, size: 5,   op: 0.7,  dur: 4.6, delay: 1.3 },
+  { x: 2,  y: 75, size: 4.5, op: 0.65, dur: 3.1, delay: 2.0 },
+  // Semi-perimetro (dist 40-55) — tamaño medio
+  { x: 25, y: 8,  size: 3.5, op: 0.6,  dur: 2.8, delay: 0.7 },
+  { x: 75, y: 5,  size: 3.5, op: 0.6,  dur: 3.8, delay: 1.8 },
+  { x: 95, y: 70, size: 3.5, op: 0.6,  dur: 3.7, delay: 1.5 },
+  { x: 72, y: 97, size: 3.5, op: 0.6,  dur: 2.9, delay: 1.7 },
+  { x: 55, y: 99, size: 3,   op: 0.58, dur: 4.8, delay: 2.4 },
+  { x: 30, y: 96, size: 3.5, op: 0.6,  dur: 3.4, delay: 0.6 },
+  { x: 4,  y: 50, size: 3,   op: 0.58, dur: 4.3, delay: 0.8 },
+  { x: 1,  y: 30, size: 3.5, op: 0.6,  dur: 5.2, delay: 1.6 },
+  // Interior (dist < 40) — tamaño reducido por perspectiva
+  { x: 20, y: 30, size: 2,   op: 0.55, dur: 4,   delay: 2.2 },
+  { x: 80, y: 35, size: 2,   op: 0.55, dur: 3.6, delay: 0.5 },
+  { x: 78, y: 68, size: 2.5, op: 0.55, dur: 4.7, delay: 1.9 },
+  { x: 22, y: 65, size: 2,   op: 0.55, dur: 3.3, delay: 1.2 },
+  { x: 45, y: 85, size: 2,   op: 0.55, dur: 5.1, delay: 2.6 },
+  { x: 55, y: 15, size: 2.5, op: 0.55, dur: 3.9, delay: 0.1 },
+];
+
+const BG_MINI_STARS: readonly BgParticle[] = [
+  { x: 7,  y: 12, size: 11, op: 0.65, dur: 4.2, delay: 0.8 },
+  { x: 91, y: 18, size: 10, op: 0.6,  dur: 3.5, delay: 1.4 },
+  { x: 96, y: 48, size: 11, op: 0.65, dur: 5,   delay: 2.1 },
+  { x: 88, y: 82, size: 10, op: 0.6,  dur: 4.7, delay: 0.3 },
+  { x: 45, y: 95, size: 11, op: 0.65, dur: 3.8, delay: 1.9 },
+  { x: 5,  y: 60, size: 10, op: 0.6,  dur: 4.4, delay: 1.1 },
+  { x: 30, y: 4,  size: 11, op: 0.65, dur: 3.2, delay: 2.5 },
+  { x: 70, y: 92, size: 10, op: 0.6,  dur: 4.9, delay: 0.6 },
+];
+
 function toPolarPoint(angleDeg: number, radius: number): StarPoint {
   const radians = (angleDeg * Math.PI) / 180;
   return {
@@ -140,13 +185,43 @@ export function EstrellaProceso({ heroJourney }: EstrellaProcesoProps) {
   }, []);
 
   return (
-    <div className="estrella-panel relative overflow-hidden rounded-2xl border border-white/10 bg-constellation-sky p-6 text-white shadow-soft flex-1 flex flex-col">
-      {/* Estrellas tenues de ambiente */}
+    <div className="estrella-panel relative overflow-hidden rounded-2xl border border-white/10 bg-constellation-sky p-6 text-white shadow-soft">
+      {/* Estrellas tenues de ambiente + partículas de fondo */}
       <div className="estrella-starfield" aria-hidden="true">
         {FAINT_STARS.map((star) => (
           <span
-            key={`${star.x}-${star.y}`}
+            key={`faint-${star.x}-${star.y}`}
             style={{ left: `${star.x}%`, top: `${star.y}%` }}
+          />
+        ))}
+        {BG_DOTS.map((dot) => (
+          <div
+            key={`dot-${dot.x}-${dot.y}`}
+            className="estrella-bg-dot"
+            style={{
+              left: `${dot.x}%`,
+              top: `${dot.y}%`,
+              width: `${dot.size}px`,
+              height: `${dot.size}px`,
+              ['--s-op' as string]: dot.op,
+              ['--s-dur' as string]: `${dot.dur}s`,
+              ['--s-delay' as string]: `${dot.delay}s`,
+            }}
+          />
+        ))}
+        {BG_MINI_STARS.map((star) => (
+          <div
+            key={`mstar-${star.x}-${star.y}`}
+            className="estrella-bg-star"
+            style={{
+              left: `${star.x}%`,
+              top: `${star.y}%`,
+              width: `${star.size}px`,
+              height: `${star.size}px`,
+              ['--s-op' as string]: star.op,
+              ['--s-dur' as string]: `${star.dur}s`,
+              ['--s-delay' as string]: `${star.delay}s`,
+            }}
           />
         ))}
       </div>

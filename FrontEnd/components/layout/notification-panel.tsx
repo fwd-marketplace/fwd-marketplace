@@ -10,8 +10,11 @@ import {
   Briefcase,
   CheckCircle2,
   Clock,
+  Eye,
   FileUp,
+  Flame,
   MessageSquarePlus,
+  Star,
   UserPlus,
   X,
 } from "lucide-react";
@@ -25,12 +28,16 @@ import type { ApiNotificacion, ApiRoleName } from "@/lib/api/types";
 
 /** Icono por tipo de notificacion (los tipos vienen del CHECK de la tabla `notificacion`). */
 const ICON_BY_TIPO: Record<string, { Icon: React.ElementType; className: string; bgClass: string }> = {
-  adjudicacion: { Icon: CheckCircle2, className: "text-accent", bgClass: "bg-accent/10" },
-  cambio_estado: { Icon: Briefcase, className: "text-primary", bgClass: "bg-primary/10" },
-  nuevo_mensaje: { Icon: MessageSquarePlus, className: "text-primary", bgClass: "bg-primary/10" },
-  entregable_subido: { Icon: FileUp, className: "text-secondary", bgClass: "bg-secondary/10" },
-  vencimiento_plazo: { Icon: Clock, className: "text-warning", bgClass: "bg-warning/10" },
-  invitacion: { Icon: UserPlus, className: "text-secondary", bgClass: "bg-secondary/10" },
+  adjudicacion:             { Icon: CheckCircle2,      className: "text-accent",     bgClass: "bg-accent/10"     },
+  cambio_estado:            { Icon: Briefcase,          className: "text-primary",    bgClass: "bg-primary/10"    },
+  nuevo_mensaje:            { Icon: MessageSquarePlus,  className: "text-primary",    bgClass: "bg-primary/10"    },
+  entregable_subido:        { Icon: FileUp,             className: "text-secondary",  bgClass: "bg-secondary/10"  },
+  vencimiento_plazo:        { Icon: Clock,              className: "text-warning",    bgClass: "bg-warning/10"    },
+  invitacion:               { Icon: UserPlus,           className: "text-secondary",  bgClass: "bg-secondary/10"  },
+  visita_perfil:            { Icon: Eye,                className: "text-accent",     bgClass: "bg-accent/10"     },
+  nuevo_proyecto_compatible:{ Icon: Flame,              className: "text-warning",    bgClass: "bg-warning/10"    },
+  oferta_revisada:          { Icon: Eye,                className: "text-primary",    bgClass: "bg-primary/10"    },
+  nueva_calificacion:       { Icon: Star,               className: "text-highlight",  bgClass: "bg-highlight/10"  },
 };
 const DEFAULT_ICON = { Icon: Bell, className: "text-ink-muted", bgClass: "bg-surface-sunken" };
 
@@ -49,10 +56,19 @@ function linkFor(notif: ApiNotificacion, role: ApiRoleName | undefined, locale: 
   if (tipo === "invitacion" && id_referencia) {
     return `/${locale}/marketplace/${id_referencia}`;
   }
-  if (role === "company") {
-    if (tipo === "nuevo_mensaje") return `/${locale}/gestion`;
-    return `/${locale}/gestion`;
+  // Nuevo proyecto compatible: ir directo al detalle del proyecto.
+  if (tipo === "nuevo_proyecto_compatible" && id_referencia) {
+    return `/${locale}/marketplace/${id_referencia}`;
   }
+  // Oferta revisada o calificación: ir a mis postulaciones.
+  if (tipo === "oferta_revisada" || tipo === "nueva_calificacion") {
+    return `/${locale}/mis-postulaciones`;
+  }
+  // Visita al perfil: ver el propio perfil.
+  if (tipo === "visita_perfil") {
+    return `/${locale}/perfil-estudiante`;
+  }
+  if (role === "company") return `/${locale}/gestion`;
   if (role === "admin") return `/${locale}/admin`;
   // student y fallback
   if (tipo === "nuevo_mensaje") return `/${locale}/gestion`;

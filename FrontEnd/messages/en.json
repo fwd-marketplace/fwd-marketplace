@@ -1170,10 +1170,9 @@
     "stats": {
       "projects": "Compatible projects",
       "match": "Average match",
-      "match_desc": "Excellent compatibility",
-      "companies": "New companies",
-      "companies_desc": "This week",
-      "active_companies": "Active companies",
+      "match_desc": "Compatibility with your profile",
+      "streak": "Day streak",
+      "streak_desc": "Consecutive active days",
       "applications": "Active applications",
       "view_all": "View all",
       "view_applications": "View my applications",
@@ -1189,12 +1188,14 @@
       },
       "weeks": "weeks",
       "days": "days",
-      "empty": "Complete your profile and skills to see projects recommended for you.",
-      "match": "High match"
+      "match": "Match",
+      "view_project": "View project",
+      "empty": "Complete your profile with skills to see compatible projects.",
+      "explore": "Explore marketplace"
     },
     "progress": {
       "title": "My Hero's Journey",
-      "subtitle": "Every badge you earn is a real step in your career. Complete the challenges and unlock the next chapter of your professional story.",
+      "subtitle": "Every badge you earn is a real step in your career. Complete the challenges and unlock the next chapter of your professional story. Your streak shows how many consecutive days you stay active on the platform.",
       "step1_title": "Profile completed",
       "step1_desc": "Excellent! Your profile is at 100%.",
       "step2_title": "Stack defined",
@@ -1238,6 +1239,7 @@
       "unlocked_on": "Unlocked on {date}",
       "to_unlock": "To unlock:",
       "learning_pct": "{pct}% of the Learning Map",
+      "racha_days": "{count, plural, =0 {no recent activity} one {day in a row} other {days in a row}}",
       "items": {
         "llamado": {
           "name": "The Call",
@@ -1288,7 +1290,8 @@
     "activity": {
       "title": "Recent activity",
       "view_all": "View all activity",
-      "empty": "You have no recent activity."
+      "empty": "No activity yet. Explore the marketplace to get started.",
+      "unread": "Unread"
     },
     "modality": {
       "remote": "Remote",

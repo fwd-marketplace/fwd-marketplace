@@ -33,17 +33,15 @@ export function ViajeActivity({ heroJourney }: ViajeActivityProps) {
 
   return (
     <div className="flex flex-col h-full">
-      <h2 className="text-xl font-bold text-ink-strong mb-4">{t('activity_title')}</h2>
-
-      <div className="bg-surface rounded-xl shadow-soft border border-border flex-1 overflow-hidden">
-        <ul className="divide-y divide-border">
+      <div className="bg-surface rounded-xl shadow-soft border border-border flex-1 flex flex-col overflow-hidden">
+        <ul className="divide-y divide-border flex flex-col h-full">
           {ROWS.map((row) => {
             const data = heroJourney[row.id];
             const isDone = data.status === 'done';
             const Icon = row.icon;
 
             return (
-              <li key={row.id} className="flex items-start gap-4 px-5 py-4">
+              <li key={row.id} className="flex flex-1 items-center gap-4 px-5 py-3">
                 {/* Icon circle */}
                 <div
                   className={`relative mt-0.5 flex h-10 w-10 shrink-0 items-center justify-center rounded-full text-white transition-all duration-[var(--duration-base)] ${isDone ? row.color : 'bg-surface-sunken'}`}

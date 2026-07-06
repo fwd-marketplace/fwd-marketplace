@@ -18,6 +18,7 @@ import {
   listEmpresasActivas,
   getPublicJuniorProfile,
 } from "../services/perfil.service";
+import { triggerVisitaPerfil } from "../services/notificacionTriggers.service";
 
 /** Token + id del usuario autenticado (los inyecta `authenticate`). */
 function requireAuth(req: Request): { token: string; userId: string } {
@@ -140,6 +141,12 @@ export async function getPublicJunior(req: Request, res: Response) {
   if (!id) throw new ApiError(400, "id requerido");
   const perfil = await getPublicJuniorProfile(id);
   res.status(200).json({ perfil });
+
+  // Notificar al junior si quien visita es una empresa autenticada (best-effort,
+  // se dispara después de haber respondido para no añadir latencia al cliente).
+  if (req.user?.id) {
+    void triggerVisitaPerfil(id, req.user.id);
+  }
 }
 
 const preferenciasSchema = z.record(z.string(), z.boolean());

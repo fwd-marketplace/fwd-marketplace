@@ -1170,10 +1170,9 @@
     "stats": {
       "projects": "Proyectos compatibles",
       "match": "Match promedio",
-      "match_desc": "Excelente compatibilidad",
-      "companies": "Nuevas empresas",
-      "companies_desc": "Esta semana",
-      "active_companies": "Empresas activas",
+      "match_desc": "Compatibilidad con tu perfil",
+      "streak": "Racha de días",
+      "streak_desc": "Días seguidos activo",
       "applications": "Postulaciones activas",
       "view_all": "Ver todos",
       "view_applications": "Ver mis postulaciones",
@@ -1189,12 +1188,14 @@
       },
       "weeks": "semanas",
       "days": "días",
-      "empty": "Completá tu perfil y tus skills para ver proyectos recomendados para vos.",
-      "match": "Match alto"
+      "match": "Match",
+      "view_project": "Ver proyecto",
+      "empty": "Completá tu perfil con habilidades para ver proyectos compatibles.",
+      "explore": "Explorar marketplace"
     },
     "progress": {
       "title": "Mi viaje del Héroe",
-      "subtitle": "Cada insignia que alcanzas es un paso real en tu carrera. Completa los desafios y desbloquea el siguiente capitulo de tu historia profesional.",
+      "subtitle": "Cada insignia que alcanzas es un paso real en tu carrera. Completa los desafios y desbloquea el siguiente capitulo de tu historia profesional. Tu racha muestra cuantos dias seguidos te mantenés activo en la plataforma.",
       "step1_title": "Perfil completado",
       "step1_desc": "¡Excelente! Tu perfil está al 100%.",
       "step2_title": "Stack definido",
@@ -1238,6 +1239,7 @@
       "unlocked_on": "Desbloqueado el {date}",
       "to_unlock": "Para desbloquear:",
       "learning_pct": "{pct}% del Mapa de aprendizaje",
+      "racha_days": "{count, plural, =0 {días sin actividad} one {día seguido} other {días seguidos}}",
       "items": {
         "llamado": {
           "name": "El Llamado",
@@ -1288,7 +1290,8 @@
     "activity": {
       "title": "Actividad reciente",
       "view_all": "Ver toda la actividad",
-      "empty": "No tenés actividad reciente."
+      "empty": "Todavia no hay actividad. Explora el marketplace para empezar.",
+      "unread": "No leida"
     },
     "modality": {
       "remote": "Remoto",

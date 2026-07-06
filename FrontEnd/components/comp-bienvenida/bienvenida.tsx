@@ -1,75 +1,93 @@
 'use client';
 
 import React, { useEffect, useState } from 'react';
-import { useTranslations, useLocale } from 'next-intl';
+import { useTranslations, useLocale, useFormatter, useNow } from 'next-intl';
 import Link from 'next/link';
 import {
   ArrowRight,
+  Bell,
+  Briefcase,
+  ChevronRight,
+  ChevronLeft,
+  CheckCircle2,
+  Clock,
+  Eye,
+  FileUp,
+  Flame,
   Folder,
   Building2,
+  MessageSquarePlus,
   Send,
+  LineChart,
   Compass,
   BookOpen,
   Mountain,
   Sparkles,
-  Trophy
+  Star,
+  Trophy,
+  UserPlus,
 } from 'lucide-react';
 import { FwdGeoBackdrop } from '@/components/ui/fwd-geo-backdrop';
 import { EstrellaProceso } from '@/components/comp-bienvenida/EstrellaProceso';
 import { ViajeActivity } from '@/components/comp-bienvenida/ViajeActivity';
 import { LlamadoToast } from '@/components/comp-bienvenida/LlamadoToast';
 import type { HeroJourneyData } from '@/lib/hero-journey/mock';
-import type { ApiNotificacion, MiInvitacion, RecommendedProject } from '@/lib/api/types';
-import { formatCompensacion } from '@/lib/marketplace/compensation';
+import type { JuniorDashboardData } from '@/lib/api/dashboard';
+import type { ApiNotificacion } from '@/lib/api/types';
 
-/** Datos reales del inicio del junior (los provee la página vía props; cero mock). */
-export interface BienvenidaData {
-  stats: {
-    proyectosDisponibles: number;
-    empresasActivas: number;
-    matchTop: number;
-    misPostulaciones: number;
-  };
-  recomendados: RecommendedProject[];
-  actividad: ApiNotificacion[];
-  invitaciones: MiInvitacion[];
+/** Icono y color por tipo de notificación, mapeados a los iconos disponibles. */
+const NOTIF_ICON_MAP: Record<string, { Icon: React.ElementType; iconColor: string; bgColor: string }> = {
+  adjudicacion:              { Icon: CheckCircle2,     iconColor: 'text-accent',    bgColor: 'bg-accent/10'    },
+  cambio_estado:             { Icon: Briefcase,         iconColor: 'text-primary',   bgColor: 'bg-primary/10'   },
+  nuevo_mensaje:             { Icon: MessageSquarePlus, iconColor: 'text-primary',   bgColor: 'bg-primary/10'   },
+  entregable_subido:         { Icon: FileUp,            iconColor: 'text-secondary', bgColor: 'bg-secondary/10' },
+  vencimiento_plazo:         { Icon: Clock,             iconColor: 'text-warning',   bgColor: 'bg-warning/10'   },
+  invitacion:                { Icon: UserPlus,          iconColor: 'text-secondary', bgColor: 'bg-secondary/10' },
+  visita_perfil:             { Icon: Eye,               iconColor: 'text-accent',    bgColor: 'bg-accent/10'    },
+  nuevo_proyecto_compatible: { Icon: Flame,             iconColor: 'text-warning',   bgColor: 'bg-warning/10'   },
+  oferta_revisada:           { Icon: Eye,               iconColor: 'text-primary',   bgColor: 'bg-primary/10'   },
+  nueva_calificacion:        { Icon: Star,              iconColor: 'text-highlight', bgColor: 'bg-highlight/10' },
+};
+const NOTIF_ICON_DEFAULT = { Icon: Bell, iconColor: 'text-ink-muted', bgColor: 'bg-surface-sunken' };
+
+function notifIcon(tipo: string) {
+  return NOTIF_ICON_MAP[tipo] ?? NOTIF_ICON_DEFAULT;
 }
-
-/** Iniciales (máx 2) para el avatar de una empresa. */
-function empresaIniciales(nombre: string): string {
-  return nombre
-    .split(/\s+/)
-    .filter(Boolean)
-    .slice(0, 2)
-    .map((p) => p[0]?.toUpperCase() ?? '')
-    .join('');
-}
-
-/** Colores de acento que rotan para los avatares de empresas (tokens FWD). */
-const CARD_ACCENTS = ['bg-secondary', 'bg-accent', 'bg-primary', 'bg-warning'] as const;
 
 type GreetingKey = 'greeting_morning' | 'greeting_afternoon' | 'greeting_evening';
 
-/** Saludo según la hora LOCAL del usuario (mañana / tarde / noche). */
 function greetingForHour(hour: number): GreetingKey {
   if (hour >= 5 && hour < 12) return 'greeting_morning';
   if (hour >= 12 && hour < 19) return 'greeting_afternoon';
   return 'greeting_evening';
 }
 
+function badgeForProject(matchScore: number, fechaPublicacion: string | null): 'high_match' | 'new' | null {
+  if (matchScore >= 90) return 'high_match';
+  if (fechaPublicacion) {
+    const published = new Date(fechaPublicacion).getTime();
+    const sevenDaysAgo = Date.now() - 7 * 24 * 60 * 60 * 1000;
+    if (published >= sevenDaysAgo) return 'new';
+  }
+  return null;
+}
+
 interface BienvenidaDashboardProps {
   isJunior: boolean;
   heroJourney: HeroJourneyData;
-  data: BienvenidaData;
+  dashboardData: JuniorDashboardData;
+  notificaciones: ApiNotificacion[];
 }
 
-export function BienvenidaDashboard({ isJunior, heroJourney, data }: BienvenidaDashboardProps) {
+export function BienvenidaDashboard({ isJunior, heroJourney, dashboardData, notificaciones }: BienvenidaDashboardProps) {
   const t = useTranslations('bienvenida');
   const locale = useLocale();
-  const { stats, recomendados, actividad, invitaciones } = data;
+  const format = useFormatter();
+  const now = useNow({ updateInterval: 60_000 });
 
-  // Se calcula tras montar (useEffect) para usar la hora del navegador del
-  // usuario y evitar el mismatch de hidratación: el servidor no conoce su zona.
+  // Últimas 5 notificaciones para el feed de actividad reciente.
+  const recentNotifs = notificaciones.slice(0, 5);
+
   const [greetingKey, setGreetingKey] = useState<GreetingKey>('greeting_morning');
 
   useEffect(() => {
@@ -159,7 +177,6 @@ export function BienvenidaDashboard({ isJunior, heroJourney, data }: BienvenidaD
               .c-star   { animation: cStarTwinkle var(--s-dur,2.5s) ease-in-out infinite both; }
             `}</style>
 
-            {/* Background stars — deterministic (no hydration mismatch) */}
             <div className="absolute inset-0 z-0 overflow-hidden pointer-events-none">
               {[...Array(22)].map((_, i) => (
                 <div
@@ -178,18 +195,15 @@ export function BienvenidaDashboard({ isJunior, heroJourney, data }: BienvenidaD
               ))}
             </div>
 
-            {/* Center node */}
             <div className="c-center absolute z-30 flex h-36 w-36 items-center justify-center rounded-full border border-primary/40 bg-secondary/80 backdrop-blur-md shadow-[0_0_60px_rgba(102,45,145,0.7)]">
               <div className="absolute inset-0 rounded-full border border-white/20 scale-[0.85]" />
               <div className="absolute inset-0 rounded-full border border-magenta/30 scale-[1.15]" />
-              <span className="text-center text-base font-bold leading-tight px-2 bg-clip-text text-transparent bg-gradient-to-br from-white to-white/70">Viaje del{' '}Héroe</span>
+              <span className="text-center text-base font-bold leading-tight px-2 bg-clip-text text-transparent bg-gradient-to-br from-white to-white/70">Viaje del{' '}Héroe</span>
             </div>
 
-            {/* Orbit rings */}
             <div className="c-orbit absolute h-[250px] w-[250px] rounded-full border border-white/10 shadow-[0_0_20px_rgba(255,255,255,0.05)] z-10" style={{ animationDelay: '0.5s' }} />
             <div className="c-orbit absolute h-[350px] w-[350px] rounded-full border border-white/5  shadow-[0_0_30px_rgba(255,255,255,0.02)] z-10" style={{ animationDelay: '0.75s' }} />
 
-            {/* 1 · El Llamado */}
             <div className="c-node absolute -top-4 left-1/2 -translate-x-1/2 flex items-center gap-3 z-30 cursor-pointer" style={{ animationDelay: '1.3s' }}>
               <div className="c-icon flex h-12 w-12 items-center justify-center rounded-full bg-primary text-white shadow-[0_0_20px_rgba(10,108,185,0.6)] border border-white/20 transition-transform duration-300 hover:scale-110" style={{ animationDelay: '1.3s' }}>
                 <Compass className="h-6 w-6" />
@@ -197,7 +211,6 @@ export function BienvenidaDashboard({ isJunior, heroJourney, data }: BienvenidaD
               <span className="font-medium text-sm bg-secondary/60 border border-white/10 px-3 py-1.5 rounded backdrop-blur-md shadow-lg">El Llamado</span>
             </div>
 
-            {/* 2 · La Preparación */}
             <div className="c-node absolute top-1/4 right-0 flex flex-col items-center gap-2 z-30 cursor-pointer" style={{ animationDelay: '1.8s' }}>
               <div className="c-icon flex h-12 w-12 items-center justify-center rounded-full bg-secondary border border-white/30 text-white shadow-[0_0_20px_rgba(102,45,145,0.6)] transition-transform duration-300 hover:scale-110" style={{ animationDelay: '1.8s' }}>
                 <BookOpen className="h-5 w-5" />
@@ -205,7 +218,6 @@ export function BienvenidaDashboard({ isJunior, heroJourney, data }: BienvenidaD
               <span className="font-medium text-sm bg-secondary/60 border border-white/10 px-3 py-1.5 rounded backdrop-blur-md shadow-lg">La Preparación</span>
             </div>
 
-            {/* 3 · El Desafío */}
             <div className="c-node absolute bottom-4 right-1/4 flex flex-col items-center gap-2 z-30 cursor-pointer" style={{ animationDelay: '2.3s' }}>
               <div className="c-icon flex h-12 w-12 items-center justify-center rounded-full bg-highlight text-white shadow-[0_0_20px_rgba(255,203,5,0.6)] border border-white/20 transition-transform duration-300 hover:scale-110" style={{ animationDelay: '2.3s' }}>
                 <Mountain className="h-5 w-5" />
@@ -213,7 +225,6 @@ export function BienvenidaDashboard({ isJunior, heroJourney, data }: BienvenidaD
               <span className="font-medium text-sm bg-secondary/60 border border-white/10 px-3 py-1.5 rounded backdrop-blur-md shadow-lg">El Desafío</span>
             </div>
 
-            {/* 4 · La Transformación */}
             <div className="c-node absolute bottom-10 left-1/4 flex flex-col items-center gap-2 z-30 cursor-pointer" style={{ animationDelay: '2.8s' }}>
               <div className="c-icon flex h-12 w-12 items-center justify-center rounded-full bg-accent text-white shadow-[0_0_20px_rgba(32,190,198,0.6)] border border-white/20 transition-transform duration-300 hover:scale-110" style={{ animationDelay: '2.8s' }}>
                 <Sparkles className="h-6 w-6" />
@@ -221,7 +232,6 @@ export function BienvenidaDashboard({ isJunior, heroJourney, data }: BienvenidaD
               <span className="font-medium text-sm bg-secondary/60 border border-white/10 px-3 py-1.5 rounded backdrop-blur-md shadow-lg">La Transformación</span>
             </div>
 
-            {/* 5 · El Reconocimiento */}
             <div className="c-node absolute top-1/3 left-4 flex flex-col items-center gap-2 z-30 cursor-pointer" style={{ animationDelay: '3.3s' }}>
               <div className="c-icon flex h-12 w-12 items-center justify-center rounded-full bg-magenta text-white shadow-[0_0_20px_rgba(236,0,140,0.6)] border border-white/20 transition-transform duration-300 hover:scale-110" style={{ animationDelay: '3.3s' }}>
                 <Trophy className="h-5 w-5" />
@@ -229,16 +239,12 @@ export function BienvenidaDashboard({ isJunior, heroJourney, data }: BienvenidaD
               <span className="font-medium text-sm bg-secondary/60 border border-white/10 px-3 py-1.5 rounded backdrop-blur-md shadow-lg">El Reconocimiento</span>
             </div>
 
-            {/* SVG connections */}
             <svg className="absolute inset-0 h-full w-full pointer-events-none" style={{ zIndex: 20 }}>
-              {/* Primary lines — fade in with their node, then pulse */}
               <line x1="50%" y1="10%" x2="50%" y2="50%" stroke="rgba(255,255,255,0.7)" strokeWidth="1.5" className="c-line" style={{ animationDelay: '1.3s, 5.5s' }} />
               <line x1="85%" y1="35%" x2="50%" y2="50%" stroke="rgba(255,255,255,0.7)" strokeWidth="1.5" className="c-line" style={{ animationDelay: '1.8s, 5.5s' }} />
               <line x1="75%" y1="85%" x2="50%" y2="50%" stroke="rgba(255,255,255,0.7)" strokeWidth="1.5" className="c-line" style={{ animationDelay: '2.3s, 5.5s' }} />
               <line x1="25%" y1="80%" x2="50%" y2="50%" stroke="rgba(255,255,255,0.7)" strokeWidth="1.5" className="c-line" style={{ animationDelay: '2.8s, 5.5s' }} />
               <line x1="15%" y1="35%" x2="50%" y2="50%" stroke="rgba(255,255,255,0.7)" strokeWidth="1.5" className="c-line" style={{ animationDelay: '3.3s, 5.5s' }} />
-
-              {/* Midpoint glow dots — appear last, then pulse */}
               <circle cx="50%" cy="30%" r="2"   fill="white" className="c-point" style={{ animationDelay: '4.1s, 5.5s' }} />
               <circle cx="67%" cy="42%" r="1.5" fill="white" className="c-point" style={{ animationDelay: '4.3s, 5.5s' }} />
               <circle cx="62%" cy="67%" r="2"   fill="white" className="c-point" style={{ animationDelay: '4.5s, 5.5s' }} />
@@ -253,45 +259,50 @@ export function BienvenidaDashboard({ isJunior, heroJourney, data }: BienvenidaD
 
         {/* Stats Grid */}
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+          {/* Proyectos compatibles */}
           <div className="bg-surface rounded-xl p-6 shadow-soft flex items-center gap-4">
             <div className="flex h-12 w-12 items-center justify-center rounded-lg bg-primary/10 text-primary">
               <Folder className="h-6 w-6" />
             </div>
             <div>
-              <div className="font-heading text-3xl font-bold">{stats.proyectosDisponibles}</div>
+              <div className="font-heading text-3xl font-bold">{dashboardData.proyectosCompatibles}</div>
               <div className="text-sm font-medium text-ink-strong">{t('stats.projects')}</div>
               <Link href={`/${locale}/marketplace`} className="text-xs text-primary font-medium hover:underline flex items-center mt-1">
                 {t('stats.view_all')} <ArrowRight className="h-3 w-3 ml-1" />
               </Link>
             </div>
           </div>
+
+          {/* Match promedio */}
           <div className="bg-surface rounded-xl p-6 shadow-soft flex items-center gap-4">
-            <div className="relative flex h-14 w-14 items-center justify-center rounded-full border-4 border-accent text-accent">
-              <span className="font-bold text-lg">{stats.matchTop}%</span>
+            <div className="relative flex h-14 w-14 items-center justify-center rounded-full border-4 border-accent text-accent shrink-0">
+              <span className="font-bold text-lg">{dashboardData.matchPromedio}%</span>
             </div>
             <div>
               <div className="text-sm font-bold text-ink-strong mb-1">{t('stats.match')}</div>
               <div className="text-xs text-ink-muted">{t('stats.match_desc')}</div>
             </div>
           </div>
+
+          {/* Racha de días */}
           <div className="bg-surface rounded-xl p-6 shadow-soft flex items-center gap-4">
-            <div className="flex h-12 w-12 items-center justify-center rounded-lg bg-magenta/10 text-magenta">
-              <Building2 className="h-6 w-6" />
+            <div className="flex h-12 w-12 items-center justify-center rounded-lg bg-warning/10 text-warning">
+              <Flame className="h-6 w-6" />
             </div>
             <div>
-              <div className="font-heading text-3xl font-bold">{stats.empresasActivas}</div>
-              <div className="text-sm font-medium text-ink-strong">{t('stats.active_companies')}</div>
-              <Link href={`/${locale}/empresas`} className="text-xs text-primary font-medium hover:underline flex items-center mt-1">
-                {t('stats.view_companies')} <ArrowRight className="h-3 w-3 ml-1" />
-              </Link>
+              <div className="font-heading text-3xl font-bold">{dashboardData.rachaDias}</div>
+              <div className="text-sm font-medium text-ink-strong">{t('stats.streak')}</div>
+              <div className="text-xs text-ink-muted mt-1">{t('stats.streak_desc')}</div>
             </div>
           </div>
+
+          {/* Postulaciones activas */}
           <div className="bg-surface rounded-xl p-6 shadow-soft flex items-center gap-4">
             <div className="flex h-12 w-12 items-center justify-center rounded-lg bg-primary/10 text-primary">
               <Send className="h-6 w-6" />
             </div>
             <div>
-              <div className="font-heading text-3xl font-bold">{stats.misPostulaciones}</div>
+              <div className="font-heading text-3xl font-bold">{dashboardData.postulacionesActivas}</div>
               <div className="text-sm font-medium text-ink-strong">{t('stats.applications')}</div>
               <Link href={`/${locale}/gestion`} className="text-xs text-primary font-medium hover:underline flex items-center mt-1">
                 {t('stats.view_applications')} <ArrowRight className="h-3 w-3 ml-1" />
@@ -300,7 +311,7 @@ export function BienvenidaDashboard({ isJunior, heroJourney, data }: BienvenidaD
           </div>
         </div>
 
-        {/* Recommended Projects — ranking real por afinidad (matching contra el perfil) */}
+        {/* Recommended Projects */}
         <section>
           <div className="flex items-center justify-between mb-4">
             <h2 className="text-xl font-bold text-ink-strong">{t('recommended.title')}</h2>
@@ -308,64 +319,83 @@ export function BienvenidaDashboard({ isJunior, heroJourney, data }: BienvenidaD
               {t('recommended.view_all')} <ArrowRight className="ml-1 h-4 w-4" />
             </Link>
           </div>
-          {recomendados.length === 0 ? (
-            <div className="bg-surface rounded-xl p-8 shadow-soft border border-border text-center">
-              <p className="text-sm text-ink-muted">{t('recommended.empty')}</p>
+
+          {dashboardData.recomendados.length === 0 ? (
+            <div className="bg-surface rounded-xl p-10 shadow-soft border border-border flex flex-col items-center justify-center gap-3">
+              <div className="flex h-12 w-12 items-center justify-center rounded-full bg-primary/10 text-primary">
+                <Folder className="h-6 w-6" />
+              </div>
+              <p className="text-sm text-ink-muted text-center max-w-xs">{t('recommended.empty')}</p>
+              <Link
+                href={`/${locale}/marketplace`}
+                className="mt-1 inline-flex items-center gap-1.5 text-sm font-semibold text-primary hover:underline"
+              >
+                {t('recommended.explore')} <ArrowRight className="h-4 w-4" />
+              </Link>
             </div>
           ) : (
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-              {recomendados.map((project) => {
-                const badgeKey = project.score >= 85 ? 'high_match' : 'new';
-                const skills = project.skills.flatMap((s) => (s.skill ? [s.skill.nombre] : [])).slice(0, 3);
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-6 relative">
+              <button className="absolute -left-4 top-1/2 -translate-y-1/2 flex h-8 w-8 items-center justify-center rounded-full bg-surface shadow-soft border border-border z-10 hidden lg:flex hover:bg-canvas">
+                <ChevronLeft className="h-4 w-4 text-ink" />
+              </button>
+              <button className="absolute -right-4 top-1/2 -translate-y-1/2 flex h-8 w-8 items-center justify-center rounded-full bg-surface shadow-soft border border-border z-10 hidden lg:flex hover:bg-canvas">
+                <ChevronRight className="h-4 w-4 text-ink" />
+              </button>
+
+              {dashboardData.recomendados.map((project) => {
+                const badge = badgeForProject(project.matchScore, project.fechaPublicacion);
+                const accentClass = badge === 'high_match' ? 'text-accent' : badge === 'new' ? 'text-primary' : 'text-ink-muted';
+                const bgAccentClass = badge === 'high_match' ? 'bg-accent/10 text-accent' : badge === 'new' ? 'bg-primary/10 text-primary' : 'bg-canvas text-ink-muted';
+                const borderClass = badge === 'high_match' ? 'border-accent' : 'border-accent';
+
                 return (
-                  <Link
-                    key={project.id}
-                    href={`/${locale}/marketplace/${project.id}`}
-                    className="bg-surface rounded-xl p-6 shadow-soft border border-border transition-colors duration-[var(--duration-fast)] ease-[var(--ease-out)] hover:border-primary/40"
-                  >
+                  <div key={project.id} className="bg-surface rounded-xl p-6 shadow-soft border border-border flex flex-col">
                     <div className="mb-3">
-                      <span className={`text-[10px] font-bold uppercase tracking-wider px-2 py-1 rounded bg-canvas ${badgeKey === 'high_match' ? 'text-accent' : 'text-primary'}`}>
-                        {t(`recommended.badges.${badgeKey}`)}
-                      </span>
+                      {badge ? (
+                        <span className={`text-[10px] font-bold uppercase tracking-wider px-2 py-1 rounded bg-canvas ${accentClass}`}>
+                          {t(`recommended.badges.${badge}`)}
+                        </span>
+                      ) : null}
                     </div>
                     <div className="flex items-start gap-4 mb-4">
-                      <div className={`flex h-10 w-10 shrink-0 items-center justify-center rounded-lg ${badgeKey === 'high_match' ? 'bg-accent/10 text-accent' : 'bg-primary/10 text-primary'}`}>
-                        <Folder className="h-5 w-5" />
+                      <div className={`flex h-10 w-10 shrink-0 items-center justify-center rounded-lg ${bgAccentClass}`}>
+                        <LineChart className="h-5 w-5" />
                       </div>
                       <div className="min-w-0">
-                        <h3 className="font-heading font-bold text-ink-strong truncate">{project.titulo}</h3>
-                        <div className="text-sm text-ink-muted flex items-center gap-1 truncate">
-                          <Building2 className="h-3 w-3 shrink-0" /> {project.empresa?.nombre_comercial ?? '—'}
+                        <h3 className="font-heading font-bold text-ink-strong leading-tight truncate">{project.titulo}</h3>
+                        <div className="text-sm text-ink-muted flex items-center gap-1 mt-0.5">
+                          <Building2 className="h-3 w-3 shrink-0" />
+                          <span className="truncate">{project.empresa}</span>
                         </div>
                       </div>
                     </div>
-                    <div className="flex flex-wrap gap-2 mb-6">
-                      {skills.map((tag) => (
-                        <span key={tag} className="px-2 py-1 bg-canvas border border-border rounded-md text-xs text-ink">
-                          {tag}
+                    <div className="flex flex-wrap gap-2 mb-auto">
+                      {project.skills.slice(0, 3).map(skill => (
+                        <span key={skill} className="px-2 py-1 bg-canvas border border-border rounded-md text-xs text-ink">
+                          {skill}
                         </span>
                       ))}
                     </div>
-                    <div className="flex items-center justify-between pt-4 border-t border-border">
+                    <div className="flex items-center justify-between pt-4 mt-4 border-t border-border">
                       <div className="flex items-center gap-3 text-xs text-ink-muted">
-                        <span>{project.plazo_dias} {t('recommended.days')}</span>
-                        {project.compensacion != null && (
-                          <>
-                            <span className="h-1 w-1 rounded-full bg-ink-subtle"></span>
-                            <span className="font-semibold text-accent">
-                              {formatCompensacion(project.compensacion, project.moneda)}
-                            </span>
-                          </>
+                        {project.plazoDias != null && (
+                          <span>{project.plazoDias} {t('recommended.days')}</span>
                         )}
+                        <Link
+                          href={`/${locale}/marketplace/${project.id}`}
+                          className="font-semibold text-primary hover:underline flex items-center gap-0.5"
+                        >
+                          {t('recommended.view_project')} <ArrowRight className="h-3 w-3" />
+                        </Link>
                       </div>
-                      <div className="flex flex-col items-center">
-                        <div className="relative flex h-12 w-12 items-center justify-center rounded-full border-4 border-accent text-accent font-bold text-sm">
-                          {project.score}%
+                      <div className="flex flex-col items-center shrink-0">
+                        <div className={`relative flex h-12 w-12 items-center justify-center rounded-full border-4 ${borderClass} text-accent font-bold text-sm`}>
+                          {project.matchScore}%
                         </div>
                         <span className="text-[10px] text-accent mt-1 font-medium">{t('recommended.match')}</span>
                       </div>
                     </div>
-                  </Link>
+                  </div>
                 );
               })}
             </div>
@@ -374,93 +404,85 @@ export function BienvenidaDashboard({ isJunior, heroJourney, data }: BienvenidaD
 
         {/* Viaje del Héroe — solo visible para juniors (role = student) */}
         {isJunior && (
-          <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 items-stretch">
-            <div className="lg:col-span-2 flex flex-col">
-              <div className="mb-5">
-                <h2 className="font-heading text-3xl font-extrabold tracking-tight text-ink-strong">
-                  {t('progress.title')}<span className="text-primary">.</span>
-                </h2>
-                <p className="mt-2 max-w-prose text-sm leading-relaxed text-ink-muted">
+          <>
+            <div className="mb-5">
+              <h2 className="font-heading text-4xl font-extrabold tracking-tight text-ink-strong">
+                {t('progress.title')}<span className="text-primary">.</span>
+              </h2>
+              <div className="mt-2 flex flex-wrap items-center justify-between gap-4">
+                <p className="flex-1 max-w-prose text-sm leading-relaxed text-ink-muted">
                   {t('progress.subtitle')}
                 </p>
+                {/* Racha de días — al nivel del párrafo */}
+                <div className="flex items-center gap-2.5 rounded-xl border border-warning/30 bg-warning/8 px-4 py-2.5 shrink-0">
+                  <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-warning/15 text-warning">
+                    <Flame className="h-4 w-4" />
+                  </div>
+                  <div className="flex items-baseline gap-1">
+                    <span className="font-heading font-bold text-2xl text-ink-strong leading-none">{dashboardData.rachaDias}</span>
+                    <span className="text-xs text-ink-muted">{t('estrella.racha_days', { count: dashboardData.rachaDias })}</span>
+                  </div>
+                </div>
               </div>
-              <EstrellaProceso heroJourney={heroJourney} />
             </div>
-            <ViajeActivity heroJourney={heroJourney} />
-          </div>
+            <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 items-stretch">
+              <div className="lg:col-span-2">
+                <EstrellaProceso heroJourney={heroJourney} />
+              </div>
+              <ViajeActivity heroJourney={heroJourney} />
+            </div>
+          </>
         )}
 
-        {/* Empresas interesadas — invitaciones reales que recibió el junior */}
+        {/* Recent Activity */}
         <section>
-          <div className="mb-4">
-            <h2 className="text-xl font-bold text-ink-strong">{t('companies.title')}</h2>
-          </div>
-          {invitaciones.length === 0 ? (
-            <div className="bg-surface rounded-xl p-8 shadow-soft border border-border text-center">
-              <p className="text-sm text-ink-muted">{t('companies.empty')}</p>
-            </div>
-          ) : (
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-              {invitaciones.map((inv, i) => {
-                const nombre = inv.proyecto?.empresa?.nombre_comercial ?? t('companies.una_empresa');
-                const accent = CARD_ACCENTS[i % CARD_ACCENTS.length];
-                const card = (
-                  <div className="bg-surface rounded-xl p-5 shadow-soft border border-border flex items-center gap-4 h-full">
-                    <div className={`flex h-11 w-11 shrink-0 items-center justify-center rounded-full ${accent} font-heading text-sm font-bold text-white`}>
-                      {empresaIniciales(nombre)}
-                    </div>
-                    <div className="min-w-0">
-                      <div className="font-bold text-sm text-ink-strong truncate">{nombre}</div>
-                      <div className="text-xs text-ink-muted truncate">
-                        {t('companies.invited_to')} {inv.proyecto?.titulo ?? ''}
-                      </div>
-                    </div>
-                  </div>
-                );
-                return inv.proyecto ? (
-                  <Link
-                    key={inv.id}
-                    href={`/${locale}/marketplace/${inv.proyecto.id}`}
-                    className="transition-opacity duration-[var(--duration-fast)] ease-[var(--ease-out)] hover:opacity-90"
-                  >
-                    {card}
-                  </Link>
-                ) : (
-                  <div key={inv.id}>{card}</div>
-                );
-              })}
-            </div>
-          )}
-        </section>
-
-        {/* Recent Activity — notificaciones reales del junior */}
-        <section>
-          <div className="mb-4">
+          <div className="flex items-center justify-between mb-4">
             <h2 className="text-xl font-bold text-ink-strong">{t('activity.title')}</h2>
+            <Link
+              href={`/${locale}/perfil-estudiante?tab=notificaciones`}
+              className="text-sm font-medium text-primary hover:underline flex items-center"
+            >
+              {t('activity.view_all')} <ArrowRight className="ml-1 h-4 w-4" />
+            </Link>
           </div>
-          {actividad.length === 0 ? (
-            <div className="bg-surface rounded-xl p-8 shadow-soft border border-border text-center">
-              <p className="text-sm text-ink-muted">{t('activity.empty')}</p>
-            </div>
-          ) : (
-            <div className="bg-surface rounded-xl shadow-soft border border-border overflow-hidden">
-              <div className="divide-y divide-border">
-                {actividad.slice(0, 5).map((n) => (
-                  <div key={n.id} className="p-4 flex items-center justify-between gap-4">
-                    <div className="flex items-center gap-4 min-w-0">
-                      <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-primary/10 text-primary">
-                        <Sparkles className="h-5 w-5" />
-                      </div>
-                      <div className="min-w-0 text-sm text-ink-strong">{n.mensaje}</div>
-                    </div>
-                    <span className="shrink-0 text-xs text-ink-muted">
-                      {new Date(n.fecha).toLocaleDateString(locale, { day: 'numeric', month: 'short' })}
-                    </span>
-                  </div>
-                ))}
+          <div className="bg-surface rounded-xl shadow-soft border border-border overflow-hidden">
+            {recentNotifs.length === 0 ? (
+              <div className="flex flex-col items-center justify-center gap-3 py-10 text-center px-4">
+                <div className="flex size-12 items-center justify-center rounded-full bg-surface-sunken">
+                  <Bell className="size-5 text-ink-muted" aria-hidden="true" />
+                </div>
+                <p className="text-sm text-ink-muted">{t('activity.empty')}</p>
               </div>
-            </div>
-          )}
+            ) : (
+              <div className="divide-y divide-border">
+                {recentNotifs.map((notif) => {
+                  const { Icon, iconColor, bgColor } = notifIcon(notif.tipo);
+                  return (
+                    <div
+                      key={notif.id}
+                      className={`p-4 flex items-center justify-between hover:bg-canvas/50 transition-colors ${!notif.leida ? 'bg-primary/3' : ''}`}
+                    >
+                      <div className="flex items-center gap-4 min-w-0">
+                        <div className={`flex h-10 w-10 shrink-0 items-center justify-center rounded-xl ${bgColor} ${iconColor}`}>
+                          <Icon className="h-5 w-5" aria-hidden="true" />
+                        </div>
+                        <div className="min-w-0">
+                          <p className="text-sm text-ink-strong leading-snug line-clamp-2">{notif.mensaje}</p>
+                        </div>
+                      </div>
+                      <div className="flex items-center gap-3 text-xs text-ink-muted shrink-0 ml-3">
+                        <span className="whitespace-nowrap">{format.relativeTime(new Date(notif.fecha), now)}</span>
+                        {!notif.leida && (
+                          <span className="size-2 rounded-full bg-primary shrink-0" aria-label={t('activity.unread')} />
+                        )}
+                        <ChevronRight className="h-4 w-4" />
+                      </div>
+                    </div>
+                  );
+                })}
+              </div>
+            )}
+          </div>
         </section>
 
       </div>

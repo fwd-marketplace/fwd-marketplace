@@ -1,7 +1,8 @@
 "use client";
 
-import React, { useRef, useState, useTransition } from "react";
+import React, { useEffect, useRef, useState, useTransition } from "react";
 import { useTranslations, useLocale } from "next-intl";
+import { useSearchParams } from "next/navigation";
 import Link from "next/link";
 import {
   Mail,
@@ -515,7 +516,21 @@ export default function PerfilUsuario({
 
   // ── State ──────────────────────────────────────────────────────────────────
 
-  const [activeTab, setActiveTab] = useState<TabId>("perfil");
+  const searchParams = useSearchParams();
+  const initialTab = ((): TabId => {
+    const param = searchParams.get("tab");
+    if (param && (TAB_IDS as string[]).includes(param)) return param as TabId;
+    return "perfil";
+  })();
+  const [activeTab, setActiveTab] = useState<TabId>(initialTab);
+
+  // Si el usuario navega con ?tab= diferente (ej. desde bienvenida), sincronizar.
+  useEffect(() => {
+    const param = searchParams.get("tab");
+    if (param && (TAB_IDS as string[]).includes(param)) {
+      setActiveTab(param as TabId);
+    }
+  }, [searchParams]);
   const [filterStatus, setFilterStatus] = useState<FilterStatus>("todas");
   const [profile, setProfile] = useState<StudentProfile>(initialProfile);
   const [activities, setActivities] = useState<Activity[]>(initialActivities);
