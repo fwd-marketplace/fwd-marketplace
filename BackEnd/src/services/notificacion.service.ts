@@ -15,7 +15,11 @@ export type TipoNotificacion =
   | "nuevo_mensaje"
   | "entregable_subido"
   | "cambio_estado"
-  | "invitacion";
+  | "invitacion"
+  | "visita_perfil"
+  | "nuevo_proyecto_compatible"
+  | "oferta_revisada"
+  | "nueva_calificacion";
 
 /**
  * Textos de las notificaciones (se guardan tal cual en la BD).

@@ -493,14 +493,43 @@ select {
   stroke-opacity: 0.16;
 }
 
-/* Contorno de la estrella: punteado sutil, sin glow */
+/* Contorno de la estrella: puntos redondos (la mitad de tamaño) */
 .estrella-edge {
   stroke: var(--starlight);
-  stroke-width: 0.4;
-  stroke-opacity: 0.28;
+  stroke-width: 0.5;
+  stroke-opacity: 0.4;
   stroke-linecap: round;
-  stroke-dasharray: 0.7 1.6;
+  stroke-dasharray: 0 2;
   fill: none;
+}
+
+/* Partículas de fondo: puntos redondos */
+.estrella-bg-dot {
+  position: absolute;
+  border-radius: 50%;
+  background: var(--starlight);
+  opacity: var(--s-op, 0.65);
+  pointer-events: none;
+  will-change: opacity, transform;
+  animation: estrella-bg-twinkle var(--s-dur, 3s) ease-in-out infinite;
+  animation-delay: var(--s-delay, 0s);
+}
+
+/* Partículas de fondo: mini estrellitas de 4 puntas */
+.estrella-bg-star {
+  position: absolute;
+  background: var(--starlight);
+  opacity: var(--s-op, 0.65);
+  clip-path: polygon(50% 0%, 56% 42%, 100% 50%, 56% 58%, 50% 100%, 44% 58%, 0% 50%, 44% 42%);
+  pointer-events: none;
+  will-change: opacity, transform;
+  animation: estrella-bg-twinkle var(--s-dur, 4s) ease-in-out infinite;
+  animation-delay: var(--s-delay, 0s);
+}
+
+@keyframes estrella-bg-twinkle {
+  0%, 100% { opacity: var(--s-op, 0.65); transform: scale(1); }
+  50%       { opacity: 0.08; transform: scale(0.7); }
 }
 
 /* Centro: progreso global */

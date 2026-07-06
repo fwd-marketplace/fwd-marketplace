@@ -1335,6 +1335,65 @@ export type Database = {
         }
         Relationships: []
       }
+      perfil_visita: {
+        Row: {
+          id: string
+          id_junior_usuario: string
+          id_empresa_usuario: string
+          fecha: string
+        }
+        Insert: {
+          id?: string
+          id_junior_usuario: string
+          id_empresa_usuario: string
+          fecha?: string
+        }
+        Update: {
+          id?: string
+          id_junior_usuario?: string
+          id_empresa_usuario?: string
+          fecha?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "perfil_visita_id_junior_usuario_fkey"
+            columns: ["id_junior_usuario"]
+            isOneToOne: false
+            referencedRelation: "users"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "perfil_visita_id_empresa_usuario_fkey"
+            columns: ["id_empresa_usuario"]
+            isOneToOne: false
+            referencedRelation: "users"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      oferta_revisada_log: {
+        Row: {
+          id_oferta: string
+          fecha: string
+        }
+        Insert: {
+          id_oferta: string
+          fecha?: string
+        }
+        Update: {
+          id_oferta?: string
+          fecha?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "oferta_revisada_log_id_oferta_fkey"
+            columns: ["id_oferta"]
+            isOneToOne: true
+            referencedRelation: "oferta"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
     }
     Views: {
       [_ in never]: never

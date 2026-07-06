@@ -1,6 +1,7 @@
 import { supabaseForToken, supabaseAdmin } from "../config/supabase";
 import { ApiError } from "../utils/ApiError";
 import { crearNotificacion, crearNotificaciones, MENSAJES_NOTIFICACION, TIPO_POR_MENSAJE } from "./notificacion.service";
+import { triggerNuevaCalificacion } from "./notificacionTriggers.service";
 import type { CreateOfertaInput, DecideOfertaInput, ReviewOfertaInput, CalificarOfertaInput, ReplicarCalificacionInput, EditOfertaInput } from "../validations/oferta";
 
 type Client = ReturnType<typeof supabaseForToken>;
@@ -585,7 +586,7 @@ export async function calificarOferta(
 
   const { data: oferta, error: ofertaError } = await client
     .from("oferta")
-    .select("id, id_proyecto")
+    .select("id, id_proyecto, id_usuario")
     .eq("id", ofertaId)
     .maybeSingle();
   if (ofertaError) throw new ApiError(500, ofertaError.message);
@@ -593,7 +594,7 @@ export async function calificarOferta(
 
   const { data: proyecto, error: projError } = await client
     .from("proyecto")
-    .select("empresa:empresario(id_usuario), estado:estado_proyecto(nombre)")
+    .select("titulo, empresa:empresario(id_usuario), estado:estado_proyecto(nombre)")
     .eq("id", oferta.id_proyecto)
     .maybeSingle();
   if (projError) throw new ApiError(500, projError.message);
@@ -630,6 +631,16 @@ export async function calificarOferta(
     .update({ id_estado: estadoCerrado.id })
     .eq("id", oferta.id_proyecto);
   if (closeError) throw new ApiError(500, `No se pudo cerrar el proyecto: ${closeError.message}`);
+
+  // Notificar al junior que recibió una calificación (best-effort).
+  if (oferta.id_usuario && proyecto?.titulo) {
+    void triggerNuevaCalificacion(
+      oferta.id_usuario,
+      input.calificacion,
+      proyecto.titulo,
+      ofertaId,
+    );
+  }
 
   return data;
 }

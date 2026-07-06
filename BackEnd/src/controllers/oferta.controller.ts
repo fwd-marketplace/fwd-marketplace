@@ -22,6 +22,7 @@ import {
   calificarOferta,
   replicarCalificacion,
 } from "../services/oferta.service";
+import { triggerOfertaRevisada } from "../services/notificacionTriggers.service";
 
 const idParamSchema = z.string().uuid();
 
@@ -81,6 +82,13 @@ export async function getOne(req: Request, res: Response) {
   const ofertaId = readUuidParam(req.params.id, "de la postulación");
   const oferta = await getOfertaContacto(token, userId, ofertaId);
   res.status(200).json({ oferta });
+
+  // Notificar al junior que su postulación fue revisada (best-effort, una sola vez).
+  const junior = oferta.junior as { id: string } | null;
+  const proyecto = oferta.proyecto as { titulo: string } | null;
+  if (junior?.id && proyecto?.titulo) {
+    void triggerOfertaRevisada(ofertaId, junior.id, proyecto.titulo);
+  }
 }
 
 /** PATCH /api/ofertas/:id (empresa acepta/rechaza) */
