@@ -90,6 +90,8 @@ type CompanyData = {
   description: string;
   comercialName: string;
   website: string;
+  /** Cédula personal del emprendedor (solo lectura; se fija en el onboarding). */
+  cedula: string;
   provincia: string;
   canton: string;
   modalities: string[];
@@ -109,7 +111,7 @@ type CompanyData = {
 };
 
 const MOCK_DATA: CompanyData = {
-  name: '', description: '', comercialName: '', website: '',
+  name: '', description: '', comercialName: '', website: '', cedula: '',
   provincia: 'San José', canton: 'San José',
   modalities: [], scheduleType: 'flexible', contacts: [],
   empleados: '1-10', sectors: [], mission: '', vision: '',
@@ -165,6 +167,7 @@ function buildInitialData(profile: ApiMeProfile | null): CompanyData {
     description: emp?.descripcion ?? MOCK_DATA.description,
     comercialName: emp?.nombre_comercial ?? MOCK_DATA.comercialName,
     website: emp?.url_sitio_web ?? MOCK_DATA.website,
+    cedula: profile?.cedula ?? MOCK_DATA.cedula,
     sectors: parseJsonArray<string>(emp?.sector, MOCK_DATA.sectors),
     modalities: parseJsonArray<string>(emp?.modalidades, MOCK_DATA.modalities),
     scheduleType: (emp?.horario as 'flexible' | 'fixed' | null) ?? MOCK_DATA.scheduleType,
@@ -340,6 +343,8 @@ export function CompanyProfile({
             ...(company.neededSupport.length > 0 && { soporte_tecnico: company.neededSupport }),
             presupuesto: company.budget,
             contactos: contactosPayload,
+            modalidades: company.modalities,
+            horario: company.scheduleType,
           };
 
       const result = await updateEmpresarioProfile(payload);
@@ -507,6 +512,10 @@ export function CompanyProfile({
                         ) : (
                           <p className="text-sm font-medium text-ink">{company.name}</p>
                         )}
+                      </div>
+                      <div>
+                        <label className="font-body text-xs font-bold tracking-wide text-ink-muted">{t('fields.cedula')}</label>
+                        <p className="text-sm font-medium text-ink">{company.cedula || '—'}</p>
                       </div>
                       <div>
                         <label className="font-body text-xs font-bold tracking-wide text-ink-muted">{t('fields.website')}</label>

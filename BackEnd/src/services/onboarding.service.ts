@@ -30,6 +30,9 @@ function mapOnboardingError(error: { code?: string; message?: string }): never {
   if (code === "42501" || /FORBIDDEN/i.test(message)) {
     throw new ApiError(403, "No podés hacer el onboarding de otra cuenta");
   }
+  if (code === "P0003" || /CEDULA_TAKEN/i.test(message)) {
+    throw new ApiError(409, "Ya existe una cuenta registrada con esa cédula");
+  }
   if (code === "23505" || /ALREADY_ONBOARDED|duplicate key/i.test(message)) {
     throw new ApiError(409, "Este usuario ya completó el onboarding");
   }
@@ -138,6 +141,7 @@ export async function onboardEmprendedor(
     p_user_id: userId,
     p_correo: correo,
     p_nombre_proyecto: input.nombre_proyecto,
+    p_cedula: input.cedula,
     p_etapa: input.etapa,
     p_apoyo_tecnico: JSON.stringify(input.soporte_tecnico),
     p_presupuesto: input.presupuesto,

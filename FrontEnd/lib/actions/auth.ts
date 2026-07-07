@@ -303,6 +303,7 @@ export async function saveEmprendedorProfile(raw: unknown): Promise<Result<void>
       body: JSON.stringify({
         tipo:            "emprendedor",
         nombre_proyecto: d.projectName,
+        cedula:          d.cedula,
         etapa:           d.stage,
         soporte_tecnico: d.neededSupport,
         presupuesto:     d.budget,

@@ -450,7 +450,11 @@
         "label": "Project name",
         "placeholder": "e.g. EcoTrack App",
         "error_required": "Required",
-        "error_min_2": "At least 2 characters"
+        "error_min_2": "At least 2 characters",
+        "cedula_label": "Your ID",
+        "cedula_placeholder": "e.g. 1-2345-6789",
+        "cedula_error_required": "Enter your ID",
+        "cedula_error_min": "Invalid ID"
       },
       "step2": {
         "eyebrow": "Project stage",
@@ -1507,6 +1511,7 @@
     "fields": {
       "company_name": "Company name",
       "project_name": "Project name",
+      "cedula": "ID number",
       "project_description_placeholder": "Describe your project, the problem it solves, and your long-term vision...",
       "employees": "Employees",
       "employees_unit": "people",

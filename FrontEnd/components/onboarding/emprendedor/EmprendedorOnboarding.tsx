@@ -14,26 +14,53 @@ const TOTAL_STEPS = 5;
 const OPTIONAL_STEPS = new Set([5]);
 const DESC_MAX_CHARS = 400;
 
+export type Step1Value = { projectName: string; cedula: string };
+
 function Step1({
   onChange,
   showErrors = false,
 }: {
-  onChange: (val: string) => void;
+  onChange: (val: Step1Value | null) => void;
   showErrors?: boolean;
 }) {
   const t = useTranslations("register.emprendedor.step1");
   const [nameValue, setNameValue] = useState("");
-  const [touched, setTouched] = useState(false);
+  const [cedulaValue, setCedulaValue] = useState("");
+  const [touchedName, setTouchedName] = useState(false);
+  const [touchedCedula, setTouchedCedula] = useState(false);
 
-  function getError(): string | null {
-    if (!showErrors && !touched) return null;
+  // Emite el valor solo si ambos campos son válidos; null bloquea el "Siguiente".
+  function emit(name: string, cedula: string) {
+    const projectName = name.trim();
+    const ced = cedula.trim();
+    const valid = projectName.length >= 2 && ced.length >= 5 && ced.length <= 20;
+    onChange(valid ? { projectName, cedula: ced } : null);
+  }
+
+  function nameError(): string | null {
+    if (!showErrors && !touchedName) return null;
     const value = nameValue.trim();
     if (!value) return t("error_required");
     if (value.length < 2) return t("error_min_2");
     return null;
   }
 
-  const error = getError();
+  function cedulaError(): string | null {
+    if (!showErrors && !touchedCedula) return null;
+    const value = cedulaValue.trim();
+    if (!value) return t("cedula_error_required");
+    if (value.length < 5) return t("cedula_error_min");
+    return null;
+  }
+
+  const errName = nameError();
+  const errCedula = cedulaError();
+
+  const fieldClass = (hasError: boolean) =>
+    [
+      "w-full rounded-2xl bg-surface-sunken px-5 py-4 font-body text-sm text-ink-strong placeholder:text-ink-subtle outline-none focus:ring-2",
+      hasError ? "ring-1 ring-red-400/60 focus:ring-red-400/60" : "focus:ring-primary/40",
+    ].join(" ");
 
   return (
     <div className="flex flex-col gap-6">
@@ -48,29 +75,50 @@ function Step1({
       </div>
 
       <div className="flex flex-col gap-1">
-        <label htmlFor="emprendedor-name" className="sr-only">{t("label")}</label>
+        <label htmlFor="emprendedor-name" className="mb-1 px-1 font-body text-xs font-semibold text-ink-strong">
+          {t("label")}
+        </label>
         <input
           id="emprendedor-name"
           type="text"
           value={nameValue}
-          onChange={(e) => { setNameValue(e.target.value); onChange(e.target.value); }}
-          onBlur={() => setTouched(true)}
+          onChange={(e) => { setNameValue(e.target.value); emit(e.target.value, cedulaValue); }}
+          onBlur={() => setTouchedName(true)}
           placeholder={t("placeholder")}
           autoFocus
-          aria-describedby={error ? "emprendedor-name-error" : undefined}
-          aria-invalid={error ? true : undefined}
-          className={[
-            "w-full rounded-2xl bg-surface-sunken px-5 py-4 font-body text-sm text-ink-strong placeholder:text-ink-subtle outline-none focus:ring-2",
-            error ? "ring-1 ring-red-400/60 focus:ring-red-400/60" : "focus:ring-primary/40",
-          ].join(" ")}
+          aria-describedby={errName ? "emprendedor-name-error" : undefined}
+          aria-invalid={errName ? true : undefined}
+          className={fieldClass(Boolean(errName))}
         />
-        {error && (
+        {errName && (
           <p id="emprendedor-name-error" role="alert" className="px-1 font-body text-xs text-red-500">
-            {error}
+            {errName}
           </p>
         )}
       </div>
-      <div className="h-2" />
+
+      <div className="flex flex-col gap-1">
+        <label htmlFor="emprendedor-cedula" className="mb-1 px-1 font-body text-xs font-semibold text-ink-strong">
+          {t("cedula_label")}
+        </label>
+        <input
+          id="emprendedor-cedula"
+          type="text"
+          inputMode="numeric"
+          value={cedulaValue}
+          onChange={(e) => { setCedulaValue(e.target.value); emit(nameValue, e.target.value); }}
+          onBlur={() => setTouchedCedula(true)}
+          placeholder={t("cedula_placeholder")}
+          aria-describedby={errCedula ? "emprendedor-cedula-error" : undefined}
+          aria-invalid={errCedula ? true : undefined}
+          className={fieldClass(Boolean(errCedula))}
+        />
+        {errCedula && (
+          <p id="emprendedor-cedula-error" role="alert" className="px-1 font-body text-xs text-red-500">
+            {errCedula}
+          </p>
+        )}
+      </div>
     </div>
   );
 }
@@ -360,8 +408,10 @@ export function EmprendedorOnboarding() {
     }
 
     const stored = getOnboarding("emprendedor");
+    const step1 = stored.step1 as Step1Value | undefined;
     const raw = {
-      projectName:   stored.step1 as string,
+      projectName:   step1?.projectName ?? "",
+      cedula:        step1?.cedula ?? "",
       stage:         stored.step2,
       neededSupport: stored.step3,
       budget:        stored.step4,
@@ -404,7 +454,7 @@ export function EmprendedorOnboarding() {
           {currentStep === 1 && (
             <Step1
               showErrors={showStepErrors}
-              onChange={(val) => setPendingValue(val.trim() || null)}
+              onChange={(val) => setPendingValue(val)}
             />
           )}
           {currentStep === 2 && (
