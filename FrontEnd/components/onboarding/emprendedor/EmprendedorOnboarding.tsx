@@ -29,6 +29,11 @@ function Step1({
   const [touchedName, setTouchedName] = useState(false);
   const [touchedCedula, setTouchedCedula] = useState(false);
 
+  useEffect(() => {
+    const stored = getOnboarding("emprendedor").step1 as Step1Value | undefined;
+    if (stored) { setNameValue(stored.projectName ?? ""); setCedulaValue(stored.cedula ?? ""); }
+  }, []);
+
   // Emite el valor solo si ambos campos son válidos; null bloquea el "Siguiente".
   function emit(name: string, cedula: string) {
     const projectName = name.trim();
@@ -129,6 +134,11 @@ function Step2({ onChange }: { onChange: (val: StartupStage) => void }) {
   const t = useTranslations("register.emprendedor.step2");
   const [selectedStage, setSelectedStage] = useState<StartupStage | null>(null);
 
+  useEffect(() => {
+    const stored = getOnboarding("emprendedor").step2 as StartupStage | undefined;
+    if (stored) setSelectedStage(stored);
+  }, []);
+
   const STAGE_OPTIONS: { id: StartupStage; label: string; description: string }[] = [
     { id: "idea",       label: t("idea_label"),       description: t("idea_description") },
     { id: "mvp",        label: t("mvp_label"),        description: t("mvp_description") },
@@ -197,6 +207,11 @@ function Step3({ onChange }: { onChange: (val: TechSupport[]) => void }) {
   const t = useTranslations("register.emprendedor.step3");
   const [selectedSupport, setSelectedSupport] = useState<TechSupport[]>([]);
 
+  useEffect(() => {
+    const stored = getOnboarding("emprendedor").step3 as TechSupport[] | undefined;
+    if (stored && stored.length > 0) setSelectedSupport(stored);
+  }, []);
+
   const TECH_SUPPORT_LABELS: Record<TechSupport, string> = {
     web:        t("web"),
     mobile:     t("mobile"),
@@ -260,6 +275,11 @@ type BudgetRange = "under_500" | "range_500_1000" | "range_1000_2500" | "flexibl
 function Step4({ onChange }: { onChange: (val: BudgetRange) => void }) {
   const t = useTranslations("register.emprendedor.step4");
   const [selectedBudget, setSelectedBudget] = useState<BudgetRange | null>(null);
+
+  useEffect(() => {
+    const stored = getOnboarding("emprendedor").step4 as BudgetRange | undefined;
+    if (stored) setSelectedBudget(stored);
+  }, []);
 
   const BUDGET_LABELS: Record<BudgetRange, string> = {
     under_500:       t("under_500"),
@@ -327,6 +347,11 @@ function Step5({ onChange }: { onChange: (val: string) => void }) {
   const [descriptionValue, setDescriptionValue] = useState("");
   const remainingChars = DESC_MAX_CHARS - descriptionValue.length;
 
+  useEffect(() => {
+    const stored = getOnboarding("emprendedor").step5 as string | undefined;
+    if (stored) setDescriptionValue(stored);
+  }, []);
+
   return (
     <div className="flex flex-col gap-6">
       <div>
@@ -376,7 +401,10 @@ export function EmprendedorOnboarding() {
   const [isSubmitting, startTransition] = useTransition();
 
   useEffect(() => {
-    setPendingValue(null);
+    // Rehidrata el gating desde sessionStorage: si el paso ya se completó antes,
+    // "Siguiente" sigue habilitado al navegar hacia atrás/adelante sin re-tipear.
+    const stored = getOnboarding("emprendedor");
+    setPendingValue(stored[`step${currentStep}`] ?? null);
     setShowStepErrors(false);
   }, [currentStep]);
 
