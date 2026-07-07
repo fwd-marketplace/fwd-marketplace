@@ -62,6 +62,7 @@ import {
 } from "@/lib/actions/marketplace";
 import { generateProposalAction, suggestStackAction, suggestCompensacionAction } from "@/lib/actions/ai";
 import { formatCompensacion, compensacionUpdatedAfterPublish, COMPENSACION_MIN, COMPENSACION_MAX } from "@/lib/marketplace/compensation";
+import { intlLocale } from "@/lib/i18n/date-locale";
 import { streamAssistant, toAiLocale } from "@/lib/api/ai-client";
 import { getProjectMensajesAction, sendMensajeAction, getMyConversacionesAction } from "@/lib/actions/mensajes";
 import { MejorarMensajeButton } from "@/components/gestion/MejorarMensajeButton";
@@ -1329,8 +1330,8 @@ function InfoPanel({
 
 // ── Chat panel ────────────────────────────────────────────────────────────────
 
-function formatChatTime(iso: string) {
-  return new Date(iso).toLocaleTimeString("es-CR", { hour: "2-digit", minute: "2-digit" });
+function formatChatTime(iso: string, locale: string) {
+  return new Date(iso).toLocaleTimeString(intlLocale(locale), { hour: "2-digit", minute: "2-digit" });
 }
 
 // ── Junior: asistente del proyecto + chat humano gateado ────────────────────────
@@ -1347,6 +1348,7 @@ function JuniorContactoPanel({
   userId: string | null;
   onConversationActivity?: () => void;
 }) {
+  const locale = useLocale();
   const [rawMsgs, setRawMsgs] = useState<ApiMensaje[]>([]);
   const [draft, setDraft] = useState("");
   const [sending, setSending] = useState(false);
@@ -1464,7 +1466,7 @@ function JuniorContactoPanel({
                         {msg.contenido}
                       </div>
                       <span className="flex items-center gap-1.5 px-1 font-body text-[11px] text-ink-muted">
-                        {formatChatTime(msg.fecha_envio)}
+                        {formatChatTime(msg.fecha_envio, locale)}
                         {!isMine && <ReportarMensajeButton mensajeId={msg.id} />}
                       </span>
                     </div>

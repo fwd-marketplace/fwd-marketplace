@@ -2,6 +2,7 @@
 
 import React, { useEffect, useRef, useState, useTransition } from "react";
 import { useTranslations, useLocale } from "next-intl";
+import { intlLocale } from "@/lib/i18n/date-locale";
 import { useSearchParams } from "next/navigation";
 import Link from "next/link";
 import {
@@ -127,6 +128,7 @@ function CalificacionesSection({
   t: ReturnType<typeof import("next-intl").useTranslations<"perfil_junior">>;
   initialCalificaciones: MockCalificacion[];
 }) {
+  const locale = useLocale();
   const [calificaciones, setCalificaciones] = useState<MockCalificacion[]>(initialCalificaciones);
   const [replyingId, setReplyingId] = useState<string | null>(null);
   const [replyDraft, setReplyDraft] = useState("");
@@ -171,7 +173,7 @@ function CalificacionesSection({
                 )}
                 <p className="font-heading text-lg font-extrabold text-ink-strong leading-tight">{cal.projectName}</p>
                 <p className="text-[11px] text-ink-muted mt-1">
-                  {new Date(cal.date).toLocaleDateString([], { day: "numeric", month: "long", year: "numeric" })}
+                  {new Date(cal.date).toLocaleDateString(intlLocale(locale), { day: "numeric", month: "long", year: "numeric" })}
                 </p>
               </div>
 
@@ -1902,7 +1904,7 @@ export default function PerfilUsuario({
                         const fecha = new Date(app.relativeTime);
                         const fechaLabel = isNaN(fecha.getTime())
                           ? ""
-                          : fecha.toLocaleDateString("es-CR", { day: "numeric", month: "short" });
+                          : fecha.toLocaleDateString(intlLocale(locale), { day: "numeric", month: "short" });
                         return (
                           <div
                             key={app.id}
@@ -2112,7 +2114,7 @@ export default function PerfilUsuario({
                   {paginated.map((app) => {
                     const styles = getStatusStyles(app.status);
                     const fecha = new Date(app.relativeTime);
-                    const fechaLabel = isNaN(fecha.getTime()) ? app.relativeTime : fecha.toLocaleDateString("es-CR", { day: "numeric", month: "short", year: "numeric" });
+                    const fechaLabel = isNaN(fecha.getTime()) ? app.relativeTime : fecha.toLocaleDateString(intlLocale(locale), { day: "numeric", month: "short", year: "numeric" });
                     return (
                       <Link
                         key={app.id}
@@ -2306,9 +2308,9 @@ export default function PerfilUsuario({
                           {notif.mensaje}
                         </p>
                         <span className="font-body text-xs text-ink-muted">
-                          {new Date(notif.fecha).toLocaleDateString(undefined, { day: "numeric", month: "long", year: "numeric" })}
+                          {new Date(notif.fecha).toLocaleDateString(intlLocale(locale), { day: "numeric", month: "long", year: "numeric" })}
                           {" · "}
-                          {new Date(notif.fecha).toLocaleTimeString(undefined, { hour: "2-digit", minute: "2-digit" })}
+                          {new Date(notif.fecha).toLocaleTimeString(intlLocale(locale), { hour: "2-digit", minute: "2-digit" })}
                         </span>
                       </div>
                       {!notif.leida && (

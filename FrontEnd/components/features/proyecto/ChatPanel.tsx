@@ -1,9 +1,10 @@
 "use client";
 
 import { useEffect, useRef, useState } from "react";
-import { useTranslations } from "next-intl";
+import { useLocale, useTranslations } from "next-intl";
 import { ChevronRight, MessageSquare, Send } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { intlLocale } from "@/lib/i18n/date-locale";
 import { getProjectMensajesAction, sendMensajeAction } from "@/lib/actions/mensajes";
 import { MejorarMensajeButton } from "@/components/gestion/MejorarMensajeButton";
 import { ReportarMensajeButton } from "@/components/gestion/ReportarMensajeButton";
@@ -12,8 +13,8 @@ import type { ApiMensaje, ApiProject } from "@/lib/api/types";
 /** Cada cuánto se refrescan los mensajes del chat (polling, no hay WebSockets en el MVP). */
 const CHAT_POLL_INTERVAL_MS = 4000;
 
-function formatChatTime(iso: string) {
-  return new Date(iso).toLocaleTimeString("es-CR", { hour: "2-digit", minute: "2-digit" });
+function formatChatTime(iso: string, locale: string) {
+  return new Date(iso).toLocaleTimeString(intlLocale(locale), { hour: "2-digit", minute: "2-digit" });
 }
 
 function juniorDisplayName(u: { nombre: string; apellido1: string | null } | null | undefined) {
@@ -36,6 +37,7 @@ export function ChatPanel({
   userId: string | null;
 }) {
   const t = useTranslations("project_chat");
+  const locale = useLocale();
   const [rawMsgs, setRawMsgs] = useState<ApiMensaje[]>([]);
   const [draft, setDraft] = useState("");
   const [sending, setSending] = useState(false);
@@ -264,7 +266,7 @@ export function ChatPanel({
                         {msg.contenido}
                       </div>
                       <span className="flex items-center gap-1.5 px-1 font-body text-[11px] text-ink-muted">
-                        {formatChatTime(msg.fecha_envio)}
+                        {formatChatTime(msg.fecha_envio, locale)}
                         {!isMine && <ReportarMensajeButton mensajeId={msg.id} />}
                       </span>
                     </div>
