@@ -134,7 +134,7 @@ export async function onboardEmprendedor(
 ): Promise<OnboardingResult> {
   const settings = await readAppSettings();
   if (!settings.allow_companies) {
-    throw new ApiError(403, "El registro de empresas está deshabilitado temporalmente.");
+    throw new ApiError(403, "El registro de emprendedores está deshabilitado temporalmente.");
   }
   const client = supabaseForToken(accessToken);
   const { error } = await client.rpc("onboard_emprendedor", {

@@ -200,6 +200,7 @@ function SectionHeader({
   onSave: () => void;
   onCancel: () => void;
 }) {
+  const t = useTranslations('mi_empresa');
   const isActive = editingSection === sectionId;
   const otherActive = editingSection !== null && !isActive;
   return (
@@ -217,7 +218,7 @@ function SectionHeader({
             className="flex items-center gap-1 rounded-full bg-primary px-3 py-1 text-[11px] font-bold text-white transition-opacity hover:opacity-90 disabled:opacity-60"
           >
             {isSaving ? <Loader2 className="size-3 animate-spin" /> : <Check className="size-3" />}
-            Guardar
+            {t('actions.save')}
           </button>
           <button
             type="button"
@@ -225,7 +226,7 @@ function SectionHeader({
             disabled={isSaving}
             className="rounded-full border border-border px-3 py-1 text-[11px] font-semibold text-ink-muted transition-colors hover:border-border-strong hover:text-ink disabled:opacity-40"
           >
-            Cancelar
+            {t('actions.cancel')}
           </button>
         </div>
       ) : (
@@ -233,7 +234,7 @@ function SectionHeader({
           <button
             type="button"
             onClick={onEdit}
-            aria-label="Editar sección"
+            aria-label={t('actions.edit_section')}
             className="flex size-7 items-center justify-center rounded-full border border-border text-ink-muted transition-colors hover:border-primary/40 hover:text-primary"
           >
             <Pencil className="size-3.5" />
@@ -521,7 +522,7 @@ export function CompanyProfile({
                         <label className="font-body text-xs font-bold tracking-wide text-ink-muted">{t('fields.website')}</label>
                         {isEditing('general') ? (
                           <div>
-                            <input type="text" value={company.website} placeholder="https://tuproyecto.com"
+                            <input type="text" value={company.website} placeholder={t('placeholders.website_emprendedor')}
                               onChange={(e) => {
                                 const val = e.target.value;
                                 setCompany({ ...company, website: val });
@@ -547,7 +548,7 @@ export function CompanyProfile({
                       </div>
                       <div>
                         <label className="font-body text-xs font-bold tracking-wide text-ink-muted">{t('fields.country')}</label>
-                        <p className="text-sm font-medium text-ink">Costa Rica</p>
+                        <p className="text-sm font-medium text-ink">{t('fields.country_value')}</p>
                       </div>
                       <div>
                         <label className="font-body text-xs font-bold tracking-wide text-ink-muted">{t('fields.provincia')}</label>
@@ -667,14 +668,14 @@ export function CompanyProfile({
 
                       <div>
                         <label className="font-body text-xs font-bold tracking-wide text-ink-muted">{t('fields.country')}</label>
-                        <p className="text-sm font-medium text-ink">Costa Rica</p>
+                        <p className="text-sm font-medium text-ink">{t('fields.country_value')}</p>
                       </div>
 
                       <div>
                         <label className="font-body text-xs font-bold tracking-wide text-ink-muted">{t('fields.website')}</label>
                         {isEditing('general') ? (
                           <div>
-                            <input type="text" value={company.website} placeholder="https://tuempresa.com"
+                            <input type="text" value={company.website} placeholder={t('placeholders.website_empresa')}
                               onChange={(e) => {
                                 const val = e.target.value;
                                 setCompany({ ...company, website: val });

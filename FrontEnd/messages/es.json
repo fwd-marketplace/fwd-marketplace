@@ -623,7 +623,8 @@
     "mis_proyectos": "Mis proyectos",
     "matches": "Matches",
     "postulaciones": "Postulaciones",
-    "mi_empresa": "Mi empresa"
+    "mi_empresa": "Mi empresa",
+    "mi_emprendimiento": "Mi emprendimiento"
   },
   "perfil_junior": {
     "tabs": {
@@ -1480,6 +1481,22 @@
     ]
   },
   "mi_empresa": {
+    "actions": {
+      "save": "Guardar",
+      "cancel": "Cancelar",
+      "edit_section": "Editar sección"
+    },
+    "public": {
+      "close": "Cerrar",
+      "participate": "Participar",
+      "days": "{count} días",
+      "uses_ai": "Usa IA",
+      "offers": "{count} postulaciones",
+      "description": "Descripción",
+      "required_tech": "Tecnologías requeridas",
+      "projects_tab": "Proyectos",
+      "no_projects": "Este perfil aún no tiene proyectos publicados."
+    },
     "badge": {
       "empresa": "Empresa",
       "emprendedor": "Emprendedor"
@@ -1507,6 +1524,7 @@
       "employees": "Empleados",
       "employees_unit": "personas",
       "country": "País",
+      "country_value": "Costa Rica",
       "provincia": "Provincia",
       "canton": "Cantón",
       "comercial_name": "Nombre comercial",
@@ -1593,7 +1611,9 @@
       "contact_example_role": "Reclutadora de Talento",
       "contact_example_email": "ana@empresa.com",
       "contact_hint": "Agregá los contactos encargados del reclutamiento",
-      "loading_areas": "Cargando áreas..."
+      "loading_areas": "Cargando áreas...",
+      "website_emprendedor": "https://tuproyecto.com",
+      "website_empresa": "https://tuempresa.com"
     },
     "modalities": {
       "remote": "Remoto",

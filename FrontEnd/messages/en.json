@@ -623,7 +623,8 @@
     "mis_proyectos": "My projects",
     "matches": "Matches",
     "postulaciones": "Applications",
-    "mi_empresa": "My company"
+    "mi_empresa": "My company",
+    "mi_emprendimiento": "My venture"
   },
   "perfil_junior": {
     "tabs": {
@@ -1489,6 +1490,22 @@
     ]
   },
   "mi_empresa": {
+    "actions": {
+      "save": "Save",
+      "cancel": "Cancel",
+      "edit_section": "Edit section"
+    },
+    "public": {
+      "close": "Close",
+      "participate": "Apply",
+      "days": "{count} days",
+      "uses_ai": "Uses AI",
+      "offers": "{count} applications",
+      "description": "Description",
+      "required_tech": "Required technologies",
+      "projects_tab": "Projects",
+      "no_projects": "This profile has no published projects yet."
+    },
     "badge": {
       "empresa": "Company",
       "emprendedor": "Entrepreneur"
@@ -1516,6 +1533,7 @@
       "employees": "Employees",
       "employees_unit": "people",
       "country": "Country",
+      "country_value": "Costa Rica",
       "provincia": "Province",
       "canton": "Canton",
       "description": "Description",
@@ -1602,7 +1620,9 @@
       "contact_example_role": "Talent Recruiter",
       "contact_example_email": "ana@company.com",
       "contact_hint": "Add the contacts in charge of recruitment",
-      "loading_areas": "Loading areas..."
+      "loading_areas": "Loading areas...",
+      "website_emprendedor": "https://yourproject.com",
+      "website_empresa": "https://yourcompany.com"
     },
     "modalities": {
       "remote": "Remote",
