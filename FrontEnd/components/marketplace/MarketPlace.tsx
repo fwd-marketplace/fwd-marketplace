@@ -524,7 +524,6 @@ export default function MarketPlace({ initialProjects, catalogs, role = 'student
                             const matchScore = studentSkills.length > 0
                                 ? computeMatchScore(projectSkillNames, studentSkills, studentDisponible, studentReputacion)
                                 : null;
-                            const matchBorderClass = colorClass.replace('text-', 'border-');
 
                             return (
                                 <div
@@ -560,7 +559,7 @@ export default function MarketPlace({ initialProjects, catalogs, role = 'student
                                         </div>
                                         {matchScore !== null && (
                                             <div className="flex flex-col items-center shrink-0 ml-3">
-                                                <div className={cn('relative flex h-12 w-12 items-center justify-center rounded-full border-4', matchBorderClass)}>
+                                                <div className="relative flex h-12 w-12 items-center justify-center rounded-full border-4" style={{ borderColor: borderColor }}>
                                                     <span className={cn('font-bold text-sm', colorClass)}>
                                                         {matchScore}%
                                                     </span>

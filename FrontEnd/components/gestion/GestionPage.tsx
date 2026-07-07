@@ -5,12 +5,16 @@ import { useLocale, useTranslations } from "next-intl";
 import { ProjectMatchPanel } from "@/components/gestion/ProjectMatchPanel";
 import { ChatPanel } from "@/components/features/proyecto/ChatPanel";
 import {
+  Activity,
   AlertCircle,
   ArrowLeft,
+  ArrowRight,
   Ban,
+  Briefcase,
   Calendar,
   Check,
   CheckCircle2,
+  ChevronLeft,
   ChevronRight,
   Clock,
   ExternalLink,
@@ -18,6 +22,7 @@ import {
   FolderOpen,
   Eye,
   GitBranch,
+  LayoutDashboard,
   Loader2,
   Lock,
   Mail,
@@ -353,6 +358,9 @@ export function GestionPage({ role, userId, initialProjectId, initialSection: in
     initialSectionProp ?? ((!isEmpresa && !!initialProjectId) ? "proceso" : "info");
   const [section, setSection]               = useState<Section>(initialSection);
 
+  // Sidebar navigation — pure presentation state (which top-level view is active)
+  const [sidebarView, setSidebarView] = useState<"dashboard" | "procesos">("dashboard");
+
   // Clean ?proyecto= from URL once used to pre-select
   useEffect(() => {
     if (initialProjectId) {
@@ -580,16 +588,76 @@ export function GestionPage({ role, userId, initialProjectId, initialSection: in
   };
 
   return (
-    <div className="flex h-[calc(100vh-4rem)] overflow-hidden">
+    <div className="flex min-h-[calc(100vh-4rem)] gap-4 bg-canvas px-4 pt-10 pb-6">
+
+      {/* ── Navigation rail flotante ── */}
+      <nav
+        className="sticky top-10 self-start flex h-fit shrink-0 w-[72px] flex-col items-center gap-7 rounded-2xl border border-border bg-surface py-7 shadow-[var(--shadow-soft)]"
+        aria-label="Navegación principal"
+      >
+
+        {/* Dashboard */}
+        <div className="group relative">
+          <button
+            type="button"
+            onClick={() => setSidebarView("dashboard")}
+            aria-current={sidebarView === "dashboard" ? "page" : undefined}
+            aria-label="Dashboard"
+            className={cn(
+              "flex size-11 items-center justify-center rounded-[18px] transition-all duration-[var(--duration-fast)] ease-[var(--ease-out)]",
+              sidebarView === "dashboard"
+                ? "bg-ink-strong text-white shadow-sm"
+                : "text-ink-muted/40 hover:bg-canvas hover:text-ink-strong",
+            )}
+          >
+            <LayoutDashboard className="size-[19px]" aria-hidden="true" />
+          </button>
+          <span role="tooltip" className="pointer-events-none absolute left-[calc(100%+12px)] top-1/2 z-50 -translate-y-1/2 whitespace-nowrap rounded-xl bg-ink-strong px-3 py-1.5 font-body text-xs font-semibold text-white opacity-0 shadow-lg transition-opacity duration-[var(--duration-fast)] group-hover:opacity-100">
+            Dashboard
+          </span>
+        </div>
+
+        {/* Procesos */}
+        <div className="group relative">
+          <button
+            type="button"
+            onClick={() => setSidebarView("procesos")}
+            aria-current={sidebarView === "procesos" ? "page" : undefined}
+            aria-label="Procesos"
+            className={cn(
+              "flex size-11 items-center justify-center rounded-[18px] transition-all duration-[var(--duration-fast)] ease-[var(--ease-out)]",
+              sidebarView === "procesos"
+                ? "bg-ink-strong text-white shadow-sm"
+                : "text-ink-muted/40 hover:bg-canvas hover:text-ink-strong",
+            )}
+          >
+            <FolderOpen className="size-[19px]" aria-hidden="true" />
+          </button>
+          <span role="tooltip" className="pointer-events-none absolute left-[calc(100%+12px)] top-1/2 z-50 -translate-y-1/2 whitespace-nowrap rounded-xl bg-ink-strong px-3 py-1.5 font-body text-xs font-semibold text-white opacity-0 shadow-lg transition-opacity duration-[var(--duration-fast)] group-hover:opacity-100">
+            Procesos
+          </span>
+        </div>
+
+        {/* Mensajes */}
+        <div className="group relative">
+          <button
+            type="button"
+            aria-label="Mensajes"
+            className="flex size-11 items-center justify-center rounded-[18px] text-ink-muted/40 transition-all duration-[var(--duration-fast)] ease-[var(--ease-out)] hover:bg-canvas hover:text-ink-strong"
+          >
+            <MessageSquare className="size-[19px]" aria-hidden="true" />
+          </button>
+          <span role="tooltip" className="pointer-events-none absolute left-[calc(100%+12px)] top-1/2 z-50 -translate-y-1/2 whitespace-nowrap rounded-xl bg-ink-strong px-3 py-1.5 font-body text-xs font-semibold text-white opacity-0 shadow-lg transition-opacity duration-[var(--duration-fast)] group-hover:opacity-100">
+            Mensajes
+          </span>
+        </div>
+
+      </nav>
 
       {/* ── Sidebar ── */}
       <aside
         aria-label={t("aria_proyectos")}
-        className={cn(
-          "flex shrink-0 flex-col overflow-hidden bg-secondary transition-[width] duration-[var(--duration-base)] ease-[var(--ease-out)]",
-          "md:w-72 md:border-r md:border-white/10",
-          selectedId ? "w-0 md:w-72" : "w-full md:w-72",
-        )}
+        className="hidden"
       >
         {!selectedId ? (
           <>
@@ -824,13 +892,66 @@ export function GestionPage({ role, userId, initialProjectId, initialSection: in
         )}
       </aside>
 
-      {/* ── Content ── */}
-      <main
-        className={cn(
-          "flex-1 overflow-y-auto bg-canvas",
-          !selectedId && formMode === null ? "hidden md:flex md:flex-col" : "block",
+      {/* ── Main column ── */}
+      <div className="flex flex-1 flex-col">
+
+        {/* Project header + horizontal section tabs (desktop only) */}
+        {selectedId && (
+          <div className="hidden shrink-0 items-center gap-3 border-b border-border bg-surface px-6 py-3 md:flex">
+            <button
+              onClick={handleBack}
+              className="inline-flex items-center gap-1.5 font-body text-xs font-semibold text-ink-muted transition-colors duration-[var(--duration-fast)] hover:text-ink"
+            >
+              <ArrowLeft className="size-3.5" aria-hidden="true" />
+              {t("all_projects")}
+            </button>
+            <div className="h-4 w-px bg-border" aria-hidden="true" />
+            <p className="min-w-0 flex-1 truncate font-heading text-sm font-bold text-ink-strong">
+              {selectedProject?.titulo
+                ?? myOffers.find((o) => o.proyecto?.id === selectedId)?.proyecto?.titulo
+                ?? ""}
+              {selectedProject?.area && (
+                <span className="ml-2 font-body text-xs font-medium normal-case tracking-normal text-ink-muted">
+                  {selectedProject.area.nombre}
+                </span>
+              )}
+            </p>
+            <nav className="flex shrink-0 items-center gap-1" aria-label={t("aria_secciones_proyecto")}>
+              {(["info", "chat", "proceso"] as const).map((key) => {
+                const Icon  = key === "info" ? FileText : key === "chat" ? MessageSquare : GitBranch;
+                const label = key === "info" ? t("section_info") : key === "chat" ? t("section_chat") : t("section_proceso");
+                return (
+                  <button
+                    key={key}
+                    onClick={() => setSection(key)}
+                    className={cn(
+                      "flex items-center gap-1.5 rounded-lg px-3 py-1.5 font-body text-xs font-semibold transition-colors duration-[var(--duration-fast)]",
+                      section === key ? "bg-primary/10 text-primary" : "text-ink-muted hover:bg-canvas hover:text-ink",
+                    )}
+                  >
+                    <Icon className="size-3.5 shrink-0" aria-hidden="true" />
+                    {label}
+                  </button>
+                );
+              })}
+              {isEmpresa && (
+                <button
+                  onClick={() => setSection("matches")}
+                  className={cn(
+                    "flex items-center gap-1.5 rounded-lg px-3 py-1.5 font-body text-xs font-semibold transition-colors duration-[var(--duration-fast)]",
+                    section === "matches" ? "bg-primary/10 text-primary" : "text-ink-muted hover:bg-canvas hover:text-ink",
+                  )}
+                >
+                  <Sparkles className="size-3.5 shrink-0" aria-hidden="true" />
+                  {t("section_matches")}
+                </button>
+              )}
+            </nav>
+          </div>
         )}
-      >
+
+        {/* ── Content ── */}
+        <main className="flex-1 bg-canvas">
         {isEmpresa && formMode !== null ? (
           <ProjectFormContent
             mode={formMode}
@@ -841,15 +962,26 @@ export function GestionPage({ role, userId, initialProjectId, initialSection: in
             onClose={() => setFormMode(null)}
           />
         ) : !selectedId ? (
-          <WelcomePanel
-            isEmpresa={isEmpresa}
-            hasProjects={sidebarProjects.length > 0}
-            projects={sidebarProjects}
-            t={t}
-            locale={locale}
-            onCreateProject={() => setFormMode("create")}
-            onSelectProject={(id) => handleSelect(id, "info")}
-          />
+          !isEmpresa && sidebarView === "procesos" ? (
+            <ProcesosView
+              myOffers={myOffers}
+              projects={sidebarProjects}
+              t={t}
+              locale={locale}
+              onSelectProject={(id) => handleSelect(id, "proceso")}
+            />
+          ) : (
+            <WelcomePanel
+              isEmpresa={isEmpresa}
+              hasProjects={sidebarProjects.length > 0}
+              projects={sidebarProjects}
+              myOffers={myOffers}
+              t={t}
+              locale={locale}
+              onCreateProject={() => setFormMode("create")}
+              onSelectProject={(id) => handleSelect(id, "info")}
+            />
+          )
         ) : projectLoading && !selectedProject ? (
           <div className="flex flex-1 items-center justify-center py-20">
             <Loader2 className="size-7 animate-spin text-primary" aria-label={t("aria_cargando_proyecto")} />
@@ -936,6 +1068,7 @@ export function GestionPage({ role, userId, initialProjectId, initialSection: in
           </>
         )}
       </main>
+      </div>{/* end main column */}
 
       {/* ── Delete confirmation ── */}
       {deleteTarget && (
@@ -984,6 +1117,7 @@ function WelcomePanel({
   isEmpresa,
   hasProjects,
   projects = [],
+  myOffers = [],
   t,
   locale,
   onCreateProject,
@@ -992,11 +1126,17 @@ function WelcomePanel({
   isEmpresa: boolean;
   hasProjects: boolean;
   projects?: ApiProject[];
+  myOffers?: MyOffer[];
   t: T;
   locale: string;
   onCreateProject: () => void;
   onSelectProject: (id: string) => void;
 }) {
+  const [offerPage, setOfferPage] = useState(0);
+  const [calendarProjectId, setCalendarProjectId] = useState<string | null>(null);
+  const [calendarOffset, setCalendarOffset] = useState(0); // meses desde el mes actual
+  const [activityPage, setActivityPage] = useState(0);
+
   // ── Empresa dashboard ────────────────────────────────────────────────────────
   if (isEmpresa && hasProjects) {
     const totalPropuestas = projects.reduce((acc, p) => acc + (p.n_ofertas ?? 0), 0);
@@ -1107,6 +1247,509 @@ function WelcomePanel({
     );
   }
 
+  // ── Junior dashboard (tiene postulaciones) ───────────────────────────────────
+  if (!isEmpresa && myOffers.length > 0) {
+    // Deduplica por proyecto (un junior puede tener un offer por proyecto)
+    const uniqueOffers = myOffers.filter(
+      (o, idx, arr) => o.proyecto && arr.findIndex((x) => x.proyecto?.id === o.proyecto?.id) === idx,
+    );
+
+    const PAGE_SIZE   = 5;
+    const totalPages  = Math.max(1, Math.ceil(uniqueOffers.length / PAGE_SIZE));
+    const safePage    = Math.min(offerPage, totalPages - 1);
+    const pagedOffers = uniqueOffers.slice(safePage * PAGE_SIZE, (safePage + 1) * PAGE_SIZE);
+
+    // Paleta para bordes de cards: magenta → cyan → amarillo → naranja → azul → morado (últimos)
+    const PALETTE_HEX = ["#EC008C", "#20BEC6", "#FFCB05", "#F7901E", "#0A6CB9", "#662D91"];
+
+    // Mapa de etiqueta de evento por estado
+    const activityLabel: Record<OfferState, string> = {
+      enviada:           t("junior_activity_enviada"),
+      en_revision:       t("junior_activity_en_revision"),
+      solicitar_cambios: t("junior_activity_solicitar_cambios"),
+      adjudicada:        t("junior_activity_adjudicada"),
+      no_seleccionada:   t("junior_activity_no_seleccionada"),
+    };
+
+    // Genera eventos de actividad por oferta.
+    // weight refleja el orden lógico en que ocurrieron los eventos dentro de la misma oferta:
+    //   0 = propuesta enviada (lo primero), 1 = cambio de estado, 2 = calificación (lo último)
+    // El sort usa fecha DESC primero y weight DESC como desempate, para que lo más reciente
+    // quede siempre arriba sin importar que compartan la misma fecha_envio.
+    type ActivityEvent = {
+      key: string; projectId: string; title: string;
+      label: string; dot: string; date: string; weight: number;
+    };
+    const activityEvents: ActivityEvent[] = [];
+    for (const offer of uniqueOffers) {
+      if (!offer.proyecto) continue;
+      const cfg = OFFER_STATE_CONFIG[offer.estado.nombre];
+      activityEvents.push({
+        key: `${offer.id}-enviada`,
+        projectId: offer.proyecto.id,
+        title: offer.proyecto.titulo,
+        label: t("junior_activity_enviada"),
+        dot: "bg-primary",
+        date: offer.fecha_envio,
+        weight: 0,
+      });
+      if (offer.estado.nombre !== "enviada") {
+        activityEvents.push({
+          key: `${offer.id}-state`,
+          projectId: offer.proyecto.id,
+          title: offer.proyecto.titulo,
+          label: activityLabel[offer.estado.nombre],
+          dot: cfg.dot,
+          date: offer.fecha_envio,
+          weight: 1,
+        });
+      }
+      if (offer.calificacion !== null) {
+        activityEvents.push({
+          key: `${offer.id}-rating`,
+          projectId: offer.proyecto.id,
+          title: offer.proyecto.titulo,
+          label: t("junior_activity_calificado"),
+          dot: "bg-highlight",
+          date: offer.fecha_envio,
+          weight: 2,
+        });
+      }
+    }
+    // Más reciente primero; desempate por weight DESC (calificación > estado > envío)
+    activityEvents.sort((a, b) => {
+      const diff = new Date(b.date).getTime() - new Date(a.date).getTime();
+      return diff !== 0 ? diff : b.weight - a.weight;
+    });
+
+    const today      = new Date();
+    const calLocale  = locale === "es" ? "es-ES" : "en-US";
+
+    // Mes visualizado — derivado del offset navegable
+    const viewDate   = new Date(today.getFullYear(), today.getMonth() + calendarOffset, 1);
+    const year       = viewDate.getFullYear();
+    const month      = viewDate.getMonth();
+    const daysInMonth    = new Date(year, month + 1, 0).getDate();
+    const firstDayOfWeek = (new Date(year, month, 1).getDay() + 6) % 7; // Lun=0
+    const isCurrentMonth = year === today.getFullYear() && month === today.getMonth();
+    const monthLabel = viewDate.toLocaleString(calLocale, { month: "long", year: "numeric" });
+
+    const activityDays = new Set(
+      myOffers
+        .map((o) => {
+          const d = new Date(o.fecha_envio);
+          return d.getFullYear() === year && d.getMonth() === month ? d.getDate() : -1;
+        })
+        .filter((d) => d > 0),
+    );
+
+    const dayHeaders = Array.from({ length: 7 }, (_, i) => {
+      const d = new Date(2024, 0, i + 1); // Jan 1 2024 = lunes
+      return d.toLocaleString(calLocale, { weekday: "narrow" });
+    });
+
+    const recentActivity = [...myOffers]
+      .sort((a, b) => new Date(b.fecha_envio).getTime() - new Date(a.fecha_envio).getTime())
+      .slice(0, 5);
+
+    const activeOffers = myOffers.filter((o) => o.estado.nombre !== "no_seleccionada");
+
+    return (
+      <div className="bg-canvas">
+        <div className="px-10 pb-10">
+
+          {/* ── Header row ─────────────────────────────────────────────────── */}
+          <div className="mb-10 flex items-start justify-between">
+            <div>
+              <p className="mb-1 font-body text-xs font-bold uppercase tracking-widest text-primary">
+                {t("section_junior")}
+              </p>
+              <h1 className="font-heading text-4xl font-extrabold tracking-tight text-ink-strong">
+                {t("title")}<span className="text-primary" aria-hidden="true">.</span>
+              </h1>
+            </div>
+            <a
+              href={`/${locale}/marketplace`}
+              className="inline-flex items-center gap-2 rounded-full bg-primary px-5 py-2.5 font-body text-sm font-semibold text-white transition-colors duration-[var(--duration-fast)] hover:bg-secondary"
+            >
+              <ExternalLink className="size-4" aria-hidden="true" />
+              {t("junior_dash_explore")}
+            </a>
+          </div>
+
+          {/* ── Top widgets: Calendar (1/3) + Active projects (2/3) ───────── */}
+          <div className="mb-8 grid gap-6 lg:grid-cols-3">
+
+            {/* Widget 1 — Calendario interactivo */}
+            {(() => {
+              // Proyecto seleccionado en el calendario
+              const selOffer = calendarProjectId
+                ? uniqueOffers.find((o) => o.proyecto?.id === calendarProjectId) ?? null
+                : null;
+              const selIdx   = selOffer ? uniqueOffers.indexOf(selOffer) : -1;
+              const selColor = selIdx >= 0 ? PALETTE_HEX[selIdx % PALETTE_HEX.length] : null;
+
+              // Lógica de fechas:
+              // - inicio  = fecha_envio (cuando el junior mandó su propuesta)
+              // - cierre  = proyecto.fecha_cierre (fecha de publicación + plazo_dias del proyecto)
+              // - si adjudicada → start = end = fecha_envio (punto único, proyecto cerrado)
+              const getOfferDates = (offer: MyOffer) => {
+                const start = new Date(offer.fecha_envio);
+                start.setHours(0, 0, 0, 0);
+
+                if (offer.estado.nombre === "adjudicada") {
+                  return { start, end: start }; // punto único
+                }
+
+                if (offer.proyecto?.fecha_cierre) {
+                  const end = new Date(offer.proyecto.fecha_cierre);
+                  end.setHours(0, 0, 0, 0);
+                  return { start, end };
+                }
+
+                return { start, end: null }; // sin fecha de cierre todavía
+              };
+
+              const selDates = selOffer ? getOfferDates(selOffer) : null;
+
+              const getDayRole = (day: number): "start" | "end" | "range" | null => {
+                if (!selDates) return null;
+                const d = new Date(year, month, day); d.setHours(0, 0, 0, 0);
+                const ts = d.getTime();
+                if (ts === selDates.start.getTime()) return "start";
+                if (!selDates.end || selDates.end.getTime() === selDates.start.getTime()) return null;
+                if (ts === selDates.end.getTime()) return "end";
+                if (d > selDates.start && d < selDates.end) return "range";
+                return null;
+              };
+
+              return (
+                <div className="rounded-2xl border border-border bg-surface p-6 shadow-[var(--shadow-soft)]">
+                  {/* Mes + navegación */}
+                  <div className="mb-5 flex items-center justify-between gap-2">
+                    <h2 className="font-heading text-sm font-bold capitalize text-ink-strong">
+                      {monthLabel}
+                    </h2>
+                    <div className="flex items-center gap-1">
+                      <button
+                        type="button"
+                        onClick={() => setCalendarOffset((n) => n - 1)}
+                        className="flex size-7 items-center justify-center rounded-lg text-ink-muted transition-colors duration-[var(--duration-fast)] hover:bg-canvas hover:text-ink-strong"
+                        aria-label="Mes anterior"
+                      >
+                        <ChevronLeft className="size-4" aria-hidden="true" />
+                      </button>
+                      <button
+                        type="button"
+                        onClick={() => setCalendarOffset((n) => n + 1)}
+                        className="flex size-7 items-center justify-center rounded-lg text-ink-muted transition-colors duration-[var(--duration-fast)] hover:bg-canvas hover:text-ink-strong"
+                        aria-label="Mes siguiente"
+                      >
+                        <ChevronRight className="size-4" aria-hidden="true" />
+                      </button>
+                    </div>
+                  </div>
+
+                  {/* Cabeceras días */}
+                  <div className="mb-1 grid grid-cols-7 text-center">
+                    {dayHeaders.map((d, i) => (
+                      <div key={i} className="py-1 font-body text-[10px] font-bold uppercase text-ink-muted/40">{d}</div>
+                    ))}
+                  </div>
+
+                  {/* Días */}
+                  <div className="grid grid-cols-7">
+                    {Array.from({ length: firstDayOfWeek }).map((_, i) => <div key={`e${i}`} />)}
+                    {Array.from({ length: daysInMonth }).map((_, i) => {
+                      const day  = i + 1;
+                      const isToday = isCurrentMonth && day === today.getDate();
+                      const role = getDayRole(day);
+                      const isEndpoint = role === "start" || role === "end";
+
+                      return (
+                        <div
+                          key={day}
+                          className={cn(
+                            "relative mx-auto mb-0.5 flex size-7 items-center justify-center font-body text-xs transition-colors",
+                            isEndpoint   && "rounded-full font-bold text-white",
+                            role === "range" && "text-ink-strong font-medium",
+                            !role && isToday && "rounded-full bg-ink-strong/10 font-semibold text-ink-strong",
+                            !role && !isToday && "rounded-full text-ink hover:bg-canvas",
+                          )}
+                          style={
+                            isEndpoint && selColor
+                              ? { backgroundColor: selColor }
+                              : role === "range" && selColor
+                                ? { backgroundColor: `${selColor}22` }
+                                : {}
+                          }
+                        >
+                          {day}
+                          {role === "range" && selColor && (
+                            <span
+                              className="absolute bottom-0.5 left-0 right-0 h-0.5"
+                              style={{ backgroundColor: `${selColor}90` }}
+                              aria-hidden="true"
+                            />
+                          )}
+                        </div>
+                      );
+                    })}
+                  </div>
+
+                  {/* Tarjetas de proyectos */}
+                  <div className="mt-5 border-t border-border pt-4">
+                    {uniqueOffers.length === 0 ? (
+                      <p className="text-center font-body text-xs text-ink-muted">{t("junior_cal_hint")}</p>
+                    ) : (
+                      <>
+                        <p className="mb-2 font-body text-[10px] font-bold uppercase tracking-widest text-ink-muted/60">
+                          {t("junior_cal_hint")}
+                        </p>
+                        <div className="max-h-[180px] space-y-1.5 overflow-y-auto pr-1">
+                          {uniqueOffers.map((offer, idx) => {
+                            if (!offer.proyecto) return null;
+                            const color      = PALETTE_HEX[idx % PALETTE_HEX.length];
+                            const isSelected = calendarProjectId === offer.proyecto.id;
+                            const startDate  = new Date(offer.fecha_envio);
+                            const isAdjudicada = offer.estado.nombre === "adjudicada";
+                            const realFechaCierre = offer.proyecto.fecha_cierre
+                              ? new Date(offer.proyecto.fecha_cierre)
+                              : null;
+
+                            const endLabel = isAdjudicada
+                              ? t("junior_cal_adjudicated")
+                              : realFechaCierre
+                                ? `${t("junior_cal_end")}: ${realFechaCierre.toLocaleDateString(locale)}`
+                                : null;
+
+                            return (
+                              <button
+                                key={offer.id}
+                                type="button"
+                                onClick={() => {
+                                  if (isSelected) {
+                                    setCalendarProjectId(null);
+                                  } else {
+                                    setCalendarProjectId(offer.proyecto?.id ?? null);
+                                    // Navegar al mes de inicio del proyecto
+                                    const start = new Date(offer.fecha_envio);
+                                    const offset =
+                                      (start.getFullYear() - today.getFullYear()) * 12 +
+                                      (start.getMonth() - today.getMonth());
+                                    setCalendarOffset(offset);
+                                  }
+                                }}
+                                className={cn(
+                                  "flex w-full items-center gap-2.5 rounded-xl px-3 py-2 text-left transition-all duration-[var(--duration-fast)]",
+                                  isSelected ? "bg-canvas" : "hover:bg-canvas",
+                                )}
+                                style={isSelected ? { boxShadow: `0 0 0 1px ${color}` } : {}}
+                              >
+                                <div
+                                  className="size-2.5 shrink-0 rounded-full"
+                                  style={{ backgroundColor: color }}
+                                />
+                                <div className="min-w-0 flex-1">
+                                  <p className="truncate font-heading text-xs font-bold text-ink-strong">
+                                    {offer.proyecto.titulo}
+                                  </p>
+                                  <p className="font-body text-[10px] text-ink-muted">
+                                    {t("junior_cal_applied")}: {startDate.toLocaleDateString(locale)}
+                                    {endLabel && ` · ${endLabel}`}
+                                  </p>
+                                </div>
+                                {isSelected && (
+                                  <span
+                                    className="size-1.5 shrink-0 rounded-full"
+                                    style={{ backgroundColor: color }}
+                                    aria-hidden="true"
+                                  />
+                                )}
+                              </button>
+                            );
+                          })}
+                        </div>
+                      </>
+                    )}
+                  </div>
+                </div>
+              );
+            })()}
+
+            {/* Widget 2 — Mis proyectos (paginado, sin duplicados) */}
+            <div className="rounded-2xl border border-border bg-surface p-6 shadow-[var(--shadow-soft)] lg:col-span-2">
+              <div className="mb-5 flex items-center justify-between">
+                <div>
+                  <h2 className="font-heading text-base font-bold text-ink-strong">{t("junior_dash_list")}</h2>
+                  <p className="mt-0.5 font-body text-xs text-ink-muted">
+                    {uniqueOffers.length} {t("junior_dash_active_label")}
+                  </p>
+                </div>
+              </div>
+
+              <div className="space-y-2">
+                {pagedOffers.map((offer) => {
+                  if (!offer.proyecto) return null;
+                  const cfg        = OFFER_STATE_CONFIG[offer.estado.nombre];
+                  const globalIdx  = uniqueOffers.indexOf(offer);
+                  const borderColor = PALETTE_HEX[globalIdx % PALETTE_HEX.length];
+                  return (
+                    <button
+                      key={offer.id}
+                      type="button"
+                      onClick={() => onSelectProject(offer.proyecto!.id)}
+                      className="group flex w-full items-center gap-4 rounded-xl border-l-[3px] bg-canvas px-4 py-3 text-left transition-all duration-[var(--duration-fast)] hover:shadow-[var(--shadow-soft)]"
+                      style={{ borderLeftColor: borderColor }}
+                    >
+                      <div className="min-w-0 flex-1">
+                        <p className="truncate font-heading text-sm font-bold text-ink-strong group-hover:text-primary">
+                          {offer.proyecto.titulo}
+                        </p>
+                        <p className="mt-0.5 flex items-center gap-1 font-body text-[10px] text-ink-muted">
+                          <Clock className="size-3 shrink-0" aria-hidden="true" />
+                          {t("applied_on")} {new Date(offer.fecha_envio).toLocaleDateString(locale)}
+                        </p>
+                      </div>
+                      <span className={cn("shrink-0 rounded-full border px-2.5 py-1 font-body text-[10px] font-bold", cfg.badge)}>
+                        {cfg.label}
+                      </span>
+                      <ChevronRight className="size-4 shrink-0 text-ink-muted/30 transition-colors group-hover:text-primary" aria-hidden="true" />
+                    </button>
+                  );
+                })}
+              </div>
+
+              {/* Paginación */}
+              {totalPages > 1 && (
+                <div className="mt-4 flex items-center justify-between border-t border-border pt-4">
+                  <button
+                    type="button"
+                    onClick={() => setOfferPage((p) => Math.max(0, p - 1))}
+                    disabled={safePage === 0}
+                    aria-label={t("junior_dash_prev_page")}
+                    className="flex items-center gap-1 rounded-lg px-2.5 py-1.5 font-body text-xs font-semibold text-ink-muted transition-colors disabled:opacity-30 hover:bg-canvas hover:text-ink"
+                  >
+                    <ChevronLeft className="size-3.5" aria-hidden="true" />
+                  </button>
+                  <span className="font-body text-xs text-ink-muted">
+                    {t("junior_dash_page", { current: safePage + 1, total: totalPages })}
+                  </span>
+                  <button
+                    type="button"
+                    onClick={() => setOfferPage((p) => Math.min(totalPages - 1, p + 1))}
+                    disabled={safePage === totalPages - 1}
+                    aria-label={t("junior_dash_next_page")}
+                    className="flex items-center gap-1 rounded-lg px-2.5 py-1.5 font-body text-xs font-semibold text-ink-muted transition-colors disabled:opacity-30 hover:bg-canvas hover:text-ink"
+                  >
+                    <ChevronRight className="size-3.5" aria-hidden="true" />
+                  </button>
+                </div>
+              )}
+            </div>
+          </div>
+
+          {/* ── Widget 3 — Actividad reciente ────────────────────────────── */}
+          {(() => {
+            const ACT_PAGE_SIZE  = 5;
+            const actTotalPages  = Math.max(1, Math.ceil(activityEvents.length / ACT_PAGE_SIZE));
+            const safeActPage    = Math.min(activityPage, actTotalPages - 1);
+            const pagedActivity  = activityEvents.slice(
+              safeActPage * ACT_PAGE_SIZE,
+              (safeActPage + 1) * ACT_PAGE_SIZE,
+            );
+            const calLocaleAct   = locale === "es" ? "es-ES" : "en-US";
+
+            return (
+              <div className="rounded-2xl border border-border bg-surface p-6 shadow-[var(--shadow-soft)]">
+                {/* Header */}
+                <div className="mb-5 flex items-center justify-between">
+                  <h2 className="font-heading text-base font-bold text-ink-strong">{t("junior_recent_activity")}</h2>
+                  <span className="flex size-8 items-center justify-center rounded-lg bg-canvas">
+                    <Activity className="size-4 text-ink-muted/60" aria-hidden="true" />
+                  </span>
+                </div>
+
+                {/* Lista */}
+                <div className="divide-y divide-border">
+                  {pagedActivity.map((event, idx) => {
+                    const d = new Date(event.date);
+                    const dateStr = d.toLocaleDateString(calLocaleAct, { day: "numeric", month: "short", year: "numeric" });
+                    const timeStr = d.toLocaleTimeString(calLocaleAct, { hour: "2-digit", minute: "2-digit" });
+                    return (
+                      <button
+                        key={event.key}
+                        type="button"
+                        onClick={() => onSelectProject(event.projectId)}
+                        className={cn(
+                          "group flex w-full items-center gap-3 text-left transition-colors duration-[var(--duration-fast)] hover:bg-canvas",
+                          idx === 0 ? "pb-3" : "py-3",
+                        )}
+                      >
+                        <div className={cn("size-2 shrink-0 rounded-full", event.dot)} />
+                        <div className="min-w-0 flex-1">
+                          <p className="font-body text-sm font-semibold text-ink-strong group-hover:text-primary">
+                            {event.label}
+                          </p>
+                          <p className="truncate font-body text-xs text-ink-muted">{event.title}</p>
+                        </div>
+                        <p className="shrink-0 text-right font-body text-[10px] text-ink-muted">
+                          <span className="block">{dateStr}</span>
+                          <span className="block text-ink-muted/60">{timeStr}</span>
+                        </p>
+                      </button>
+                    );
+                  })}
+                </div>
+
+                {/* Paginación estilo marketplace */}
+                {actTotalPages > 1 && (
+                  <nav className="mt-5 flex items-center justify-center gap-1.5 border-t border-border pt-5" aria-label={t("junior_recent_activity")}>
+                    <button
+                      type="button"
+                      aria-label={t("junior_dash_prev_page")}
+                      disabled={safeActPage === 0}
+                      onClick={() => setActivityPage((p) => Math.max(0, p - 1))}
+                      className="flex size-8 items-center justify-center rounded-lg border border-border bg-transparent text-ink-muted transition-colors duration-[var(--duration-fast)] hover:bg-canvas disabled:pointer-events-none disabled:opacity-30"
+                    >
+                      <ChevronLeft className="size-4" aria-hidden="true" />
+                    </button>
+                    {Array.from({ length: actTotalPages }, (_, i) => i + 1).map((page) => (
+                      <button
+                        key={page}
+                        type="button"
+                        aria-current={page === safeActPage + 1 ? "page" : undefined}
+                        onClick={() => setActivityPage(page - 1)}
+                        className={cn(
+                          "flex size-8 items-center justify-center rounded-lg border font-body text-sm font-semibold transition-colors duration-[var(--duration-fast)]",
+                          page === safeActPage + 1
+                            ? "border-primary bg-primary text-white"
+                            : "border-border bg-transparent text-ink-muted hover:bg-canvas",
+                        )}
+                      >
+                        {page}
+                      </button>
+                    ))}
+                    <button
+                      type="button"
+                      aria-label={t("junior_dash_next_page")}
+                      disabled={safeActPage === actTotalPages - 1}
+                      onClick={() => setActivityPage((p) => Math.min(actTotalPages - 1, p + 1))}
+                      className="flex size-8 items-center justify-center rounded-lg border border-border bg-transparent text-ink-muted transition-colors duration-[var(--duration-fast)] hover:bg-canvas disabled:pointer-events-none disabled:opacity-30"
+                    >
+                      <ChevronRight className="size-4" aria-hidden="true" />
+                    </button>
+                  </nav>
+                )}
+              </div>
+            );
+          })()}
+
+        </div>
+      </div>
+    );
+  }
+
   // ── Estado vacío / junior ────────────────────────────────────────────────────
   const desc = isEmpresa
     ? t("welcome_desc_empresa_empty")
@@ -1152,6 +1795,336 @@ function SidebarEmpty({ text }: { text: string }) {
     <div className="flex flex-col items-center gap-3 px-4 py-10 text-center">
       <FolderOpen className="size-10 text-white/20" aria-hidden="true" />
       <p className="font-body text-sm text-white/40">{text}</p>
+    </div>
+  );
+}
+
+// ── Procesos view (junior) ────────────────────────────────────────────────────
+
+function ProcesosView({
+  myOffers,
+  projects,
+  t,
+  locale,
+  onSelectProject,
+}: {
+  myOffers: MyOffer[];
+  projects: ApiProject[];
+  t: T;
+  locale: string;
+  onSelectProject: (id: string) => void;
+}) {
+  const calLocale = locale === "es" ? "es-ES" : "en-US";
+
+  // For juniors, sidebarProjects is empty — fetch project details on demand
+  const [fetchedProjects, setFetchedProjects] = useState<Record<string, ApiProject>>({});
+
+  useEffect(() => {
+    const idsToFetch = myOffers
+      .filter((o) => o.proyecto && !projects.find((p) => p.id === o.proyecto?.id))
+      .map((o) => o.proyecto!.id);
+    if (idsToFetch.length === 0) return;
+    let active = true;
+    Promise.all(idsToFetch.map((id) => getProjectByIdAction(id))).then((results) => {
+      if (!active) return;
+      const loaded: Record<string, ApiProject> = {};
+      for (const r of results) { if (r.ok) loaded[r.data.id] = r.data; }
+      setFetchedProjects(loaded);
+    });
+    return () => { active = false; };
+  }, [myOffers, projects]);
+
+  // Deduplicate: one entry per project (latest offer per project)
+  const uniqueOffers = myOffers.filter(
+    (o, idx, arr) =>
+      o.proyecto && arr.findIndex((x) => x.proyecto?.id === o.proyecto?.id) === idx,
+  );
+
+  // Timeline step definition for each offer state
+  type StepStatus = "done" | "active" | "pending" | "error";
+  type TimelineStep = { label: string; status: StepStatus; date?: string };
+
+  function buildTimeline(offer: MyOffer): TimelineStep[] {
+    const sent: TimelineStep = {
+      label: t("junior_activity_enviada"),
+      status: "done",
+      date: offer.fecha_envio,
+    };
+
+    const estado = offer.estado.nombre;
+
+    if (estado === "enviada") {
+      return [sent, { label: t("junior_activity_en_revision"), status: "pending" }];
+    }
+    if (estado === "en_revision") {
+      return [
+        sent,
+        { label: t("junior_activity_en_revision"), status: "active", date: offer.fecha_envio },
+      ];
+    }
+    if (estado === "solicitar_cambios") {
+      return [
+        sent,
+        { label: t("junior_activity_en_revision"), status: "done", date: offer.fecha_envio },
+        { label: t("junior_activity_solicitar_cambios"), status: "active", date: offer.fecha_envio },
+      ];
+    }
+    if (estado === "adjudicada") {
+      return [
+        sent,
+        { label: t("junior_activity_en_revision"), status: "done", date: offer.fecha_envio },
+        { label: t("junior_activity_adjudicada"), status: "done", date: offer.fecha_envio },
+      ];
+    }
+    // no_seleccionada
+    return [
+      sent,
+      { label: t("junior_activity_en_revision"), status: "done", date: offer.fecha_envio },
+      { label: t("junior_activity_no_seleccionada"), status: "error", date: offer.fecha_envio },
+    ];
+  }
+
+  // Paleta FWD para los círculos del timeline — morado y azul al final
+  const STEP_PALETTE = ["#EC008C", "#20BEC6", "#FFCB05", "#F7901E", "#0A6CB9", "#662D91"];
+
+  // Color del card según área (misma lógica que el marketplace)
+  const AREA_HEX_OVERRIDE: Record<string, string> = {
+    ventas: "#EC008C",
+    operaciones: "#20BEC6",
+  };
+  const BRAND_HEX = ["#EC008C", "#20BEC6", "#FFCB05", "#F7901E", "#0A6CB9", "#662D91"];
+  function getCardColor(areaName?: string | null): string {
+    if (!areaName) return "#0A6CB9";
+    const key = areaName.toLowerCase().trim();
+    if (key in AREA_HEX_OVERRIDE) return AREA_HEX_OVERRIDE[key]!;
+    const hash = [...areaName].reduce((acc, ch) => acc + ch.charCodeAt(0), 0);
+    return BRAND_HEX[hash % BRAND_HEX.length] ?? "#0A6CB9";
+  }
+
+  const STEP_ICON: Record<StepStatus, React.ReactNode> = {
+    done:    <Check className="size-3 text-white" />,
+    active:  <Clock className="size-3 text-white" />,
+    pending: null,
+    error:   <X className="size-3 text-white" />,
+  };
+
+  if (uniqueOffers.length === 0) {
+    return (
+      <div className="flex flex-col items-center justify-center gap-4 px-8 py-24 text-center">
+        <FolderOpen className="size-12 text-ink-muted/30" />
+        <p className="font-heading text-xl font-bold text-ink-strong">{t("empty_junior")}</p>
+        <a
+          href={`/${locale}/marketplace`}
+          className="inline-flex items-center gap-2 rounded-full bg-primary px-5 py-2.5 font-body text-sm font-semibold text-white hover:bg-secondary"
+        >
+          <ExternalLink className="size-4" />
+          {t("junior_dash_explore")}
+        </a>
+      </div>
+    );
+  }
+
+  return (
+    <div className="px-8 pb-12 pt-0">
+      {/* Header */}
+      <div className="mb-8 flex items-end justify-between">
+        <div>
+          <p className="mb-1 font-body text-xs font-bold uppercase tracking-widest text-primary">
+            {t("section_junior")}
+          </p>
+          <h1 className="font-heading text-4xl font-extrabold tracking-tight text-ink-strong">
+            {t("procesos_title")}<span className="text-primary" aria-hidden="true">.</span>
+          </h1>
+          <p className="mt-1 font-body text-sm text-ink-muted">
+            {uniqueOffers.length} {t("procesos_count")}
+          </p>
+        </div>
+        <a
+          href={`/${locale}/marketplace`}
+          className="inline-flex items-center gap-2 rounded-full bg-primary px-5 py-2.5 font-body text-sm font-semibold text-white transition-colors duration-[var(--duration-fast)] hover:bg-secondary"
+        >
+          <ExternalLink className="size-4" aria-hidden="true" />
+          {t("junior_dash_explore")}
+        </a>
+      </div>
+
+      {/* Cards */}
+      <div className="flex flex-col gap-5">
+        {uniqueOffers.map((offer) => {
+          if (!offer.proyecto) return null;
+          const fullProject =
+            projects.find((p) => p.id === offer.proyecto?.id) ??
+            (offer.proyecto ? (fetchedProjects[offer.proyecto.id] ?? null) : null);
+          const steps = buildTimeline(offer);
+          const cfg = OFFER_STATE_CONFIG[offer.estado.nombre];
+          const hasRating = (offer.calificacion ?? null) !== null;
+
+          const skills = fullProject?.skills.flatMap((s) => s.skill ? [s.skill] : []) ?? [];
+          const plazoLabel = fullProject
+            ? fullProject.plazo_dias >= 7
+              ? `${Math.round(fullProject.plazo_dias / 7)} sem`
+              : `${fullProject.plazo_dias} días`
+            : null;
+          const cardColor = getCardColor(fullProject?.area?.nombre);
+
+          return (
+            <div
+              key={offer.id}
+              className="grid grid-cols-1 overflow-hidden rounded-2xl border border-border bg-surface shadow-[var(--shadow-soft)] lg:grid-cols-[1fr_300px]"
+            >
+              {/* ── Columna izquierda ── */}
+              <div className="flex flex-col p-7" style={{ borderLeft: `4px solid ${cardColor}` }}>
+                {/* Título + empresa + badge área (esquina superior derecha) */}
+                <div className="flex items-start justify-between gap-3">
+                  <div className="min-w-0">
+                    <h2 className="font-heading text-xl font-bold leading-snug text-ink-strong">
+                      {offer.proyecto.titulo}
+                    </h2>
+                    {fullProject?.empresa && (
+                      <p className="mt-0.5 font-body text-sm text-ink-muted">
+                        {fullProject.empresa.nombre_comercial}
+                      </p>
+                    )}
+                  </div>
+                  {fullProject?.area && (
+                    <span
+                      className="mt-0.5 shrink-0 rounded-full px-3 py-1 font-body text-[10px] font-bold uppercase tracking-widest"
+                      style={{ backgroundColor: `${cardColor}18`, color: cardColor }}
+                    >
+                      {fullProject.area.nombre}
+                    </span>
+                  )}
+                </div>
+
+                {/* Descripción */}
+                {fullProject?.descripcion && (
+                  <p className="mt-3 font-body text-sm leading-relaxed text-ink line-clamp-2">
+                    {fullProject.descripcion}
+                  </p>
+                )}
+
+                {/* Skills separadas por punto — color del área */}
+                {skills.length > 0 && (
+                  <p className="mt-3 font-body text-sm font-semibold" style={{ color: cardColor }}>
+                    {skills.map((s) => s.nombre).join(" · ")}
+                  </p>
+                )}
+
+                {/* Separador + meta info + botón */}
+                <div className="mt-auto border-t border-border pt-4">
+                  <div className="flex flex-wrap items-center gap-x-4 gap-y-1">
+                    {plazoLabel && (
+                      <span className="flex items-center gap-1.5 font-body text-xs text-ink-muted">
+                        <Clock className="size-3.5 shrink-0 text-ink-muted/50" aria-hidden="true" />
+                        {plazoLabel}
+                      </span>
+                    )}
+                    {fullProject?.compensacion != null && (
+                      <span className="flex items-center gap-1.5 font-body text-xs font-semibold text-accent">
+                        <Wallet className="size-3.5 shrink-0" aria-hidden="true" />
+                        ${fullProject.compensacion} {fullProject.moneda}
+                      </span>
+                    )}
+                    {fullProject?.usa_ia && (
+                      <span className="flex items-center gap-1.5 font-body text-xs font-semibold text-accent">
+                        <Zap className="size-3.5 shrink-0" aria-hidden="true" />
+                        IA
+                      </span>
+                    )}
+                    <button
+                      type="button"
+                      onClick={() => onSelectProject(offer.proyecto!.id)}
+                      className="ml-auto inline-flex items-center gap-1.5 rounded-full bg-primary px-4 py-1.5 font-body text-xs font-semibold text-white transition-colors duration-[var(--duration-fast)] hover:bg-secondary"
+                    >
+                      {t("procesos_open")}
+                      <ArrowRight className="size-3.5" aria-hidden="true" />
+                    </button>
+                  </div>
+                </div>
+              </div>
+
+              {/* ── Columna derecha: timeline ── */}
+              <div className="flex flex-col border-t border-border bg-canvas px-6 py-6 lg:border-l lg:border-t-0">
+                {/* Header */}
+                <div className="mb-5 flex items-center justify-between">
+                  <span className="font-body text-[10px] font-bold uppercase tracking-widest text-ink-muted/50">
+                    {t("procesos_timeline")}
+                  </span>
+                  <span className={cn("rounded-full border px-2.5 py-0.5 font-body text-[10px] font-bold", cfg.badge)}>
+                    {cfg.label}
+                  </span>
+                </div>
+
+                {/* Steps */}
+                <div className="flex flex-col">
+                  {steps.map((step, idx) => {
+                    const isLast = idx === steps.length - 1;
+                    const paletteColor = step.status === "pending"
+                      ? null
+                      : STEP_PALETTE[idx % STEP_PALETTE.length];
+
+                    return (
+                      <div key={idx} className="flex items-start gap-3">
+                        {/* Círculo + línea conectora */}
+                        <div className="flex flex-col items-center">
+                          <div
+                            className="flex size-6 shrink-0 items-center justify-center rounded-full transition-colors"
+                            style={
+                              paletteColor
+                                ? { backgroundColor: paletteColor }
+                                : { backgroundColor: "var(--border)" }
+                            }
+                          >
+                            {STEP_ICON[step.status]}
+                          </div>
+                          {!isLast && (
+                            <div
+                              className="my-0.5 w-px"
+                              style={{
+                                minHeight: "24px",
+                                backgroundColor: paletteColor ? `${paletteColor}40` : "var(--border)",
+                              }}
+                            />
+                          )}
+                        </div>
+
+                        {/* Texto + fecha */}
+                        <div className={cn("min-w-0 flex-1", !isLast && "pb-4")}>
+                          <p className={cn(
+                            "font-body text-sm font-semibold",
+                            step.status === "pending" ? "text-ink-muted/40" : "text-ink-strong",
+                          )}>
+                            {step.label}
+                          </p>
+                          {step.date && (
+                            <p className="font-body text-[11px] text-ink-muted">
+                              {new Date(step.date).toLocaleDateString(calLocale, { day: "numeric", month: "short", year: "numeric" })}
+                              {" · "}
+                              {new Date(step.date).toLocaleTimeString(calLocale, { hour: "2-digit", minute: "2-digit" })}
+                            </p>
+                          )}
+                        </div>
+                      </div>
+                    );
+                  })}
+                </div>
+
+                {/* Ver calificación */}
+                {hasRating && (
+                  <button
+                    type="button"
+                    onClick={() => onSelectProject(offer.proyecto!.id)}
+                    className="mt-4 flex w-full items-center justify-center gap-2 rounded-xl bg-highlight/15 px-4 py-3 font-body text-sm font-semibold text-ink-strong transition-colors duration-[var(--duration-fast)] hover:bg-highlight/25"
+                  >
+                    <Star className="size-4 text-highlight" aria-hidden="true" />
+                    {t("procesos_ver_calificacion")}
+                  </button>
+                )}
+              </div>
+            </div>
+          );
+        })}
+      </div>
     </div>
   );
 }
