@@ -237,31 +237,38 @@ export async function logoutUser(): Promise<void> {
 
 // ── Onboarding ────────────────────────────────────────────────────────────────
 
-export async function saveJuniorProfile(raw: unknown): Promise<Result<void>> {
+export async function saveJuniorProfile(
+  raw: unknown,
+): Promise<Result<{ role: string; estado_cuenta: string }>> {
   const parsed = JuniorProfileSchema.safeParse(raw);
   if (!parsed.success) {
     return err(parsed.error.issues[0]?.message ?? "Datos inválidos");
   }
   const d = parsed.data;
   try {
-    await apiAuth("/users/onboarding/junior", {
-      method: "POST",
-      body: JSON.stringify({
-        nombre:         d.nombre,
-        apellido1:      d.apellido1,
-        apellido2:      d.apellido2,
-        cedula:         d.cedula,
-        especializacion: d.specialization,
-        modalidad:      d.modalities,
-        disponibilidad: d.availability,
-        tech_stack:     d.techStack,
-        link_github:    d.githubUrl    ?? "",
-        link_linkedin:  d.linkedinUrl  ?? "",
-        link_portfolio: d.portfolioUrl ?? "",
-        bio:            d.bio          ?? "",
-      }),
-    });
-    return ok(undefined);
+    // El BackEnd devuelve { role, estado_cuenta }: un egresado FWD verificado sale
+    // 'activa' (se acepta sola); el resto 'pendiente'. Se usa para enrutar al cerrar.
+    const data = await apiAuth<{ role: string; estado_cuenta: string }>(
+      "/users/onboarding/junior",
+      {
+        method: "POST",
+        body: JSON.stringify({
+          nombre:         d.nombre,
+          apellido1:      d.apellido1,
+          apellido2:      d.apellido2,
+          cedula:         d.cedula,
+          especializacion: d.specialization,
+          modalidad:      d.modalities,
+          disponibilidad: d.availability,
+          tech_stack:     d.techStack,
+          link_github:    d.githubUrl    ?? "",
+          link_linkedin:  d.linkedinUrl  ?? "",
+          link_portfolio: d.portfolioUrl ?? "",
+          bio:            d.bio          ?? "",
+        }),
+      },
+    );
+    return ok(data);
   } catch (e) {
     return err(e instanceof ApiError ? (e.code ?? e.message) : "CONNECTION_ERROR");
   }

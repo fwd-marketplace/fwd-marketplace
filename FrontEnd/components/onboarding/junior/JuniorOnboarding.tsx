@@ -8,7 +8,7 @@ import { FwdGeoBackdrop } from "@/components/ui/fwd-geo-backdrop";
 import { CosmicBackdrop } from "@/components/ui/cosmic-backdrop";
 import { ProgressDots } from "@/components/onboarding/ProgressDots";
 import { saveStep, getOnboarding, clearOnboarding } from "@/lib/onboarding-storage";
-import { saveJuniorProfile } from "@/lib/actions/auth";
+import { saveJuniorProfile, logoutUser } from "@/lib/actions/auth";
 import { useApiErrorText } from "@/lib/i18n/api-error";
 
 const TOTAL_STEPS = 7;
@@ -537,7 +537,15 @@ export function JuniorOnboarding() {
       const result = await saveJuniorProfile(raw);
       if (result.ok) {
         clearOnboarding("junior");
-        router.push(`/${locale}/register/onboarding/junior/done`);
+        if (result.data.estado_cuenta === "activa") {
+          // Egresado FWD aprobado: se cierra la sesión de registro para que deba iniciar
+          // sesión con el 2FA (por seguridad). La pantalla final avisa que fue aprobada.
+          await logoutUser();
+          router.replace(`/${locale}/register/onboarding/junior/done?status=approved`);
+        } else {
+          // No egresado: la cuenta queda pendiente de revisión del admin.
+          router.push(`/${locale}/register/onboarding/junior/done`);
+        }
       } else {
         setSubmitError(result.error);
       }
