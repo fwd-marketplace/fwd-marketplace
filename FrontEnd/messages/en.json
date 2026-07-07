@@ -527,6 +527,10 @@
     }
   },
   "project_detail": {
+    "label_compensacion": "Compensation",
+    "label_duracion": "Duration",
+    "label_area": "Area",
+    "duracion_dias": "{n} days",
     "back": "Back to marketplace",
     "uses_ia": "Uses AI",
     "compensation_updated": "Compensation updated on {date}",
@@ -650,6 +654,7 @@
     "mi_emprendimiento": "My venture"
   },
   "perfil_junior": {
+    "show_suggestions": "Show suggestions",
     "tabs": {
       "nav_label": "Profile navigation",
       "perfil": "My profile",
@@ -780,6 +785,8 @@
       "empty": "You haven't applied to any project yet."
     },
     "work": {
+      "project_name_placeholder": "My awesome project",
+      "project_desc_placeholder": "Brief description of what this project does...",
       "title": "My portfolio",
       "description": "Manage and showcase your most impactful developments. Visualize your finished products and add new pieces to your professional portfolio.",
       "badge_product": "Product",
@@ -1180,6 +1187,9 @@
     "view_my_offer": "View my offer"
   },
   "bienvenida": {
+    "journey_stage_preparacion": "The Preparation",
+    "journey_stage_desafio": "The Challenge",
+    "journey_stage_transformacion": "The Transformation",
     "hero": {
       "welcome": "WELCOME TO FWD MARKETPLACE!",
       "greeting_morning": "Good morning",

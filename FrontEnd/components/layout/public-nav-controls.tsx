@@ -11,7 +11,7 @@ import { useTheme } from "@/lib/theme/theme-provider";
  * El header autenticado tiene los suyos dentro del menú de usuario; acá se exponen
  * para visitantes anónimos, que antes no tenían forma de cambiarlos por UI.
  */
-export function PublicNavControls() {
+export function PublicNavControls({ tone = "default" }: { tone?: "default" | "onDark" }) {
   const t = useTranslations("app_header");
   const locale = useLocale();
   const pathname = usePathname();
@@ -31,7 +31,9 @@ export function PublicNavControls() {
   }
 
   const iconButton =
-    "inline-flex size-9 items-center justify-center rounded-full text-ink-muted transition-colors duration-[--duration-fast] hover:bg-surface-sunken hover:text-ink-strong";
+    tone === "onDark"
+      ? "inline-flex size-9 items-center justify-center rounded-full text-white/70 backdrop-blur-sm transition-colors duration-[--duration-fast] hover:bg-white/10 hover:text-white"
+      : "inline-flex size-9 items-center justify-center rounded-full text-ink-muted transition-colors duration-[--duration-fast] hover:bg-surface-sunken hover:text-ink-strong";
 
   return (
     <div className="flex items-center gap-1">

@@ -215,21 +215,21 @@ export function BienvenidaDashboard({ isJunior, heroJourney, dashboardData, noti
               <div className="c-icon flex h-12 w-12 items-center justify-center rounded-full bg-secondary border border-white/30 text-white shadow-[0_0_20px_rgba(102,45,145,0.6)] transition-transform duration-300 hover:scale-110" style={{ animationDelay: '1.8s' }}>
                 <BookOpen className="h-5 w-5" />
               </div>
-              <span className="font-medium text-sm bg-secondary/60 border border-white/10 px-3 py-1.5 rounded backdrop-blur-md shadow-lg">La Preparación</span>
+              <span className="font-medium text-sm bg-secondary/60 border border-white/10 px-3 py-1.5 rounded backdrop-blur-md shadow-lg">{t('journey_stage_preparacion')}</span>
             </div>
 
             <div className="c-node absolute bottom-4 right-1/4 flex flex-col items-center gap-2 z-30 cursor-pointer" style={{ animationDelay: '2.3s' }}>
               <div className="c-icon flex h-12 w-12 items-center justify-center rounded-full bg-highlight text-white shadow-[0_0_20px_rgba(255,203,5,0.6)] border border-white/20 transition-transform duration-300 hover:scale-110" style={{ animationDelay: '2.3s' }}>
                 <Mountain className="h-5 w-5" />
               </div>
-              <span className="font-medium text-sm bg-secondary/60 border border-white/10 px-3 py-1.5 rounded backdrop-blur-md shadow-lg">El Desafío</span>
+              <span className="font-medium text-sm bg-secondary/60 border border-white/10 px-3 py-1.5 rounded backdrop-blur-md shadow-lg">{t('journey_stage_desafio')}</span>
             </div>
 
             <div className="c-node absolute bottom-10 left-1/4 flex flex-col items-center gap-2 z-30 cursor-pointer" style={{ animationDelay: '2.8s' }}>
               <div className="c-icon flex h-12 w-12 items-center justify-center rounded-full bg-accent text-white shadow-[0_0_20px_rgba(32,190,198,0.6)] border border-white/20 transition-transform duration-300 hover:scale-110" style={{ animationDelay: '2.8s' }}>
                 <Sparkles className="h-6 w-6" />
               </div>
-              <span className="font-medium text-sm bg-secondary/60 border border-white/10 px-3 py-1.5 rounded backdrop-blur-md shadow-lg">La Transformación</span>
+              <span className="font-medium text-sm bg-secondary/60 border border-white/10 px-3 py-1.5 rounded backdrop-blur-md shadow-lg">{t('journey_stage_transformacion')}</span>
             </div>
 
             <div className="c-node absolute top-1/3 left-4 flex flex-col items-center gap-2 z-30 cursor-pointer" style={{ animationDelay: '3.3s' }}>

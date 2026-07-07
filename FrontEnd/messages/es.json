@@ -527,6 +527,10 @@
     }
   },
   "project_detail": {
+    "label_compensacion": "Compensación",
+    "label_duracion": "Duración",
+    "label_area": "Área",
+    "duracion_dias": "{n} días",
     "back": "Volver al marketplace",
     "uses_ia": "Usa IA",
     "compensation_updated": "Compensación actualizada el {date}",
@@ -650,6 +654,7 @@
     "mi_emprendimiento": "Mi emprendimiento"
   },
   "perfil_junior": {
+    "show_suggestions": "Mostrar sugerencias",
     "tabs": {
       "nav_label": "Navegación de perfil",
       "perfil": "Mi perfil",
@@ -780,6 +785,8 @@
       "empty": "Aún no te has postulado a ningún proyecto."
     },
     "work": {
+      "project_name_placeholder": "Mi proyecto increíble",
+      "project_desc_placeholder": "Breve descripción de qué hace este proyecto...",
       "title": "Mi portafolio",
       "description": "Gestioná y exhibí tus desarrollos más impactantes. Visualizá tus productos terminados y añadí nuevas piezas a tu portafolio profesional.",
       "badge_product": "Product",
@@ -1180,6 +1187,9 @@
     "view_my_offer": "Ver mi propuesta"
   },
   "bienvenida": {
+    "journey_stage_preparacion": "La Preparación",
+    "journey_stage_desafio": "El Desafío",
+    "journey_stage_transformacion": "La Transformación",
     "hero": {
       "welcome": "¡BIENVENIDO A FWD MARKETPLACE!",
       "greeting_morning": "Buenos días",

@@ -1595,7 +1595,7 @@ export default function PerfilUsuario({
                           tabIndex={-1}
                           onMouseDown={(e) => { e.preventDefault(); setShowConocimientoSuggestions((v) => !v); }}
                           className="absolute right-2 top-1/2 -translate-y-1/2 p-0.5 text-ink-muted hover:text-ink transition-colors"
-                          aria-label="Mostrar sugerencias"
+                          aria-label={t("show_suggestions")}
                         >
                           <ChevronDown
                             className={`size-4 transition-transform duration-[var(--duration-fast)] ${listOpen ? "rotate-180" : ""}`}
@@ -2632,7 +2632,7 @@ function AddProjectModal({ onClose, onCreate }: { onClose: () => void; onCreate:
             {/* Nombre */}
             <div>
               <label className={labelClass}>{t("work.fields.name")}</label>
-              <input value={name} onChange={(e) => setName(e.target.value)} className={inputClass} placeholder="Mi proyecto increíble" />
+              <input value={name} onChange={(e) => setName(e.target.value)} className={inputClass} placeholder={t("project_name_placeholder")} />
             </div>
 
             {/* URLs en grid */}
@@ -2650,7 +2650,7 @@ function AddProjectModal({ onClose, onCreate }: { onClose: () => void; onCreate:
             {/* Descripción */}
             <div>
               <label className={labelClass}>{t("work.fields.description")}</label>
-              <textarea value={description} onChange={(e) => setDescription(e.target.value)} className={inputClass} rows={2} placeholder="Breve descripción de qué hace este proyecto..." />
+              <textarea value={description} onChange={(e) => setDescription(e.target.value)} className={inputClass} rows={2} placeholder={t("project_desc_placeholder")} />
             </div>
 
             {/* Tecnologías */}
