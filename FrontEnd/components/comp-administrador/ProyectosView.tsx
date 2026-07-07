@@ -2,6 +2,7 @@
 
 import { useEffect, useMemo, useState, useTransition } from "react";
 import { useLocale, useTranslations } from "next-intl";
+import { intlLocale } from "@/lib/i18n/date-locale";
 import {
   LayoutGrid,
   Columns3,
@@ -54,11 +55,11 @@ function initials(text: string): string {
   return `${first}${second}`.toUpperCase();
 }
 
-function formatDate(iso: string | null): string {
+function formatDate(iso: string | null, locale: string): string {
   if (!iso) return "Sin publicar";
   const date = new Date(iso);
   if (Number.isNaN(date.getTime())) return "Sin publicar";
-  return new Intl.DateTimeFormat("es", { day: "2-digit", month: "short", year: "numeric" }).format(date);
+  return new Intl.DateTimeFormat(intlLocale(locale), { day: "2-digit", month: "short", year: "numeric" }).format(date);
 }
 
 function DetailRow({ label, value }: { label: string; value: string }) {
@@ -176,6 +177,7 @@ function ProjectDetailModal({ projectId, onClose }: { projectId: string; onClose
 
 export function ProyectosView({ initialProjects }: { initialProjects: AdminProject[] }) {
   const t = useTranslations("admin_proyectos");
+  const locale = useLocale();
   const [projects, setProjects] = useState<AdminProject[]>(initialProjects);
   const [view, setView] = useState<ViewMode>("cards");
   const [query, setQuery] = useState("");
@@ -323,7 +325,7 @@ export function ProyectosView({ initialProjects }: { initialProjects: AdminProje
                   <span className={`rounded-full px-2.5 py-0.5 font-body text-[10px] font-bold uppercase tracking-wider ${meta.tone}`}>{meta.label}</span>
                   <div className="flex items-center gap-2 text-ink-muted">
                     <Calendar className="size-4" aria-hidden="true" />
-                    <span className="font-body text-sm">{formatDate(project.fecha_publicacion)}</span>
+                    <span className="font-body text-sm">{formatDate(project.fecha_publicacion, locale)}</span>
                   </div>
                   <div className="flex items-center gap-2">
                     <Button variant="outline" size="sm" onClick={() => setDetailProjectId(project.id)}>
@@ -362,7 +364,7 @@ export function ProyectosView({ initialProjects }: { initialProjects: AdminProje
                       </td>
                       <td className="px-4 py-4 text-ink">{project.empresa?.nombre_comercial ?? "—"}</td>
                       <td className="px-4 py-4"><span className={`rounded-full px-2.5 py-0.5 text-[10px] font-bold uppercase tracking-wider ${meta.tone}`}>{meta.label}</span></td>
-                      <td className="px-4 py-4 text-ink-muted">{formatDate(project.fecha_publicacion)}</td>
+                      <td className="px-4 py-4 text-ink-muted">{formatDate(project.fecha_publicacion, locale)}</td>
                       <td className="px-6 py-4">
                         <div className="flex justify-end gap-2">
                           <Button size="sm" variant="outline" onClick={() => setDetailProjectId(project.id)}>
