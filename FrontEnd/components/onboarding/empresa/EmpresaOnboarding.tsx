@@ -9,6 +9,7 @@ import { CosmicBackdrop } from "@/components/ui/cosmic-backdrop";
 import { ProgressDots } from "@/components/onboarding/ProgressDots";
 import { saveStep, getOnboarding, clearOnboarding } from "@/lib/onboarding-storage";
 import { saveEmpresaProfile } from "@/lib/actions/auth";
+import { useApiErrorText } from "@/lib/i18n/api-error";
 import { uploadEmpresarioLogo } from "@/lib/actions/perfil";
 
 const TOTAL_STEPS = 6;
@@ -469,6 +470,7 @@ function Step6({ onLogoFile }: { onLogoFile: (file: File) => void }) {
 
 export function EmpresaOnboarding() {
   const t = useTranslations("register");
+  const errorText = useApiErrorText();
   const params = useParams();
   const router = useRouter();
   const locale = params.locale as string;
@@ -549,7 +551,7 @@ export function EmpresaOnboarding() {
   }
 
   const stepValidationMessage = getStepValidationMessage();
-  const footerMessage = submitError ?? stepValidationMessage;
+  const footerMessage = errorText(submitError) ?? stepValidationMessage;
 
   return (
     <div className="relative flex min-h-[100dvh] flex-col bg-secondary">

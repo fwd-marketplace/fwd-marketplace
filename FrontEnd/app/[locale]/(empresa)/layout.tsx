@@ -16,12 +16,13 @@ export default async function EmpresaLayout({
   const userName = `${profile.nombre}${profile.apellido1 ? ` ${profile.apellido1}` : ""}`;
   const avatarUrl = profile.empresario?.url_logo ?? "";
   const role = profile.role.nombre;
+  const tipo = profile.empresario?.tipo;
 
   return (
     <div className="flex min-h-[100dvh] flex-col bg-canvas">
       <AppHeader userName={userName} avatarUrl={avatarUrl} role={role} />
       <EmpresaHeroBanner />
-      <EmpresaSubnav />
+      <EmpresaSubnav tipo={tipo} />
       <main className="flex-1">{children}</main>
     </div>
   );

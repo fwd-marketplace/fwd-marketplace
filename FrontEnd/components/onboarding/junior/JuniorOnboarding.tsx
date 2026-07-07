@@ -9,6 +9,7 @@ import { CosmicBackdrop } from "@/components/ui/cosmic-backdrop";
 import { ProgressDots } from "@/components/onboarding/ProgressDots";
 import { saveStep, getOnboarding, clearOnboarding } from "@/lib/onboarding-storage";
 import { saveJuniorProfile } from "@/lib/actions/auth";
+import { useApiErrorText } from "@/lib/i18n/api-error";
 
 const TOTAL_STEPS = 7;
 const OPTIONAL_STEPS = new Set([6, 7]);
@@ -477,6 +478,7 @@ function Step7({ onChange }: { onChange: (val: string) => void }) {
 
 export function JuniorOnboarding() {
   const t = useTranslations("register");
+  const errorText = useApiErrorText();
   const params = useParams();
   const router = useRouter();
   const locale = params.locale as string;
@@ -549,7 +551,7 @@ export function JuniorOnboarding() {
   }
 
   const stepValidationMessage = getStepValidationMessage();
-  const footerMessage = submitError ?? stepValidationMessage;
+  const footerMessage = errorText(submitError) ?? stepValidationMessage;
 
   return (
     <div className="relative flex min-h-[100dvh] flex-col bg-secondary">

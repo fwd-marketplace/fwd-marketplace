@@ -4,6 +4,7 @@ import { useState, useEffect, useTransition } from "react";
 import { useParams } from "next/navigation";
 import Link from "next/link";
 import { useTranslations } from "next-intl";
+import { useApiErrorText } from "@/lib/i18n/api-error";
 import { ArrowLeft, Eye, EyeOff, Lock, RotateCcwKey } from "lucide-react";
 import { confirmResetPassword } from "@/lib/actions/auth";
 import { MIN_PASSWORD_LENGTH } from "@/lib/validations/auth";
@@ -19,6 +20,7 @@ type RecoveryTokens = {
 
 export function NewPasswordForm() {
   const t = useTranslations("reset_password");
+  const errorText = useApiErrorText();
   const params = useParams();
   const locale = params.locale as string;
 
@@ -72,7 +74,7 @@ export function NewPasswordForm() {
     startTransition(async () => {
       const result = await confirmResetPassword({ ...tokens, password, confirmPassword });
       if (!result.ok) {
-        setError(result.error);
+        setError(errorText(result.error));
         return;
       }
       setDone(true);

@@ -1,8 +1,12 @@
 import { cookies } from "next/headers";
 
 export class ApiError extends Error {
-  constructor(public readonly status: number, message: string) {
+  /** Código estable enviado por el backend (4xx) para traducir el error a es/en. */
+  public readonly code?: string;
+
+  constructor(public readonly status: number, message: string, code?: string) {
     super(message);
+    if (code !== undefined) this.code = code;
     this.name = "ApiError";
   }
 }
@@ -25,8 +29,8 @@ export async function apiFetch<T>(path: string, init: RequestInit = {}): Promise
     headers: { "Content-Type": "application/json", ...init.headers },
   });
   if (!res.ok) {
-    const body = await res.json().catch(() => ({})) as { error?: string };
-    throw new ApiError(res.status, body.error ?? "Error desconocido");
+    const body = await res.json().catch(() => ({})) as { error?: string; code?: string };
+    throw new ApiError(res.status, body.error ?? "Error desconocido", body.code);
   }
   if (res.status === 204 || res.headers.get("content-length") === "0") {
     return undefined as T;

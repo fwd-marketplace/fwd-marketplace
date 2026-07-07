@@ -10,10 +10,10 @@ function readCredentials(body: unknown): { email: string; password: string; name
   const { email, password, name } = (body ?? {}) as Record<string, unknown>;
 
   if (typeof email !== "string" || !email.trim()) {
-    throw new ApiError(400, "El email es obligatorio");
+    throw new ApiError(400, "El email es obligatorio", "EMAIL_REQUIRED");
   }
   if (typeof password !== "string" || !password) {
-    throw new ApiError(400, "La contraseña es obligatoria");
+    throw new ApiError(400, "La contraseña es obligatoria", "PASSWORD_REQUIRED");
   }
 
   return { email, password, name: typeof name === "string" ? name : undefined };
@@ -24,10 +24,10 @@ function readVerifyLoginInput(body: unknown): { ticket: string; code: string } {
   const { ticket, code } = (body ?? {}) as Record<string, unknown>;
 
   if (typeof ticket !== "string" || !ticket.trim()) {
-    throw new ApiError(400, "Falta el ticket de verificación");
+    throw new ApiError(400, "Falta el ticket de verificación", "VERIFICATION_TICKET_MISSING");
   }
   if (typeof code !== "string" || !/^\d{6}$/.test(code)) {
-    throw new ApiError(400, "El código debe ser de 6 dígitos");
+    throw new ApiError(400, "El código debe ser de 6 dígitos", "CODE_INVALID_LENGTH");
   }
 
   return { ticket, code };
@@ -40,7 +40,7 @@ function readResetInput(body: unknown): { email: string; locale?: string } {
   const { email, locale } = (body ?? {}) as Record<string, unknown>;
 
   if (typeof email !== "string" || !email.trim()) {
-    throw new ApiError(400, "El email es obligatorio");
+    throw new ApiError(400, "El email es obligatorio", "EMAIL_REQUIRED");
   }
 
   return {
@@ -66,7 +66,7 @@ function readConfirmResetInput(body: unknown): {
   >;
 
   if (typeof password !== "string" || password.length < MIN_PASSWORD_LENGTH) {
-    throw new ApiError(400, `La contraseña debe tener al menos ${MIN_PASSWORD_LENGTH} caracteres`);
+    throw new ApiError(400, `La contraseña debe tener al menos ${MIN_PASSWORD_LENGTH} caracteres`, "PASSWORD_TOO_SHORT");
   }
   if (typeof token_hash === "string" && token_hash.trim()) {
     return { tokenHash: token_hash, password };
@@ -79,7 +79,7 @@ function readConfirmResetInput(body: unknown): {
   ) {
     return { accessToken: access_token, refreshToken: refresh_token, password };
   }
-  throw new ApiError(400, "Falta el token de recuperación");
+  throw new ApiError(400, "Falta el token de recuperación", "RESET_TOKEN_MISSING");
 }
 
 /** Lee y valida el `refresh_token` del body. */
@@ -87,7 +87,7 @@ function readRefreshToken(body: unknown): string {
   const { refresh_token } = (body ?? {}) as Record<string, unknown>;
 
   if (typeof refresh_token !== "string" || !refresh_token.trim()) {
-    throw new ApiError(400, "El refresh_token es obligatorio");
+    throw new ApiError(400, "El refresh_token es obligatorio", "REFRESH_TOKEN_REQUIRED");
   }
 
   return refresh_token;
@@ -97,7 +97,7 @@ function readRefreshToken(body: unknown): string {
 export async function register(req: Request, res: Response) {
   const credentials = readCredentials(req.body);
   if (credentials.password.length < MIN_PASSWORD_LENGTH) {
-    throw new ApiError(400, `La contraseña debe tener al menos ${MIN_PASSWORD_LENGTH} caracteres`);
+    throw new ApiError(400, `La contraseña debe tener al menos ${MIN_PASSWORD_LENGTH} caracteres`, "PASSWORD_TOO_SHORT");
   }
   const result = await userService.registerUser(credentials);
   res.status(201).json(result);
@@ -136,7 +136,7 @@ export async function confirmResetPassword(req: Request, res: Response) {
 export async function oauthStart(req: Request, res: Response) {
   const provider = req.params.provider;
   if (typeof provider !== "string" || !userService.isOAuthProvider(provider)) {
-    throw new ApiError(400, "Proveedor de OAuth no soportado");
+    throw new ApiError(400, "Proveedor de OAuth no soportado", "OAUTH_PROVIDER_UNSUPPORTED");
   }
   // El FE manda el locale para construir el callback localizado. Se valida a un
   // código de 2 letras para no inyectar nada raro en la redirect URL.
@@ -165,7 +165,7 @@ export async function logout(req: Request, res: Response) {
 export async function me(req: Request, res: Response) {
   // `req.user` y `req.accessToken` los inyecta el middleware de autenticación.
   if (!req.accessToken || !req.user) {
-    throw new ApiError(401, "No autenticado");
+    throw new ApiError(401, "No autenticado", "NOT_AUTHENTICATED");
   }
   // `profile` es null si la cuenta existe en Auth pero aún no hizo onboarding.
   const profile = await userService.getMyProfile(req.accessToken, req.user.id);

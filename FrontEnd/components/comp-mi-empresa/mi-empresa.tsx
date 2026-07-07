@@ -90,6 +90,8 @@ type CompanyData = {
   description: string;
   comercialName: string;
   website: string;
+  /** Cédula personal del emprendedor (solo lectura; se fija en el onboarding). */
+  cedula: string;
   provincia: string;
   canton: string;
   modalities: string[];
@@ -108,8 +110,8 @@ type CompanyData = {
   projectDescription: string;
 };
 
-const MOCK_DATA: CompanyData = {
-  name: '', description: '', comercialName: '', website: '',
+const EMPTY_COMPANY_DATA: CompanyData = {
+  name: '', description: '', comercialName: '', website: '', cedula: '',
   provincia: 'San José', canton: 'San José',
   modalities: [], scheduleType: 'flexible', contacts: [],
   empleados: '1-10', sectors: [], mission: '', vision: '',
@@ -118,16 +120,16 @@ const MOCK_DATA: CompanyData = {
 };
 
 function parseLocation(direccion: string | null | undefined): { provincia: string; canton: string } {
-  if (!direccion) return { provincia: MOCK_DATA.provincia, canton: MOCK_DATA.canton };
+  if (!direccion) return { provincia: EMPTY_COMPANY_DATA.provincia, canton: EMPTY_COMPANY_DATA.canton };
   try {
     const parsed = JSON.parse(direccion) as { provincia?: string; canton?: string };
     return {
-      provincia: parsed.provincia ?? MOCK_DATA.provincia,
-      canton: parsed.canton ?? MOCK_DATA.canton,
+      provincia: parsed.provincia ?? EMPTY_COMPANY_DATA.provincia,
+      canton: parsed.canton ?? EMPTY_COMPANY_DATA.canton,
     };
   } catch {
     const parts = direccion.split(', ');
-    return { canton: parts[0] ?? MOCK_DATA.canton, provincia: parts[1] ?? MOCK_DATA.provincia };
+    return { canton: parts[0] ?? EMPTY_COMPANY_DATA.canton, provincia: parts[1] ?? EMPTY_COMPANY_DATA.provincia };
   }
 }
 
@@ -144,7 +146,7 @@ function parseJsonArray<T extends string>(raw: string | null | undefined, fallba
 }
 
 function parseContacts(raw: string | null | undefined): Contact[] {
-  if (!raw) return MOCK_DATA.contacts;
+  if (!raw) return EMPTY_COMPANY_DATA.contacts;
   try {
     const parsed = JSON.parse(raw) as Array<{ name: string; role: string; email: string }>;
     return parsed.map((c) => ({
@@ -152,7 +154,7 @@ function parseContacts(raw: string | null | undefined): Contact[] {
       initial: (c.name.trim().split(' ').map((n) => n[0]).join('').substring(0, 2) || 'C').toUpperCase(),
     }));
   } catch {
-    return MOCK_DATA.contacts;
+    return EMPTY_COMPANY_DATA.contacts;
   }
 }
 
@@ -160,26 +162,27 @@ function buildInitialData(profile: ApiMeProfile | null): CompanyData {
   const emp = profile?.empresario;
   const { provincia, canton } = parseLocation(emp?.direccion);
   return {
-    ...MOCK_DATA,
-    name: emp?.nombre_comercial ?? MOCK_DATA.name,
-    description: emp?.descripcion ?? MOCK_DATA.description,
-    comercialName: emp?.nombre_comercial ?? MOCK_DATA.comercialName,
-    website: emp?.url_sitio_web ?? MOCK_DATA.website,
-    sectors: parseJsonArray<string>(emp?.sector, MOCK_DATA.sectors),
-    modalities: parseJsonArray<string>(emp?.modalidades, MOCK_DATA.modalities),
-    scheduleType: (emp?.horario as 'flexible' | 'fixed' | null) ?? MOCK_DATA.scheduleType,
+    ...EMPTY_COMPANY_DATA,
+    name: emp?.nombre_comercial ?? EMPTY_COMPANY_DATA.name,
+    description: emp?.descripcion ?? EMPTY_COMPANY_DATA.description,
+    comercialName: emp?.nombre_comercial ?? EMPTY_COMPANY_DATA.comercialName,
+    website: emp?.url_sitio_web ?? EMPTY_COMPANY_DATA.website,
+    cedula: profile?.cedula ?? EMPTY_COMPANY_DATA.cedula,
+    sectors: parseJsonArray<string>(emp?.sector, EMPTY_COMPANY_DATA.sectors),
+    modalities: parseJsonArray<string>(emp?.modalidades, EMPTY_COMPANY_DATA.modalities),
+    scheduleType: (emp?.horario as 'flexible' | 'fixed' | null) ?? EMPTY_COMPANY_DATA.scheduleType,
     provincia, canton,
-    projectTypes: parseJsonArray<ProjectType>(emp?.tipos_proyecto, MOCK_DATA.projectTypes),
-    stage: (emp?.etapa as StartupStage | null) ?? MOCK_DATA.stage,
-    neededSupport: parseJsonArray<TechSupport>(emp?.apoyo_tecnico_necesario, MOCK_DATA.neededSupport),
-    budget: (emp?.presupuesto as BudgetRange | null) ?? MOCK_DATA.budget,
-    projectDescription: emp?.descripcion ?? MOCK_DATA.projectDescription,
-    mission: emp?.mision ?? MOCK_DATA.mission,
-    vision: emp?.vision ?? MOCK_DATA.vision,
-    culture: emp?.cultura ?? MOCK_DATA.culture,
-    values: parseJsonArray<string>(emp?.valores, MOCK_DATA.values),
+    projectTypes: parseJsonArray<ProjectType>(emp?.tipos_proyecto, EMPTY_COMPANY_DATA.projectTypes),
+    stage: (emp?.etapa as StartupStage | null) ?? EMPTY_COMPANY_DATA.stage,
+    neededSupport: parseJsonArray<TechSupport>(emp?.apoyo_tecnico_necesario, EMPTY_COMPANY_DATA.neededSupport),
+    budget: (emp?.presupuesto as BudgetRange | null) ?? EMPTY_COMPANY_DATA.budget,
+    projectDescription: emp?.descripcion ?? EMPTY_COMPANY_DATA.projectDescription,
+    mission: emp?.mision ?? EMPTY_COMPANY_DATA.mission,
+    vision: emp?.vision ?? EMPTY_COMPANY_DATA.vision,
+    culture: emp?.cultura ?? EMPTY_COMPANY_DATA.culture,
+    values: parseJsonArray<string>(emp?.valores, EMPTY_COMPANY_DATA.values),
     contacts: parseContacts(emp?.contactos),
-    empleados: (emp?.cantidad_empleados as EmployeeRange | null) ?? MOCK_DATA.empleados,
+    empleados: (emp?.cantidad_empleados as EmployeeRange | null) ?? EMPTY_COMPANY_DATA.empleados,
   };
 }
 
@@ -197,6 +200,7 @@ function SectionHeader({
   onSave: () => void;
   onCancel: () => void;
 }) {
+  const t = useTranslations('mi_empresa');
   const isActive = editingSection === sectionId;
   const otherActive = editingSection !== null && !isActive;
   return (
@@ -214,7 +218,7 @@ function SectionHeader({
             className="flex items-center gap-1 rounded-full bg-primary px-3 py-1 text-[11px] font-bold text-white transition-opacity hover:opacity-90 disabled:opacity-60"
           >
             {isSaving ? <Loader2 className="size-3 animate-spin" /> : <Check className="size-3" />}
-            Guardar
+            {t('actions.save')}
           </button>
           <button
             type="button"
@@ -222,7 +226,7 @@ function SectionHeader({
             disabled={isSaving}
             className="rounded-full border border-border px-3 py-1 text-[11px] font-semibold text-ink-muted transition-colors hover:border-border-strong hover:text-ink disabled:opacity-40"
           >
-            Cancelar
+            {t('actions.cancel')}
           </button>
         </div>
       ) : (
@@ -230,7 +234,7 @@ function SectionHeader({
           <button
             type="button"
             onClick={onEdit}
-            aria-label="Editar sección"
+            aria-label={t('actions.edit_section')}
             className="flex size-7 items-center justify-center rounded-full border border-border text-ink-muted transition-colors hover:border-primary/40 hover:text-primary"
           >
             <Pencil className="size-3.5" />
@@ -340,6 +344,8 @@ export function CompanyProfile({
             ...(company.neededSupport.length > 0 && { soporte_tecnico: company.neededSupport }),
             presupuesto: company.budget,
             contactos: contactosPayload,
+            modalidades: company.modalities,
+            horario: company.scheduleType,
           };
 
       const result = await updateEmpresarioProfile(payload);
@@ -509,10 +515,14 @@ export function CompanyProfile({
                         )}
                       </div>
                       <div>
+                        <label className="font-body text-xs font-bold tracking-wide text-ink-muted">{t('fields.cedula')}</label>
+                        <p className="text-sm font-medium text-ink">{company.cedula || '—'}</p>
+                      </div>
+                      <div>
                         <label className="font-body text-xs font-bold tracking-wide text-ink-muted">{t('fields.website')}</label>
                         {isEditing('general') ? (
                           <div>
-                            <input type="text" value={company.website} placeholder="https://tuproyecto.com"
+                            <input type="text" value={company.website} placeholder={t('placeholders.website_emprendedor')}
                               onChange={(e) => {
                                 const val = e.target.value;
                                 setCompany({ ...company, website: val });
@@ -538,7 +548,7 @@ export function CompanyProfile({
                       </div>
                       <div>
                         <label className="font-body text-xs font-bold tracking-wide text-ink-muted">{t('fields.country')}</label>
-                        <p className="text-sm font-medium text-ink">Costa Rica</p>
+                        <p className="text-sm font-medium text-ink">{t('fields.country_value')}</p>
                       </div>
                       <div>
                         <label className="font-body text-xs font-bold tracking-wide text-ink-muted">{t('fields.provincia')}</label>
@@ -658,14 +668,14 @@ export function CompanyProfile({
 
                       <div>
                         <label className="font-body text-xs font-bold tracking-wide text-ink-muted">{t('fields.country')}</label>
-                        <p className="text-sm font-medium text-ink">Costa Rica</p>
+                        <p className="text-sm font-medium text-ink">{t('fields.country_value')}</p>
                       </div>
 
                       <div>
                         <label className="font-body text-xs font-bold tracking-wide text-ink-muted">{t('fields.website')}</label>
                         {isEditing('general') ? (
                           <div>
-                            <input type="text" value={company.website} placeholder="https://tuempresa.com"
+                            <input type="text" value={company.website} placeholder={t('placeholders.website_empresa')}
                               onChange={(e) => {
                                 const val = e.target.value;
                                 setCompany({ ...company, website: val });

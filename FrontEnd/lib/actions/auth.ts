@@ -43,7 +43,7 @@ export async function registerUser(input: {
     }
     return ok(undefined);
   } catch (e) {
-    return err(e instanceof ApiError ? e.message : "Error de conexión");
+    return err(e instanceof ApiError ? (e.code ?? e.message) : "CONNECTION_ERROR");
   }
 }
 
@@ -64,7 +64,7 @@ export async function loginUser(input: {
     if (!data.ticket) return err("No se recibió el ticket de verificación");
     return ok({ ticket: data.ticket });
   } catch (e) {
-    return err(e instanceof ApiError ? e.message : "Error de conexión");
+    return err(e instanceof ApiError ? (e.code ?? e.message) : "CONNECTION_ERROR");
   }
 }
 
@@ -105,7 +105,7 @@ export async function verifyLoginOtp(input: {
       estado_cuenta: meData.profile.estado_cuenta,
     });
   } catch (e) {
-    return err(e instanceof ApiError ? e.message : "Error de conexión");
+    return err(e instanceof ApiError ? (e.code ?? e.message) : "CONNECTION_ERROR");
   }
 }
 
@@ -120,7 +120,7 @@ export async function startOAuth(
     );
     return ok(data);
   } catch (e) {
-    return err(e instanceof ApiError ? e.message : "Error de conexión");
+    return err(e instanceof ApiError ? (e.code ?? e.message) : "CONNECTION_ERROR");
   }
 }
 
@@ -154,7 +154,7 @@ export async function completeOAuth(input: {
       estado_cuenta: meData.profile.estado_cuenta,
     });
   } catch (e) {
-    return err(e instanceof ApiError ? e.message : "Error de conexión");
+    return err(e instanceof ApiError ? (e.code ?? e.message) : "CONNECTION_ERROR");
   }
 }
 
@@ -171,7 +171,7 @@ export async function resetPassword(raw: unknown): Promise<Result<void>> {
     });
     return ok(undefined);
   } catch (e) {
-    return err(e instanceof ApiError ? e.message : "Error de conexión");
+    return err(e instanceof ApiError ? (e.code ?? e.message) : "CONNECTION_ERROR");
   }
 }
 
@@ -212,7 +212,7 @@ export async function confirmResetPassword(input: {
     });
     return ok(undefined);
   } catch (e) {
-    return err(e instanceof ApiError ? e.message : "Error de conexión");
+    return err(e instanceof ApiError ? (e.code ?? e.message) : "CONNECTION_ERROR");
   }
 }
 
@@ -263,7 +263,7 @@ export async function saveJuniorProfile(raw: unknown): Promise<Result<void>> {
     });
     return ok(undefined);
   } catch (e) {
-    return err(e instanceof ApiError ? e.message : "Error de conexión");
+    return err(e instanceof ApiError ? (e.code ?? e.message) : "CONNECTION_ERROR");
   }
 }
 
@@ -287,7 +287,7 @@ export async function saveEmpresaProfile(raw: unknown): Promise<Result<void>> {
     });
     return ok(undefined);
   } catch (e) {
-    return err(e instanceof ApiError ? e.message : "Error de conexión");
+    return err(e instanceof ApiError ? (e.code ?? e.message) : "CONNECTION_ERROR");
   }
 }
 
@@ -303,6 +303,7 @@ export async function saveEmprendedorProfile(raw: unknown): Promise<Result<void>
       body: JSON.stringify({
         tipo:            "emprendedor",
         nombre_proyecto: d.projectName,
+        cedula:          d.cedula,
         etapa:           d.stage,
         soporte_tecnico: d.neededSupport,
         presupuesto:     d.budget,
@@ -311,6 +312,6 @@ export async function saveEmprendedorProfile(raw: unknown): Promise<Result<void>
     });
     return ok(undefined);
   } catch (e) {
-    return err(e instanceof ApiError ? e.message : "Error de conexión");
+    return err(e instanceof ApiError ? (e.code ?? e.message) : "CONNECTION_ERROR");
   }
 }

@@ -52,7 +52,7 @@ export async function EmpresaHeroBanner() {
             {(canton || provincia) && (
               <span className="flex items-center gap-1">
                 <MapPin className="size-4" />
-                {canton}{canton && provincia ? ', ' : ''}{provincia}{provincia ? ', Costa Rica' : ''}
+                {canton}{canton && provincia ? ', ' : ''}{provincia}{provincia ? `, ${t('fields.country_value')}` : ''}
               </span>
             )}
             {tipo === 'empresa' && emp?.cantidad_empleados && (

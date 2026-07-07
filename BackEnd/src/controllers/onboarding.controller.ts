@@ -15,11 +15,11 @@ import {
 /** Extrae token + identidad del usuario autenticado (los inyecta `authenticate`). */
 function requireAuth(req: Request): { token: string; userId: string; correo: string } {
   if (!req.accessToken || !req.user) {
-    throw new ApiError(401, "No autenticado");
+    throw new ApiError(401, "No autenticado", "NOT_AUTHENTICATED");
   }
   const correo = req.user.email;
   if (!correo) {
-    throw new ApiError(400, "La cuenta no tiene un email asociado");
+    throw new ApiError(400, "La cuenta no tiene un email asociado", "NO_EMAIL");
   }
   return { token: req.accessToken, userId: req.user.id, correo };
 }

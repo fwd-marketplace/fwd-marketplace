@@ -201,6 +201,29 @@
     "footer_security": "Security Center",
     "footer_copyright": "© 2026 FWD Marketplace. Secure encrypted connection."
   },
+  "api_errors": {
+    "CONNECTION_ERROR": "Connection error. Check your internet and try again.",
+    "ONBOARDING_FORBIDDEN": "You can't complete registration for another account.",
+    "CEDULA_TAKEN": "An account with that ID already exists.",
+    "ALREADY_ONBOARDED": "This account has already completed registration.",
+    "ONBOARDING_FAILED": "We couldn't complete registration. Please try again.",
+    "SIGNUPS_DISABLED": "Talent registration is temporarily disabled.",
+    "COMPANIES_DISABLED": "Company registration is temporarily disabled.",
+    "EMPRENDEDORES_DISABLED": "Entrepreneur registration is temporarily disabled.",
+    "NOT_AUTHENTICATED": "Your session expired. Please sign in again.",
+    "NO_EMAIL": "The account has no email associated.",
+    "EMAIL_REQUIRED": "Email is required.",
+    "PASSWORD_REQUIRED": "Password is required.",
+    "PASSWORD_TOO_SHORT": "Password must be at least 8 characters.",
+    "VERIFICATION_TICKET_MISSING": "The verification ticket is missing.",
+    "CODE_INVALID_LENGTH": "The code must be 6 digits.",
+    "RESET_TOKEN_MISSING": "The recovery token is missing.",
+    "REFRESH_TOKEN_REQUIRED": "The session token is missing.",
+    "OAUTH_PROVIDER_UNSUPPORTED": "Unsupported sign-in provider.",
+    "INVALID_CREDENTIALS": "Incorrect email or password.",
+    "RESET_LINK_INVALID": "The recovery link is invalid or expired.",
+    "TOKEN_INVALID": "Your session expired. Please sign in again."
+  },
   "register": {
     "brand": "FWD",
     "brand_suffix": "Marketplace",
@@ -450,7 +473,11 @@
         "label": "Project name",
         "placeholder": "e.g. EcoTrack App",
         "error_required": "Required",
-        "error_min_2": "At least 2 characters"
+        "error_min_2": "At least 2 characters",
+        "cedula_label": "Your ID",
+        "cedula_placeholder": "e.g. 1-2345-6789",
+        "cedula_error_required": "Enter your ID",
+        "cedula_error_min": "Invalid ID"
       },
       "step2": {
         "eyebrow": "Project stage",
@@ -619,7 +646,8 @@
     "mis_proyectos": "My projects",
     "matches": "Matches",
     "postulaciones": "Applications",
-    "mi_empresa": "My company"
+    "mi_empresa": "My company",
+    "mi_emprendimiento": "My venture"
   },
   "perfil_junior": {
     "tabs": {
@@ -1485,6 +1513,23 @@
     ]
   },
   "mi_empresa": {
+    "actions": {
+      "save": "Save",
+      "cancel": "Cancel",
+      "edit_section": "Edit section"
+    },
+    "public": {
+      "close": "Close",
+      "participate": "Apply",
+      "days": "{count} days",
+      "uses_ai": "Uses AI",
+      "offers": "{count} applications",
+      "description": "Description",
+      "required_tech": "Required technologies",
+      "projects_tab": "Projects",
+      "no_projects": "This profile has no published projects yet.",
+      "no_sectors": "No areas specified."
+    },
     "badge": {
       "empresa": "Company",
       "emprendedor": "Entrepreneur"
@@ -1507,10 +1552,12 @@
     "fields": {
       "company_name": "Company name",
       "project_name": "Project name",
+      "cedula": "ID number",
       "project_description_placeholder": "Describe your project, the problem it solves, and your long-term vision...",
       "employees": "Employees",
       "employees_unit": "people",
       "country": "Country",
+      "country_value": "Costa Rica",
       "provincia": "Province",
       "canton": "Canton",
       "description": "Description",
@@ -1597,7 +1644,9 @@
       "contact_example_role": "Talent Recruiter",
       "contact_example_email": "ana@company.com",
       "contact_hint": "Add the contacts in charge of recruitment",
-      "loading_areas": "Loading areas..."
+      "loading_areas": "Loading areas...",
+      "website_emprendedor": "https://yourproject.com",
+      "website_empresa": "https://yourcompany.com"
     },
     "modalities": {
       "remote": "Remote",
@@ -2675,6 +2724,222 @@
       "updated": "Company updated",
       "deleted": "Company deleted",
       "error": "The action could not be completed"
+    }
+  },
+  "admin_solicitudes": {
+    "eyebrow": "Administration",
+    "title": "Requests",
+    "description": "Review and manage the pending admission requests in the FWD Talent ecosystem.",
+    "stats": {
+      "total": "All",
+      "total_badge": "Global",
+      "empresas": "Companies",
+      "empresas_badge": "B2B",
+      "talentos": "Talents",
+      "talentos_badge": "B2C",
+      "proyectos": "Projects",
+      "proyectos_badge": "Active",
+      "reportes": "Reports",
+      "reportes_badge": "Critical"
+    },
+    "types": {
+      "Empresa": "Company",
+      "Emprendedor": "Entrepreneur",
+      "Talento": "Talent",
+      "Otro": "Other"
+    },
+    "filters": {
+      "search_placeholder": "Search by name, email or ID...",
+      "type_aria": "Type",
+      "date_aria": "Date",
+      "type_all": "Type: All",
+      "date_all": "Date: All",
+      "date_today": "Today",
+      "date_week": "This week",
+      "date_month": "This month",
+      "clear": "Clear filters"
+    },
+    "type_meta": {
+      "Empresa": { "title": "New company registered", "origin": "Companies Portal" },
+      "Emprendedor": { "title": "New entrepreneur registered", "origin": "Entrepreneurs Portal" },
+      "Talento": { "title": "Verification request", "origin": "Talent Registration" },
+      "Otro": { "title": "Account request", "origin": "Registration" }
+    },
+    "list": {
+      "empty": "No pending requests match the applied filters.",
+      "pending": "Pending",
+      "id": "ID:",
+      "origin": "Origin:",
+      "summary": "Showing <strong>{start} to {end}</strong> of <strong>{total}</strong> requests"
+    },
+    "actions": {
+      "view": "View detail",
+      "approve": "Approve",
+      "reject": "Reject",
+      "suspend": "Suspend",
+      "close": "Close"
+    },
+    "messages": {
+      "approved": "Request approved",
+      "rejected": "Request rejected",
+      "suspended": "Account suspended",
+      "error": "The action could not be completed"
+    },
+    "modal": {
+      "fallback_title": "Request detail",
+      "subtitle": "Complete applicant information",
+      "loading": "Loading applicant profile...",
+      "no_profile": "This user has no additional profile associated.",
+      "section_account": "Account",
+      "section_talent": "Talent profile",
+      "section_company": "Company profile"
+    },
+    "fields": {
+      "full_name": "Full name",
+      "email": "Email",
+      "cedula": "ID number",
+      "role": "Role",
+      "account_status": "Account status",
+      "registered": "Registration date",
+      "id": "ID",
+      "specialty": "Specialty",
+      "availability": "Availability",
+      "preferred_modality": "Preferred modality",
+      "titulo_fwd": "FWD degree",
+      "verification": "Verification",
+      "reputation": "Reputation",
+      "description": "Description",
+      "skills": "Skills",
+      "commercial_name": "Trade name",
+      "type": "Type",
+      "cedula_juridica": "Business ID",
+      "sector": "Sector",
+      "stage": "Stage",
+      "employees": "Number of employees",
+      "modalities": "Modalities",
+      "schedule": "Schedule",
+      "budget": "Budget",
+      "address": "Address",
+      "project_types": "Project types",
+      "tech_support": "Technical support needed",
+      "mission": "Mission",
+      "vision": "Vision",
+      "culture": "Culture",
+      "values": "Values",
+      "contacts": "Contacts"
+    },
+    "links": {
+      "portfolio": "Portfolio",
+      "website": "Website"
+    },
+    "enum_role": {
+      "student": "Talent",
+      "company": "Company",
+      "admin": "Administrator"
+    },
+    "enum_especialidad": {
+      "frontend": "Frontend",
+      "backend": "Backend",
+      "fullstack": "Fullstack",
+      "ia": "AI"
+    },
+    "enum_disponibilidad": {
+      "immediate": "Immediate",
+      "two_weeks": "In two weeks",
+      "one_month": "In one month",
+      "unavailable": "Unavailable"
+    },
+    "enum_verificacion": {
+      "pendiente": "Pending",
+      "verificado": "Verified",
+      "rechazado": "Rejected"
+    },
+    "enum_etapa": {
+      "idea": "Idea",
+      "mvp": "MVP",
+      "validating": "Validating",
+      "scaling": "Scaling"
+    },
+    "enum_presupuesto": {
+      "under_500": "Under $500",
+      "range_500_1000": "$500 to $1,000",
+      "range_1000_2500": "$1,000 to $2,500",
+      "flexible": "Flexible"
+    },
+    "enum_horario": {
+      "flexible": "Flexible",
+      "fixed": "Fixed"
+    }
+  },
+  "admin_reportes": {
+    "eyebrow": "Analytics",
+    "title": "Reports",
+    "description": "Live overview of the FWD Talent ecosystem, computed from registered users, graduates, companies and projects.",
+    "export_csv": "Export CSV",
+    "export_pdf": "Export PDF",
+    "empty": "Not enough data.",
+    "kpi": {
+      "usuarios": "Users",
+      "egresados": "Graduates",
+      "empresas": "Companies",
+      "proyectos": "Projects",
+      "activos": "Active",
+      "pendientes": "Pending",
+      "verificados": "Verified",
+      "finalizados": "Completed"
+    },
+    "charts": {
+      "projects_by_state_title": "Projects by state",
+      "projects_by_state_subtitle": "Breakdown of all projects by their stage.",
+      "top_companies_title": "Top companies by projects",
+      "top_companies_subtitle": "The companies with the most published projects.",
+      "users_by_role_title": "Users by role",
+      "users_by_role_subtitle": "How accounts are split among juniors, companies and admins.",
+      "companies_by_type_title": "Companies by type",
+      "companies_by_type_subtitle": "Established companies versus entrepreneurs."
+    },
+    "enum_state": {
+      "borrador": "Draft",
+      "en_recepcion": "In intake",
+      "en_evaluacion": "Under review",
+      "adjudicado": "Awarded",
+      "en_desarrollo": "In development",
+      "cerrado": "Closed",
+      "cancelado": "Cancelled",
+      "pausado": "Paused"
+    },
+    "enum_role": {
+      "student": "Juniors",
+      "company": "Companies",
+      "admin": "Admins"
+    },
+    "enum_account": {
+      "activa": "Active",
+      "pendiente": "Pending",
+      "suspendida": "Suspended",
+      "rechazada": "Rejected"
+    },
+    "enum_verification": {
+      "verificado": "Verified",
+      "pendiente": "Pending",
+      "rechazado": "Rejected"
+    },
+    "enum_type": {
+      "empresa": "Companies",
+      "emprendedor": "Entrepreneurs"
+    },
+    "csv": {
+      "report_title": "FWD Talent Report",
+      "header_metric": "Metric",
+      "header_value": "Value",
+      "header_total": "Total",
+      "block_projects_by_state": "Projects by state",
+      "block_top_companies": "Top companies by projects",
+      "block_users_by_role": "Users by role",
+      "block_accounts": "Account status",
+      "block_verification": "Graduate verification",
+      "block_companies_by_type": "Companies by type",
+      "filename": "fwd-report"
     }
   },
   "admin_proyectos": {

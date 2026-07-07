@@ -43,6 +43,7 @@ export const EmpresaProfileSchema = z.object({
 
 export const EmprendedorProfileSchema = z.object({
   projectName:   z.string().min(2).max(100),
+  cedula:        z.string().min(5).max(20),
   stage:         z.enum(["idea", "mvp", "validating", "scaling"]),
   neededSupport: z.array(z.enum(["web", "mobile", "backend", "ai", "ux", "data", "automation", "other"])).min(1),
   budget:        z.enum(["under_500", "range_500_1000", "range_1000_2500", "flexible"]),

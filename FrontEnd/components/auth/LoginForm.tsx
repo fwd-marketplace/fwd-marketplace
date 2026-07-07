@@ -4,6 +4,7 @@ import React, { useState, useTransition } from "react";
 import { useParams, useRouter } from "next/navigation";
 import Link from "next/link";
 import { useTranslations } from "next-intl";
+import { useApiErrorText } from "@/lib/i18n/api-error";
 import { ArrowLeft, Eye, EyeOff } from "lucide-react";
 import { FwdGeoBackdrop } from "@/components/ui/fwd-geo-backdrop";
 import { CosmicBackdrop } from "@/components/ui/cosmic-backdrop";
@@ -47,6 +48,7 @@ interface LoginFormProps {
 
 export function LoginForm({ badge }: LoginFormProps) {
   const t = useTranslations("login");
+  const errorText = useApiErrorText();
   const params = useParams();
   const router = useRouter();
   const locale = params.locale as string;
@@ -94,7 +96,7 @@ export function LoginForm({ badge }: LoginFormProps) {
     startTransition(async () => {
       const result = await startOAuth(provider, locale);
       if (!result.ok) {
-        setError(result.error);
+        setError(errorText(result.error));
         return;
       }
       // Redirige el navegador al provider; el flujo vuelve por /auth/callback.
@@ -110,7 +112,7 @@ export function LoginForm({ badge }: LoginFormProps) {
     startTransition(async () => {
       const result = await loginUser({ email, password });
       if (!result.ok) {
-        setError(result.error);
+        setError(errorText(result.error));
         return;
       }
       setTicket(result.data.ticket);
@@ -127,7 +129,7 @@ export function LoginForm({ badge }: LoginFormProps) {
     startTransition(async () => {
       const result = await verifyLoginOtp({ ticket, code });
       if (!result.ok) {
-        setError(result.error);
+        setError(errorText(result.error));
         return;
       }
       routeByResult(result.data.role, result.data.estado_cuenta);
