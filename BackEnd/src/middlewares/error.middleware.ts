@@ -42,5 +42,9 @@ export function errorHandler(
   }
 
   // 4xx: mensaje controlado y útil para el usuario (validaciones, reglas de negocio).
-  res.status(status).json({ error: isApiError ? err.message : "Solicitud inválida" });
+  // Se incluye `code` (si lo hay) para que el FrontEnd traduzca el error a es/en.
+  res.status(status).json({
+    error: isApiError ? err.message : "Solicitud inválida",
+    ...(isApiError && err.code ? { code: err.code } : {}),
+  });
 }

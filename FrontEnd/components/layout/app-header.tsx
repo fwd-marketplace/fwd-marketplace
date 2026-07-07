@@ -347,7 +347,10 @@ function UserMenu({
   function handleSwitchLanguage() {
     const nextLocale = isEnglish ? "es" : "en";
     const nextPath = pathname.replace(/^\/[^/]+/, `/${nextLocale}`);
-    router.replace(nextPath);
+    // Preserva query params y hash de la vista actual (pathname no los incluye).
+    const search = typeof window !== "undefined" ? window.location.search : "";
+    const hash = typeof window !== "undefined" ? window.location.hash : "";
+    router.replace(`${nextPath}${search}${hash}`);
     router.refresh();
   }
 

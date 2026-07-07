@@ -449,7 +449,7 @@ export function ProjectDetail({ project, role }: Props) {
                 <dl className="space-y-2.5 font-body text-sm">
                   {project.compensacion != null && (
                     <div className="flex justify-between gap-2">
-                      <dt className="text-ink-muted">Compensación</dt>
+                      <dt className="text-ink-muted">{t("label_compensacion")}</dt>
                       <dd className="font-bold text-accent text-right">
                         {formatCompensacion(project.compensacion, project.moneda)}
                       </dd>
@@ -467,14 +467,14 @@ export function ProjectDetail({ project, role }: Props) {
                     </p>
                   )}
                   <div className="flex justify-between gap-2">
-                    <dt className="text-ink-muted">Duración</dt>
+                    <dt className="text-ink-muted">{t("label_duracion")}</dt>
                     <dd className="font-semibold text-ink-strong text-right">
-                      {project.plazo_dias} días
+                      {t("duracion_dias", { n: project.plazo_dias })}
                     </dd>
                   </div>
                   {project.area && (
                     <div className="flex justify-between gap-2">
-                      <dt className="text-ink-muted">Área</dt>
+                      <dt className="text-ink-muted">{t("label_area")}</dt>
                       <dd className="font-semibold text-ink-strong text-right">{project.area.nombre}</dd>
                     </div>
                   )}

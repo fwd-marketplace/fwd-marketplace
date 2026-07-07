@@ -71,6 +71,7 @@ describe("EmprendedorOnboardingSchema", () => {
   const valido = {
     tipo: "emprendedor",
     nombre_proyecto: "MiApp",
+    cedula: "1-2345-6789",
     etapa: "mvp",
     soporte_tecnico: ["web"],
     presupuesto: "range_500_1000",
@@ -86,5 +87,14 @@ describe("EmprendedorOnboardingSchema", () => {
 
   it("rechaza un presupuesto fuera del enum", () => {
     expect(EmprendedorOnboardingSchema.safeParse({ ...valido, presupuesto: "millones" }).success).toBe(false);
+  });
+
+  it("rechaza si falta la cédula", () => {
+    const { cedula: _omit, ...sinCedula } = valido;
+    expect(EmprendedorOnboardingSchema.safeParse(sinCedula).success).toBe(false);
+  });
+
+  it("rechaza un soporte_tecnico fuera del enum", () => {
+    expect(EmprendedorOnboardingSchema.safeParse({ ...valido, soporte_tecnico: ["blockchain"] }).success).toBe(false);
   });
 });

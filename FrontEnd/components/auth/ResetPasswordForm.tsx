@@ -4,6 +4,7 @@ import { useState, useTransition } from "react";
 import { useParams } from "next/navigation";
 import Link from "next/link";
 import { useTranslations } from "next-intl";
+import { useApiErrorText } from "@/lib/i18n/api-error";
 import { ArrowLeft, Lock, RotateCcwKey } from "lucide-react";
 import { resetPassword } from "@/lib/actions/auth";
 import { FwdGeoBackdrop } from "@/components/ui/fwd-geo-backdrop";
@@ -14,6 +15,7 @@ const EMAIL_PATTERN = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 
 export function ResetPasswordForm() {
   const t = useTranslations("reset_password");
+  const errorText = useApiErrorText();
   const params = useParams();
   const locale = params.locale as string;
 
@@ -38,7 +40,7 @@ export function ResetPasswordForm() {
     startTransition(async () => {
       const result = await resetPassword({ email: email.trim() });
       if (!result.ok) {
-        setError(result.error);
+        setError(errorText(result.error));
         return;
       }
       setSubmittedEmail(email.trim());

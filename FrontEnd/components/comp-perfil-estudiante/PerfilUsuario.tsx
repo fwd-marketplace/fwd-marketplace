@@ -2,6 +2,7 @@
 
 import React, { useEffect, useRef, useState, useTransition } from "react";
 import { useTranslations, useLocale } from "next-intl";
+import { intlLocale } from "@/lib/i18n/date-locale";
 import { useSearchParams } from "next/navigation";
 import Link from "next/link";
 import {
@@ -127,6 +128,7 @@ function CalificacionesSection({
   t: ReturnType<typeof import("next-intl").useTranslations<"perfil_junior">>;
   initialCalificaciones: MockCalificacion[];
 }) {
+  const locale = useLocale();
   const [calificaciones, setCalificaciones] = useState<MockCalificacion[]>(initialCalificaciones);
   const [replyingId, setReplyingId] = useState<string | null>(null);
   const [replyDraft, setReplyDraft] = useState("");
@@ -171,7 +173,7 @@ function CalificacionesSection({
                 )}
                 <p className="font-heading text-lg font-extrabold text-ink-strong leading-tight">{cal.projectName}</p>
                 <p className="text-[11px] text-ink-muted mt-1">
-                  {new Date(cal.date).toLocaleDateString([], { day: "numeric", month: "long", year: "numeric" })}
+                  {new Date(cal.date).toLocaleDateString(intlLocale(locale), { day: "numeric", month: "long", year: "numeric" })}
                 </p>
               </div>
 
@@ -1593,7 +1595,7 @@ export default function PerfilUsuario({
                           tabIndex={-1}
                           onMouseDown={(e) => { e.preventDefault(); setShowConocimientoSuggestions((v) => !v); }}
                           className="absolute right-2 top-1/2 -translate-y-1/2 p-0.5 text-ink-muted hover:text-ink transition-colors"
-                          aria-label="Mostrar sugerencias"
+                          aria-label={t("show_suggestions")}
                         >
                           <ChevronDown
                             className={`size-4 transition-transform duration-[var(--duration-fast)] ${listOpen ? "rotate-180" : ""}`}
@@ -1902,7 +1904,7 @@ export default function PerfilUsuario({
                         const fecha = new Date(app.relativeTime);
                         const fechaLabel = isNaN(fecha.getTime())
                           ? ""
-                          : fecha.toLocaleDateString("es-CR", { day: "numeric", month: "short" });
+                          : fecha.toLocaleDateString(intlLocale(locale), { day: "numeric", month: "short" });
                         return (
                           <div
                             key={app.id}
@@ -2112,7 +2114,7 @@ export default function PerfilUsuario({
                   {paginated.map((app) => {
                     const styles = getStatusStyles(app.status);
                     const fecha = new Date(app.relativeTime);
-                    const fechaLabel = isNaN(fecha.getTime()) ? app.relativeTime : fecha.toLocaleDateString("es-CR", { day: "numeric", month: "short", year: "numeric" });
+                    const fechaLabel = isNaN(fecha.getTime()) ? app.relativeTime : fecha.toLocaleDateString(intlLocale(locale), { day: "numeric", month: "short", year: "numeric" });
                     return (
                       <Link
                         key={app.id}
@@ -2306,9 +2308,9 @@ export default function PerfilUsuario({
                           {notif.mensaje}
                         </p>
                         <span className="font-body text-xs text-ink-muted">
-                          {new Date(notif.fecha).toLocaleDateString(undefined, { day: "numeric", month: "long", year: "numeric" })}
+                          {new Date(notif.fecha).toLocaleDateString(intlLocale(locale), { day: "numeric", month: "long", year: "numeric" })}
                           {" · "}
-                          {new Date(notif.fecha).toLocaleTimeString(undefined, { hour: "2-digit", minute: "2-digit" })}
+                          {new Date(notif.fecha).toLocaleTimeString(intlLocale(locale), { hour: "2-digit", minute: "2-digit" })}
                         </span>
                       </div>
                       {!notif.leida && (
@@ -2630,7 +2632,7 @@ function AddProjectModal({ onClose, onCreate }: { onClose: () => void; onCreate:
             {/* Nombre */}
             <div>
               <label className={labelClass}>{t("work.fields.name")}</label>
-              <input value={name} onChange={(e) => setName(e.target.value)} className={inputClass} placeholder="Mi proyecto increíble" />
+              <input value={name} onChange={(e) => setName(e.target.value)} className={inputClass} placeholder={t("project_name_placeholder")} />
             </div>
 
             {/* URLs en grid */}
@@ -2648,7 +2650,7 @@ function AddProjectModal({ onClose, onCreate }: { onClose: () => void; onCreate:
             {/* Descripción */}
             <div>
               <label className={labelClass}>{t("work.fields.description")}</label>
-              <textarea value={description} onChange={(e) => setDescription(e.target.value)} className={inputClass} rows={2} placeholder="Breve descripción de qué hace este proyecto..." />
+              <textarea value={description} onChange={(e) => setDescription(e.target.value)} className={inputClass} rows={2} placeholder={t("project_desc_placeholder")} />
             </div>
 
             {/* Tecnologías */}

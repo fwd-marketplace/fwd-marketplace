@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useMemo, useState, useTransition, type ReactNode } from "react";
+import { useTranslations, useLocale } from "next-intl";
 import {
   List,
   Building2,
@@ -41,18 +42,19 @@ function roleType(user: AdminPendingUser): SolicitudTipo {
   return "Otro";
 }
 
-const TYPE_META: Record<string, { icon: typeof Building2; bg: string; tone: string; title: string; origin: string }> = {
-  Empresa: { icon: Building2, bg: "bg-secondary/10", tone: "text-secondary", title: "Nueva empresa registrada", origin: "Portal Empresas" },
-  Emprendedor: { icon: User, bg: "bg-accent/10", tone: "text-accent", title: "Nuevo emprendedor registrado", origin: "Portal Emprendedores" },
-  Talento: { icon: User, bg: "bg-primary/10", tone: "text-primary", title: "Solicitud de verificación", origin: "Registro Talento" },
-  Otro: { icon: Flag, bg: "bg-warning/10", tone: "text-warning", title: "Solicitud de cuenta", origin: "Registro" },
+/** Estilo visual por tipo de solicitud; el texto (título/origen) se traduce vía i18n. */
+const TYPE_META: Record<string, { icon: typeof Building2; bg: string; tone: string }> = {
+  Empresa: { icon: Building2, bg: "bg-secondary/10", tone: "text-secondary" },
+  Emprendedor: { icon: User, bg: "bg-accent/10", tone: "text-accent" },
+  Talento: { icon: User, bg: "bg-primary/10", tone: "text-primary" },
+  Otro: { icon: Flag, bg: "bg-warning/10", tone: "text-warning" },
 };
 
-function formatDate(iso: string | null): string {
+function formatDate(iso: string | null, locale: string): string {
   if (!iso) return "—";
   const date = new Date(iso);
   if (Number.isNaN(date.getTime())) return "—";
-  return new Intl.DateTimeFormat("es", { day: "2-digit", month: "short", year: "numeric" }).format(date);
+  return new Intl.DateTimeFormat(locale, { day: "2-digit", month: "short", year: "numeric" }).format(date);
 }
 
 function dateBucket(iso: string | null): "Hoy" | "Esta semana" | "Este mes" | "Anterior" {
@@ -69,19 +71,13 @@ function dateBucket(iso: string | null): "Hoy" | "Esta semana" | "Este mes" | "A
 const TYPE_OPTIONS = ["Todos", "Empresa", "Emprendedor", "Talento", "Otro"];
 const DATE_OPTIONS = ["Todos", "Hoy", "Esta semana", "Este mes"];
 
-// Etiquetas legibles para los valores enumerados que guarda la BD en inglés.
-const ROLE_LABEL: Record<string, string> = { student: "Talento", company: "Empresa", admin: "Administrador" };
-const ESPECIALIDAD_LABEL: Record<string, string> = { frontend: "Frontend", backend: "Backend", fullstack: "Fullstack", ia: "IA" };
-const DISPONIBILIDAD_LABEL: Record<string, string> = { immediate: "Inmediata", two_weeks: "En dos semanas", one_month: "En un mes", unavailable: "No disponible" };
-const VERIFICACION_LABEL: Record<string, string> = { pendiente: "Pendiente", verificado: "Verificado", rechazado: "Rechazado" };
-const ETAPA_LABEL: Record<string, string> = { idea: "Idea", mvp: "MVP", validating: "Validando", scaling: "Escalando" };
-const PRESUPUESTO_LABEL: Record<string, string> = { under_500: "Menos de $500", range_500_1000: "$500 a $1.000", range_1000_2500: "$1.000 a $2.500", flexible: "Flexible" };
-const HORARIO_LABEL: Record<string, string> = { flexible: "Flexible", fixed: "Fijo" };
-
-function translate(map: Record<string, string>, value: string | null | undefined): string | null {
-  if (!value) return null;
-  return map[value] ?? value;
-}
+/** Mapea el valor interno de fecha (usado para comparar) a su clave i18n de display. */
+const DATE_LABEL_KEY: Record<string, string> = {
+  Todos: "filters.date_all",
+  Hoy: "filters.date_today",
+  "Esta semana": "filters.date_week",
+  "Este mes": "filters.date_month",
+};
 
 /** Celda etiqueta + valor dentro de una sección; se oculta si el valor está vacío. */
 function DetailField({ label, value, full }: { label: string; value: string | number | null | undefined; full?: boolean }) {
@@ -138,10 +134,19 @@ function DetailSection({ icon: Icon, title, accent, children }: { icon: typeof U
  * o el botón cerrar.
  */
 function SolicitanteDetailModal({ userId, onClose }: { userId: string; onClose: () => void }) {
+  const t = useTranslations("admin_solicitudes");
+  const locale = useLocale();
   const [detail, setDetail] = useState<AdminUserDetail | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const titleId = "solicitud-detail-title";
+
+  /** Traduce un valor enumerado por prefijo, con fallback al valor crudo si no hay clave. */
+  function tEnum(prefix: string, value: string | null | undefined): string | null {
+    if (!value) return null;
+    const key = `${prefix}.${value}`;
+    return t.has(key) ? t(key) : value;
+  }
 
   useEffect(() => {
     function handleKeyDown(event: KeyboardEvent) {
@@ -172,12 +177,10 @@ function SolicitanteDetailModal({ userId, onClose }: { userId: string; onClose: 
   const estudiante = detail?.estudiante;
   const empresario = detail?.empresario;
   const tipoLabel = empresario
-    ? empresario.tipo === "emprendedor"
-      ? "Emprendedor"
-      : "Empresa"
+    ? t(`types.${empresario.tipo === "emprendedor" ? "Emprendedor" : "Empresa"}`)
     : estudiante
-      ? "Talento"
-      : translate(ROLE_LABEL, detail?.role?.nombre);
+      ? t("types.Talento")
+      : tEnum("enum_role", detail?.role?.nombre);
 
   return (
     <div
@@ -202,9 +205,9 @@ function SolicitanteDetailModal({ userId, onClose }: { userId: string; onClose: 
             />
             <div className="min-w-0">
               <h2 id={titleId} className="truncate font-heading text-xl font-bold tracking-tight text-ink-strong">
-                {detail ? fullName : "Detalle de la solicitud"}
+                {detail ? fullName : t("modal.fallback_title")}
               </h2>
-              <p className="font-body text-sm text-ink-muted">Información completa del solicitante</p>
+              <p className="font-body text-sm text-ink-muted">{t("modal.subtitle")}</p>
               {detail && (
                 <div className="mt-2 flex flex-wrap items-center gap-2">
                   {tipoLabel && (
@@ -222,7 +225,7 @@ function SolicitanteDetailModal({ userId, onClose }: { userId: string; onClose: 
           <button
             type="button"
             onClick={onClose}
-            aria-label="Cerrar"
+            aria-label={t("actions.close")}
             className="inline-flex size-9 shrink-0 items-center justify-center rounded-lg text-ink-muted ring-1 ring-border transition-colors duration-[var(--duration-fast)] ease-[var(--ease-out)] hover:bg-surface"
           >
             <X className="size-4" aria-hidden="true" />
@@ -233,69 +236,69 @@ function SolicitanteDetailModal({ userId, onClose }: { userId: string; onClose: 
         <div className="flex-1 space-y-4 overflow-y-auto p-6">
           {isLoading ? (
             <div className="flex items-center justify-center gap-2 py-12 font-body text-sm text-ink-muted">
-              <Loader2 className="size-4 animate-spin" aria-hidden="true" /> Cargando perfil del solicitante...
+              <Loader2 className="size-4 animate-spin" aria-hidden="true" /> {t("modal.loading")}
             </div>
           ) : error ? (
             <p className="py-12 text-center font-body text-sm font-medium text-magenta">{error}</p>
           ) : detail ? (
             <>
-              <DetailSection icon={User} title="Cuenta" accent="bg-primary/10 text-primary">
-                <DetailField label="Nombre completo" value={fullName} />
-                <DetailField label="Correo" value={detail.correo} />
-                <DetailField label="Cedula" value={detail.cedula} />
-                <DetailField label="Rol" value={translate(ROLE_LABEL, detail.role?.nombre)} />
-                <DetailField label="Estado de cuenta" value={detail.estado_cuenta} />
-                <DetailField label="Fecha de registro" value={formatDate(detail.fecha_registro)} />
-                <DetailField label="ID" value={detail.id} full />
+              <DetailSection icon={User} title={t("modal.section_account")} accent="bg-primary/10 text-primary">
+                <DetailField label={t("fields.full_name")} value={fullName} />
+                <DetailField label={t("fields.email")} value={detail.correo} />
+                <DetailField label={t("fields.cedula")} value={detail.cedula} />
+                <DetailField label={t("fields.role")} value={tEnum("enum_role", detail.role?.nombre)} />
+                <DetailField label={t("fields.account_status")} value={detail.estado_cuenta} />
+                <DetailField label={t("fields.registered")} value={formatDate(detail.fecha_registro, locale)} />
+                <DetailField label={t("fields.id")} value={detail.id} full />
               </DetailSection>
 
               {estudiante && (
-                <DetailSection icon={GraduationCap} title="Perfil de talento" accent="bg-accent/10 text-accent">
-                  <DetailField label="Especialidad" value={translate(ESPECIALIDAD_LABEL, estudiante.especialidad)} />
-                  <DetailField label="Disponibilidad" value={translate(DISPONIBILIDAD_LABEL, estudiante.disponibilidad)} />
-                  <DetailField label="Modalidad preferida" value={estudiante.modalidad_preferida} />
-                  <DetailField label="Titulo FWD" value={estudiante.titulo_fwd} />
-                  <DetailField label="Verificacion" value={translate(VERIFICACION_LABEL, estudiante.estado_verificacion)} />
-                  <DetailField label="Reputacion" value={estudiante.reputacion} />
-                  <DetailField label="Descripcion" value={estudiante.descripcion} full />
-                  <DetailField label="Skills" value={estudiante.skills.length > 0 ? estudiante.skills.join(", ") : null} full />
+                <DetailSection icon={GraduationCap} title={t("modal.section_talent")} accent="bg-accent/10 text-accent">
+                  <DetailField label={t("fields.specialty")} value={tEnum("enum_especialidad", estudiante.especialidad)} />
+                  <DetailField label={t("fields.availability")} value={tEnum("enum_disponibilidad", estudiante.disponibilidad)} />
+                  <DetailField label={t("fields.preferred_modality")} value={estudiante.modalidad_preferida} />
+                  <DetailField label={t("fields.titulo_fwd")} value={estudiante.titulo_fwd} />
+                  <DetailField label={t("fields.verification")} value={tEnum("enum_verificacion", estudiante.estado_verificacion)} />
+                  <DetailField label={t("fields.reputation")} value={estudiante.reputacion} />
+                  <DetailField label={t("fields.description")} value={estudiante.descripcion} full />
+                  <DetailField label={t("fields.skills")} value={estudiante.skills.length > 0 ? estudiante.skills.join(", ") : null} full />
                   <DetailLinks
                     links={[
                       { label: "GitHub", href: estudiante.url_github, icon: ExternalLink },
                       { label: "LinkedIn", href: estudiante.url_linkedin, icon: ExternalLink },
-                      { label: "Portafolio", href: estudiante.url_portfolio, icon: Globe },
+                      { label: t("links.portfolio"), href: estudiante.url_portfolio, icon: Globe },
                     ]}
                   />
                 </DetailSection>
               )}
 
               {empresario && (
-                <DetailSection icon={Building2} title="Perfil de empresa" accent="bg-secondary/10 text-secondary">
-                  <DetailField label="Nombre comercial" value={empresario.nombre_comercial} />
-                  <DetailField label="Tipo" value={empresario.tipo === "emprendedor" ? "Emprendedor" : "Empresa"} />
-                  <DetailField label="Cedula juridica" value={empresario.cedula_juridica} />
-                  <DetailField label="Sector" value={empresario.sector} />
-                  <DetailField label="Etapa" value={translate(ETAPA_LABEL, empresario.etapa)} />
-                  <DetailField label="Cantidad de empleados" value={empresario.cantidad_empleados} />
-                  <DetailField label="Modalidades" value={empresario.modalidades} />
-                  <DetailField label="Horario" value={translate(HORARIO_LABEL, empresario.horario)} />
-                  <DetailField label="Presupuesto" value={translate(PRESUPUESTO_LABEL, empresario.presupuesto)} />
-                  <DetailField label="Direccion" value={empresario.direccion} full />
-                  <DetailField label="Tipos de proyecto" value={empresario.tipos_proyecto} full />
-                  <DetailField label="Descripcion" value={empresario.descripcion} full />
-                  <DetailField label="Apoyo tecnico necesario" value={empresario.apoyo_tecnico_necesario} full />
-                  <DetailField label="Mision" value={empresario.mision} full />
-                  <DetailField label="Vision" value={empresario.vision} full />
-                  <DetailField label="Cultura" value={empresario.cultura} full />
-                  <DetailField label="Valores" value={empresario.valores} full />
-                  <DetailField label="Contactos" value={empresario.contactos} full />
-                  <DetailLinks links={[{ label: "Sitio web", href: empresario.url_sitio_web, icon: Globe }]} />
+                <DetailSection icon={Building2} title={t("modal.section_company")} accent="bg-secondary/10 text-secondary">
+                  <DetailField label={t("fields.commercial_name")} value={empresario.nombre_comercial} />
+                  <DetailField label={t("fields.type")} value={t(`types.${empresario.tipo === "emprendedor" ? "Emprendedor" : "Empresa"}`)} />
+                  <DetailField label={t("fields.cedula_juridica")} value={empresario.cedula_juridica} />
+                  <DetailField label={t("fields.sector")} value={empresario.sector} />
+                  <DetailField label={t("fields.stage")} value={tEnum("enum_etapa", empresario.etapa)} />
+                  <DetailField label={t("fields.employees")} value={empresario.cantidad_empleados} />
+                  <DetailField label={t("fields.modalities")} value={empresario.modalidades} />
+                  <DetailField label={t("fields.schedule")} value={tEnum("enum_horario", empresario.horario)} />
+                  <DetailField label={t("fields.budget")} value={tEnum("enum_presupuesto", empresario.presupuesto)} />
+                  <DetailField label={t("fields.address")} value={empresario.direccion} full />
+                  <DetailField label={t("fields.project_types")} value={empresario.tipos_proyecto} full />
+                  <DetailField label={t("fields.description")} value={empresario.descripcion} full />
+                  <DetailField label={t("fields.tech_support")} value={empresario.apoyo_tecnico_necesario} full />
+                  <DetailField label={t("fields.mission")} value={empresario.mision} full />
+                  <DetailField label={t("fields.vision")} value={empresario.vision} full />
+                  <DetailField label={t("fields.culture")} value={empresario.cultura} full />
+                  <DetailField label={t("fields.values")} value={empresario.valores} full />
+                  <DetailField label={t("fields.contacts")} value={empresario.contactos} full />
+                  <DetailLinks links={[{ label: t("links.website"), href: empresario.url_sitio_web, icon: Globe }]} />
                 </DetailSection>
               )}
 
               {!estudiante && !empresario && (
                 <p className="py-4 text-center font-body text-sm text-ink-muted">
-                  Este usuario no tiene un perfil adicional asociado.
+                  {t("modal.no_profile")}
                 </p>
               )}
             </>
@@ -309,7 +312,7 @@ function SolicitanteDetailModal({ userId, onClose }: { userId: string; onClose: 
             onClick={onClose}
             className="rounded-full px-5 py-2 font-body text-sm font-semibold text-ink-strong ring-1 ring-border transition-colors duration-[var(--duration-fast)] ease-[var(--ease-out)] hover:bg-surface"
           >
-            Cerrar
+            {t("actions.close")}
           </button>
         </div>
       </div>
@@ -326,6 +329,8 @@ function buildInitials(fullName: string): string {
 }
 
 export function SolicitudesView({ initialUsers }: { initialUsers: AdminPendingUser[] }) {
+  const t = useTranslations("admin_solicitudes");
+  const locale = useLocale();
   const [users, setUsers] = useState<AdminPendingUser[]>(initialUsers);
   const [query, setQuery] = useState("");
   const [tipo, setTipo] = useState("Todos");
@@ -363,11 +368,11 @@ export function SolicitudesView({ initialUsers }: { initialUsers: AdminPendingUs
   const rangeEnd = Math.min(safePage * PAGE_SIZE, filtered.length);
 
   const STATS = [
-    { icon: List, iconBg: "bg-primary/10", iconTone: "text-primary", badge: "Global", badgeTone: "bg-primary/10 text-primary", value: counts.total, label: "Todas" },
-    { icon: Building2, iconBg: "bg-secondary/10", iconTone: "text-secondary", badge: "B2B", badgeTone: "bg-secondary/10 text-secondary", value: counts.empresas, label: "Empresas" },
-    { icon: Users, iconBg: "bg-primary/10", iconTone: "text-primary", badge: "B2C", badgeTone: "bg-primary/10 text-primary", value: counts.talentos, label: "Talentos" },
-    { icon: FolderOpen, iconBg: "bg-warning/10", iconTone: "text-warning", badge: "Activos", badgeTone: "bg-warning/10 text-warning", value: 0, label: "Proyectos" },
-    { icon: Flag, iconBg: "bg-magenta/10", iconTone: "text-magenta", badge: "Críticos", badgeTone: "bg-magenta/10 text-magenta", value: 0, label: "Reportes" },
+    { icon: List, iconBg: "bg-primary/10", iconTone: "text-primary", badge: t("stats.total_badge"), badgeTone: "bg-primary/10 text-primary", value: counts.total, label: t("stats.total") },
+    { icon: Building2, iconBg: "bg-secondary/10", iconTone: "text-secondary", badge: t("stats.empresas_badge"), badgeTone: "bg-secondary/10 text-secondary", value: counts.empresas, label: t("stats.empresas") },
+    { icon: Users, iconBg: "bg-primary/10", iconTone: "text-primary", badge: t("stats.talentos_badge"), badgeTone: "bg-primary/10 text-primary", value: counts.talentos, label: t("stats.talentos") },
+    { icon: FolderOpen, iconBg: "bg-warning/10", iconTone: "text-warning", badge: t("stats.proyectos_badge"), badgeTone: "bg-warning/10 text-warning", value: 0, label: t("stats.proyectos") },
+    { icon: Flag, iconBg: "bg-magenta/10", iconTone: "text-magenta", badge: t("stats.reportes_badge"), badgeTone: "bg-magenta/10 text-magenta", value: 0, label: t("stats.reportes") },
   ];
 
   function resetPage<T>(setter: (value: T) => void) {
@@ -397,7 +402,7 @@ export function SolicitudesView({ initialUsers }: { initialUsers: AdminPendingUs
     startTransition(async () => {
       const result = await action(user.id);
       if (!result.ok) {
-        flash(result.error ?? "No se pudo completar la acción");
+        flash(result.error ?? t("messages.error"));
         return;
       }
       setUsers((prev) => prev.filter((item) => item.id !== user.id));
@@ -414,9 +419,9 @@ export function SolicitudesView({ initialUsers }: { initialUsers: AdminPendingUs
       )}
 
       <PageTitle
-        eyebrow="Administración"
-        title="Solicitudes"
-        description="Revisá y gestioná las solicitudes de admisión pendientes del ecosistema FWD Talent."
+        eyebrow={t("eyebrow")}
+        title={t("title")}
+        description={t("description")}
       />
 
       <div className="grid grid-cols-2 gap-4 sm:grid-cols-3 xl:grid-cols-5">
@@ -443,16 +448,16 @@ export function SolicitudesView({ initialUsers }: { initialUsers: AdminPendingUs
               type="text"
               value={query}
               onChange={(event) => resetPage(setQuery)(event.target.value)}
-              placeholder="Buscar por nombre, correo o ID..."
+              placeholder={t("filters.search_placeholder")}
               className="w-full rounded-full bg-surface-sunken py-2.5 pl-10 pr-4 font-body text-sm text-ink-strong placeholder:text-ink-subtle outline-none focus:ring-2 focus:ring-primary/40"
             />
           </div>
-          <FilterSelect ariaLabel="Tipo" value={tipo} onChange={resetPage(setTipo)} options={TYPE_OPTIONS.map((value) => ({ value, label: value === "Todos" ? "Tipo: Todos" : value }))} />
-          <FilterSelect ariaLabel="Fecha" value={fecha} onChange={resetPage(setFecha)} options={DATE_OPTIONS.map((value) => ({ value, label: value === "Todos" ? "Fecha: Todos" : value }))} />
+          <FilterSelect ariaLabel={t("filters.type_aria")} value={tipo} onChange={resetPage(setTipo)} options={TYPE_OPTIONS.map((value) => ({ value, label: value === "Todos" ? t("filters.type_all") : t(`types.${value}`) }))} />
+          <FilterSelect ariaLabel={t("filters.date_aria")} value={fecha} onChange={resetPage(setFecha)} options={DATE_OPTIONS.map((value) => ({ value, label: t(DATE_LABEL_KEY[value]!) }))} />
         </div>
         <div className="mt-4 flex justify-end">
           <button type="button" onClick={clearFilters} className="inline-flex items-center gap-1.5 font-body text-xs font-bold uppercase tracking-wider text-primary hover:underline">
-            <Trash2 className="size-4" aria-hidden="true" /> Limpiar filtros
+            <Trash2 className="size-4" aria-hidden="true" /> {t("filters.clear")}
           </button>
         </div>
       </section>
@@ -460,7 +465,7 @@ export function SolicitudesView({ initialUsers }: { initialUsers: AdminPendingUs
       {/* List */}
       <div className="space-y-4">
         {pageItems.length === 0 ? (
-          <EmptyRow message="No hay solicitudes pendientes con los filtros aplicados." />
+          <EmptyRow message={t("list.empty")} />
         ) : (
           pageItems.map((user) => {
             const type = roleType(user);
@@ -481,27 +486,27 @@ export function SolicitudesView({ initialUsers }: { initialUsers: AdminPendingUs
                     </span>
                   )}
                   <div className="min-w-0 flex-1">
-                    <h3 className="font-heading text-base font-bold text-ink-strong">{meta.title}</h3>
+                    <h3 className="font-heading text-base font-bold text-ink-strong">{t(`type_meta.${type}.title`)}</h3>
                     <p className="font-body text-sm text-ink">{fullName}</p>
                     <p className="mt-1 font-body text-xs text-ink-muted">
-                      ID: {user.id.slice(0, 8)} <span className="text-ink-subtle">•</span> {formatDate(user.fecha_registro)}{" "}
-                      <span className="text-ink-subtle">•</span> Origen: {meta.origin}
+                      {t("list.id")} {user.id.slice(0, 8)} <span className="text-ink-subtle">•</span> {formatDate(user.fecha_registro, locale)}{" "}
+                      <span className="text-ink-subtle">•</span> {t("list.origin")} {t(`type_meta.${type}.origin`)}
                     </p>
                   </div>
                   <span className="inline-flex items-center gap-1.5 rounded-full bg-warning/10 px-2.5 py-1 font-body text-xs font-medium text-warning">
-                    <span className="size-1.5 rounded-full bg-warning" aria-hidden="true" /> Pendiente
+                    <span className="size-1.5 rounded-full bg-warning" aria-hidden="true" /> {t("list.pending")}
                   </span>
                   <div className="flex items-center gap-2">
-                    <button type="button" aria-label="Ver detalle" onClick={() => setDetailUserId(user.id)} className="inline-flex size-9 items-center justify-center rounded-lg text-ink-muted ring-1 ring-border transition-colors hover:bg-surface-sunken">
+                    <button type="button" aria-label={t("actions.view")} onClick={() => setDetailUserId(user.id)} className="inline-flex size-9 items-center justify-center rounded-lg text-ink-muted ring-1 ring-border transition-colors hover:bg-surface-sunken">
                       <Eye className="size-4" aria-hidden="true" />
                     </button>
-                    <button type="button" aria-label="Aprobar" disabled={isPending} onClick={() => runAction(user, approveAdminUserAction, "Solicitud aprobada")} className="inline-flex size-9 items-center justify-center rounded-lg text-accent ring-1 ring-accent/40 transition-colors hover:bg-accent/10 disabled:opacity-50">
+                    <button type="button" aria-label={t("actions.approve")} disabled={isPending} onClick={() => runAction(user, approveAdminUserAction, t("messages.approved"))} className="inline-flex size-9 items-center justify-center rounded-lg text-accent ring-1 ring-accent/40 transition-colors hover:bg-accent/10 disabled:opacity-50">
                       {isPending ? <Loader2 className="size-4 animate-spin" /> : <Check className="size-4" aria-hidden="true" />}
                     </button>
-                    <button type="button" aria-label="Rechazar" disabled={isPending} onClick={() => runAction(user, rejectAdminUserAction, "Solicitud rechazada")} className="inline-flex size-9 items-center justify-center rounded-lg text-magenta ring-1 ring-magenta/40 transition-colors hover:bg-magenta/10 disabled:opacity-50">
+                    <button type="button" aria-label={t("actions.reject")} disabled={isPending} onClick={() => runAction(user, rejectAdminUserAction, t("messages.rejected"))} className="inline-flex size-9 items-center justify-center rounded-lg text-magenta ring-1 ring-magenta/40 transition-colors hover:bg-magenta/10 disabled:opacity-50">
                       <X className="size-4" aria-hidden="true" />
                     </button>
-                    <button type="button" aria-label="Suspender" disabled={isPending} onClick={() => runAction(user, suspendAdminUserAction, "Cuenta suspendida")} className="inline-flex size-9 items-center justify-center rounded-lg text-ink-muted ring-1 ring-border transition-colors hover:bg-surface-sunken">
+                    <button type="button" aria-label={t("actions.suspend")} disabled={isPending} onClick={() => runAction(user, suspendAdminUserAction, t("messages.suspended"))} className="inline-flex size-9 items-center justify-center rounded-lg text-ink-muted ring-1 ring-border transition-colors hover:bg-surface-sunken">
                       <UserMinus className="size-4" aria-hidden="true" />
                     </button>
                   </div>
@@ -514,8 +519,12 @@ export function SolicitudesView({ initialUsers }: { initialUsers: AdminPendingUs
 
       <div className="flex flex-wrap items-center justify-between gap-4 border-t border-border pt-6">
         <p className="font-body text-sm text-ink-muted">
-          Mostrando <span className="font-semibold text-ink-strong">{rangeStart} a {rangeEnd}</span> de{" "}
-          <span className="font-semibold text-ink-strong">{filtered.length}</span> solicitudes
+          {t.rich("list.summary", {
+            start: rangeStart,
+            end: rangeEnd,
+            total: filtered.length,
+            strong: (chunks) => <span className="font-semibold text-ink-strong">{chunks}</span>,
+          })}
         </p>
         <Pagination page={safePage} pageCount={pageCount} onPage={setPage} shape="square" />
       </div>

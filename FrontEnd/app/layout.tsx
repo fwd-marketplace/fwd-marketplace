@@ -1,11 +1,14 @@
 import type { Metadata } from "next";
 import { Archivo_Narrow, Figtree } from "next/font/google";
+import { getLocale } from "next-intl/server";
 import "./globals.css";
 import { ThemeProvider } from "@/lib/theme/theme-provider";
 import { DarkModeStarfield } from "@/components/layout/dark-mode-starfield";
 
 // Aplica la clase `dark` antes del primer paint para que no haya parpadeo claro->oscuro.
-const THEME_INIT_SCRIPT = `try{if(localStorage.getItem('fwd-theme')==='dark'){document.documentElement.classList.add('dark')}}catch(e){}`;
+// Prioridad: preferencia guardada > preferencia del sistema (prefers-color-scheme).
+// Una elección explícita de "light" gana sobre el sistema oscuro.
+const THEME_INIT_SCRIPT = `try{var s=localStorage.getItem('fwd-theme');if(s==='dark'||(!s&&matchMedia('(prefers-color-scheme:dark)').matches)){document.documentElement.classList.add('dark')}}catch(e){}`;
 
 const figtree = Figtree({
   subsets: ["latin"],
@@ -26,14 +29,18 @@ export const metadata: Metadata = {
     "Marketplace de proyectos freelance para juniors egresados de Fundación Forward Costa Rica.",
 };
 
-export default function RootLayout({
+export default async function RootLayout({
   children,
 }: Readonly<{
   children: React.ReactNode;
 }>) {
+  // `getLocale()` lee el locale negociado por el middleware (funciona por encima
+  // del segmento [locale]), para que <html lang> refleje el idioma real.
+  const locale = await getLocale();
+
   return (
     <html
-      lang="es"
+      lang={locale}
       className={`${figtree.variable} ${archivoNarrow.variable} h-full antialiased`}
       suppressHydrationWarning
     >

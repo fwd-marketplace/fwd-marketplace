@@ -4,6 +4,7 @@ import { useEffect, useState } from "react";
 import { useParams, useRouter } from "next/navigation";
 import Link from "next/link";
 import { useTranslations } from "next-intl";
+import { useApiErrorText } from "@/lib/i18n/api-error";
 import { Loader2 } from "lucide-react";
 import { completeOAuth } from "@/lib/actions/auth";
 
@@ -15,6 +16,7 @@ import { completeOAuth } from "@/lib/actions/auth";
  */
 export function OAuthCallback() {
   const t = useTranslations("oauth_callback");
+  const errorText = useApiErrorText();
   const params = useParams();
   const router = useRouter();
   const locale = params.locale as string;
@@ -43,7 +45,7 @@ export function OAuthCallback() {
     completeOAuth({ accessToken, refreshToken }).then((result) => {
       if (cancelled) return;
       if (!result.ok) {
-        setError(result.error);
+        setError(errorText(result.error));
         return;
       }
       const { role, estado_cuenta } = result.data;
@@ -69,7 +71,7 @@ export function OAuthCallback() {
     return () => {
       cancelled = true;
     };
-  }, [locale, router, t]);
+  }, [locale, router, t, errorText]);
 
   return (
     <div className="flex min-h-[100dvh] flex-col items-center justify-center gap-4 bg-canvas px-6 text-center">

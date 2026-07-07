@@ -12,7 +12,13 @@ const NAV_HREFS = [
   { key: "matches", href: "/matches" },
 ] as const;
 
-export function EmpresaSubnav({ actionSlot }: { actionSlot?: React.ReactNode }) {
+export function EmpresaSubnav({
+  tipo,
+  actionSlot,
+}: {
+  tipo?: "empresa" | "emprendedor" | undefined;
+  actionSlot?: React.ReactNode;
+}) {
   const pathname = usePathname();
   const locale = useLocale();
   const t = useTranslations("empresa_subnav");
@@ -25,6 +31,9 @@ export function EmpresaSubnav({ actionSlot }: { actionSlot?: React.ReactNode }) 
       <div className="mx-auto flex max-w-7xl items-end gap-6 overflow-x-auto px-4 pb-px md:gap-8 md:px-6">
         {NAV_HREFS.map((item) => {
           const isActive = pathname.includes(item.href);
+          // El emprendedor ve "Mi emprendimiento" en vez de "Mi empresa".
+          const labelKey =
+            item.key === "mi_empresa" && tipo === "emprendedor" ? "mi_emprendimiento" : item.key;
           return (
             <Link
               key={item.href}
@@ -38,7 +47,7 @@ export function EmpresaSubnav({ actionSlot }: { actionSlot?: React.ReactNode }) 
                   : "border-transparent text-ink-muted hover:text-ink"
               )}
             >
-              <span>{t(item.key)}</span>
+              <span>{t(labelKey)}</span>
             </Link>
           );
         })}

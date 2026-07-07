@@ -2,10 +2,12 @@
 
 import React, { useState, useTransition } from "react";
 import { useTranslations } from "next-intl";
+import { useApiErrorText } from "@/lib/i18n/api-error";
 import { useParams, useRouter } from "next/navigation";
 import Link from "next/link";
 import { ArrowLeft, Eye, EyeOff } from "lucide-react";
 import { FwdGeoBackdrop } from "@/components/ui/fwd-geo-backdrop";
+import { PublicNavControls } from "@/components/layout/public-nav-controls";
 import { CosmicBackdrop } from "@/components/ui/cosmic-backdrop";
 import { AuthFooterLinks } from "@/components/auth/AuthFooterLinks";
 import { registerUser, startOAuth } from "@/lib/actions/auth";
@@ -47,6 +49,7 @@ interface RegisterFormProps {
 
 export function RegisterForm({ badge }: RegisterFormProps) {
   const t = useTranslations("register.auth");
+  const errorText = useApiErrorText();
   const params = useParams();
   const router = useRouter();
   const locale = params.locale as string;
@@ -67,7 +70,7 @@ export function RegisterForm({ badge }: RegisterFormProps) {
     startTransition(async () => {
       const result = await startOAuth(provider, locale);
       if (!result.ok) {
-        setError(result.error);
+        setError(errorText(result.error));
         return;
       }
       window.location.href = result.data.url;
@@ -86,7 +89,7 @@ export function RegisterForm({ badge }: RegisterFormProps) {
       if (result.ok) {
         router.push(`/${locale}/register/role`);
       } else {
-        setError(result.error);
+        setError(errorText(result.error));
       }
     });
   }
@@ -96,7 +99,7 @@ export function RegisterForm({ badge }: RegisterFormProps) {
       <FwdGeoBackdrop />
       <CosmicBackdrop />
 
-      <div className="absolute left-6 top-6 z-10">
+      <div className="absolute left-6 top-6 z-10 flex items-center gap-2">
         <Link
           href={`/${locale}/home`}
           className="inline-flex items-center gap-2 rounded-full bg-white/10 px-4 py-2 font-body text-sm font-medium text-white/75 backdrop-blur-sm transition-colors duration-[var(--duration-fast)] ease-[var(--ease-out)] hover:bg-white/15 hover:text-white"
@@ -104,6 +107,7 @@ export function RegisterForm({ badge }: RegisterFormProps) {
           <ArrowLeft size={14} aria-hidden="true" />
           {t("back_home")}
         </Link>
+        <PublicNavControls tone="onDark" />
       </div>
 
       <div className="relative flex min-h-[100dvh] flex-col items-center justify-center px-6 py-16">
