@@ -263,7 +263,7 @@ export async function saveJuniorProfile(raw: unknown): Promise<Result<void>> {
     });
     return ok(undefined);
   } catch (e) {
-    return err(e instanceof ApiError ? e.message : "Error de conexión");
+    return err(e instanceof ApiError ? (e.code ?? e.message) : "CONNECTION_ERROR");
   }
 }
 
@@ -287,7 +287,7 @@ export async function saveEmpresaProfile(raw: unknown): Promise<Result<void>> {
     });
     return ok(undefined);
   } catch (e) {
-    return err(e instanceof ApiError ? e.message : "Error de conexión");
+    return err(e instanceof ApiError ? (e.code ?? e.message) : "CONNECTION_ERROR");
   }
 }
 
@@ -312,6 +312,6 @@ export async function saveEmprendedorProfile(raw: unknown): Promise<Result<void>
     });
     return ok(undefined);
   } catch (e) {
-    return err(e instanceof ApiError ? e.message : "Error de conexión");
+    return err(e instanceof ApiError ? (e.code ?? e.message) : "CONNECTION_ERROR");
   }
 }

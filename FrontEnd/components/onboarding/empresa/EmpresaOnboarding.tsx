@@ -549,7 +549,12 @@ export function EmpresaOnboarding() {
   }
 
   const stepValidationMessage = getStepValidationMessage();
-  const footerMessage = submitError ?? stepValidationMessage;
+  // El backend puede devolver un código de error estable (ej. ALREADY_ONBOARDED); se traduce
+  // vía `register.errors.<code>` y cae al texto crudo si no hay clave.
+  const submitErrorText = submitError
+    ? (t.has(`errors.${submitError}`) ? t(`errors.${submitError}`) : submitError)
+    : null;
+  const footerMessage = submitErrorText ?? stepValidationMessage;
 
   return (
     <div className="relative flex min-h-[100dvh] flex-col bg-secondary">

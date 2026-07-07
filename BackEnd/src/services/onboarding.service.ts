@@ -28,18 +28,18 @@ function mapOnboardingError(error: { code?: string; message?: string }): never {
   const code = error.code ?? "";
   const message = error.message ?? "";
   if (code === "42501" || /FORBIDDEN/i.test(message)) {
-    throw new ApiError(403, "No podés hacer el onboarding de otra cuenta");
+    throw new ApiError(403, "No podés hacer el onboarding de otra cuenta", "ONBOARDING_FORBIDDEN");
   }
   if (code === "P0003" || /CEDULA_TAKEN/i.test(message)) {
-    throw new ApiError(409, "Ya existe una cuenta registrada con esa cédula");
+    throw new ApiError(409, "Ya existe una cuenta registrada con esa cédula", "CEDULA_TAKEN");
   }
   if (code === "23505" || /ALREADY_ONBOARDED|duplicate key/i.test(message)) {
-    throw new ApiError(409, "Este usuario ya completó el onboarding");
+    throw new ApiError(409, "Este usuario ya completó el onboarding", "ALREADY_ONBOARDED");
   }
   if (/MISSING_ROLE/i.test(message)) {
     throw new ApiError(500, "Falta el rol en la BD (seeds no aplicados)");
   }
-  throw new ApiError(400, message || "No se pudo completar el onboarding");
+  throw new ApiError(400, message || "No se pudo completar el onboarding", "ONBOARDING_FAILED");
 }
 
 /** Onboarding del junior: users (pendiente) + estudiante + student_skills, atómico. */
@@ -51,7 +51,7 @@ export async function onboardJunior(
 ): Promise<OnboardingResult> {
   const settings = await readAppSettings();
   if (!settings.allow_signups) {
-    throw new ApiError(403, "Los registros de talento están deshabilitados temporalmente.");
+    throw new ApiError(403, "Los registros de talento están deshabilitados temporalmente.", "SIGNUPS_DISABLED");
   }
   const client = supabaseForToken(accessToken);
   const { error } = await client.rpc("onboard_junior", {
@@ -107,7 +107,7 @@ export async function onboardEmpresa(
 ): Promise<OnboardingResult> {
   const settings = await readAppSettings();
   if (!settings.allow_companies) {
-    throw new ApiError(403, "El registro de empresas está deshabilitado temporalmente.");
+    throw new ApiError(403, "El registro de empresas está deshabilitado temporalmente.", "COMPANIES_DISABLED");
   }
   const client = supabaseForToken(accessToken);
   const { error } = await client.rpc("onboard_empresa", {
@@ -134,7 +134,7 @@ export async function onboardEmprendedor(
 ): Promise<OnboardingResult> {
   const settings = await readAppSettings();
   if (!settings.allow_companies) {
-    throw new ApiError(403, "El registro de emprendedores está deshabilitado temporalmente.");
+    throw new ApiError(403, "El registro de emprendedores está deshabilitado temporalmente.", "EMPRENDEDORES_DISABLED");
   }
   const client = supabaseForToken(accessToken);
   const { error } = await client.rpc("onboard_emprendedor", {
