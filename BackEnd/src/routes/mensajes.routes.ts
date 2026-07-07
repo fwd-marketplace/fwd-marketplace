@@ -97,31 +97,39 @@ async function resolveParticipantes(
 async function listConversaciones(req: Request, res: Response) {
   if (!req.accessToken || !req.user) throw new ApiError(401, "No autenticado");
 
-  const client = supabaseForToken(req.accessToken);
   const userId = req.user.id;
 
-  // RLS filtra solo mensajes donde el usuario es remitente o destinatario.
-  const { data, error } = await client
+  // Usamos supabaseAdmin para evitar que el RLS de `proyecto` bloquee el join
+  // cuando el proyecto está en un estado no visible para el usuario (pausado, etc.).
+  // El RLS de `mensaje` se aplica vía filtro manual: solo los mensajes donde el
+  // usuario es remitente o destinatario.
+  const admin = supabaseAdmin();
+
+  const { data, error } = await admin
     .from("mensaje")
     .select("id_proyecto, fecha_envio, id_remitente, id_destinatario, leida, proyecto:proyecto(id, titulo)")
+    .or(`id_remitente.eq.${userId},id_destinatario.eq.${userId}`)
     .order("fecha_envio", { ascending: false });
   if (error) throw new ApiError(500, error.message);
 
-  // Deduplicar por proyecto, mantener el mas reciente, contar participantes únicos
+  const msgs = data ?? [];
+
+  // Deduplicar por proyecto, mantener el más reciente, contar participantes únicos
   // y los mensajes recibidos sin leer (no_leidos) para marcar chats pendientes.
   const seen = new Set<string>();
-  const conversaciones = (data ?? [])
-    .filter((m) => m.proyecto && !seen.has(m.id_proyecto) && !!seen.add(m.id_proyecto))
+  const conversaciones = msgs
+    .filter((m) => m.id_proyecto && !seen.has(m.id_proyecto) && !!seen.add(m.id_proyecto))
     .map((m) => {
-      const msgsForProject = (data ?? []).filter((x) => x.id_proyecto === m.id_proyecto);
+      const msgsForProject = msgs.filter((x) => x.id_proyecto === m.id_proyecto);
       const uniqueSenders = new Set(
         msgsForProject.map((x) => x.id_remitente).filter((id): id is string => !!id && id !== userId),
       );
       const noLeidos = msgsForProject.filter(
         (x) => x.id_destinatario === userId && !x.leida,
       ).length;
+      const proyecto = (m.proyecto as { id: string; titulo: string } | null);
       return {
-        proyecto: m.proyecto,
+        proyecto: proyecto ?? { id: m.id_proyecto, titulo: "Proyecto" },
         ultimo_mensaje: m.fecha_envio,
         n_participantes: uniqueSenders.size,
         no_leidos: noLeidos,

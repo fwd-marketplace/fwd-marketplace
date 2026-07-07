@@ -5,12 +5,17 @@ import { useLocale, useTranslations } from "next-intl";
 import { ProjectMatchPanel } from "@/components/gestion/ProjectMatchPanel";
 import { ChatPanel } from "@/components/features/proyecto/ChatPanel";
 import {
+  Activity,
   AlertCircle,
   ArrowLeft,
+  ArrowRight,
   Ban,
+  Briefcase,
   Calendar,
   Check,
   CheckCircle2,
+  ChevronDown,
+  ChevronLeft,
   ChevronRight,
   Clock,
   ExternalLink,
@@ -18,6 +23,7 @@ import {
   FolderOpen,
   Eye,
   GitBranch,
+  LayoutDashboard,
   Loader2,
   Lock,
   Mail,
@@ -215,8 +221,10 @@ function initJuniorProposals(offers: MyOffer[], project: ApiProject | null): Jun
     expanded: false,
     desc: offer.propuesta,
     link: offer.prototipo_url ?? "",
-    fileName: "",
-    docUrl: "",
+    docUrl: offer.documentacion_url ?? "",
+    fileName: offer.documentacion_url
+      ? decodeURIComponent(offer.documentacion_url.split("/").pop()?.split("?")[0] ?? "Documento")
+      : "",
     previewName: project?.titulo ?? "",
     previewProject: project?.area?.nombre ?? "",
     repo: offer.url_repositorio ?? "",
@@ -354,6 +362,9 @@ export function GestionPage({ role, userId, initialProjectId, initialSection: in
     initialSectionProp ?? ((!isEmpresa && !!initialProjectId) ? "proceso" : "info");
   const [section, setSection]               = useState<Section>(initialSection);
 
+  // Sidebar navigation — pure presentation state (which top-level view is active)
+  const [sidebarView, setSidebarView] = useState<"dashboard" | "procesos" | "mensajes">("dashboard");
+
   // Clean ?proyecto= from URL once used to pre-select
   useEffect(() => {
     if (initialProjectId) {
@@ -427,6 +438,17 @@ export function GestionPage({ role, userId, initialProjectId, initialSection: in
     const r = await getMyConversacionesAction();
     if (r.ok) setMyConversaciones(r.data);
   }, []);
+
+  // Mientras la vista de mensajes está activa, refrescar conversaciones cada 5 s.
+  // Esto garantiza que los chats directos aparezcan aunque el callback de escalada
+  // no llegue correctamente a través de la cadena de componentes.
+  useEffect(() => {
+    if (sidebarView !== "mensajes" || isEmpresa) return;
+    void refreshConversaciones();
+    let active = true;
+    const timer = setInterval(() => { if (active) void refreshConversaciones(); }, 5000);
+    return () => { active = false; clearInterval(timer); };
+  }, [sidebarView, isEmpresa, refreshConversaciones]);
 
   // Al abrir el chat de un proyecto, el backend marca esos mensajes como leídos;
   // limpiamos el badge "pendiente" de ese proyecto de inmediato (optimista).
@@ -581,16 +603,85 @@ export function GestionPage({ role, userId, initialProjectId, initialSection: in
   };
 
   return (
-    <div className="flex h-[calc(100vh-4rem)] overflow-hidden">
+    <div className="flex min-h-[calc(100vh-4rem)] gap-4 bg-canvas px-4 pt-10 pb-6">
+
+      {/* ── Navigation rail flotante ── */}
+      <nav
+        className="sticky top-10 self-start flex h-fit shrink-0 w-[72px] flex-col items-center gap-5 rounded-2xl border border-border bg-surface py-6 shadow-[var(--shadow-soft)]"
+        aria-label="Navegación principal"
+      >
+
+        {/* Dashboard */}
+        <div className="group relative">
+          <button
+            type="button"
+            onClick={() => { setSidebarView("dashboard"); handleBack(); }}
+            aria-current={sidebarView === "dashboard" && !selectedId ? "page" : undefined}
+            aria-label="Dashboard"
+            className={cn(
+              "flex size-10 items-center justify-center rounded-[14px] transition-all duration-[var(--duration-fast)] ease-[var(--ease-out)]",
+              sidebarView === "dashboard" && !selectedId
+                ? "bg-secondary text-white shadow-sm"
+                : "text-ink-muted hover:bg-secondary/10 hover:text-secondary",
+            )}
+          >
+            <LayoutDashboard className="size-[18px]" aria-hidden="true" />
+          </button>
+          <span role="tooltip" className="pointer-events-none absolute left-[calc(100%+12px)] top-1/2 z-50 -translate-y-1/2 whitespace-nowrap rounded-xl bg-ink-strong px-3 py-1.5 font-body text-xs font-semibold text-white opacity-0 shadow-lg transition-opacity duration-[var(--duration-fast)] group-hover:opacity-100">
+            Dashboard
+          </span>
+        </div>
+
+        {/* Procesos */}
+        <div className="group relative">
+          <button
+            type="button"
+            onClick={() => { setSidebarView("procesos"); handleBack(); }}
+            aria-current={sidebarView === "procesos" && !selectedId ? "page" : undefined}
+            aria-label="Procesos"
+            className={cn(
+              "flex size-10 items-center justify-center rounded-[14px] transition-all duration-[var(--duration-fast)] ease-[var(--ease-out)]",
+              sidebarView === "procesos" && !selectedId
+                ? "bg-secondary text-white shadow-sm"
+                : "text-ink-muted hover:bg-secondary/10 hover:text-secondary",
+            )}
+          >
+            <GitBranch className="size-[18px]" aria-hidden="true" />
+          </button>
+          <span role="tooltip" className="pointer-events-none absolute left-[calc(100%+12px)] top-1/2 z-50 -translate-y-1/2 whitespace-nowrap rounded-xl bg-ink-strong px-3 py-1.5 font-body text-xs font-semibold text-white opacity-0 shadow-lg transition-opacity duration-[var(--duration-fast)] group-hover:opacity-100">
+            Procesos
+          </span>
+        </div>
+
+        {/* Mensajes */}
+        {!isEmpresa && (
+          <div className="group relative">
+            <button
+              type="button"
+              onClick={() => { setSidebarView("mensajes"); }}
+              aria-current={sidebarView === "mensajes" ? "page" : undefined}
+              aria-label="Mensajes"
+              className={cn(
+                "flex size-10 items-center justify-center rounded-[14px] transition-all duration-[var(--duration-fast)] ease-[var(--ease-out)]",
+                sidebarView === "mensajes"
+                  ? "bg-secondary text-white shadow-sm"
+                  : "text-ink-muted hover:bg-secondary/10 hover:text-secondary",
+              )}
+            >
+              <Mail className="size-[18px]" aria-hidden="true" />
+            </button>
+            <span role="tooltip" className="pointer-events-none absolute left-[calc(100%+12px)] top-1/2 z-50 -translate-y-1/2 whitespace-nowrap rounded-xl bg-ink-strong px-3 py-1.5 font-body text-xs font-semibold text-white opacity-0 shadow-lg transition-opacity duration-[var(--duration-fast)] group-hover:opacity-100">
+              Mensajes
+            </span>
+          </div>
+        )}
+
+      </nav>
 
       {/* ── Sidebar ── */}
       <aside
         aria-label={t("aria_proyectos")}
-        className={cn(
-          "flex shrink-0 flex-col overflow-hidden bg-secondary transition-[width] duration-[var(--duration-base)] ease-[var(--ease-out)]",
-          "md:w-72 md:border-r md:border-white/10",
-          selectedId ? "w-0 md:w-72" : "w-full md:w-72",
-        )}
+        className="hidden"
       >
         {!selectedId ? (
           <>
@@ -825,13 +916,66 @@ export function GestionPage({ role, userId, initialProjectId, initialSection: in
         )}
       </aside>
 
-      {/* ── Content ── */}
-      <main
-        className={cn(
-          "flex-1 overflow-y-auto bg-canvas",
-          !selectedId && formMode === null ? "hidden md:flex md:flex-col" : "block",
+      {/* ── Main column ── */}
+      <div className="flex flex-1 flex-col">
+
+        {/* Project header + horizontal section tabs (desktop only — empresa only when junior) */}
+        {selectedId && isEmpresa && (
+          <div className="hidden shrink-0 items-center gap-3 border-b border-border bg-surface px-6 py-3 md:flex">
+            <button
+              onClick={handleBack}
+              className="inline-flex items-center gap-1.5 font-body text-xs font-semibold text-ink-muted transition-colors duration-[var(--duration-fast)] hover:text-ink"
+            >
+              <ArrowLeft className="size-3.5" aria-hidden="true" />
+              {t("all_projects")}
+            </button>
+            <div className="h-4 w-px bg-border" aria-hidden="true" />
+            <p className="min-w-0 flex-1 truncate font-heading text-sm font-bold text-ink-strong">
+              {selectedProject?.titulo
+                ?? myOffers.find((o) => o.proyecto?.id === selectedId)?.proyecto?.titulo
+                ?? ""}
+              {selectedProject?.area && (
+                <span className="ml-2 font-body text-xs font-medium normal-case tracking-normal text-ink-muted">
+                  {selectedProject.area.nombre}
+                </span>
+              )}
+            </p>
+            <nav className="flex shrink-0 items-center gap-1" aria-label={t("aria_secciones_proyecto")}>
+              {(["info", "chat", "proceso"] as const).map((key) => {
+                const Icon  = key === "info" ? FileText : key === "chat" ? MessageSquare : GitBranch;
+                const label = key === "info" ? t("section_info") : key === "chat" ? t("section_chat") : t("section_proceso");
+                return (
+                  <button
+                    key={key}
+                    onClick={() => setSection(key)}
+                    className={cn(
+                      "flex items-center gap-1.5 rounded-lg px-3 py-1.5 font-body text-xs font-semibold transition-colors duration-[var(--duration-fast)]",
+                      section === key ? "bg-primary/10 text-primary" : "text-ink-muted hover:bg-canvas hover:text-ink",
+                    )}
+                  >
+                    <Icon className="size-3.5 shrink-0" aria-hidden="true" />
+                    {label}
+                  </button>
+                );
+              })}
+              {isEmpresa && (
+                <button
+                  onClick={() => setSection("matches")}
+                  className={cn(
+                    "flex items-center gap-1.5 rounded-lg px-3 py-1.5 font-body text-xs font-semibold transition-colors duration-[var(--duration-fast)]",
+                    section === "matches" ? "bg-primary/10 text-primary" : "text-ink-muted hover:bg-canvas hover:text-ink",
+                  )}
+                >
+                  <Sparkles className="size-3.5 shrink-0" aria-hidden="true" />
+                  {t("section_matches")}
+                </button>
+              )}
+            </nav>
+          </div>
         )}
-      >
+
+        {/* ── Content ── */}
+        <main className="flex-1 bg-canvas">
         {isEmpresa && formMode !== null ? (
           <ProjectFormContent
             mode={formMode}
@@ -841,34 +985,60 @@ export function GestionPage({ role, userId, initialProjectId, initialSection: in
             onSave={handleSaveProject}
             onClose={() => setFormMode(null)}
           />
-        ) : !selectedId ? (
-          <WelcomePanel
-            isEmpresa={isEmpresa}
-            hasProjects={sidebarProjects.length > 0}
+        ) : !isEmpresa && sidebarView === "mensajes" ? (
+          <MensajesView
+            myOffers={myOffers}
+            myConversaciones={myConversaciones}
             projects={sidebarProjects}
+            selectedProjectId={selectedId}
+            selectedProject={selectedProject}
+            projectLoading={projectLoading && !!selectedId && !selectedProject}
             t={t}
-            locale={locale}
-            onCreateProject={() => setFormMode("create")}
-            onSelectProject={(id) => handleSelect(id, "info")}
+            userId={userId}
+            onConversationActivity={refreshConversaciones}
+            onSelectProject={(id) => handleSelect(id, "chat")}
           />
+        ) : !selectedId ? (
+          !isEmpresa && sidebarView === "procesos" ? (
+            <ProcesosView
+              myOffers={myOffers}
+              projects={sidebarProjects}
+              t={t}
+              locale={locale}
+              onSelectProject={(id) => handleSelect(id, "proceso")}
+            />
+          ) : (
+            <WelcomePanel
+              isEmpresa={isEmpresa}
+              hasProjects={sidebarProjects.length > 0}
+              projects={sidebarProjects}
+              myOffers={myOffers}
+              t={t}
+              locale={locale}
+              onCreateProject={() => setFormMode("create")}
+              onSelectProject={(id) => handleSelect(id, isEmpresa ? "info" : "proceso")}
+            />
+          )
         ) : projectLoading && !selectedProject ? (
           <div className="flex flex-1 items-center justify-center py-20">
             <Loader2 className="size-7 animate-spin text-primary" aria-label={t("aria_cargando_proyecto")} />
           </div>
         ) : (
           <>
-            <div className="sticky top-0 z-10 flex items-center gap-3 border-b border-border bg-canvas/95 px-4 py-3 backdrop-blur-sm md:hidden">
-              <button
-                onClick={handleBack}
-                className="inline-flex items-center gap-1.5 font-body text-sm font-semibold text-ink-muted hover:text-ink"
-              >
-                <ArrowLeft className="size-4" aria-hidden="true" />
-                {t("all_projects")}
-              </button>
-              <span className="flex-1 truncate font-heading text-sm font-bold text-ink-strong">
-                {selectedProject?.titulo ?? myOffers.find((o) => o.proyecto?.id === selectedId)?.proyecto?.titulo}
-              </span>
-            </div>
+            {isEmpresa && (
+              <div className="sticky top-0 z-10 flex items-center gap-3 border-b border-border bg-canvas/95 px-4 py-3 backdrop-blur-sm md:hidden">
+                <button
+                  onClick={handleBack}
+                  className="inline-flex items-center gap-1.5 font-body text-sm font-semibold text-ink-muted hover:text-ink"
+                >
+                  <ArrowLeft className="size-4" aria-hidden="true" />
+                  {t("all_projects")}
+                </button>
+                <span className="flex-1 truncate font-heading text-sm font-bold text-ink-strong">
+                  {selectedProject?.titulo ?? myOffers.find((o) => o.proyecto?.id === selectedId)?.proyecto?.titulo}
+                </span>
+              </div>
+            )}
             {!selectedProject && projectError && (
               <div className="flex flex-col items-center gap-3 px-6 py-20 text-center">
                 <FolderOpen className="size-10 text-ink-muted/30" aria-hidden="true" />
@@ -903,19 +1073,32 @@ export function GestionPage({ role, userId, initialProjectId, initialSection: in
                   userId={userId}
                 />
               ) : (
-                <JuniorContactoPanel
-                  projectId={selectedId}
-                  projectTitulo={
-                    selectedProject?.titulo
-                    ?? myOffers.find((o) => o.proyecto?.id === selectedId)?.proyecto?.titulo
-                    ?? myConversaciones.find((c) => c.proyecto.id === selectedId)?.proyecto.titulo
-                    ?? ""
-                  }
-                  empresaNombre={selectedProject?.empresa?.nombre_comercial ?? null}
-                  t={t}
-                  userId={userId}
-                  onConversationActivity={refreshConversaciones}
-                />
+                <>
+                  {/* Back to proceso — only shown since junior tab bar is hidden */}
+                  <div className="flex items-center gap-2 border-b border-border bg-surface px-6 py-3">
+                    <button
+                      type="button"
+                      onClick={() => setSection("proceso")}
+                      className="inline-flex items-center gap-1.5 font-body text-sm font-semibold text-ink-muted transition-colors duration-[var(--duration-fast)] hover:text-ink"
+                    >
+                      <ArrowLeft className="size-4" aria-hidden="true" />
+                      {t("section_proceso")}
+                    </button>
+                  </div>
+                  <JuniorContactoPanel
+                    projectId={selectedId}
+                    projectTitulo={
+                      selectedProject?.titulo
+                      ?? myOffers.find((o) => o.proyecto?.id === selectedId)?.proyecto?.titulo
+                      ?? myConversaciones.find((c) => c.proyecto.id === selectedId)?.proyecto.titulo
+                      ?? ""
+                    }
+                    empresaNombre={selectedProject?.empresa?.nombre_comercial ?? null}
+                    t={t}
+                    userId={userId}
+                    onConversationActivity={refreshConversaciones}
+                  />
+                </>
               )
             )}
             {section === "proceso" && (
@@ -929,6 +1112,8 @@ export function GestionPage({ role, userId, initialProjectId, initialSection: in
                 t={t}
                 userId={userId}
                 disponible={disponible}
+                onBack={() => { setSidebarView("procesos"); handleBack(); }}
+                onOpenChat={() => { setSidebarView("mensajes"); setSection("chat"); }}
               />
             )}
             {section === "matches" && isEmpresa && (
@@ -937,6 +1122,7 @@ export function GestionPage({ role, userId, initialProjectId, initialSection: in
           </>
         )}
       </main>
+      </div>{/* end main column */}
 
       {/* ── Delete confirmation ── */}
       {deleteTarget && (
@@ -985,6 +1171,7 @@ function WelcomePanel({
   isEmpresa,
   hasProjects,
   projects = [],
+  myOffers = [],
   t,
   locale,
   onCreateProject,
@@ -993,11 +1180,17 @@ function WelcomePanel({
   isEmpresa: boolean;
   hasProjects: boolean;
   projects?: ApiProject[];
+  myOffers?: MyOffer[];
   t: T;
   locale: string;
   onCreateProject: () => void;
   onSelectProject: (id: string) => void;
 }) {
+  const [offerPage, setOfferPage] = useState(0);
+  const [calendarProjectId, setCalendarProjectId] = useState<string | null>(null);
+  const [calendarOffset, setCalendarOffset] = useState(0); // meses desde el mes actual
+  const [activityPage, setActivityPage] = useState(0);
+
   // ── Empresa dashboard ────────────────────────────────────────────────────────
   if (isEmpresa && hasProjects) {
     const totalPropuestas = projects.reduce((acc, p) => acc + (p.n_ofertas ?? 0), 0);
@@ -1108,6 +1301,509 @@ function WelcomePanel({
     );
   }
 
+  // ── Junior dashboard (tiene postulaciones) ───────────────────────────────────
+  if (!isEmpresa && myOffers.length > 0) {
+    // Deduplica por proyecto (un junior puede tener un offer por proyecto)
+    const uniqueOffers = myOffers.filter(
+      (o, idx, arr) => o.proyecto && arr.findIndex((x) => x.proyecto?.id === o.proyecto?.id) === idx,
+    );
+
+    const PAGE_SIZE   = 5;
+    const totalPages  = Math.max(1, Math.ceil(uniqueOffers.length / PAGE_SIZE));
+    const safePage    = Math.min(offerPage, totalPages - 1);
+    const pagedOffers = uniqueOffers.slice(safePage * PAGE_SIZE, (safePage + 1) * PAGE_SIZE);
+
+    // Paleta para bordes de cards: magenta → cyan → amarillo → naranja → azul → morado (últimos)
+    const PALETTE_HEX = ["#EC008C", "#20BEC6", "#FFCB05", "#F7901E", "#0A6CB9", "#662D91"];
+
+    // Mapa de etiqueta de evento por estado
+    const activityLabel: Record<OfferState, string> = {
+      enviada:           t("junior_activity_enviada"),
+      en_revision:       t("junior_activity_en_revision"),
+      solicitar_cambios: t("junior_activity_solicitar_cambios"),
+      adjudicada:        t("junior_activity_adjudicada"),
+      no_seleccionada:   t("junior_activity_no_seleccionada"),
+    };
+
+    // Genera eventos de actividad por oferta.
+    // weight refleja el orden lógico en que ocurrieron los eventos dentro de la misma oferta:
+    //   0 = propuesta enviada (lo primero), 1 = cambio de estado, 2 = calificación (lo último)
+    // El sort usa fecha DESC primero y weight DESC como desempate, para que lo más reciente
+    // quede siempre arriba sin importar que compartan la misma fecha_envio.
+    type ActivityEvent = {
+      key: string; projectId: string; title: string;
+      label: string; dot: string; date: string; weight: number;
+    };
+    const activityEvents: ActivityEvent[] = [];
+    for (const offer of uniqueOffers) {
+      if (!offer.proyecto) continue;
+      const cfg = OFFER_STATE_CONFIG[offer.estado.nombre];
+      activityEvents.push({
+        key: `${offer.id}-enviada`,
+        projectId: offer.proyecto.id,
+        title: offer.proyecto.titulo,
+        label: t("junior_activity_enviada"),
+        dot: "bg-primary",
+        date: offer.fecha_envio,
+        weight: 0,
+      });
+      if (offer.estado.nombre !== "enviada") {
+        activityEvents.push({
+          key: `${offer.id}-state`,
+          projectId: offer.proyecto.id,
+          title: offer.proyecto.titulo,
+          label: activityLabel[offer.estado.nombre],
+          dot: cfg.dot,
+          date: offer.fecha_envio,
+          weight: 1,
+        });
+      }
+      if (offer.calificacion !== null) {
+        activityEvents.push({
+          key: `${offer.id}-rating`,
+          projectId: offer.proyecto.id,
+          title: offer.proyecto.titulo,
+          label: t("junior_activity_calificado"),
+          dot: "bg-highlight",
+          date: offer.fecha_envio,
+          weight: 2,
+        });
+      }
+    }
+    // Más reciente primero; desempate por weight DESC (calificación > estado > envío)
+    activityEvents.sort((a, b) => {
+      const diff = new Date(b.date).getTime() - new Date(a.date).getTime();
+      return diff !== 0 ? diff : b.weight - a.weight;
+    });
+
+    const today      = new Date();
+    const calLocale  = locale === "es" ? "es-ES" : "en-US";
+
+    // Mes visualizado — derivado del offset navegable
+    const viewDate   = new Date(today.getFullYear(), today.getMonth() + calendarOffset, 1);
+    const year       = viewDate.getFullYear();
+    const month      = viewDate.getMonth();
+    const daysInMonth    = new Date(year, month + 1, 0).getDate();
+    const firstDayOfWeek = (new Date(year, month, 1).getDay() + 6) % 7; // Lun=0
+    const isCurrentMonth = year === today.getFullYear() && month === today.getMonth();
+    const monthLabel = viewDate.toLocaleString(calLocale, { month: "long", year: "numeric" });
+
+    const activityDays = new Set(
+      myOffers
+        .map((o) => {
+          const d = new Date(o.fecha_envio);
+          return d.getFullYear() === year && d.getMonth() === month ? d.getDate() : -1;
+        })
+        .filter((d) => d > 0),
+    );
+
+    const dayHeaders = Array.from({ length: 7 }, (_, i) => {
+      const d = new Date(2024, 0, i + 1); // Jan 1 2024 = lunes
+      return d.toLocaleString(calLocale, { weekday: "narrow" });
+    });
+
+    const recentActivity = [...myOffers]
+      .sort((a, b) => new Date(b.fecha_envio).getTime() - new Date(a.fecha_envio).getTime())
+      .slice(0, 5);
+
+    const activeOffers = myOffers.filter((o) => o.estado.nombre !== "no_seleccionada");
+
+    return (
+      <div className="bg-canvas">
+        <div className="px-10 pb-10">
+
+          {/* ── Header row ─────────────────────────────────────────────────── */}
+          <div className="mb-10 flex items-start justify-between">
+            <div>
+              <p className="mb-1 font-body text-xs font-bold uppercase tracking-widest text-primary">
+                {t("section_junior")}
+              </p>
+              <h1 className="font-heading text-4xl font-extrabold tracking-tight text-ink-strong">
+                {t("title")}<span className="text-primary" aria-hidden="true">.</span>
+              </h1>
+            </div>
+            <a
+              href={`/${locale}/marketplace`}
+              className="inline-flex items-center gap-2 rounded-full bg-primary px-5 py-2.5 font-body text-sm font-semibold text-white transition-colors duration-[var(--duration-fast)] hover:bg-secondary"
+            >
+              <ExternalLink className="size-4" aria-hidden="true" />
+              {t("junior_dash_explore")}
+            </a>
+          </div>
+
+          {/* ── Top widgets: Calendar (1/3) + Active projects (2/3) ───────── */}
+          <div className="mb-8 grid gap-6 lg:grid-cols-3">
+
+            {/* Widget 1 — Calendario interactivo */}
+            {(() => {
+              // Proyecto seleccionado en el calendario
+              const selOffer = calendarProjectId
+                ? uniqueOffers.find((o) => o.proyecto?.id === calendarProjectId) ?? null
+                : null;
+              const selIdx   = selOffer ? uniqueOffers.indexOf(selOffer) : -1;
+              const selColor = selIdx >= 0 ? PALETTE_HEX[selIdx % PALETTE_HEX.length] : null;
+
+              // Lógica de fechas:
+              // - inicio  = fecha_envio (cuando el junior mandó su propuesta)
+              // - cierre  = proyecto.fecha_cierre (fecha de publicación + plazo_dias del proyecto)
+              // - si adjudicada → start = end = fecha_envio (punto único, proyecto cerrado)
+              const getOfferDates = (offer: MyOffer) => {
+                const start = new Date(offer.fecha_envio);
+                start.setHours(0, 0, 0, 0);
+
+                if (offer.estado.nombre === "adjudicada") {
+                  return { start, end: start }; // punto único
+                }
+
+                if (offer.proyecto?.fecha_cierre) {
+                  const end = new Date(offer.proyecto.fecha_cierre);
+                  end.setHours(0, 0, 0, 0);
+                  return { start, end };
+                }
+
+                return { start, end: null }; // sin fecha de cierre todavía
+              };
+
+              const selDates = selOffer ? getOfferDates(selOffer) : null;
+
+              const getDayRole = (day: number): "start" | "end" | "range" | null => {
+                if (!selDates) return null;
+                const d = new Date(year, month, day); d.setHours(0, 0, 0, 0);
+                const ts = d.getTime();
+                if (ts === selDates.start.getTime()) return "start";
+                if (!selDates.end || selDates.end.getTime() === selDates.start.getTime()) return null;
+                if (ts === selDates.end.getTime()) return "end";
+                if (d > selDates.start && d < selDates.end) return "range";
+                return null;
+              };
+
+              return (
+                <div className="rounded-2xl border border-border bg-surface p-6 shadow-[var(--shadow-soft)]">
+                  {/* Mes + navegación */}
+                  <div className="mb-5 flex items-center justify-between gap-2">
+                    <h2 className="font-heading text-sm font-bold capitalize text-ink-strong">
+                      {monthLabel}
+                    </h2>
+                    <div className="flex items-center gap-1">
+                      <button
+                        type="button"
+                        onClick={() => setCalendarOffset((n) => n - 1)}
+                        className="flex size-7 items-center justify-center rounded-lg text-ink-muted transition-colors duration-[var(--duration-fast)] hover:bg-canvas hover:text-ink-strong"
+                        aria-label="Mes anterior"
+                      >
+                        <ChevronLeft className="size-4" aria-hidden="true" />
+                      </button>
+                      <button
+                        type="button"
+                        onClick={() => setCalendarOffset((n) => n + 1)}
+                        className="flex size-7 items-center justify-center rounded-lg text-ink-muted transition-colors duration-[var(--duration-fast)] hover:bg-canvas hover:text-ink-strong"
+                        aria-label="Mes siguiente"
+                      >
+                        <ChevronRight className="size-4" aria-hidden="true" />
+                      </button>
+                    </div>
+                  </div>
+
+                  {/* Cabeceras días */}
+                  <div className="mb-1 grid grid-cols-7 text-center">
+                    {dayHeaders.map((d, i) => (
+                      <div key={i} className="py-1 font-body text-[10px] font-bold uppercase text-ink-muted/40">{d}</div>
+                    ))}
+                  </div>
+
+                  {/* Días */}
+                  <div className="grid grid-cols-7">
+                    {Array.from({ length: firstDayOfWeek }).map((_, i) => <div key={`e${i}`} />)}
+                    {Array.from({ length: daysInMonth }).map((_, i) => {
+                      const day  = i + 1;
+                      const isToday = isCurrentMonth && day === today.getDate();
+                      const role = getDayRole(day);
+                      const isEndpoint = role === "start" || role === "end";
+
+                      return (
+                        <div
+                          key={day}
+                          className={cn(
+                            "relative mx-auto mb-0.5 flex size-7 items-center justify-center font-body text-xs transition-colors",
+                            isEndpoint   && "rounded-full font-bold text-white",
+                            role === "range" && "text-ink-strong font-medium",
+                            !role && isToday && "rounded-full bg-ink-strong/10 font-semibold text-ink-strong",
+                            !role && !isToday && "rounded-full text-ink hover:bg-canvas",
+                          )}
+                          style={
+                            isEndpoint && selColor
+                              ? { backgroundColor: selColor }
+                              : role === "range" && selColor
+                                ? { backgroundColor: `${selColor}22` }
+                                : {}
+                          }
+                        >
+                          {day}
+                          {role === "range" && selColor && (
+                            <span
+                              className="absolute bottom-0.5 left-0 right-0 h-0.5"
+                              style={{ backgroundColor: `${selColor}90` }}
+                              aria-hidden="true"
+                            />
+                          )}
+                        </div>
+                      );
+                    })}
+                  </div>
+
+                  {/* Tarjetas de proyectos */}
+                  <div className="mt-5 border-t border-border pt-4">
+                    {uniqueOffers.length === 0 ? (
+                      <p className="text-center font-body text-xs text-ink-muted">{t("junior_cal_hint")}</p>
+                    ) : (
+                      <>
+                        <p className="mb-2 font-body text-[10px] font-bold uppercase tracking-widest text-ink-muted/60">
+                          {t("junior_cal_hint")}
+                        </p>
+                        <div className="max-h-[180px] space-y-1.5 overflow-y-auto pr-1">
+                          {uniqueOffers.map((offer, idx) => {
+                            if (!offer.proyecto) return null;
+                            const color      = PALETTE_HEX[idx % PALETTE_HEX.length];
+                            const isSelected = calendarProjectId === offer.proyecto.id;
+                            const startDate  = new Date(offer.fecha_envio);
+                            const isAdjudicada = offer.estado.nombre === "adjudicada";
+                            const realFechaCierre = offer.proyecto.fecha_cierre
+                              ? new Date(offer.proyecto.fecha_cierre)
+                              : null;
+
+                            const endLabel = isAdjudicada
+                              ? t("junior_cal_adjudicated")
+                              : realFechaCierre
+                                ? `${t("junior_cal_end")}: ${realFechaCierre.toLocaleDateString(locale)}`
+                                : null;
+
+                            return (
+                              <button
+                                key={offer.id}
+                                type="button"
+                                onClick={() => {
+                                  if (isSelected) {
+                                    setCalendarProjectId(null);
+                                  } else {
+                                    setCalendarProjectId(offer.proyecto?.id ?? null);
+                                    // Navegar al mes de inicio del proyecto
+                                    const start = new Date(offer.fecha_envio);
+                                    const offset =
+                                      (start.getFullYear() - today.getFullYear()) * 12 +
+                                      (start.getMonth() - today.getMonth());
+                                    setCalendarOffset(offset);
+                                  }
+                                }}
+                                className={cn(
+                                  "flex w-full items-center gap-2.5 rounded-xl px-3 py-2 text-left transition-all duration-[var(--duration-fast)]",
+                                  isSelected ? "bg-canvas" : "hover:bg-canvas",
+                                )}
+                                style={isSelected ? { boxShadow: `0 0 0 1px ${color}` } : {}}
+                              >
+                                <div
+                                  className="size-2.5 shrink-0 rounded-full"
+                                  style={{ backgroundColor: color }}
+                                />
+                                <div className="min-w-0 flex-1">
+                                  <p className="truncate font-heading text-xs font-bold text-ink-strong">
+                                    {offer.proyecto.titulo}
+                                  </p>
+                                  <p className="font-body text-[10px] text-ink-muted">
+                                    {t("junior_cal_applied")}: {startDate.toLocaleDateString(locale)}
+                                    {endLabel && ` · ${endLabel}`}
+                                  </p>
+                                </div>
+                                {isSelected && (
+                                  <span
+                                    className="size-1.5 shrink-0 rounded-full"
+                                    style={{ backgroundColor: color }}
+                                    aria-hidden="true"
+                                  />
+                                )}
+                              </button>
+                            );
+                          })}
+                        </div>
+                      </>
+                    )}
+                  </div>
+                </div>
+              );
+            })()}
+
+            {/* Widget 2 — Mis proyectos (paginado, sin duplicados) */}
+            <div className="rounded-2xl border border-border bg-surface p-6 shadow-[var(--shadow-soft)] lg:col-span-2">
+              <div className="mb-5 flex items-center justify-between">
+                <div>
+                  <h2 className="font-heading text-base font-bold text-ink-strong">{t("junior_dash_list")}</h2>
+                  <p className="mt-0.5 font-body text-xs text-ink-muted">
+                    {uniqueOffers.length} {t("junior_dash_active_label")}
+                  </p>
+                </div>
+              </div>
+
+              <div className="space-y-2">
+                {pagedOffers.map((offer) => {
+                  if (!offer.proyecto) return null;
+                  const cfg        = OFFER_STATE_CONFIG[offer.estado.nombre];
+                  const globalIdx  = uniqueOffers.indexOf(offer);
+                  const borderColor = PALETTE_HEX[globalIdx % PALETTE_HEX.length];
+                  return (
+                    <button
+                      key={offer.id}
+                      type="button"
+                      onClick={() => onSelectProject(offer.proyecto!.id)}
+                      className="group flex w-full items-center gap-4 rounded-xl border-l-[3px] bg-canvas px-4 py-3 text-left transition-all duration-[var(--duration-fast)] hover:shadow-[var(--shadow-soft)]"
+                      style={{ borderLeftColor: borderColor }}
+                    >
+                      <div className="min-w-0 flex-1">
+                        <p className="truncate font-heading text-sm font-bold text-ink-strong group-hover:text-primary">
+                          {offer.proyecto.titulo}
+                        </p>
+                        <p className="mt-0.5 flex items-center gap-1 font-body text-[10px] text-ink-muted">
+                          <Clock className="size-3 shrink-0" aria-hidden="true" />
+                          {t("applied_on")} {new Date(offer.fecha_envio).toLocaleDateString(locale)}
+                        </p>
+                      </div>
+                      <span className={cn("shrink-0 rounded-full border px-2.5 py-1 font-body text-[10px] font-bold", cfg.badge)}>
+                        {cfg.label}
+                      </span>
+                      <ChevronRight className="size-4 shrink-0 text-ink-muted/30 transition-colors group-hover:text-primary" aria-hidden="true" />
+                    </button>
+                  );
+                })}
+              </div>
+
+              {/* Paginación */}
+              {totalPages > 1 && (
+                <div className="mt-4 flex items-center justify-between border-t border-border pt-4">
+                  <button
+                    type="button"
+                    onClick={() => setOfferPage((p) => Math.max(0, p - 1))}
+                    disabled={safePage === 0}
+                    aria-label={t("junior_dash_prev_page")}
+                    className="flex items-center gap-1 rounded-lg px-2.5 py-1.5 font-body text-xs font-semibold text-ink-muted transition-colors disabled:opacity-30 hover:bg-canvas hover:text-ink"
+                  >
+                    <ChevronLeft className="size-3.5" aria-hidden="true" />
+                  </button>
+                  <span className="font-body text-xs text-ink-muted">
+                    {t("junior_dash_page", { current: safePage + 1, total: totalPages })}
+                  </span>
+                  <button
+                    type="button"
+                    onClick={() => setOfferPage((p) => Math.min(totalPages - 1, p + 1))}
+                    disabled={safePage === totalPages - 1}
+                    aria-label={t("junior_dash_next_page")}
+                    className="flex items-center gap-1 rounded-lg px-2.5 py-1.5 font-body text-xs font-semibold text-ink-muted transition-colors disabled:opacity-30 hover:bg-canvas hover:text-ink"
+                  >
+                    <ChevronRight className="size-3.5" aria-hidden="true" />
+                  </button>
+                </div>
+              )}
+            </div>
+          </div>
+
+          {/* ── Widget 3 — Actividad reciente ────────────────────────────── */}
+          {(() => {
+            const ACT_PAGE_SIZE  = 5;
+            const actTotalPages  = Math.max(1, Math.ceil(activityEvents.length / ACT_PAGE_SIZE));
+            const safeActPage    = Math.min(activityPage, actTotalPages - 1);
+            const pagedActivity  = activityEvents.slice(
+              safeActPage * ACT_PAGE_SIZE,
+              (safeActPage + 1) * ACT_PAGE_SIZE,
+            );
+            const calLocaleAct   = locale === "es" ? "es-ES" : "en-US";
+
+            return (
+              <div className="rounded-2xl border border-border bg-surface p-6 shadow-[var(--shadow-soft)]">
+                {/* Header */}
+                <div className="mb-5 flex items-center justify-between">
+                  <h2 className="font-heading text-base font-bold text-ink-strong">{t("junior_recent_activity")}</h2>
+                  <span className="flex size-8 items-center justify-center rounded-lg bg-canvas">
+                    <Activity className="size-4 text-ink-muted/60" aria-hidden="true" />
+                  </span>
+                </div>
+
+                {/* Lista */}
+                <div className="divide-y divide-border">
+                  {pagedActivity.map((event, idx) => {
+                    const d = new Date(event.date);
+                    const dateStr = d.toLocaleDateString(calLocaleAct, { day: "numeric", month: "short", year: "numeric" });
+                    const timeStr = d.toLocaleTimeString(calLocaleAct, { hour: "2-digit", minute: "2-digit" });
+                    return (
+                      <button
+                        key={event.key}
+                        type="button"
+                        onClick={() => onSelectProject(event.projectId)}
+                        className={cn(
+                          "group flex w-full items-center gap-3 text-left transition-colors duration-[var(--duration-fast)] hover:bg-canvas",
+                          idx === 0 ? "pb-3" : "py-3",
+                        )}
+                      >
+                        <div className={cn("size-2 shrink-0 rounded-full", event.dot)} />
+                        <div className="min-w-0 flex-1">
+                          <p className="font-body text-sm font-semibold text-ink-strong group-hover:text-primary">
+                            {event.label}
+                          </p>
+                          <p className="truncate font-body text-xs text-ink-muted">{event.title}</p>
+                        </div>
+                        <p className="shrink-0 text-right font-body text-[10px] text-ink-muted">
+                          <span className="block">{dateStr}</span>
+                          <span className="block text-ink-muted/60">{timeStr}</span>
+                        </p>
+                      </button>
+                    );
+                  })}
+                </div>
+
+                {/* Paginación estilo marketplace */}
+                {actTotalPages > 1 && (
+                  <nav className="mt-5 flex items-center justify-center gap-1.5 border-t border-border pt-5" aria-label={t("junior_recent_activity")}>
+                    <button
+                      type="button"
+                      aria-label={t("junior_dash_prev_page")}
+                      disabled={safeActPage === 0}
+                      onClick={() => setActivityPage((p) => Math.max(0, p - 1))}
+                      className="flex size-8 items-center justify-center rounded-lg border border-border bg-transparent text-ink-muted transition-colors duration-[var(--duration-fast)] hover:bg-canvas disabled:pointer-events-none disabled:opacity-30"
+                    >
+                      <ChevronLeft className="size-4" aria-hidden="true" />
+                    </button>
+                    {Array.from({ length: actTotalPages }, (_, i) => i + 1).map((page) => (
+                      <button
+                        key={page}
+                        type="button"
+                        aria-current={page === safeActPage + 1 ? "page" : undefined}
+                        onClick={() => setActivityPage(page - 1)}
+                        className={cn(
+                          "flex size-8 items-center justify-center rounded-lg border font-body text-sm font-semibold transition-colors duration-[var(--duration-fast)]",
+                          page === safeActPage + 1
+                            ? "border-primary bg-primary text-white"
+                            : "border-border bg-transparent text-ink-muted hover:bg-canvas",
+                        )}
+                      >
+                        {page}
+                      </button>
+                    ))}
+                    <button
+                      type="button"
+                      aria-label={t("junior_dash_next_page")}
+                      disabled={safeActPage === actTotalPages - 1}
+                      onClick={() => setActivityPage((p) => Math.min(actTotalPages - 1, p + 1))}
+                      className="flex size-8 items-center justify-center rounded-lg border border-border bg-transparent text-ink-muted transition-colors duration-[var(--duration-fast)] hover:bg-canvas disabled:pointer-events-none disabled:opacity-30"
+                    >
+                      <ChevronRight className="size-4" aria-hidden="true" />
+                    </button>
+                  </nav>
+                )}
+              </div>
+            );
+          })()}
+
+        </div>
+      </div>
+    );
+  }
+
   // ── Estado vacío / junior ────────────────────────────────────────────────────
   const desc = isEmpresa
     ? t("welcome_desc_empresa_empty")
@@ -1153,6 +1849,336 @@ function SidebarEmpty({ text }: { text: string }) {
     <div className="flex flex-col items-center gap-3 px-4 py-10 text-center">
       <FolderOpen className="size-10 text-white/20" aria-hidden="true" />
       <p className="font-body text-sm text-white/40">{text}</p>
+    </div>
+  );
+}
+
+// ── Procesos view (junior) ────────────────────────────────────────────────────
+
+function ProcesosView({
+  myOffers,
+  projects,
+  t,
+  locale,
+  onSelectProject,
+}: {
+  myOffers: MyOffer[];
+  projects: ApiProject[];
+  t: T;
+  locale: string;
+  onSelectProject: (id: string) => void;
+}) {
+  const calLocale = locale === "es" ? "es-ES" : "en-US";
+
+  // For juniors, sidebarProjects is empty — fetch project details on demand
+  const [fetchedProjects, setFetchedProjects] = useState<Record<string, ApiProject>>({});
+
+  useEffect(() => {
+    const idsToFetch = myOffers
+      .filter((o) => o.proyecto && !projects.find((p) => p.id === o.proyecto?.id))
+      .map((o) => o.proyecto!.id);
+    if (idsToFetch.length === 0) return;
+    let active = true;
+    Promise.all(idsToFetch.map((id) => getProjectByIdAction(id))).then((results) => {
+      if (!active) return;
+      const loaded: Record<string, ApiProject> = {};
+      for (const r of results) { if (r.ok) loaded[r.data.id] = r.data; }
+      setFetchedProjects(loaded);
+    });
+    return () => { active = false; };
+  }, [myOffers, projects]);
+
+  // Deduplicate: one entry per project (latest offer per project)
+  const uniqueOffers = myOffers.filter(
+    (o, idx, arr) =>
+      o.proyecto && arr.findIndex((x) => x.proyecto?.id === o.proyecto?.id) === idx,
+  );
+
+  // Timeline step definition for each offer state
+  type StepStatus = "done" | "active" | "pending" | "error";
+  type TimelineStep = { label: string; status: StepStatus; date?: string };
+
+  function buildTimeline(offer: MyOffer): TimelineStep[] {
+    const sent: TimelineStep = {
+      label: t("junior_activity_enviada"),
+      status: "done",
+      date: offer.fecha_envio,
+    };
+
+    const estado = offer.estado.nombre;
+
+    if (estado === "enviada") {
+      return [sent, { label: t("junior_activity_en_revision"), status: "pending" }];
+    }
+    if (estado === "en_revision") {
+      return [
+        sent,
+        { label: t("junior_activity_en_revision"), status: "active", date: offer.fecha_envio },
+      ];
+    }
+    if (estado === "solicitar_cambios") {
+      return [
+        sent,
+        { label: t("junior_activity_en_revision"), status: "done", date: offer.fecha_envio },
+        { label: t("junior_activity_solicitar_cambios"), status: "active", date: offer.fecha_envio },
+      ];
+    }
+    if (estado === "adjudicada") {
+      return [
+        sent,
+        { label: t("junior_activity_en_revision"), status: "done", date: offer.fecha_envio },
+        { label: t("junior_activity_adjudicada"), status: "done", date: offer.fecha_envio },
+      ];
+    }
+    // no_seleccionada
+    return [
+      sent,
+      { label: t("junior_activity_en_revision"), status: "done", date: offer.fecha_envio },
+      { label: t("junior_activity_no_seleccionada"), status: "error", date: offer.fecha_envio },
+    ];
+  }
+
+  // Paleta FWD para los círculos del timeline — morado y azul al final
+  const STEP_PALETTE = ["#EC008C", "#20BEC6", "#FFCB05", "#F7901E", "#0A6CB9", "#662D91"];
+
+  // Color del card según área (misma lógica que el marketplace)
+  const AREA_HEX_OVERRIDE: Record<string, string> = {
+    ventas: "#EC008C",
+    operaciones: "#20BEC6",
+  };
+  const BRAND_HEX = ["#EC008C", "#20BEC6", "#FFCB05", "#F7901E", "#0A6CB9", "#662D91"];
+  function getCardColor(areaName?: string | null): string {
+    if (!areaName) return "#0A6CB9";
+    const key = areaName.toLowerCase().trim();
+    if (key in AREA_HEX_OVERRIDE) return AREA_HEX_OVERRIDE[key]!;
+    const hash = [...areaName].reduce((acc, ch) => acc + ch.charCodeAt(0), 0);
+    return BRAND_HEX[hash % BRAND_HEX.length] ?? "#0A6CB9";
+  }
+
+  const STEP_ICON: Record<StepStatus, React.ReactNode> = {
+    done:    <Check className="size-3 text-white" />,
+    active:  <Clock className="size-3 text-white" />,
+    pending: null,
+    error:   <X className="size-3 text-white" />,
+  };
+
+  if (uniqueOffers.length === 0) {
+    return (
+      <div className="flex flex-col items-center justify-center gap-4 px-8 py-24 text-center">
+        <FolderOpen className="size-12 text-ink-muted/30" />
+        <p className="font-heading text-xl font-bold text-ink-strong">{t("empty_junior")}</p>
+        <a
+          href={`/${locale}/marketplace`}
+          className="inline-flex items-center gap-2 rounded-full bg-primary px-5 py-2.5 font-body text-sm font-semibold text-white hover:bg-secondary"
+        >
+          <ExternalLink className="size-4" />
+          {t("junior_dash_explore")}
+        </a>
+      </div>
+    );
+  }
+
+  return (
+    <div className="px-8 pb-12 pt-0">
+      {/* Header */}
+      <div className="mb-8 flex items-end justify-between">
+        <div>
+          <p className="mb-1 font-body text-xs font-bold uppercase tracking-widest text-primary">
+            {t("section_junior")}
+          </p>
+          <h1 className="font-heading text-4xl font-extrabold tracking-tight text-ink-strong">
+            {t("procesos_title")}<span className="text-primary" aria-hidden="true">.</span>
+          </h1>
+          <p className="mt-1 font-body text-sm text-ink-muted">
+            {uniqueOffers.length} {t("procesos_count")}
+          </p>
+        </div>
+        <a
+          href={`/${locale}/marketplace`}
+          className="inline-flex items-center gap-2 rounded-full bg-primary px-5 py-2.5 font-body text-sm font-semibold text-white transition-colors duration-[var(--duration-fast)] hover:bg-secondary"
+        >
+          <ExternalLink className="size-4" aria-hidden="true" />
+          {t("junior_dash_explore")}
+        </a>
+      </div>
+
+      {/* Cards */}
+      <div className="flex flex-col gap-5">
+        {uniqueOffers.map((offer) => {
+          if (!offer.proyecto) return null;
+          const fullProject =
+            projects.find((p) => p.id === offer.proyecto?.id) ??
+            (offer.proyecto ? (fetchedProjects[offer.proyecto.id] ?? null) : null);
+          const steps = buildTimeline(offer);
+          const cfg = OFFER_STATE_CONFIG[offer.estado.nombre];
+          const hasRating = (offer.calificacion ?? null) !== null;
+
+          const skills = fullProject?.skills.flatMap((s) => s.skill ? [s.skill] : []) ?? [];
+          const plazoLabel = fullProject
+            ? fullProject.plazo_dias >= 7
+              ? `${Math.round(fullProject.plazo_dias / 7)} sem`
+              : `${fullProject.plazo_dias} días`
+            : null;
+          const cardColor = getCardColor(fullProject?.area?.nombre);
+
+          return (
+            <div
+              key={offer.id}
+              className="grid grid-cols-1 overflow-hidden rounded-2xl border border-border bg-surface shadow-[var(--shadow-soft)] lg:grid-cols-[1fr_300px]"
+            >
+              {/* ── Columna izquierda ── */}
+              <div className="flex flex-col p-7" style={{ borderLeft: `4px solid ${cardColor}` }}>
+                {/* Título + empresa + badge área (esquina superior derecha) */}
+                <div className="flex items-start justify-between gap-3">
+                  <div className="min-w-0">
+                    <h2 className="font-heading text-xl font-bold leading-snug text-ink-strong">
+                      {offer.proyecto.titulo}
+                    </h2>
+                    {fullProject?.empresa && (
+                      <p className="mt-0.5 font-body text-sm text-ink-muted">
+                        {fullProject.empresa.nombre_comercial}
+                      </p>
+                    )}
+                  </div>
+                  {fullProject?.area && (
+                    <span
+                      className="mt-0.5 shrink-0 rounded-full px-3 py-1 font-body text-[10px] font-bold uppercase tracking-widest"
+                      style={{ backgroundColor: `${cardColor}18`, color: cardColor }}
+                    >
+                      {fullProject.area.nombre}
+                    </span>
+                  )}
+                </div>
+
+                {/* Descripción */}
+                {fullProject?.descripcion && (
+                  <p className="mt-3 font-body text-sm leading-relaxed text-ink line-clamp-2">
+                    {fullProject.descripcion}
+                  </p>
+                )}
+
+                {/* Skills separadas por punto — color del área */}
+                {skills.length > 0 && (
+                  <p className="mt-3 font-body text-sm font-semibold" style={{ color: cardColor }}>
+                    {skills.map((s) => s.nombre).join(" · ")}
+                  </p>
+                )}
+
+                {/* Separador + meta info + botón */}
+                <div className="mt-auto border-t border-border pt-4">
+                  <div className="flex flex-wrap items-center gap-x-4 gap-y-1">
+                    {plazoLabel && (
+                      <span className="flex items-center gap-1.5 font-body text-xs text-ink-muted">
+                        <Clock className="size-3.5 shrink-0 text-ink-muted/50" aria-hidden="true" />
+                        {plazoLabel}
+                      </span>
+                    )}
+                    {fullProject?.compensacion != null && (
+                      <span className="flex items-center gap-1.5 font-body text-xs font-semibold text-accent">
+                        <Wallet className="size-3.5 shrink-0" aria-hidden="true" />
+                        ${fullProject.compensacion} {fullProject.moneda}
+                      </span>
+                    )}
+                    {fullProject?.usa_ia && (
+                      <span className="flex items-center gap-1.5 font-body text-xs font-semibold text-accent">
+                        <Zap className="size-3.5 shrink-0" aria-hidden="true" />
+                        IA
+                      </span>
+                    )}
+                    <button
+                      type="button"
+                      onClick={() => onSelectProject(offer.proyecto!.id)}
+                      className="ml-auto inline-flex items-center gap-1.5 rounded-full bg-primary px-4 py-1.5 font-body text-xs font-semibold text-white transition-colors duration-[var(--duration-fast)] hover:bg-secondary"
+                    >
+                      {t("procesos_open")}
+                      <ArrowRight className="size-3.5" aria-hidden="true" />
+                    </button>
+                  </div>
+                </div>
+              </div>
+
+              {/* ── Columna derecha: timeline ── */}
+              <div className="flex flex-col border-t border-border bg-canvas px-6 py-6 lg:border-l lg:border-t-0">
+                {/* Header */}
+                <div className="mb-5 flex items-center justify-between">
+                  <span className="font-body text-[10px] font-bold uppercase tracking-widest text-ink-muted/50">
+                    {t("procesos_timeline")}
+                  </span>
+                  <span className={cn("rounded-full border px-2.5 py-0.5 font-body text-[10px] font-bold", cfg.badge)}>
+                    {cfg.label}
+                  </span>
+                </div>
+
+                {/* Steps */}
+                <div className="flex flex-col">
+                  {steps.map((step, idx) => {
+                    const isLast = idx === steps.length - 1;
+                    const paletteColor = step.status === "pending"
+                      ? null
+                      : STEP_PALETTE[idx % STEP_PALETTE.length];
+
+                    return (
+                      <div key={idx} className="flex items-start gap-3">
+                        {/* Círculo + línea conectora */}
+                        <div className="flex flex-col items-center">
+                          <div
+                            className="flex size-6 shrink-0 items-center justify-center rounded-full transition-colors"
+                            style={
+                              paletteColor
+                                ? { backgroundColor: paletteColor }
+                                : { backgroundColor: "var(--border)" }
+                            }
+                          >
+                            {STEP_ICON[step.status]}
+                          </div>
+                          {!isLast && (
+                            <div
+                              className="my-0.5 w-px"
+                              style={{
+                                minHeight: "24px",
+                                backgroundColor: paletteColor ? `${paletteColor}40` : "var(--border)",
+                              }}
+                            />
+                          )}
+                        </div>
+
+                        {/* Texto + fecha */}
+                        <div className={cn("min-w-0 flex-1", !isLast && "pb-4")}>
+                          <p className={cn(
+                            "font-body text-sm font-semibold",
+                            step.status === "pending" ? "text-ink-muted/40" : "text-ink-strong",
+                          )}>
+                            {step.label}
+                          </p>
+                          {step.date && (
+                            <p className="font-body text-[11px] text-ink-muted">
+                              {new Date(step.date).toLocaleDateString(calLocale, { day: "numeric", month: "short", year: "numeric" })}
+                              {" · "}
+                              {new Date(step.date).toLocaleTimeString(calLocale, { hour: "2-digit", minute: "2-digit" })}
+                            </p>
+                          )}
+                        </div>
+                      </div>
+                    );
+                  })}
+                </div>
+
+                {/* Ver calificación */}
+                {hasRating && (
+                  <button
+                    type="button"
+                    onClick={() => onSelectProject(offer.proyecto!.id)}
+                    className="mt-4 flex w-full items-center justify-center gap-2 rounded-xl bg-highlight/15 px-4 py-3 font-body text-sm font-semibold text-ink-strong transition-colors duration-[var(--duration-fast)] hover:bg-highlight/25"
+                  >
+                    <Star className="size-4 text-highlight" aria-hidden="true" />
+                    {t("procesos_ver_calificacion")}
+                  </button>
+                )}
+              </div>
+            </div>
+          );
+        })}
+      </div>
     </div>
   );
 }
@@ -1339,7 +2365,7 @@ function formatChatTime(iso: string, locale: string) {
 // una vez que existe conversación, que únicamente se abre cuando el bot escala (pregunta no técnica).
 
 function JuniorContactoPanel({
-  projectId, projectTitulo, empresaNombre, t, userId, onConversationActivity,
+  projectId, projectTitulo, empresaNombre, t, userId, onConversationActivity, hideBotFallback,
 }: {
   projectId: string | null;
   projectTitulo: string;
@@ -1347,6 +2373,7 @@ function JuniorContactoPanel({
   t: T;
   userId: string | null;
   onConversationActivity?: () => void;
+  hideBotFallback?: boolean;
 }) {
   const locale = useLocale();
   const [rawMsgs, setRawMsgs] = useState<ApiMensaje[]>([]);
@@ -1432,7 +2459,7 @@ function JuniorContactoPanel({
         <div className="flex flex-1 items-center justify-center">
           <Loader2 className="size-6 animate-spin text-primary" aria-label={t("chat_loading")} />
         </div>
-      ) : hasConversacion ? (
+      ) : hasConversacion || hideBotFallback ? (
         <div className="flex min-h-0 flex-1 flex-col">
           <div className="shrink-0 flex items-center gap-3 border-b border-border bg-surface px-6 py-4">
             <div className="flex size-9 shrink-0 items-center justify-center rounded-full bg-secondary/15 font-heading text-sm font-bold text-secondary">
@@ -1513,6 +2540,7 @@ function JuniorContactoPanel({
           {projectId && (
             <div className="mx-auto w-full max-w-3xl">
               <ProjectChatbot
+                key={projectId ?? ""}
                 embedded
                 projectId={projectId}
                 projectTitulo={projectTitulo}
@@ -1529,7 +2557,7 @@ function JuniorContactoPanel({
 // ── Proceso panel router ──────────────────────────────────────────────────────
 
 function ProcesoPanel({
-  isEmpresa, offers, projectOffers, project, locale, t, userId, disponible,
+  isEmpresa, offers, projectOffers, project, locale, t, userId, disponible, onBack, onOpenChat,
 }: {
   isEmpresa: boolean;
   offers: MyOffer[];
@@ -1539,11 +2567,13 @@ function ProcesoPanel({
   t: T;
   userId: string | null;
   disponible: boolean;
+  onBack?: () => void;
+  onOpenChat?: () => void;
 }) {
   if (isEmpresa) {
     return <EmpresaProcesoView offers={projectOffers} project={project} locale={locale} t={t} />;
   }
-  return <JuniorProcesoView offers={offers} project={project} locale={locale} t={t} userId={userId} disponible={disponible} />;
+  return <JuniorProcesoView offers={offers} project={project} locale={locale} t={t} userId={userId} disponible={disponible} {...(onBack ? { onBack } : {})} {...(onOpenChat ? { onOpenChat } : {})} />;
 }
 
 // ── Browser mockup ────────────────────────────────────────────────────────────
@@ -1597,7 +2627,7 @@ function t_noop(k: string) { return k; }
 // ── Junior proceso view ───────────────────────────────────────────────────────
 
 function JuniorProcesoView({
-  offers, project, t, userId, disponible,
+  offers, project, locale, t, userId, disponible, onBack, onOpenChat,
 }: {
   offers: MyOffer[];
   project: ApiProject | null;
@@ -1605,17 +2635,26 @@ function JuniorProcesoView({
   t: T;
   userId: string | null;
   disponible: boolean;
+  onBack?: () => void;
+  onOpenChat?: () => void;
 }) {
   const [proposals, setProposals] = useState<JuniorProposal[]>(
     () => initJuniorProposals(offers, project),
   );
   const [submitError, setSubmitError] = useState("");
+  const [selectedIdx, setSelectedIdx] = useState(() => {
+    const init = initJuniorProposals(offers, project);
+    return Math.max(0, init.length - 1);
+  });
+  const [projectInfoOpen, setProjectInfoOpen] = useState(false);
   const closed = proposals.some((p) => p.status === "aceptada" && p.calificacion != null);
 
   // Reset proposals when offers change (real data loaded from API)
   const latestOfferId = offers[offers.length - 1]?.id;
   useEffect(() => {
-    setProposals(initJuniorProposals(offers, project));
+    const fresh = initJuniorProposals(offers, project);
+    setProposals(fresh);
+    setSelectedIdx(Math.max(0, fresh.length - 1));
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [offers.length, latestOfferId]);
 
@@ -1624,7 +2663,6 @@ function JuniorProcesoView({
     setProposals((prev) => prev.map((x, idx) => idx === i ? { ...x, ...p } : x));
 
   const startCreate = (i: number) => patch(i, { status: "editando", expanded: true });
-  const toggle      = (i: number) => { const c = proposals[i]; if (c) patch(i, { expanded: !c.expanded }); };
   const setField    = (i: number, k: keyof JuniorProposal, v: string) => patch(i, { [k]: v } as Partial<JuniorProposal>);
 
   const [withdrawConfirmIdx, setWithdrawConfirmIdx] = useState<number | null>(null);
@@ -1771,95 +2809,420 @@ function JuniorProcesoView({
   if (lastReal?.status === "enviada" || lastReal?.status === "revision") lockCaption = t("proceso_placeholder_revision");
   else if (lastReal?.status === "cambios") lockCaption = t("proceso_placeholder_cambios");
 
+  const safeIdx = Math.min(selectedIdx, proposals.length - 1);
+  const selectedP = proposals[safeIdx];
+
+  // Colorful circles: semantic palette
+  const STEP_COLOR: Record<ProposalStatus, string | null> = {
+    nuevo:          null,
+    editando:       "#662D91",
+    enviada:        "#0A6CB9",
+    revision:       "#F7901E",
+    cambios:        "#EC008C",
+    aceptada:       "#20BEC6",
+    noseleccionada: "#B3AEC0",
+  };
+
+  const stepIcon = (p: JuniorProposal): ReactNode => {
+    if (p.status === "nuevo") return null;
+    if (p.status === "editando") return <Pencil className="size-3 text-white" aria-hidden="true" />;
+    if (p.status === "aceptada") return <Check className="size-3.5 text-white" aria-hidden="true" />;
+    if (p.status === "noseleccionada") return <X className="size-3.5 text-white" aria-hidden="true" />;
+    if (p.status === "cambios") return <AlertCircle className="size-3.5 text-white" aria-hidden="true" />;
+    return p.v === 1
+      ? <Send className="size-3 text-white" aria-hidden="true" />
+      : <Pencil className="size-3 text-white" aria-hidden="true" />;
+  };
+
+  const skills = project?.skills.flatMap((s) => s.skill ? [s.skill] : []) ?? [];
+
   return (
-    <div className="px-6 py-10 md:px-10">
+    <div className="flex min-h-[560px] flex-col lg:flex-row">
 
-      {/* Card 1 — Estado actual */}
-      <div className="mb-5 rounded-2xl border border-border bg-surface px-7 py-[22px] shadow-sm">
-        <p className="font-body text-xs font-bold uppercase tracking-wider text-ink-muted">
-          {t("proceso_state_label")}
-        </p>
-        <div className="mt-3.5">
-          <span className={cn("inline-flex items-center rounded-full border px-4 py-[7px] font-body text-[13px] font-bold", bannerCls)}>
-            {bannerLabel}
-          </span>
-        </div>
-      </div>
+      {/* ── Left column ── */}
+      <div className="shrink-0 border-b border-border lg:w-[320px] lg:border-b-0 lg:border-r">
 
-      {/* Card 2 — Propuestas stepper */}
-      <div className="rounded-2xl border border-border bg-surface px-[30px] py-7 shadow-sm">
-        <p className="mb-6 font-body text-xs font-bold uppercase tracking-wider text-ink-muted">
-          {t("proceso_propuestas_label")}
-        </p>
-
-        {!disponible && isNew && (
-          <div className="mb-6 rounded-xl border border-warning/30 bg-warning/5 px-4 py-3 font-body text-[13px] text-ink">
-            {t("proceso_busy_message")}
+        {/* Back + Chat header row */}
+        {(onBack || onOpenChat) && (
+          <div className="flex items-center justify-between px-5 pb-3">
+            {onBack ? (
+              <button
+                type="button"
+                onClick={onBack}
+                className="inline-flex items-center gap-2 rounded-[14px] border border-border bg-surface px-3 py-2 font-body text-xs font-semibold text-ink shadow-[var(--shadow-soft)] transition-all duration-[var(--duration-fast)] ease-[var(--ease-out)] hover:border-primary hover:text-primary"
+              >
+                <ArrowLeft className="size-3.5" aria-hidden="true" />
+                {t("procesos_title")}
+              </button>
+            ) : <span />}
+            {onOpenChat && (
+              <button
+                type="button"
+                onClick={onOpenChat}
+                className="inline-flex items-center gap-2 rounded-[14px] border border-border bg-surface px-3 py-2 font-body text-xs font-semibold text-ink shadow-[var(--shadow-soft)] transition-all duration-[var(--duration-fast)] ease-[var(--ease-out)] hover:border-primary hover:text-primary"
+              >
+                <MessageSquare className="size-3.5" aria-hidden="true" />
+                {t("abrir_chat")}
+              </button>
+            )}
           </div>
         )}
 
-        {proposals.map((p, i) => {
-          const c        = juniorCircle(p.status);
-          const isSent   = ["enviada","revision","cambios","aceptada","noseleccionada"].includes(p.status);
-          const isEditing = p.status === "editando";
-          const pm        = propMeta(p.status);
-          const submitOk  = p.desc.trim().length > 0;
-          const showLine  = i < proposals.length - 1 || !closed;
+        {/* Project name + company + collapsible toggle */}
+        <div className="px-5 pt-4 pb-3">
+          <button
+            type="button"
+            onClick={() => setProjectInfoOpen((v) => !v)}
+            className="flex w-full items-start gap-2 text-left"
+          >
+            <div className="min-w-0 flex-1">
+              <h2 className="font-heading text-[18px] font-extrabold tracking-tight text-ink-strong line-clamp-2">
+                {project?.titulo ?? ""}
+              </h2>
+              {project?.empresa && (
+                <p className="mt-0.5 font-body text-[13px] text-ink-muted line-clamp-1">
+                  {project.empresa.nombre_comercial}
+                </p>
+              )}
+            </div>
+            <ChevronDown
+              className={cn(
+                "mt-1 size-4 shrink-0 text-ink-muted transition-transform duration-[var(--duration-fast)]",
+                projectInfoOpen && "rotate-180",
+              )}
+              aria-hidden="true"
+            />
+          </button>
 
-          return (
-            <div key={p.v} className="flex gap-[18px] items-stretch">
-              {/* Circle + vertical line */}
-              <div className="flex flex-col items-center" style={{ width: 32, flexShrink: 0, paddingTop: 1 }}>
-                <div
-                  className={cn("flex size-[30px] shrink-0 items-center justify-center rounded-full", c.bg)}
-                  aria-hidden="true"
-                >
-                  {c.icon}
-                </div>
-                {showLine && (
-                  <div className="mt-2 w-0.5 flex-1 rounded-sm bg-border" style={{ minHeight: 20 }} aria-hidden="true" />
-                )}
-              </div>
-
-              {/* Row content */}
-              <div className="min-w-0 flex-1 pb-[30px]">
-                {/* Header */}
-                <div className="flex min-h-[32px] items-center justify-between gap-3">
-                  <div
-                    onClick={() => { if (isSent) toggle(i); }}
-                    className={cn("flex items-center gap-[9px]", isSent ? "cursor-pointer" : "cursor-default")}
-                  >
-                    <span className="font-body text-base font-bold text-ink-strong">
-                      {t("proceso_propuesta_n", { n: p.v })}
+          {/* Collapsible project info */}
+          {projectInfoOpen && (
+            <div className="mt-3 flex flex-col gap-3 border-b border-border pb-4">
+              {/* Meta pills */}
+              {project && (project.compensacion != null || project.plazo_dias != null || project.fecha_cierre || project.usa_ia) && (
+                <div className="flex flex-wrap gap-1.5">
+                  {project.compensacion != null && (
+                    <span className="inline-flex items-center gap-1 rounded-full border border-accent/30 bg-accent/10 px-2.5 py-1 font-body text-[11px] font-semibold text-accent">
+                      <Wallet className="size-3 shrink-0" aria-hidden="true" />
+                      ${project.compensacion} {project.moneda}
                     </span>
-                    {isSent && (
-                      <span className="text-[11px] text-ink-muted" aria-hidden="true">
-                        {p.expanded ? "▲" : "▼"}
+                  )}
+                  {project.plazo_dias != null && (
+                    <span className="inline-flex items-center gap-1 rounded-full border border-border bg-canvas px-2.5 py-1 font-body text-[11px] font-semibold text-ink-muted">
+                      <Clock className="size-3 shrink-0" aria-hidden="true" />
+                      {t("proceso_duracion", { days: project.plazo_dias })}
+                    </span>
+                  )}
+                  {project.fecha_cierre && (
+                    <span className="inline-flex items-center gap-1 rounded-full border border-border bg-canvas px-2.5 py-1 font-body text-[11px] font-semibold text-ink-muted">
+                      <Calendar className="size-3 shrink-0" aria-hidden="true" />
+                      {new Date(project.fecha_cierre).toLocaleDateString(
+                        locale === "es" ? "es-CR" : "en-US",
+                        { day: "numeric", month: "long" },
+                      )}
+                    </span>
+                  )}
+                  {project.usa_ia && (
+                    <span className="inline-flex items-center gap-1 rounded-full border border-highlight/30 bg-highlight/10 px-2.5 py-1 font-body text-[11px] font-semibold text-warning">
+                      <Zap className="size-3 shrink-0" aria-hidden="true" />
+                      IA
+                    </span>
+                  )}
+                </div>
+              )}
+              {project?.descripcion && (
+                <p className="font-body text-[13px] leading-relaxed text-ink">
+                  {project.descripcion}
+                </p>
+              )}
+              {skills.length > 0 && (
+                <div>
+                  <p className="mb-1.5 font-body text-[10px] font-bold uppercase tracking-wider text-ink-muted">
+                    {t("project_skills")}
+                  </p>
+                  <div className="flex flex-wrap gap-1.5">
+                    {skills.map((sk) => (
+                      <span key={sk.id} className="rounded-full border border-border bg-canvas px-2.5 py-0.5 font-body text-[11px] font-semibold text-ink">
+                        {sk.nombre}
                       </span>
+                    ))}
+                  </div>
+                </div>
+              )}
+              {project?.condiciones && (
+                <div>
+                  <p className="mb-1.5 font-body text-[10px] font-bold uppercase tracking-wider text-ink-muted">
+                    {t("project_requirements")}
+                  </p>
+                  <p className="font-body text-[13px] leading-relaxed text-ink">
+                    {project.condiciones}
+                  </p>
+                </div>
+              )}
+            </div>
+          )}
+        </div>
+
+        {/* Stepper */}
+        <div className="px-5 pb-6 pt-2">
+          {proposals.map((p, i) => {
+            const color = STEP_COLOR[p.status];
+            const isSelected = i === safeIdx;
+            const isLast = i === proposals.length - 1;
+            const showConnector = !isLast || !closed;
+            const nextP = proposals[i + 1];
+            const connectorColor = nextP ? (STEP_COLOR[nextP.status] ?? "var(--border)") : "var(--border)";
+
+            return (
+              <div key={p.v} className="flex gap-3">
+                {/* Circle + connector line */}
+                <div className="flex shrink-0 flex-col items-center" style={{ width: 28 }}>
+                  <div
+                    className={cn(
+                      "flex size-7 shrink-0 cursor-pointer items-center justify-center rounded-full transition-all duration-[var(--duration-fast)]",
+                      p.status === "nuevo" ? "border-2 border-dashed border-border bg-transparent" : "",
+                      isSelected && color ? "ring-2 ring-offset-2 ring-offset-canvas" : "",
+                    )}
+                    style={color ? {
+                      backgroundColor: color,
+                      ...(isSelected ? { ringColor: color } as React.CSSProperties : {}),
+                    } : undefined}
+                    onClick={() => { setSelectedIdx(i); if (p.status === "nuevo") startCreate(i); }}
+                    role="button"
+                    tabIndex={0}
+                    aria-label={t("proceso_propuesta_n", { n: p.v })}
+                  >
+                    {stepIcon(p)}
+                  </div>
+                  {showConnector && (
+                    <div
+                      className="mt-1 w-0.5 flex-1 rounded-sm"
+                      style={{ minHeight: 24, background: connectorColor }}
+                      aria-hidden="true"
+                    />
+                  )}
+                </div>
+
+                {/* Label */}
+                <button
+                  type="button"
+                  onClick={() => { setSelectedIdx(i); if (p.status === "nuevo") startCreate(i); }}
+                  className={cn(
+                    "mb-1 flex min-w-0 flex-1 items-center gap-2 rounded-[10px] px-3 py-2.5 text-left transition-all duration-[var(--duration-fast)] ease-[var(--ease-out)]",
+                    isSelected ? "bg-secondary/8 ring-1 ring-secondary/20 shadow-sm" : "hover:bg-canvas",
+                  )}
+                >
+                  <div className="min-w-0 flex-1">
+                    <p className="font-body text-[13px] font-semibold text-ink-strong">
+                      {t("proceso_propuesta_n", { n: p.v })}
+                    </p>
+                    {propMeta(p.status) && (
+                      <p className="mt-0.5 font-body text-[11px] text-ink-muted">
+                        {propMeta(p.status)?.label}
+                      </p>
                     )}
                   </div>
-                  <div className="flex items-center gap-[10px]">
-                    {p.status === "nuevo" && (
-                      <button
-                        onClick={() => startCreate(i)}
-                        disabled={!disponible}
-                        className={cn(
-                          "rounded-[10px] border border-border bg-surface px-[18px] py-[9px] font-body text-[14px] font-semibold text-ink transition-colors duration-[var(--duration-fast)]",
-                          disponible ? "hover:border-secondary hover:text-secondary" : "opacity-50 cursor-not-allowed",
-                        )}
-                      >
-                        {t("proceso_crear_propuesta")}
-                      </button>
+                  {isSelected && <ArrowRight className="size-3.5 shrink-0 text-ink-muted" aria-hidden="true" />}
+                </button>
+              </div>
+            );
+          })}
+
+          {/* Ghost — locked next version */}
+          {!closed && latest?.status !== "aceptada" && latest?.status !== "noseleccionada" && (
+            <div className="flex gap-3">
+              <div className="flex shrink-0 flex-col items-center" style={{ width: 28 }}>
+                <div
+                  className="size-7 shrink-0 rounded-full opacity-30"
+                  style={{ border: "2px dashed var(--border)" }}
+                  aria-hidden="true"
+                />
+              </div>
+              <div className="mb-1 flex min-w-0 flex-1 items-center gap-2 rounded-xl px-3 py-2.5 opacity-40">
+                <div className="min-w-0 flex-1">
+                  <p className="font-body text-[13px] font-semibold text-ink-muted">
+                    {t("proceso_propuesta_n", { n: proposals.length + 1 })}
+                  </p>
+                  <p className="mt-0.5 flex items-center gap-1 font-body text-[11px] text-ink-muted">
+                    <Lock className="size-3 shrink-0" aria-hidden="true" />
+                    {lockCaption}
+                  </p>
+                </div>
+              </div>
+            </div>
+          )}
+
+          {/* Closed */}
+          {closed && (
+            <div
+              className="mt-3 flex items-center gap-2 rounded-xl px-3 py-2.5 font-body text-[12px] font-semibold"
+              style={{ background: "#E0F3E9", color: "#1E7A4F" }}
+            >
+              <Check className="size-4 shrink-0" aria-hidden="true" />
+              {t("proceso_cerrado")}
+            </div>
+          )}
+        </div>
+      </div>
+
+      {/* ── Right column — proposal detail ── */}
+      <div className="min-w-0 flex-1 bg-canvas">
+
+        {selectedP && (() => {
+          const p = selectedP;
+          const i = safeIdx;
+          const isSent = ["enviada", "revision", "cambios", "aceptada", "noseleccionada"].includes(p.status);
+          const isEditing = p.status === "editando";
+          const pm = propMeta(p.status);
+          const submitOk = p.desc.trim().length > 0;
+
+          /* ── Nuevo: call-to-action ── */
+          if (p.status === "nuevo") {
+            return (
+              <div className="flex min-h-[360px] flex-col items-center justify-center px-10 py-10 text-center">
+                {!disponible && (
+                  <div className="mb-6 w-full max-w-md rounded-xl border border-warning/30 bg-warning/5 px-4 py-3 font-body text-[13px] text-ink">
+                    {t("proceso_busy_message")}
+                  </div>
+                )}
+                <div className="mb-4 flex size-14 items-center justify-center rounded-2xl bg-secondary/10">
+                  <Send className="size-6 text-secondary" aria-hidden="true" />
+                </div>
+                <h3 className="mb-2 font-heading text-xl font-extrabold tracking-tight text-ink-strong">
+                  {t("proceso_crear_propuesta")}
+                </h3>
+                <p className="mb-7 max-w-sm font-body text-sm leading-relaxed text-ink-muted">
+                  {lockCaption}
+                </p>
+                <button
+                  onClick={() => startCreate(i)}
+                  disabled={!disponible}
+                  className={cn(
+                    "rounded-full bg-secondary px-7 py-3 font-body text-[14px] font-bold text-white transition-colors duration-[var(--duration-fast)]",
+                    disponible ? "hover:bg-secondary/80" : "opacity-50 cursor-not-allowed",
+                  )}
+                >
+                  {t("proceso_crear_propuesta")}
+                </button>
+              </div>
+            );
+          }
+
+          /* ── Editing form ── */
+          if (isEditing) {
+            return (
+              <div className="px-8 pb-7">
+                {/* Status badge only — no proposal title */}
+                {pm && (
+                  <div className="mb-5 flex justify-end">
+                    <span className={cn("inline-flex items-center rounded-full border px-4 py-1.5 font-body text-[13px] font-bold", pm.cls)}>
+                      {pm.label}
+                    </span>
+                  </div>
+                )}
+
+                <label className="mb-2 block font-body text-[13px] font-bold text-ink">
+                  {t("description_label")}
+                </label>
+                <textarea
+                  placeholder={t("proceso_desc_placeholder")}
+                  value={p.desc}
+                  onChange={(e) => setField(i, "desc", e.target.value)}
+                  rows={5}
+                  className="w-full resize-y rounded-xl border border-border bg-surface p-[13px] font-body text-[14px] text-ink placeholder:text-ink-muted/60 focus:border-secondary focus:outline-none focus:ring-2 focus:ring-secondary/20"
+                />
+
+                <label className="mb-2 mt-5 block font-body text-[13px] font-bold text-ink">
+                  {t("proceso_doc_label")}
+                  <span className="ml-1 font-normal text-magenta">*</span>
+                </label>
+                <p className="mb-2 font-body text-[12px] text-ink-muted">{t("proceso_doc_hint")}</p>
+                <div className="flex gap-3">
+                  <input
+                    placeholder={t("proceso_link_placeholder")}
+                    value={p.link}
+                    onChange={(e) => { setField(i, "link", e.target.value); if (p.docUrl) patch(i, { docUrl: "", fileName: "" }); }}
+                    disabled={!!p.docUrl}
+                    className="min-w-0 flex-1 rounded-xl border border-border bg-surface px-[15px] py-3 font-body text-[14px] text-ink placeholder:text-ink-muted/60 focus:border-secondary focus:outline-none focus:ring-2 focus:ring-secondary/20 disabled:opacity-50"
+                  />
+                  <label className={cn(
+                    "inline-flex cursor-pointer items-center gap-2 whitespace-nowrap rounded-xl border px-[18px] py-3 font-body text-[14px] font-semibold transition-colors",
+                    p.docUrl ? "border-accent bg-accent/10 text-accent" : "border-border bg-surface text-ink hover:border-secondary hover:text-secondary",
+                    p.link && "opacity-50 pointer-events-none",
+                    isUploading && "opacity-50 pointer-events-none",
+                  )}>
+                    {isUploading
+                      ? <><Loader2 className="size-[15px] animate-spin" aria-hidden="true" />Subiendo...</>
+                      : p.docUrl
+                        ? <><CheckCircle2 className="size-[15px]" aria-hidden="true" />{p.fileName}</>
+                        : <><Upload className="size-[15px]" aria-hidden="true" />{t("proceso_subir_archivo")}</>
+                    }
+                    <input
+                      type="file"
+                      accept=".pdf,.doc,.docx"
+                      className="hidden"
+                      disabled={!!p.link || isUploading}
+                      onChange={(e) => { void handleFileChange(e, i); }}
+                    />
+                  </label>
+                </div>
+
+                <div className="my-[22px] h-px bg-border" />
+
+                <p className="font-body text-[13px] font-bold text-ink">{t("proceso_recursos_titulo")}</p>
+                <p className="mb-4 mt-[3px] font-body text-[13px] text-secondary">{t("proceso_recursos_subtitulo")}</p>
+
+                <div className="grid gap-[14px]" style={{ gridTemplateColumns: "130px 1fr", alignItems: "center", columnGap: 16 }}>
+                  <label className="font-body text-[13px] font-semibold text-ink">{t("proceso_recursos_nombre")}</label>
+                  <input value={p.previewName} onChange={(e) => setField(i, "previewName", e.target.value)}
+                    className="w-full rounded-[10px] border border-border bg-surface px-[14px] py-[11px] font-body text-[14px] text-ink focus:border-secondary focus:outline-none focus:ring-2 focus:ring-secondary/20" />
+                  <label className="font-body text-[13px] font-semibold text-ink">{t("proceso_recursos_proyecto")}</label>
+                  <input value={p.previewProject} onChange={(e) => setField(i, "previewProject", e.target.value)}
+                    className="w-full rounded-[10px] border border-border bg-surface px-[14px] py-[11px] font-body text-[14px] text-ink focus:border-secondary focus:outline-none focus:ring-2 focus:ring-secondary/20" />
+                  <label className="font-body text-[13px] font-semibold leading-snug text-ink">{t("proceso_recursos_repo")}</label>
+                  <input value={p.repo} onChange={(e) => setField(i, "repo", e.target.value)}
+                    className="w-full rounded-[10px] border border-border bg-surface px-[14px] py-[11px] font-body text-[14px] text-ink focus:border-secondary focus:outline-none focus:ring-2 focus:ring-secondary/20" />
+                </div>
+
+                {submitError && (
+                  <p className="mt-4 font-body text-[13px] text-magenta">{submitError}</p>
+                )}
+                <div className="mt-6 flex items-center justify-end gap-3">
+                  <button
+                    type="button"
+                    onClick={() => cancelEdit(i)}
+                    className="rounded-xl border border-border bg-surface px-6 py-3 font-body text-[14px] font-semibold text-ink transition-colors duration-[var(--duration-fast)] hover:border-ink-muted hover:text-ink-strong"
+                  >
+                    {t("proceso_cancelar")}
+                  </button>
+                  <button
+                    onClick={() => { void submit(i); }}
+                    disabled={!submitOk || isUploading}
+                    className={cn(
+                      "rounded-xl bg-secondary px-6 py-3 font-body text-[14px] font-bold text-white transition-colors duration-[var(--duration-fast)]",
+                      submitOk && !isUploading ? "hover:bg-secondary/80" : "opacity-50 cursor-not-allowed",
                     )}
-                    {/* Editar y Retirar — solo cuando la empresa aún no revisó */}
+                  >
+                    {t("proceso_subir_propuesta")}
+                  </button>
+                </div>
+              </div>
+            );
+          }
+
+          /* ── Read-only sent view ── */
+          if (isSent) {
+            return (
+              <div className="px-8 pb-7">
+                {/* Actions + status badge (no title — shown in left column) */}
+                <div className="mb-6 flex flex-wrap items-center justify-end gap-2">
                     {p.status === "enviada" && p.offerId && (
                       <>
                         <button
                           onClick={() => startEdit(i)}
-                          className="inline-flex items-center gap-1.5 rounded-[10px] border border-border bg-surface px-[14px] py-[7px] font-body text-[13px] font-semibold text-ink transition-colors duration-[var(--duration-fast)] hover:border-secondary hover:text-secondary"
+                          aria-label={t("proceso_editar")}
+                          className="inline-flex items-center justify-center rounded-[10px] bg-highlight p-[9px] text-white transition-colors duration-[var(--duration-fast)] hover:bg-highlight/80"
                         >
-                          <Pencil className="size-[13px]" aria-hidden="true" />
-                          {t("proceso_editar")}
+                          <Pencil className="size-[15px]" aria-hidden="true" />
                         </button>
                         {withdrawConfirmIdx === i ? (
                           <div className="inline-flex items-center gap-2 rounded-[10px] border border-magenta/30 bg-magenta/5 px-[14px] py-[7px]">
@@ -1887,10 +3250,10 @@ function JuniorProcesoView({
                             type="button"
                             onClick={() => setWithdrawConfirmIdx(i)}
                             disabled={withdrawingIdx === i}
-                            className="inline-flex items-center gap-1.5 rounded-[10px] border border-magenta/30 bg-surface px-[14px] py-[7px] font-body text-[13px] font-semibold text-magenta transition-colors duration-[var(--duration-fast)] hover:bg-magenta/5 disabled:opacity-50"
+                            aria-label={t("proceso_retirar")}
+                            className="inline-flex items-center justify-center rounded-[10px] bg-magenta p-[9px] text-white transition-colors duration-[var(--duration-fast)] hover:bg-magenta/80 disabled:opacity-50"
                           >
-                            <Trash2 className="size-[13px]" aria-hidden="true" />
-                            {t("proceso_retirar")}
+                            <Trash2 className="size-[15px]" aria-hidden="true" />
                           </button>
                         )}
                       </>
@@ -1900,234 +3263,108 @@ function JuniorProcesoView({
                         {pm.label}
                       </span>
                     )}
+                </div>
+
+                <label className="mb-2 block font-body text-[13px] font-bold text-ink">
+                  {t("description_label")}
+                </label>
+                <div className="rounded-xl border border-border bg-canvas p-[14px] font-body text-[14px] leading-relaxed text-ink" style={{ background: "#FBFAFD" }}>
+                  {p.desc}
+                </div>
+
+                <label className="mb-2 mt-5 block font-body text-[13px] font-bold text-ink">
+                  {t("proceso_doc_label")}
+                </label>
+                <div className="flex flex-wrap items-center gap-3">
+                  <div className="min-w-[200px] flex-1 truncate rounded-xl border border-border px-[15px] py-3 font-body text-[14px] text-primary" style={{ background: "#FBFAFD" }}>
+                    {p.link || t("proceso_sin_enlace")}
+                  </div>
+                  {p.fileName && (
+                    <div className="inline-flex items-center gap-2 rounded-xl border border-border bg-surface px-[14px] py-[11px] font-body text-[13px] font-semibold text-ink">
+                      <FileText className="size-[14px] text-magenta" aria-hidden="true" />
+                      {p.fileName}
+                    </div>
+                  )}
+                </div>
+
+                <label className="mb-2 mt-5 block font-body text-[13px] font-bold text-ink">
+                  {t("proceso_previsualizacion_label")}
+                </label>
+                <div className="overflow-hidden rounded-[14px] border border-border bg-surface">
+                  <div className="flex items-center gap-[7px] border-b border-border px-[14px] py-[11px]" style={{ background: "#F4F3F7" }}>
+                    <span className="size-[11px] rounded-full" style={{ background: "#F2655A" }} aria-hidden="true" />
+                    <span className="size-[11px] rounded-full" style={{ background: "#F5BE4F" }} aria-hidden="true" />
+                    <span className="size-[11px] rounded-full" style={{ background: "#62C554" }} aria-hidden="true" />
+                    <div className="ml-[10px] flex-1 truncate rounded-[7px] border border-border bg-surface px-3 py-[6px] font-body text-[12px] text-ink-muted">
+                      {p.repo || p.link || "preview.proyecto.app"}
+                    </div>
+                    {(p.repo || p.link) && (
+                      <a href={p.repo || p.link} target="_blank" rel="noopener noreferrer"
+                        className="inline-flex shrink-0 items-center gap-1 font-body text-xs font-bold text-primary hover:underline">
+                        <ExternalLink className="size-3" aria-hidden="true" />
+                        Abrir
+                      </a>
+                    )}
+                  </div>
+                  <div className="flex min-h-[150px] flex-col gap-[10px] px-7 py-[30px]" style={{ background: "linear-gradient(180deg,#FCFBFE,#F7F6FB)" }}>
+                    <p className="font-heading text-xl font-extrabold tracking-tight text-ink-strong">
+                      {p.previewName || t("proceso_preview_sin_nombre")}
+                    </p>
+                    <span className="self-start rounded-full bg-secondary/10 px-3 py-[5px] font-body text-[12px] font-semibold text-secondary">
+                      {p.previewProject || t("proceso_preview_sin_categoria")}
+                    </span>
+                    <p className="mt-1 font-body text-[13px] leading-relaxed text-ink-muted line-clamp-3">{p.desc}</p>
                   </div>
                 </div>
 
-                {/* Edit form */}
-                {isEditing && (
-                  <div className="mt-[18px]">
-                    <label className="mb-2 block font-body text-[13px] font-bold text-ink">
-                      {t("description_label")}
-                    </label>
-                    <textarea
-                      placeholder={t("proceso_desc_placeholder")}
-                      value={p.desc}
-                      onChange={(e) => setField(i, "desc", e.target.value)}
-                      rows={4}
-                      className="w-full resize-y rounded-xl border border-border bg-surface p-[13px] font-body text-[14px] text-ink placeholder:text-ink-muted/60 focus:border-secondary focus:outline-none focus:ring-2 focus:ring-secondary/20"
-                    />
+                <label className="mb-2 mt-5 block font-body text-[13px] font-bold text-ink">
+                  {t("proceso_observaciones_label")}
+                </label>
+                {p.status === "aceptada" ? (
+                  <div className="rounded-xl border border-accent/30 bg-accent/5 p-[14px] font-body text-[14px] leading-relaxed text-ink">
+                    {p.observaciones || t("proceso_revision_empty")}
+                  </div>
+                ) : (
+                  <div
+                    className="min-h-[84px] rounded-xl border p-[14px] font-body text-[14px] leading-relaxed"
+                    style={p.observaciones
+                      ? { borderColor: "#F0CDBF", background: "#FFF6F2", color: "#9A3B23" }
+                      : { borderColor: "#E8E5EF", background: "#FBFAFD", color: "#B3AEC0" }}
+                  >
+                    {p.observaciones || t("proceso_observaciones_empty")}
+                  </div>
+                )}
 
-                    <label className="mb-2 mt-5 block font-body text-[13px] font-bold text-ink">
-                      {t("proceso_doc_label")}
-                      <span className="ml-1 font-normal text-magenta">*</span>
-                    </label>
-                    <p className="mb-2 font-body text-[12px] text-ink-muted">Adjuntá un enlace <strong>o</strong> subí un PDF — al menos uno es obligatorio.</p>
-                    <div className="flex gap-3">
-                      <input
-                        placeholder={t("proceso_link_placeholder")}
-                        value={p.link}
-                        onChange={(e) => { setField(i, "link", e.target.value); if (p.docUrl) patch(i, { docUrl: "", fileName: "" }); }}
-                        disabled={!!p.docUrl}
-                        className="min-w-0 flex-1 rounded-xl border border-border bg-surface px-[15px] py-3 font-body text-[14px] text-ink placeholder:text-ink-muted/60 focus:border-secondary focus:outline-none focus:ring-2 focus:ring-secondary/20 disabled:opacity-50"
-                      />
-                      <label className={cn(
-                        "inline-flex cursor-pointer items-center gap-2 whitespace-nowrap rounded-xl border px-[18px] py-3 font-body text-[14px] font-semibold transition-colors",
-                        p.docUrl ? "border-accent bg-accent/10 text-accent" : "border-border bg-surface text-ink hover:border-secondary hover:text-secondary",
-                        p.link && "opacity-50 pointer-events-none",
-                        isUploading && "opacity-50 pointer-events-none",
-                      )}>
-                        {isUploading
-                          ? <><Loader2 className="size-[15px] animate-spin" aria-hidden="true" />Subiendo...</>
-                          : p.docUrl
-                            ? <><CheckCircle2 className="size-[15px]" aria-hidden="true" />{p.fileName}</>
-                            : <><Upload className="size-[15px]" aria-hidden="true" />{t("proceso_subir_archivo")}</>
-                        }
-                        <input
-                          type="file"
-                          accept=".pdf,.doc,.docx"
-                          className="hidden"
-                          disabled={!!p.link || isUploading}
-                          onChange={(e) => { void handleFileChange(e, i); }}
+                {p.status === "aceptada" && p.calificacion != null && (
+                  <div className="mt-4 rounded-xl border border-highlight/30 bg-highlight/5 p-[14px]">
+                    <p className="mb-2 font-body text-[10px] font-bold uppercase tracking-wider text-ink-muted">
+                      {t("proceso_calificacion_empresa")}
+                    </p>
+                    <div className="flex items-center gap-1">
+                      {Array.from({ length: 5 }).map((_, starIdx) => (
+                        <Star
+                          key={starIdx}
+                          className={cn("size-5", starIdx < p.calificacion! ? "fill-highlight text-highlight" : "text-border")}
+                          aria-hidden="true"
                         />
-                      </label>
+                      ))}
+                      <span className="ml-2 font-heading text-base font-bold text-ink-strong">
+                        {p.calificacion}/5
+                      </span>
                     </div>
-
-                    <div className="my-[22px] h-px bg-border" />
-
-                    <p className="font-body text-[13px] font-bold text-ink">{t("proceso_recursos_titulo")}</p>
-                    <p className="mb-4 mt-[3px] font-body text-[13px] text-secondary">{t("proceso_recursos_subtitulo")}</p>
-
-                    <div className="grid gap-[14px]" style={{ gridTemplateColumns: "130px 1fr", alignItems: "center", columnGap: 16 }}>
-                      <label className="font-body text-[13px] font-semibold text-ink">{t("proceso_recursos_nombre")}</label>
-                      <input value={p.previewName} onChange={(e) => setField(i, "previewName", e.target.value)}
-                        className="w-full rounded-[10px] border border-border bg-surface px-[14px] py-[11px] font-body text-[14px] text-ink focus:border-secondary focus:outline-none focus:ring-2 focus:ring-secondary/20" />
-                      <label className="font-body text-[13px] font-semibold text-ink">{t("proceso_recursos_proyecto")}</label>
-                      <input value={p.previewProject} onChange={(e) => setField(i, "previewProject", e.target.value)}
-                        className="w-full rounded-[10px] border border-border bg-surface px-[14px] py-[11px] font-body text-[14px] text-ink focus:border-secondary focus:outline-none focus:ring-2 focus:ring-secondary/20" />
-                      <label className="font-body text-[13px] font-semibold leading-snug text-ink">{t("proceso_recursos_repo")}</label>
-                      <input value={p.repo} onChange={(e) => setField(i, "repo", e.target.value)}
-                        className="w-full rounded-[10px] border border-border bg-surface px-[14px] py-[11px] font-body text-[14px] text-ink focus:border-secondary focus:outline-none focus:ring-2 focus:ring-secondary/20" />
-                    </div>
-
-                    {submitError && (
-                      <p className="mt-4 font-body text-[13px] text-magenta">{submitError}</p>
-                    )}
-                    <div className="mt-6 flex items-center justify-end gap-3">
-                      <button
-                        type="button"
-                        onClick={() => cancelEdit(i)}
-                        className="rounded-xl border border-border bg-surface px-6 py-3 font-body text-[14px] font-semibold text-ink transition-colors duration-[var(--duration-fast)] hover:border-ink-muted hover:text-ink-strong"
-                      >
-                        {t("proceso_cancelar")}
-                      </button>
-                      <button
-                        onClick={() => { void submit(i); }}
-                        disabled={!submitOk || isUploading}
-                        className={cn(
-                          "rounded-xl bg-secondary px-6 py-3 font-body text-[14px] font-bold text-white transition-colors duration-[var(--duration-fast)]",
-                          submitOk && !isUploading ? "hover:bg-secondary/80" : "opacity-50 cursor-not-allowed",
-                        )}
-                      >
-                        {t("proceso_subir_propuesta")}
-                      </button>
-                    </div>
-                  </div>
-                )}
-
-                {/* Read-only body when sent */}
-                {isSent && p.expanded && (
-                  <div className="mt-[18px]">
-                    <label className="mb-2 block font-body text-[13px] font-bold text-ink">
-                      {t("description_label")}
-                    </label>
-                    <div className="rounded-xl border border-border bg-canvas p-[14px] font-body text-[14px] leading-relaxed text-ink">
-                      {p.desc}
-                    </div>
-
-                    <label className="mb-2 mt-5 block font-body text-[13px] font-bold text-ink">
-                      {t("proceso_doc_label")}
-                    </label>
-                    <div className="flex flex-wrap items-center gap-3">
-                      <div className="min-w-[200px] flex-1 truncate rounded-xl border border-border bg-canvas px-[15px] py-3 font-body text-[14px] text-primary">
-                        {p.link || t("proceso_sin_enlace")}
-                      </div>
-                      {p.fileName && (
-                        <div className="inline-flex items-center gap-2 rounded-xl border border-border bg-surface px-[14px] py-[11px] font-body text-[13px] font-semibold text-ink">
-                          <FileText className="size-[14px] text-magenta" aria-hidden="true" />
-                          {p.fileName}
-                        </div>
-                      )}
-                    </div>
-
-                    <label className="mb-2 mt-5 block font-body text-[13px] font-bold text-ink">
-                      {t("proceso_previsualizacion_label")}
-                    </label>
-                    <div className="overflow-hidden rounded-[14px] border border-border bg-surface">
-                      <div className="flex items-center gap-[7px] border-b border-border bg-surface-sunken px-[14px] py-[11px]">
-                        <span className="size-[11px] rounded-full" style={{ background: "#F2655A" }} aria-hidden="true" />
-                        <span className="size-[11px] rounded-full" style={{ background: "#F5BE4F" }} aria-hidden="true" />
-                        <span className="size-[11px] rounded-full" style={{ background: "#62C554" }} aria-hidden="true" />
-                        <div className="ml-[10px] flex-1 truncate rounded-[7px] border border-border bg-surface px-3 py-[6px] font-body text-[12px] text-ink-muted">
-                          {p.repo || p.link || "preview.proyecto.app"}
-                        </div>
-                        {(p.repo || p.link) && (
-                          <a href={p.repo || p.link} target="_blank" rel="noopener noreferrer"
-                            className="inline-flex shrink-0 items-center gap-1 font-body text-xs font-bold text-primary hover:underline">
-                            <ExternalLink className="size-3" aria-hidden="true" />
-                            Abrir
-                          </a>
-                        )}
-                      </div>
-                      <div className="flex min-h-[150px] flex-col gap-[10px] bg-surface px-7 py-[30px]">
-                        <p className="font-heading text-xl font-extrabold tracking-tight text-ink-strong">
-                          {p.previewName || t("proceso_preview_sin_nombre")}
-                        </p>
-                        <span className="self-start rounded-full bg-secondary/10 px-3 py-[5px] font-body text-[12px] font-semibold text-secondary">
-                          {p.previewProject || t("proceso_preview_sin_categoria")}
-                        </span>
-                        <p className="mt-1 font-body text-[13px] leading-relaxed text-ink-muted line-clamp-3">{p.desc}</p>
-                      </div>
-                    </div>
-
-                    <label className="mb-2 mt-5 block font-body text-[13px] font-bold text-ink">
-                      {t("proceso_observaciones_label")}
-                    </label>
-                    {p.status === "aceptada" ? (
-                      <div className="rounded-xl border border-accent/30 bg-accent/5 p-[14px] font-body text-[14px] leading-relaxed text-ink">
-                        {p.observaciones || t("proceso_revision_empty")}
-                      </div>
-                    ) : (
-                      <div
-                        className={cn(
-                          "min-h-[84px] rounded-xl border p-[14px] font-body text-[14px] leading-relaxed",
-                          p.observaciones
-                            ? "border-warning/30 bg-warning/5 text-warning"
-                            : "border-border bg-canvas text-ink-muted",
-                        )}
-                      >
-                        {p.observaciones || t("proceso_observaciones_empty")}
-                      </div>
-                    )}
-
-                    {p.status === "aceptada" && p.calificacion != null && (
-                      <div className="mt-4 rounded-xl border border-highlight/30 bg-highlight/5 p-[14px]">
-                        <p className="mb-2 font-body text-[10px] font-bold uppercase tracking-wider text-ink-muted">
-                          {t("proceso_calificacion_empresa")}
-                        </p>
-                        <div className="flex items-center gap-1">
-                          {Array.from({ length: 5 }).map((_, i) => (
-                            <Star
-                              key={i}
-                              className={cn("size-5", i < p.calificacion! ? "fill-highlight text-highlight" : "text-border")}
-                              aria-hidden="true"
-                            />
-                          ))}
-                          <span className="ml-2 font-heading text-base font-bold text-ink-strong">
-                            {p.calificacion}/5
-                          </span>
-                        </div>
-                        {p.comentario_calificacion && (
-                          <p className="mt-2 font-body text-sm leading-relaxed text-ink">
-                            {p.comentario_calificacion}
-                          </p>
-                        )}
-                      </div>
+                    {p.comentario_calificacion && (
+                      <p className="mt-2 font-body text-sm leading-relaxed text-ink">
+                        {p.comentario_calificacion}
+                      </p>
                     )}
                   </div>
                 )}
               </div>
-            </div>
-          );
-        })}
+            );
+          }
 
-        {/* Ghost — next locked version (hidden when final state reached) */}
-        {!closed && latest?.status !== "aceptada" && latest?.status !== "noseleccionada" && (
-          <div className="flex gap-[18px]">
-            <div className="flex flex-col items-center" style={{ width: 32, flexShrink: 0, paddingTop: 1 }}>
-              <div
-                className="size-[30px] shrink-0 rounded-full border-2 border-dashed border-border bg-surface"
-                aria-hidden="true"
-              />
-            </div>
-            <div className="min-w-0 flex-1 py-[2px]">
-              <p className="font-body text-base font-bold text-ink-muted">
-                {t("proceso_propuesta_n", { n: proposals.length + 1 })}
-              </p>
-              <div className="mt-[5px] flex items-center gap-[7px] font-body text-[13px] text-ink-muted">
-                <Lock className="size-[13px] shrink-0" aria-hidden="true" />
-                {lockCaption}
-              </div>
-            </div>
-          </div>
-        )}
-
-        {/* Closed banner */}
-        {closed && (
-          <div className="mt-[6px] flex items-center gap-[10px] rounded-xl border border-accent/30 bg-accent/5 p-[14px] font-body text-[14px] font-semibold text-accent">
-            <Check className="size-[18px] shrink-0" aria-hidden="true" />
-            {t("proceso_cerrado")}
-          </div>
-        )}
+          return null;
+        })()}
       </div>
 
     </div>
@@ -3914,5 +5151,220 @@ function ConfirmDeleteDialog({
         </div>
       </div>
     </>
+  );
+}
+
+// ── MensajesView ──────────────────────────────────────────────────────────────
+
+function MensajesView({
+  myOffers,
+  myConversaciones,
+  projects,
+  selectedProjectId,
+  selectedProject,
+  projectLoading,
+  t,
+  userId,
+  onConversationActivity,
+  onSelectProject,
+}: {
+  myOffers: MyOffer[];
+  myConversaciones: ConversacionItem[];
+  projects: ApiProject[];
+  selectedProjectId: string | null;
+  selectedProject: ApiProject | null;
+  projectLoading: boolean;
+  t: T;
+  userId: string | null;
+  onConversationActivity: () => Promise<void>;
+  onSelectProject: (id: string) => void;
+}) {
+  // Tracks which panel item the user clicked: "asistente" = bot, "directo" = human chat
+  const [activeMode, setActiveMode] = useState<"asistente" | "directo">("asistente");
+  const [activePanelId, setActivePanelId] = useState<string | null>(selectedProjectId);
+
+  const directChatIds = new Set(myConversaciones.map((c) => c.proyecto.id));
+  const empresaPorId = new Map(projects.map((p) => [p.id, p.empresa?.nombre_comercial ?? ""]));
+
+  const asistentesItems = myOffers
+    .filter((o) => o.proyecto)
+    .filter((o, idx, arr) => arr.findIndex((x) => x.proyecto?.id === o.proyecto?.id) === idx);
+
+  const titleForId = (id: string) =>
+    myOffers.find((o) => o.proyecto?.id === id)?.proyecto?.titulo
+    ?? myConversaciones.find((c) => c.proyecto.id === id)?.proyecto.titulo
+    ?? "";
+
+  function selectAsistente(id: string) {
+    setActiveMode("asistente");
+    setActivePanelId(id);
+    onSelectProject(id);
+  }
+
+  function selectDirecto(id: string) {
+    setActiveMode("directo");
+    setActivePanelId(id);
+    onSelectProject(id);
+  }
+
+  // After escalation: refresh conversaciones so the project appears in Directos
+  // (stay in bot view — user can switch to Directos when ready)
+  function handleEscalated() {
+    void onConversationActivity();
+  }
+
+  const activeProject = selectedProject ?? null;
+  const activeTitle = activePanelId
+    ? (activeProject?.titulo ?? titleForId(activePanelId))
+    : "";
+  const activeEmpresa = activeProject?.empresa?.nombre_comercial ?? null;
+
+  return (
+    <div className="flex" style={{ minHeight: "calc(100vh - 8rem)" }}>
+
+      {/* Left panel — chat list */}
+      <div className="w-[280px] shrink-0 overflow-y-auto border-r border-border">
+
+        {/* Asistentes */}
+        <div className="px-4 pt-5 pb-3">
+          <p className="mb-2 font-body text-[10px] font-bold uppercase tracking-widest text-ink-muted">
+            {t("mensajes_asistentes")}
+          </p>
+          {asistentesItems.length === 0 && (
+            <p className="font-body text-[12px] text-ink-muted/60">{t("mensajes_sin_asistentes")}</p>
+          )}
+          <ul className="flex flex-col gap-0.5">
+            {asistentesItems.map((offer) => {
+              if (!offer.proyecto) return null;
+              const id = offer.proyecto.id;
+              const isSelected = id === activePanelId && activeMode === "asistente";
+              const empresa = empresaPorId.get(id) ?? offer.proyecto.titulo;
+              return (
+                <li key={id}>
+                  <button
+                    type="button"
+                    onClick={() => selectAsistente(id)}
+                    className={cn(
+                      "flex w-full items-center gap-3 rounded-xl px-3 py-2.5 text-left transition-all duration-[var(--duration-fast)] ease-[var(--ease-out)]",
+                      isSelected ? "bg-secondary/10 ring-1 ring-secondary/20" : "hover:bg-canvas",
+                    )}
+                  >
+                    <div className="flex size-9 shrink-0 items-center justify-center rounded-full bg-secondary/15">
+                      <Sparkles className="size-4 text-secondary" aria-hidden="true" />
+                    </div>
+                    <div className="min-w-0 flex-1">
+                      <p className="truncate font-body text-[13px] font-semibold text-ink-strong">
+                        {t("mensajes_asistente_nombre", { empresa })}
+                      </p>
+                      <p className="truncate font-body text-[11px] text-ink-muted">
+                        {offer.proyecto.titulo}
+                      </p>
+                    </div>
+                  </button>
+                </li>
+              );
+            })}
+          </ul>
+        </div>
+
+        {/* Directos */}
+        <div className="border-t border-border px-4 pt-4 pb-3">
+          <p className="mb-2 font-body text-[10px] font-bold uppercase tracking-widest text-ink-muted">
+            {t("mensajes_directos")}
+          </p>
+          {myConversaciones.length === 0 && (
+            <p className="font-body text-[12px] text-ink-muted/60">{t("mensajes_sin_directos")}</p>
+          )}
+          {myConversaciones.length > 0 && (
+            <ul className="flex flex-col gap-0.5">
+              {myConversaciones.map((conv) => {
+                const isSelected = conv.proyecto.id === activePanelId && activeMode === "directo";
+                const empresa = empresaPorId.get(conv.proyecto.id) ?? conv.proyecto.titulo;
+                const initial = empresa[0]?.toUpperCase() ?? "?";
+                return (
+                  <li key={conv.proyecto.id}>
+                    <button
+                      type="button"
+                      onClick={() => selectDirecto(conv.proyecto.id)}
+                      className={cn(
+                        "flex w-full items-center gap-3 rounded-xl px-3 py-2.5 text-left transition-all duration-[var(--duration-fast)] ease-[var(--ease-out)]",
+                        isSelected ? "bg-primary/10 ring-1 ring-primary/20" : "hover:bg-canvas",
+                      )}
+                    >
+                      <div className="flex size-9 shrink-0 items-center justify-center rounded-full bg-primary/15 font-body text-[14px] font-bold text-primary">
+                        {initial}
+                      </div>
+                      <div className="min-w-0 flex-1">
+                        <div className="flex items-center justify-between gap-2">
+                          <p className="min-w-0 truncate font-body text-[13px] font-semibold text-ink-strong">
+                            {empresa}
+                          </p>
+                          {conv.no_leidos > 0 && (
+                            <span className="shrink-0 rounded-full bg-magenta px-[6px] py-[2px] font-body text-[10px] font-bold text-white">
+                              {conv.no_leidos}
+                            </span>
+                          )}
+                        </div>
+                        <p className="truncate font-body text-[11px] text-ink-muted">
+                          {conv.ultimo_mensaje || conv.proyecto.titulo}
+                        </p>
+                      </div>
+                    </button>
+                  </li>
+                );
+              })}
+            </ul>
+          )}
+        </div>
+      </div>
+
+      {/* Right panel */}
+      <div className="min-w-0 flex-1 bg-canvas">
+        {activePanelId ? (
+          projectLoading ? (
+            <div className="flex h-full items-center justify-center py-20">
+              <Loader2 className="size-6 animate-spin text-primary" aria-hidden="true" />
+            </div>
+          ) : activeMode === "asistente" ? (
+            // Bot — persists history in localStorage; "Hablar con empresa" triggers escalation
+            <div className="mx-auto w-full max-w-3xl px-4 pt-6">
+              <ProjectChatbot
+                key={activePanelId}
+                embedded
+                projectId={activePanelId}
+                projectTitulo={activeTitle}
+                onEscalated={handleEscalated}
+              />
+            </div>
+          ) : (
+            // Human chat — bot fallback hidden so only real messages show
+            <JuniorContactoPanel
+              key={activePanelId}
+              projectId={activePanelId}
+              projectTitulo={activeTitle}
+              empresaNombre={activeEmpresa}
+              t={t}
+              userId={userId}
+              onConversationActivity={onConversationActivity}
+              hideBotFallback
+            />
+          )
+        ) : (
+          <div className="flex h-full flex-col items-center justify-center gap-4 px-8 py-20 text-center">
+            <div className="flex size-14 items-center justify-center rounded-2xl bg-secondary/10">
+              <Mail className="size-6 text-secondary" aria-hidden="true" />
+            </div>
+            <div>
+              <p className="font-heading text-lg font-extrabold tracking-tight text-ink-strong">
+                {t("mensajes_vacio_titulo")}<span className="text-secondary" aria-hidden="true">.</span>
+              </p>
+              <p className="mt-1 max-w-xs font-body text-sm leading-relaxed text-ink-muted">
+                {t("mensajes_vacio_desc")}
+              </p>
+            </div>
+          </div>
+        )}
+      </div>
+    </div>
   );
 }
