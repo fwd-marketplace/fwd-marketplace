@@ -1504,7 +1504,8 @@
       "description": "Description",
       "required_tech": "Required technologies",
       "projects_tab": "Projects",
-      "no_projects": "This profile has no published projects yet."
+      "no_projects": "This profile has no published projects yet.",
+      "no_sectors": "No areas specified."
     },
     "badge": {
       "empresa": "Company",

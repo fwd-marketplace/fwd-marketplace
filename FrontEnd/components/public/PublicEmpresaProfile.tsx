@@ -454,14 +454,14 @@ export function PublicEmpresaProfile({
                         <p className="mb-3 font-body text-xs font-bold tracking-wide text-ink-muted">{t('sections.business_areas')}</p>
                         <div className="flex flex-wrap gap-2">
                           {sectors.map((area) => (
-                            <button key={area} type="button" disabled
-                              className="rounded-full border border-secondary bg-secondary px-3 py-1 text-xs font-semibold text-white disabled:cursor-default"
+                            <span key={area}
+                              className="rounded-full border border-secondary bg-secondary px-3 py-1 text-xs font-semibold text-white"
                             >
                               {area}
-                            </button>
+                            </span>
                           ))}
                           {sectors.length === 0 && (
-                            <p className="text-xs text-ink-muted/60 italic">{t('placeholders.loading_areas')}</p>
+                            <p className="text-xs text-ink-muted/60 italic">{t('public.no_sectors')}</p>
                           )}
                         </div>
                       </div>
@@ -525,14 +525,14 @@ export function PublicEmpresaProfile({
                       {ALL_PROJECT_TYPES.map((pt) => {
                         const isSelected = projectTypes.includes(pt);
                         return (
-                          <button key={pt} type="button" disabled
+                          <span key={pt}
                             className={cn(
-                              'rounded-full border px-3 py-1.5 text-xs font-semibold disabled:cursor-default',
+                              'rounded-full border px-3 py-1.5 text-xs font-semibold',
                               isSelected ? 'border-primary bg-primary text-white' : 'border-border bg-canvas text-ink-muted',
                             )}
                           >
                             {tPT(pt)}
-                          </button>
+                          </span>
                         );
                       })}
                     </div>
@@ -569,11 +569,11 @@ export function PublicEmpresaProfile({
                         {(['web', 'mobile', 'backend', 'ai', 'ux', 'data', 'automation', 'other'] as TechSupport[]).map((ts) => {
                           const isSelected = neededSupport.includes(ts);
                           return (
-                            <button key={ts} type="button" disabled
-                              className={cn('rounded-full border px-3 py-1.5 text-xs font-semibold disabled:cursor-default', isSelected ? 'border-primary bg-primary text-white' : 'border-border bg-canvas text-ink-muted')}
+                            <span key={ts}
+                              className={cn('rounded-full border px-3 py-1.5 text-xs font-semibold', isSelected ? 'border-primary bg-primary text-white' : 'border-border bg-canvas text-ink-muted')}
                             >
                               {tTechSupport(ts)}
-                            </button>
+                            </span>
                           );
                         })}
                       </div>
