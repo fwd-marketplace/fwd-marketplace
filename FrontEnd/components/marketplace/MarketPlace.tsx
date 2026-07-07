@@ -415,10 +415,10 @@ export default function MarketPlace({ initialProjects, catalogs, role = 'student
 
         {/* White panel: filter + cards + pagination */}
         <div className="relative z-20 mx-4 md:mx-16 lg:mx-28 -mt-7">
-            <div className="bg-white rounded-3xl shadow-elevated overflow-hidden">
-                <div className="flex flex-col gap-5 px-8 py-4 border-b border-border md:flex-row md:items-center md:gap-3 md:py-3 md:px-10">
-                    <div className="flex flex-1 items-center gap-3">
-                        <Search className="w-5 h-5 shrink-0 text-ink-muted" aria-hidden="true" />
+            <div className="bg-white dark:bg-surface rounded-[2rem] shadow-[0_-4px_32px_rgba(0,0,0,0.08)] dark:shadow-[0_-4px_32px_rgba(0,0,0,0.4)] overflow-hidden">
+                <div className="flex flex-col gap-4 px-8 py-5 border-b border-border dark:border-white/10 md:flex-row md:items-center md:gap-4 md:py-4 md:px-10">
+                    <div className="flex flex-1 items-center gap-3 bg-[#F8F9FC] dark:bg-white/5 rounded-full px-5 h-14 shadow-[0_1px_4px_rgba(0,0,0,0.06)]">
+                        <Search className="w-4 h-4 shrink-0 text-ink-muted" aria-hidden="true" />
                         <label htmlFor="marketplace-search" className="sr-only">{t('search_label')}</label>
                         <input
                             id="marketplace-search"
@@ -478,7 +478,7 @@ export default function MarketPlace({ initialProjects, catalogs, role = 'student
                 </div>
 
                 {/* Results */}
-                <div className="px-8 pt-6 pb-10 md:px-10">
+                <div className="px-8 pt-8 pb-12 md:px-10">
                 <div className="flex items-center justify-between gap-4 mb-5">
                     <p className="text-sm font-semibold text-ink-muted">
                         {t('results_count', { count: totalResults })}
@@ -639,11 +639,11 @@ export default function MarketPlace({ initialProjects, catalogs, role = 'student
                                             className={cn(
                                                 'size-10 shrink-0 flex items-center justify-center rounded-full border transition-colors duration-[var(--duration-fast)] ease-[var(--ease-out)]',
                                                 isSaved
-                                                    ? 'bg-highlight border-highlight text-ink-strong'
-                                                    : 'border-border text-ink-muted hover:bg-highlight hover:border-highlight hover:text-ink-strong',
+                                                    ? 'bg-highlight border-highlight text-white'
+                                                    : 'border-border text-ink-muted hover:bg-highlight hover:border-highlight hover:text-white',
                                             )}
                                         >
-                                            <Bookmark className={cn('w-4 h-4', isSaved ? 'fill-ink-strong' : 'fill-none')} aria-hidden="true" />
+                                            <Bookmark className={cn('w-4 h-4', isSaved ? 'fill-current' : 'fill-none')} aria-hidden="true" />
                                         </button>
                                     </div>
                                 </div>
@@ -700,6 +700,7 @@ export default function MarketPlace({ initialProjects, catalogs, role = 'student
             <ProjectPreviewModal
                 project={previewProject}
                 onClose={() => setPreviewProject(null)}
+                studentSkills={studentSkills}
             />
         )}
         </>
