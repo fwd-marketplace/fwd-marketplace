@@ -91,6 +91,11 @@ html, body {
   /* Estrella un poco más brillante sobre el fondo oscuro. */
   --starlight: oklch(0.96 0.02 245);
 
+  /* Sombras profundas (near-black tintado al 262°) para dar relieve sobre superficies oscuras;
+     las tintadas claras del tema light quedan invisibles en oscuro. */
+  --shadow-soft: 0 1px 2px oklch(0.05 0.02 262 / 0.35), 0 4px 12px oklch(0.05 0.02 262 / 0.4);
+  --shadow-elevated: 0 4px 8px oklch(0.05 0.02 262 / 0.45), 0 16px 32px oklch(0.05 0.02 262 / 0.55);
+
   /* shadcn internals remapeados al tema oscuro. */
   --background: var(--canvas);
   --foreground: var(--ink-strong);

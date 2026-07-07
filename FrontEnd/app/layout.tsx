@@ -6,7 +6,9 @@ import { ThemeProvider } from "@/lib/theme/theme-provider";
 import { DarkModeStarfield } from "@/components/layout/dark-mode-starfield";
 
 // Aplica la clase `dark` antes del primer paint para que no haya parpadeo claro->oscuro.
-const THEME_INIT_SCRIPT = `try{if(localStorage.getItem('fwd-theme')==='dark'){document.documentElement.classList.add('dark')}}catch(e){}`;
+// Prioridad: preferencia guardada > preferencia del sistema (prefers-color-scheme).
+// Una elección explícita de "light" gana sobre el sistema oscuro.
+const THEME_INIT_SCRIPT = `try{var s=localStorage.getItem('fwd-theme');if(s==='dark'||(!s&&matchMedia('(prefers-color-scheme:dark)').matches)){document.documentElement.classList.add('dark')}}catch(e){}`;
 
 const figtree = Figtree({
   subsets: ["latin"],
