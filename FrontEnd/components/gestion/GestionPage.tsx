@@ -14,6 +14,7 @@ import {
   Calendar,
   Check,
   CheckCircle2,
+  ChevronDown,
   ChevronLeft,
   ChevronRight,
   Clock,
@@ -219,8 +220,10 @@ function initJuniorProposals(offers: MyOffer[], project: ApiProject | null): Jun
     expanded: false,
     desc: offer.propuesta,
     link: offer.prototipo_url ?? "",
-    fileName: "",
-    docUrl: "",
+    docUrl: offer.documentacion_url ?? "",
+    fileName: offer.documentacion_url
+      ? decodeURIComponent(offer.documentacion_url.split("/").pop()?.split("?")[0] ?? "Documento")
+      : "",
     previewName: project?.titulo ?? "",
     previewProject: project?.area?.nombre ?? "",
     repo: offer.url_repositorio ?? "",
@@ -592,7 +595,7 @@ export function GestionPage({ role, userId, initialProjectId, initialSection: in
 
       {/* ── Navigation rail flotante ── */}
       <nav
-        className="sticky top-10 self-start flex h-fit shrink-0 w-[72px] flex-col items-center gap-7 rounded-2xl border border-border bg-surface py-7 shadow-[var(--shadow-soft)]"
+        className="sticky top-10 self-start flex h-fit shrink-0 w-[72px] flex-col items-center gap-5 rounded-2xl border border-border bg-surface py-6 shadow-[var(--shadow-soft)]"
         aria-label="Navegación principal"
       >
 
@@ -600,17 +603,17 @@ export function GestionPage({ role, userId, initialProjectId, initialSection: in
         <div className="group relative">
           <button
             type="button"
-            onClick={() => setSidebarView("dashboard")}
-            aria-current={sidebarView === "dashboard" ? "page" : undefined}
+            onClick={() => { setSidebarView("dashboard"); handleBack(); }}
+            aria-current={sidebarView === "dashboard" && !selectedId ? "page" : undefined}
             aria-label="Dashboard"
             className={cn(
-              "flex size-11 items-center justify-center rounded-[18px] transition-all duration-[var(--duration-fast)] ease-[var(--ease-out)]",
-              sidebarView === "dashboard"
-                ? "bg-ink-strong text-white shadow-sm"
-                : "text-ink-muted/40 hover:bg-canvas hover:text-ink-strong",
+              "flex size-10 items-center justify-center rounded-[14px] transition-all duration-[var(--duration-fast)] ease-[var(--ease-out)]",
+              sidebarView === "dashboard" && !selectedId
+                ? "bg-secondary text-white shadow-sm"
+                : "text-ink-muted hover:bg-secondary/10 hover:text-secondary",
             )}
           >
-            <LayoutDashboard className="size-[19px]" aria-hidden="true" />
+            <LayoutDashboard className="size-[18px]" aria-hidden="true" />
           </button>
           <span role="tooltip" className="pointer-events-none absolute left-[calc(100%+12px)] top-1/2 z-50 -translate-y-1/2 whitespace-nowrap rounded-xl bg-ink-strong px-3 py-1.5 font-body text-xs font-semibold text-white opacity-0 shadow-lg transition-opacity duration-[var(--duration-fast)] group-hover:opacity-100">
             Dashboard
@@ -621,17 +624,17 @@ export function GestionPage({ role, userId, initialProjectId, initialSection: in
         <div className="group relative">
           <button
             type="button"
-            onClick={() => setSidebarView("procesos")}
-            aria-current={sidebarView === "procesos" ? "page" : undefined}
+            onClick={() => { setSidebarView("procesos"); handleBack(); }}
+            aria-current={sidebarView === "procesos" && !selectedId ? "page" : undefined}
             aria-label="Procesos"
             className={cn(
-              "flex size-11 items-center justify-center rounded-[18px] transition-all duration-[var(--duration-fast)] ease-[var(--ease-out)]",
-              sidebarView === "procesos"
-                ? "bg-ink-strong text-white shadow-sm"
-                : "text-ink-muted/40 hover:bg-canvas hover:text-ink-strong",
+              "flex size-10 items-center justify-center rounded-[14px] transition-all duration-[var(--duration-fast)] ease-[var(--ease-out)]",
+              sidebarView === "procesos" && !selectedId
+                ? "bg-secondary text-white shadow-sm"
+                : "text-ink-muted hover:bg-secondary/10 hover:text-secondary",
             )}
           >
-            <FolderOpen className="size-[19px]" aria-hidden="true" />
+            <GitBranch className="size-[18px]" aria-hidden="true" />
           </button>
           <span role="tooltip" className="pointer-events-none absolute left-[calc(100%+12px)] top-1/2 z-50 -translate-y-1/2 whitespace-nowrap rounded-xl bg-ink-strong px-3 py-1.5 font-body text-xs font-semibold text-white opacity-0 shadow-lg transition-opacity duration-[var(--duration-fast)] group-hover:opacity-100">
             Procesos
@@ -643,12 +646,13 @@ export function GestionPage({ role, userId, initialProjectId, initialSection: in
           <button
             type="button"
             aria-label="Mensajes"
-            className="flex size-11 items-center justify-center rounded-[18px] text-ink-muted/40 transition-all duration-[var(--duration-fast)] ease-[var(--ease-out)] hover:bg-canvas hover:text-ink-strong"
+            disabled
+            className="flex size-10 items-center justify-center rounded-[14px] text-ink-muted/30 transition-all duration-[var(--duration-fast)] ease-[var(--ease-out)] cursor-not-allowed"
           >
-            <MessageSquare className="size-[19px]" aria-hidden="true" />
+            <Mail className="size-[18px]" aria-hidden="true" />
           </button>
           <span role="tooltip" className="pointer-events-none absolute left-[calc(100%+12px)] top-1/2 z-50 -translate-y-1/2 whitespace-nowrap rounded-xl bg-ink-strong px-3 py-1.5 font-body text-xs font-semibold text-white opacity-0 shadow-lg transition-opacity duration-[var(--duration-fast)] group-hover:opacity-100">
-            Mensajes
+            Mensajes (próximamente)
           </span>
         </div>
 
@@ -895,8 +899,8 @@ export function GestionPage({ role, userId, initialProjectId, initialSection: in
       {/* ── Main column ── */}
       <div className="flex flex-1 flex-col">
 
-        {/* Project header + horizontal section tabs (desktop only) */}
-        {selectedId && (
+        {/* Project header + horizontal section tabs (desktop only — empresa only when junior) */}
+        {selectedId && isEmpresa && (
           <div className="hidden shrink-0 items-center gap-3 border-b border-border bg-surface px-6 py-3 md:flex">
             <button
               onClick={handleBack}
@@ -979,7 +983,7 @@ export function GestionPage({ role, userId, initialProjectId, initialSection: in
               t={t}
               locale={locale}
               onCreateProject={() => setFormMode("create")}
-              onSelectProject={(id) => handleSelect(id, "info")}
+              onSelectProject={(id) => handleSelect(id, isEmpresa ? "info" : "proceso")}
             />
           )
         ) : projectLoading && !selectedProject ? (
@@ -988,18 +992,20 @@ export function GestionPage({ role, userId, initialProjectId, initialSection: in
           </div>
         ) : (
           <>
-            <div className="sticky top-0 z-10 flex items-center gap-3 border-b border-border bg-canvas/95 px-4 py-3 backdrop-blur-sm md:hidden">
-              <button
-                onClick={handleBack}
-                className="inline-flex items-center gap-1.5 font-body text-sm font-semibold text-ink-muted hover:text-ink"
-              >
-                <ArrowLeft className="size-4" aria-hidden="true" />
-                {t("all_projects")}
-              </button>
-              <span className="flex-1 truncate font-heading text-sm font-bold text-ink-strong">
-                {selectedProject?.titulo ?? myOffers.find((o) => o.proyecto?.id === selectedId)?.proyecto?.titulo}
-              </span>
-            </div>
+            {isEmpresa && (
+              <div className="sticky top-0 z-10 flex items-center gap-3 border-b border-border bg-canvas/95 px-4 py-3 backdrop-blur-sm md:hidden">
+                <button
+                  onClick={handleBack}
+                  className="inline-flex items-center gap-1.5 font-body text-sm font-semibold text-ink-muted hover:text-ink"
+                >
+                  <ArrowLeft className="size-4" aria-hidden="true" />
+                  {t("all_projects")}
+                </button>
+                <span className="flex-1 truncate font-heading text-sm font-bold text-ink-strong">
+                  {selectedProject?.titulo ?? myOffers.find((o) => o.proyecto?.id === selectedId)?.proyecto?.titulo}
+                </span>
+              </div>
+            )}
             {!selectedProject && projectError && (
               <div className="flex flex-col items-center gap-3 px-6 py-20 text-center">
                 <FolderOpen className="size-10 text-ink-muted/30" aria-hidden="true" />
@@ -1034,19 +1040,32 @@ export function GestionPage({ role, userId, initialProjectId, initialSection: in
                   userId={userId}
                 />
               ) : (
-                <JuniorContactoPanel
-                  projectId={selectedId}
-                  projectTitulo={
-                    selectedProject?.titulo
-                    ?? myOffers.find((o) => o.proyecto?.id === selectedId)?.proyecto?.titulo
-                    ?? myConversaciones.find((c) => c.proyecto.id === selectedId)?.proyecto.titulo
-                    ?? ""
-                  }
-                  empresaNombre={selectedProject?.empresa?.nombre_comercial ?? null}
-                  t={t}
-                  userId={userId}
-                  onConversationActivity={refreshConversaciones}
-                />
+                <>
+                  {/* Back to proceso — only shown since junior tab bar is hidden */}
+                  <div className="flex items-center gap-2 border-b border-border bg-surface px-6 py-3">
+                    <button
+                      type="button"
+                      onClick={() => setSection("proceso")}
+                      className="inline-flex items-center gap-1.5 font-body text-sm font-semibold text-ink-muted transition-colors duration-[var(--duration-fast)] hover:text-ink"
+                    >
+                      <ArrowLeft className="size-4" aria-hidden="true" />
+                      {t("section_proceso")}
+                    </button>
+                  </div>
+                  <JuniorContactoPanel
+                    projectId={selectedId}
+                    projectTitulo={
+                      selectedProject?.titulo
+                      ?? myOffers.find((o) => o.proyecto?.id === selectedId)?.proyecto?.titulo
+                      ?? myConversaciones.find((c) => c.proyecto.id === selectedId)?.proyecto.titulo
+                      ?? ""
+                    }
+                    empresaNombre={selectedProject?.empresa?.nombre_comercial ?? null}
+                    t={t}
+                    userId={userId}
+                    onConversationActivity={refreshConversaciones}
+                  />
+                </>
               )
             )}
             {section === "proceso" && (
@@ -1060,6 +1079,8 @@ export function GestionPage({ role, userId, initialProjectId, initialSection: in
                 t={t}
                 userId={userId}
                 disponible={disponible}
+                onBack={() => { setSidebarView("procesos"); handleBack(); }}
+                onOpenChat={() => setSection("chat")}
               />
             )}
             {section === "matches" && isEmpresa && (
@@ -2500,7 +2521,7 @@ function JuniorContactoPanel({
 // ── Proceso panel router ──────────────────────────────────────────────────────
 
 function ProcesoPanel({
-  isEmpresa, offers, projectOffers, project, locale, t, userId, disponible,
+  isEmpresa, offers, projectOffers, project, locale, t, userId, disponible, onBack, onOpenChat,
 }: {
   isEmpresa: boolean;
   offers: MyOffer[];
@@ -2510,11 +2531,13 @@ function ProcesoPanel({
   t: T;
   userId: string | null;
   disponible: boolean;
+  onBack?: () => void;
+  onOpenChat?: () => void;
 }) {
   if (isEmpresa) {
     return <EmpresaProcesoView offers={projectOffers} project={project} locale={locale} t={t} />;
   }
-  return <JuniorProcesoView offers={offers} project={project} locale={locale} t={t} userId={userId} disponible={disponible} />;
+  return <JuniorProcesoView offers={offers} project={project} locale={locale} t={t} userId={userId} disponible={disponible} {...(onBack ? { onBack } : {})} {...(onOpenChat ? { onOpenChat } : {})} />;
 }
 
 // ── Browser mockup ────────────────────────────────────────────────────────────
@@ -2568,7 +2591,7 @@ function t_noop(k: string) { return k; }
 // ── Junior proceso view ───────────────────────────────────────────────────────
 
 function JuniorProcesoView({
-  offers, project, t, userId, disponible,
+  offers, project, locale, t, userId, disponible, onBack, onOpenChat,
 }: {
   offers: MyOffer[];
   project: ApiProject | null;
@@ -2576,17 +2599,26 @@ function JuniorProcesoView({
   t: T;
   userId: string | null;
   disponible: boolean;
+  onBack?: () => void;
+  onOpenChat?: () => void;
 }) {
   const [proposals, setProposals] = useState<JuniorProposal[]>(
     () => initJuniorProposals(offers, project),
   );
   const [submitError, setSubmitError] = useState("");
+  const [selectedIdx, setSelectedIdx] = useState(() => {
+    const init = initJuniorProposals(offers, project);
+    return Math.max(0, init.length - 1);
+  });
+  const [projectInfoOpen, setProjectInfoOpen] = useState(false);
   const closed = proposals.some((p) => p.status === "aceptada" && p.calificacion != null);
 
   // Reset proposals when offers change (real data loaded from API)
   const latestOfferId = offers[offers.length - 1]?.id;
   useEffect(() => {
-    setProposals(initJuniorProposals(offers, project));
+    const fresh = initJuniorProposals(offers, project);
+    setProposals(fresh);
+    setSelectedIdx(Math.max(0, fresh.length - 1));
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [offers.length, latestOfferId]);
 
@@ -2595,7 +2627,6 @@ function JuniorProcesoView({
     setProposals((prev) => prev.map((x, idx) => idx === i ? { ...x, ...p } : x));
 
   const startCreate = (i: number) => patch(i, { status: "editando", expanded: true });
-  const toggle      = (i: number) => { const c = proposals[i]; if (c) patch(i, { expanded: !c.expanded }); };
   const setField    = (i: number, k: keyof JuniorProposal, v: string) => patch(i, { [k]: v } as Partial<JuniorProposal>);
 
   const [withdrawConfirmIdx, setWithdrawConfirmIdx] = useState<number | null>(null);
@@ -2742,95 +2773,420 @@ function JuniorProcesoView({
   if (lastReal?.status === "enviada" || lastReal?.status === "revision") lockCaption = t("proceso_placeholder_revision");
   else if (lastReal?.status === "cambios") lockCaption = t("proceso_placeholder_cambios");
 
+  const safeIdx = Math.min(selectedIdx, proposals.length - 1);
+  const selectedP = proposals[safeIdx];
+
+  // Colorful circles: semantic palette
+  const STEP_COLOR: Record<ProposalStatus, string | null> = {
+    nuevo:          null,
+    editando:       "#662D91",
+    enviada:        "#0A6CB9",
+    revision:       "#F7901E",
+    cambios:        "#EC008C",
+    aceptada:       "#20BEC6",
+    noseleccionada: "#B3AEC0",
+  };
+
+  const stepIcon = (p: JuniorProposal): ReactNode => {
+    if (p.status === "nuevo") return null;
+    if (p.status === "editando") return <Pencil className="size-3 text-white" aria-hidden="true" />;
+    if (p.status === "aceptada") return <Check className="size-3.5 text-white" aria-hidden="true" />;
+    if (p.status === "noseleccionada") return <X className="size-3.5 text-white" aria-hidden="true" />;
+    if (p.status === "cambios") return <AlertCircle className="size-3.5 text-white" aria-hidden="true" />;
+    return p.v === 1
+      ? <Send className="size-3 text-white" aria-hidden="true" />
+      : <Pencil className="size-3 text-white" aria-hidden="true" />;
+  };
+
+  const skills = project?.skills.flatMap((s) => s.skill ? [s.skill] : []) ?? [];
+
   return (
-    <div className="px-6 py-10 md:px-10">
+    <div className="flex min-h-[560px] flex-col lg:flex-row">
 
-      {/* Card 1 — Estado actual */}
-      <div className="mb-5 rounded-2xl border border-border bg-surface px-7 py-[22px] shadow-sm">
-        <p className="font-body text-xs font-bold uppercase tracking-wider text-ink-muted">
-          {t("proceso_state_label")}
-        </p>
-        <div className="mt-3.5">
-          <span className={cn("inline-flex items-center rounded-full border px-4 py-[7px] font-body text-[13px] font-bold", bannerCls)}>
-            {bannerLabel}
-          </span>
-        </div>
-      </div>
+      {/* ── Left column ── */}
+      <div className="shrink-0 border-b border-border lg:w-[320px] lg:border-b-0 lg:border-r">
 
-      {/* Card 2 — Propuestas stepper */}
-      <div className="rounded-2xl border border-border bg-surface px-[30px] py-7 shadow-sm">
-        <p className="mb-6 font-body text-xs font-bold uppercase tracking-wider text-ink-muted">
-          {t("proceso_propuestas_label")}
-        </p>
-
-        {!disponible && isNew && (
-          <div className="mb-6 rounded-xl border border-warning/30 bg-warning/5 px-4 py-3 font-body text-[13px] text-ink">
-            {t("proceso_busy_message")}
+        {/* Back + Chat header row */}
+        {(onBack || onOpenChat) && (
+          <div className="flex items-center justify-between px-5 pb-3">
+            {onBack ? (
+              <button
+                type="button"
+                onClick={onBack}
+                className="inline-flex items-center gap-2 rounded-[14px] border border-border bg-surface px-3 py-2 font-body text-xs font-semibold text-ink shadow-[var(--shadow-soft)] transition-all duration-[var(--duration-fast)] ease-[var(--ease-out)] hover:border-primary hover:text-primary"
+              >
+                <ArrowLeft className="size-3.5" aria-hidden="true" />
+                {t("procesos_title")}
+              </button>
+            ) : <span />}
+            {onOpenChat && (
+              <button
+                type="button"
+                onClick={onOpenChat}
+                className="inline-flex items-center gap-2 rounded-[14px] border border-border bg-surface px-3 py-2 font-body text-xs font-semibold text-ink shadow-[var(--shadow-soft)] transition-all duration-[var(--duration-fast)] ease-[var(--ease-out)] hover:border-primary hover:text-primary"
+              >
+                <MessageSquare className="size-3.5" aria-hidden="true" />
+                {t("abrir_chat")}
+              </button>
+            )}
           </div>
         )}
 
-        {proposals.map((p, i) => {
-          const c        = juniorCircle(p.status);
-          const isSent   = ["enviada","revision","cambios","aceptada","noseleccionada"].includes(p.status);
-          const isEditing = p.status === "editando";
-          const pm        = propMeta(p.status);
-          const submitOk  = p.desc.trim().length > 0;
-          const showLine  = i < proposals.length - 1 || !closed;
+        {/* Project name + company + collapsible toggle */}
+        <div className="px-5 pt-4 pb-3">
+          <button
+            type="button"
+            onClick={() => setProjectInfoOpen((v) => !v)}
+            className="flex w-full items-start gap-2 text-left"
+          >
+            <div className="min-w-0 flex-1">
+              <h2 className="font-heading text-[18px] font-extrabold tracking-tight text-ink-strong line-clamp-2">
+                {project?.titulo ?? ""}
+              </h2>
+              {project?.empresa && (
+                <p className="mt-0.5 font-body text-[13px] text-ink-muted line-clamp-1">
+                  {project.empresa.nombre_comercial}
+                </p>
+              )}
+            </div>
+            <ChevronDown
+              className={cn(
+                "mt-1 size-4 shrink-0 text-ink-muted transition-transform duration-[var(--duration-fast)]",
+                projectInfoOpen && "rotate-180",
+              )}
+              aria-hidden="true"
+            />
+          </button>
 
-          return (
-            <div key={p.v} className="flex gap-[18px] items-stretch">
-              {/* Circle + vertical line */}
-              <div className="flex flex-col items-center" style={{ width: 32, flexShrink: 0, paddingTop: 1 }}>
-                <div
-                  className={cn("flex size-[30px] shrink-0 items-center justify-center rounded-full", c.bg)}
-                  aria-hidden="true"
-                >
-                  {c.icon}
-                </div>
-                {showLine && (
-                  <div className="mt-2 w-0.5 flex-1 rounded-sm bg-border" style={{ minHeight: 20 }} aria-hidden="true" />
-                )}
-              </div>
-
-              {/* Row content */}
-              <div className="min-w-0 flex-1 pb-[30px]">
-                {/* Header */}
-                <div className="flex min-h-[32px] items-center justify-between gap-3">
-                  <div
-                    onClick={() => { if (isSent) toggle(i); }}
-                    className={cn("flex items-center gap-[9px]", isSent ? "cursor-pointer" : "cursor-default")}
-                  >
-                    <span className="font-body text-base font-bold text-ink-strong">
-                      {t("proceso_propuesta_n", { n: p.v })}
+          {/* Collapsible project info */}
+          {projectInfoOpen && (
+            <div className="mt-3 flex flex-col gap-3 border-b border-border pb-4">
+              {/* Meta pills */}
+              {project && (project.compensacion != null || project.plazo_dias != null || project.fecha_cierre || project.usa_ia) && (
+                <div className="flex flex-wrap gap-1.5">
+                  {project.compensacion != null && (
+                    <span className="inline-flex items-center gap-1 rounded-full border border-accent/30 bg-accent/10 px-2.5 py-1 font-body text-[11px] font-semibold text-accent">
+                      <Wallet className="size-3 shrink-0" aria-hidden="true" />
+                      ${project.compensacion} {project.moneda}
                     </span>
-                    {isSent && (
-                      <span className="text-[11px] text-ink-muted" aria-hidden="true">
-                        {p.expanded ? "▲" : "▼"}
+                  )}
+                  {project.plazo_dias != null && (
+                    <span className="inline-flex items-center gap-1 rounded-full border border-border bg-canvas px-2.5 py-1 font-body text-[11px] font-semibold text-ink-muted">
+                      <Clock className="size-3 shrink-0" aria-hidden="true" />
+                      {t("proceso_duracion", { days: project.plazo_dias })}
+                    </span>
+                  )}
+                  {project.fecha_cierre && (
+                    <span className="inline-flex items-center gap-1 rounded-full border border-border bg-canvas px-2.5 py-1 font-body text-[11px] font-semibold text-ink-muted">
+                      <Calendar className="size-3 shrink-0" aria-hidden="true" />
+                      {new Date(project.fecha_cierre).toLocaleDateString(
+                        locale === "es" ? "es-CR" : "en-US",
+                        { day: "numeric", month: "long" },
+                      )}
+                    </span>
+                  )}
+                  {project.usa_ia && (
+                    <span className="inline-flex items-center gap-1 rounded-full border border-highlight/30 bg-highlight/10 px-2.5 py-1 font-body text-[11px] font-semibold text-warning">
+                      <Zap className="size-3 shrink-0" aria-hidden="true" />
+                      IA
+                    </span>
+                  )}
+                </div>
+              )}
+              {project?.descripcion && (
+                <p className="font-body text-[13px] leading-relaxed text-ink">
+                  {project.descripcion}
+                </p>
+              )}
+              {skills.length > 0 && (
+                <div>
+                  <p className="mb-1.5 font-body text-[10px] font-bold uppercase tracking-wider text-ink-muted">
+                    {t("project_skills")}
+                  </p>
+                  <div className="flex flex-wrap gap-1.5">
+                    {skills.map((sk) => (
+                      <span key={sk.id} className="rounded-full border border-border bg-canvas px-2.5 py-0.5 font-body text-[11px] font-semibold text-ink">
+                        {sk.nombre}
                       </span>
+                    ))}
+                  </div>
+                </div>
+              )}
+              {project?.condiciones && (
+                <div>
+                  <p className="mb-1.5 font-body text-[10px] font-bold uppercase tracking-wider text-ink-muted">
+                    {t("project_requirements")}
+                  </p>
+                  <p className="font-body text-[13px] leading-relaxed text-ink">
+                    {project.condiciones}
+                  </p>
+                </div>
+              )}
+            </div>
+          )}
+        </div>
+
+        {/* Stepper */}
+        <div className="px-5 pb-6 pt-2">
+          {proposals.map((p, i) => {
+            const color = STEP_COLOR[p.status];
+            const isSelected = i === safeIdx;
+            const isLast = i === proposals.length - 1;
+            const showConnector = !isLast || !closed;
+            const nextP = proposals[i + 1];
+            const connectorColor = nextP ? (STEP_COLOR[nextP.status] ?? "var(--border)") : "var(--border)";
+
+            return (
+              <div key={p.v} className="flex gap-3">
+                {/* Circle + connector line */}
+                <div className="flex shrink-0 flex-col items-center" style={{ width: 28 }}>
+                  <div
+                    className={cn(
+                      "flex size-7 shrink-0 cursor-pointer items-center justify-center rounded-full transition-all duration-[var(--duration-fast)]",
+                      p.status === "nuevo" ? "border-2 border-dashed border-border bg-transparent" : "",
+                      isSelected && color ? "ring-2 ring-offset-2 ring-offset-canvas" : "",
+                    )}
+                    style={color ? {
+                      backgroundColor: color,
+                      ...(isSelected ? { ringColor: color } as React.CSSProperties : {}),
+                    } : undefined}
+                    onClick={() => { setSelectedIdx(i); if (p.status === "nuevo") startCreate(i); }}
+                    role="button"
+                    tabIndex={0}
+                    aria-label={t("proceso_propuesta_n", { n: p.v })}
+                  >
+                    {stepIcon(p)}
+                  </div>
+                  {showConnector && (
+                    <div
+                      className="mt-1 w-0.5 flex-1 rounded-sm"
+                      style={{ minHeight: 24, background: connectorColor }}
+                      aria-hidden="true"
+                    />
+                  )}
+                </div>
+
+                {/* Label */}
+                <button
+                  type="button"
+                  onClick={() => { setSelectedIdx(i); if (p.status === "nuevo") startCreate(i); }}
+                  className={cn(
+                    "mb-1 flex min-w-0 flex-1 items-center gap-2 rounded-[10px] px-3 py-2.5 text-left transition-all duration-[var(--duration-fast)] ease-[var(--ease-out)]",
+                    isSelected ? "bg-secondary/8 ring-1 ring-secondary/20 shadow-sm" : "hover:bg-canvas",
+                  )}
+                >
+                  <div className="min-w-0 flex-1">
+                    <p className="font-body text-[13px] font-semibold text-ink-strong">
+                      {t("proceso_propuesta_n", { n: p.v })}
+                    </p>
+                    {propMeta(p.status) && (
+                      <p className="mt-0.5 font-body text-[11px] text-ink-muted">
+                        {propMeta(p.status)?.label}
+                      </p>
                     )}
                   </div>
-                  <div className="flex items-center gap-[10px]">
-                    {p.status === "nuevo" && (
-                      <button
-                        onClick={() => startCreate(i)}
-                        disabled={!disponible}
-                        className={cn(
-                          "rounded-[10px] border border-border bg-surface px-[18px] py-[9px] font-body text-[14px] font-semibold text-ink transition-colors duration-[var(--duration-fast)]",
-                          disponible ? "hover:border-secondary hover:text-secondary" : "opacity-50 cursor-not-allowed",
-                        )}
-                      >
-                        {t("proceso_crear_propuesta")}
-                      </button>
+                  {isSelected && <ArrowRight className="size-3.5 shrink-0 text-ink-muted" aria-hidden="true" />}
+                </button>
+              </div>
+            );
+          })}
+
+          {/* Ghost — locked next version */}
+          {!closed && latest?.status !== "aceptada" && latest?.status !== "noseleccionada" && (
+            <div className="flex gap-3">
+              <div className="flex shrink-0 flex-col items-center" style={{ width: 28 }}>
+                <div
+                  className="size-7 shrink-0 rounded-full opacity-30"
+                  style={{ border: "2px dashed var(--border)" }}
+                  aria-hidden="true"
+                />
+              </div>
+              <div className="mb-1 flex min-w-0 flex-1 items-center gap-2 rounded-xl px-3 py-2.5 opacity-40">
+                <div className="min-w-0 flex-1">
+                  <p className="font-body text-[13px] font-semibold text-ink-muted">
+                    {t("proceso_propuesta_n", { n: proposals.length + 1 })}
+                  </p>
+                  <p className="mt-0.5 flex items-center gap-1 font-body text-[11px] text-ink-muted">
+                    <Lock className="size-3 shrink-0" aria-hidden="true" />
+                    {lockCaption}
+                  </p>
+                </div>
+              </div>
+            </div>
+          )}
+
+          {/* Closed */}
+          {closed && (
+            <div
+              className="mt-3 flex items-center gap-2 rounded-xl px-3 py-2.5 font-body text-[12px] font-semibold"
+              style={{ background: "#E0F3E9", color: "#1E7A4F" }}
+            >
+              <Check className="size-4 shrink-0" aria-hidden="true" />
+              {t("proceso_cerrado")}
+            </div>
+          )}
+        </div>
+      </div>
+
+      {/* ── Right column — proposal detail ── */}
+      <div className="min-w-0 flex-1 bg-canvas">
+
+        {selectedP && (() => {
+          const p = selectedP;
+          const i = safeIdx;
+          const isSent = ["enviada", "revision", "cambios", "aceptada", "noseleccionada"].includes(p.status);
+          const isEditing = p.status === "editando";
+          const pm = propMeta(p.status);
+          const submitOk = p.desc.trim().length > 0;
+
+          /* ── Nuevo: call-to-action ── */
+          if (p.status === "nuevo") {
+            return (
+              <div className="flex min-h-[360px] flex-col items-center justify-center px-10 py-10 text-center">
+                {!disponible && (
+                  <div className="mb-6 w-full max-w-md rounded-xl border border-warning/30 bg-warning/5 px-4 py-3 font-body text-[13px] text-ink">
+                    {t("proceso_busy_message")}
+                  </div>
+                )}
+                <div className="mb-4 flex size-14 items-center justify-center rounded-2xl bg-secondary/10">
+                  <Send className="size-6 text-secondary" aria-hidden="true" />
+                </div>
+                <h3 className="mb-2 font-heading text-xl font-extrabold tracking-tight text-ink-strong">
+                  {t("proceso_crear_propuesta")}
+                </h3>
+                <p className="mb-7 max-w-sm font-body text-sm leading-relaxed text-ink-muted">
+                  {lockCaption}
+                </p>
+                <button
+                  onClick={() => startCreate(i)}
+                  disabled={!disponible}
+                  className={cn(
+                    "rounded-full bg-secondary px-7 py-3 font-body text-[14px] font-bold text-white transition-colors duration-[var(--duration-fast)]",
+                    disponible ? "hover:bg-secondary/80" : "opacity-50 cursor-not-allowed",
+                  )}
+                >
+                  {t("proceso_crear_propuesta")}
+                </button>
+              </div>
+            );
+          }
+
+          /* ── Editing form ── */
+          if (isEditing) {
+            return (
+              <div className="px-8 pb-7">
+                {/* Status badge only — no proposal title */}
+                {pm && (
+                  <div className="mb-5 flex justify-end">
+                    <span className={cn("inline-flex items-center rounded-full border px-4 py-1.5 font-body text-[13px] font-bold", pm.cls)}>
+                      {pm.label}
+                    </span>
+                  </div>
+                )}
+
+                <label className="mb-2 block font-body text-[13px] font-bold text-ink">
+                  {t("description_label")}
+                </label>
+                <textarea
+                  placeholder={t("proceso_desc_placeholder")}
+                  value={p.desc}
+                  onChange={(e) => setField(i, "desc", e.target.value)}
+                  rows={5}
+                  className="w-full resize-y rounded-xl border border-border bg-surface p-[13px] font-body text-[14px] text-ink placeholder:text-ink-muted/60 focus:border-secondary focus:outline-none focus:ring-2 focus:ring-secondary/20"
+                />
+
+                <label className="mb-2 mt-5 block font-body text-[13px] font-bold text-ink">
+                  {t("proceso_doc_label")}
+                  <span className="ml-1 font-normal text-magenta">*</span>
+                </label>
+                <p className="mb-2 font-body text-[12px] text-ink-muted">{t("proceso_doc_hint")}</p>
+                <div className="flex gap-3">
+                  <input
+                    placeholder={t("proceso_link_placeholder")}
+                    value={p.link}
+                    onChange={(e) => { setField(i, "link", e.target.value); if (p.docUrl) patch(i, { docUrl: "", fileName: "" }); }}
+                    disabled={!!p.docUrl}
+                    className="min-w-0 flex-1 rounded-xl border border-border bg-surface px-[15px] py-3 font-body text-[14px] text-ink placeholder:text-ink-muted/60 focus:border-secondary focus:outline-none focus:ring-2 focus:ring-secondary/20 disabled:opacity-50"
+                  />
+                  <label className={cn(
+                    "inline-flex cursor-pointer items-center gap-2 whitespace-nowrap rounded-xl border px-[18px] py-3 font-body text-[14px] font-semibold transition-colors",
+                    p.docUrl ? "border-accent bg-accent/10 text-accent" : "border-border bg-surface text-ink hover:border-secondary hover:text-secondary",
+                    p.link && "opacity-50 pointer-events-none",
+                    isUploading && "opacity-50 pointer-events-none",
+                  )}>
+                    {isUploading
+                      ? <><Loader2 className="size-[15px] animate-spin" aria-hidden="true" />Subiendo...</>
+                      : p.docUrl
+                        ? <><CheckCircle2 className="size-[15px]" aria-hidden="true" />{p.fileName}</>
+                        : <><Upload className="size-[15px]" aria-hidden="true" />{t("proceso_subir_archivo")}</>
+                    }
+                    <input
+                      type="file"
+                      accept=".pdf,.doc,.docx"
+                      className="hidden"
+                      disabled={!!p.link || isUploading}
+                      onChange={(e) => { void handleFileChange(e, i); }}
+                    />
+                  </label>
+                </div>
+
+                <div className="my-[22px] h-px bg-border" />
+
+                <p className="font-body text-[13px] font-bold text-ink">{t("proceso_recursos_titulo")}</p>
+                <p className="mb-4 mt-[3px] font-body text-[13px] text-secondary">{t("proceso_recursos_subtitulo")}</p>
+
+                <div className="grid gap-[14px]" style={{ gridTemplateColumns: "130px 1fr", alignItems: "center", columnGap: 16 }}>
+                  <label className="font-body text-[13px] font-semibold text-ink">{t("proceso_recursos_nombre")}</label>
+                  <input value={p.previewName} onChange={(e) => setField(i, "previewName", e.target.value)}
+                    className="w-full rounded-[10px] border border-border bg-surface px-[14px] py-[11px] font-body text-[14px] text-ink focus:border-secondary focus:outline-none focus:ring-2 focus:ring-secondary/20" />
+                  <label className="font-body text-[13px] font-semibold text-ink">{t("proceso_recursos_proyecto")}</label>
+                  <input value={p.previewProject} onChange={(e) => setField(i, "previewProject", e.target.value)}
+                    className="w-full rounded-[10px] border border-border bg-surface px-[14px] py-[11px] font-body text-[14px] text-ink focus:border-secondary focus:outline-none focus:ring-2 focus:ring-secondary/20" />
+                  <label className="font-body text-[13px] font-semibold leading-snug text-ink">{t("proceso_recursos_repo")}</label>
+                  <input value={p.repo} onChange={(e) => setField(i, "repo", e.target.value)}
+                    className="w-full rounded-[10px] border border-border bg-surface px-[14px] py-[11px] font-body text-[14px] text-ink focus:border-secondary focus:outline-none focus:ring-2 focus:ring-secondary/20" />
+                </div>
+
+                {submitError && (
+                  <p className="mt-4 font-body text-[13px] text-magenta">{submitError}</p>
+                )}
+                <div className="mt-6 flex items-center justify-end gap-3">
+                  <button
+                    type="button"
+                    onClick={() => cancelEdit(i)}
+                    className="rounded-xl border border-border bg-surface px-6 py-3 font-body text-[14px] font-semibold text-ink transition-colors duration-[var(--duration-fast)] hover:border-ink-muted hover:text-ink-strong"
+                  >
+                    {t("proceso_cancelar")}
+                  </button>
+                  <button
+                    onClick={() => { void submit(i); }}
+                    disabled={!submitOk || isUploading}
+                    className={cn(
+                      "rounded-xl bg-secondary px-6 py-3 font-body text-[14px] font-bold text-white transition-colors duration-[var(--duration-fast)]",
+                      submitOk && !isUploading ? "hover:bg-secondary/80" : "opacity-50 cursor-not-allowed",
                     )}
-                    {/* Editar y Retirar — solo cuando la empresa aún no revisó */}
+                  >
+                    {t("proceso_subir_propuesta")}
+                  </button>
+                </div>
+              </div>
+            );
+          }
+
+          /* ── Read-only sent view ── */
+          if (isSent) {
+            return (
+              <div className="px-8 pb-7">
+                {/* Actions + status badge (no title — shown in left column) */}
+                <div className="mb-6 flex flex-wrap items-center justify-end gap-2">
                     {p.status === "enviada" && p.offerId && (
                       <>
                         <button
                           onClick={() => startEdit(i)}
-                          className="inline-flex items-center gap-1.5 rounded-[10px] border border-border bg-surface px-[14px] py-[7px] font-body text-[13px] font-semibold text-ink transition-colors duration-[var(--duration-fast)] hover:border-secondary hover:text-secondary"
+                          aria-label={t("proceso_editar")}
+                          className="inline-flex items-center justify-center rounded-[10px] bg-highlight p-[9px] text-white transition-colors duration-[var(--duration-fast)] hover:bg-highlight/80"
                         >
-                          <Pencil className="size-[13px]" aria-hidden="true" />
-                          {t("proceso_editar")}
+                          <Pencil className="size-[15px]" aria-hidden="true" />
                         </button>
                         {withdrawConfirmIdx === i ? (
                           <div className="inline-flex items-center gap-2 rounded-[10px] border border-magenta/30 bg-magenta/5 px-[14px] py-[7px]">
@@ -2858,10 +3214,10 @@ function JuniorProcesoView({
                             type="button"
                             onClick={() => setWithdrawConfirmIdx(i)}
                             disabled={withdrawingIdx === i}
-                            className="inline-flex items-center gap-1.5 rounded-[10px] border border-magenta/30 bg-surface px-[14px] py-[7px] font-body text-[13px] font-semibold text-magenta transition-colors duration-[var(--duration-fast)] hover:bg-magenta/5 disabled:opacity-50"
+                            aria-label={t("proceso_retirar")}
+                            className="inline-flex items-center justify-center rounded-[10px] bg-magenta p-[9px] text-white transition-colors duration-[var(--duration-fast)] hover:bg-magenta/80 disabled:opacity-50"
                           >
-                            <Trash2 className="size-[13px]" aria-hidden="true" />
-                            {t("proceso_retirar")}
+                            <Trash2 className="size-[15px]" aria-hidden="true" />
                           </button>
                         )}
                       </>
@@ -2871,234 +3227,108 @@ function JuniorProcesoView({
                         {pm.label}
                       </span>
                     )}
+                </div>
+
+                <label className="mb-2 block font-body text-[13px] font-bold text-ink">
+                  {t("description_label")}
+                </label>
+                <div className="rounded-xl border border-border bg-canvas p-[14px] font-body text-[14px] leading-relaxed text-ink" style={{ background: "#FBFAFD" }}>
+                  {p.desc}
+                </div>
+
+                <label className="mb-2 mt-5 block font-body text-[13px] font-bold text-ink">
+                  {t("proceso_doc_label")}
+                </label>
+                <div className="flex flex-wrap items-center gap-3">
+                  <div className="min-w-[200px] flex-1 truncate rounded-xl border border-border px-[15px] py-3 font-body text-[14px] text-primary" style={{ background: "#FBFAFD" }}>
+                    {p.link || t("proceso_sin_enlace")}
+                  </div>
+                  {p.fileName && (
+                    <div className="inline-flex items-center gap-2 rounded-xl border border-border bg-surface px-[14px] py-[11px] font-body text-[13px] font-semibold text-ink">
+                      <FileText className="size-[14px] text-magenta" aria-hidden="true" />
+                      {p.fileName}
+                    </div>
+                  )}
+                </div>
+
+                <label className="mb-2 mt-5 block font-body text-[13px] font-bold text-ink">
+                  {t("proceso_previsualizacion_label")}
+                </label>
+                <div className="overflow-hidden rounded-[14px] border border-border bg-surface">
+                  <div className="flex items-center gap-[7px] border-b border-border px-[14px] py-[11px]" style={{ background: "#F4F3F7" }}>
+                    <span className="size-[11px] rounded-full" style={{ background: "#F2655A" }} aria-hidden="true" />
+                    <span className="size-[11px] rounded-full" style={{ background: "#F5BE4F" }} aria-hidden="true" />
+                    <span className="size-[11px] rounded-full" style={{ background: "#62C554" }} aria-hidden="true" />
+                    <div className="ml-[10px] flex-1 truncate rounded-[7px] border border-border bg-surface px-3 py-[6px] font-body text-[12px] text-ink-muted">
+                      {p.repo || p.link || "preview.proyecto.app"}
+                    </div>
+                    {(p.repo || p.link) && (
+                      <a href={p.repo || p.link} target="_blank" rel="noopener noreferrer"
+                        className="inline-flex shrink-0 items-center gap-1 font-body text-xs font-bold text-primary hover:underline">
+                        <ExternalLink className="size-3" aria-hidden="true" />
+                        Abrir
+                      </a>
+                    )}
+                  </div>
+                  <div className="flex min-h-[150px] flex-col gap-[10px] px-7 py-[30px]" style={{ background: "linear-gradient(180deg,#FCFBFE,#F7F6FB)" }}>
+                    <p className="font-heading text-xl font-extrabold tracking-tight text-ink-strong">
+                      {p.previewName || t("proceso_preview_sin_nombre")}
+                    </p>
+                    <span className="self-start rounded-full bg-secondary/10 px-3 py-[5px] font-body text-[12px] font-semibold text-secondary">
+                      {p.previewProject || t("proceso_preview_sin_categoria")}
+                    </span>
+                    <p className="mt-1 font-body text-[13px] leading-relaxed text-ink-muted line-clamp-3">{p.desc}</p>
                   </div>
                 </div>
 
-                {/* Edit form */}
-                {isEditing && (
-                  <div className="mt-[18px]">
-                    <label className="mb-2 block font-body text-[13px] font-bold text-ink">
-                      {t("description_label")}
-                    </label>
-                    <textarea
-                      placeholder={t("proceso_desc_placeholder")}
-                      value={p.desc}
-                      onChange={(e) => setField(i, "desc", e.target.value)}
-                      rows={4}
-                      className="w-full resize-y rounded-xl border border-border bg-surface p-[13px] font-body text-[14px] text-ink placeholder:text-ink-muted/60 focus:border-secondary focus:outline-none focus:ring-2 focus:ring-secondary/20"
-                    />
+                <label className="mb-2 mt-5 block font-body text-[13px] font-bold text-ink">
+                  {t("proceso_observaciones_label")}
+                </label>
+                {p.status === "aceptada" ? (
+                  <div className="rounded-xl border border-accent/30 bg-accent/5 p-[14px] font-body text-[14px] leading-relaxed text-ink">
+                    {p.observaciones || t("proceso_revision_empty")}
+                  </div>
+                ) : (
+                  <div
+                    className="min-h-[84px] rounded-xl border p-[14px] font-body text-[14px] leading-relaxed"
+                    style={p.observaciones
+                      ? { borderColor: "#F0CDBF", background: "#FFF6F2", color: "#9A3B23" }
+                      : { borderColor: "#E8E5EF", background: "#FBFAFD", color: "#B3AEC0" }}
+                  >
+                    {p.observaciones || t("proceso_observaciones_empty")}
+                  </div>
+                )}
 
-                    <label className="mb-2 mt-5 block font-body text-[13px] font-bold text-ink">
-                      {t("proceso_doc_label")}
-                      <span className="ml-1 font-normal text-magenta">*</span>
-                    </label>
-                    <p className="mb-2 font-body text-[12px] text-ink-muted">Adjuntá un enlace <strong>o</strong> subí un PDF — al menos uno es obligatorio.</p>
-                    <div className="flex gap-3">
-                      <input
-                        placeholder={t("proceso_link_placeholder")}
-                        value={p.link}
-                        onChange={(e) => { setField(i, "link", e.target.value); if (p.docUrl) patch(i, { docUrl: "", fileName: "" }); }}
-                        disabled={!!p.docUrl}
-                        className="min-w-0 flex-1 rounded-xl border border-border bg-surface px-[15px] py-3 font-body text-[14px] text-ink placeholder:text-ink-muted/60 focus:border-secondary focus:outline-none focus:ring-2 focus:ring-secondary/20 disabled:opacity-50"
-                      />
-                      <label className={cn(
-                        "inline-flex cursor-pointer items-center gap-2 whitespace-nowrap rounded-xl border px-[18px] py-3 font-body text-[14px] font-semibold transition-colors",
-                        p.docUrl ? "border-accent bg-accent/10 text-accent" : "border-border bg-surface text-ink hover:border-secondary hover:text-secondary",
-                        p.link && "opacity-50 pointer-events-none",
-                        isUploading && "opacity-50 pointer-events-none",
-                      )}>
-                        {isUploading
-                          ? <><Loader2 className="size-[15px] animate-spin" aria-hidden="true" />Subiendo...</>
-                          : p.docUrl
-                            ? <><CheckCircle2 className="size-[15px]" aria-hidden="true" />{p.fileName}</>
-                            : <><Upload className="size-[15px]" aria-hidden="true" />{t("proceso_subir_archivo")}</>
-                        }
-                        <input
-                          type="file"
-                          accept=".pdf,.doc,.docx"
-                          className="hidden"
-                          disabled={!!p.link || isUploading}
-                          onChange={(e) => { void handleFileChange(e, i); }}
+                {p.status === "aceptada" && p.calificacion != null && (
+                  <div className="mt-4 rounded-xl border border-highlight/30 bg-highlight/5 p-[14px]">
+                    <p className="mb-2 font-body text-[10px] font-bold uppercase tracking-wider text-ink-muted">
+                      {t("proceso_calificacion_empresa")}
+                    </p>
+                    <div className="flex items-center gap-1">
+                      {Array.from({ length: 5 }).map((_, starIdx) => (
+                        <Star
+                          key={starIdx}
+                          className={cn("size-5", starIdx < p.calificacion! ? "fill-highlight text-highlight" : "text-border")}
+                          aria-hidden="true"
                         />
-                      </label>
+                      ))}
+                      <span className="ml-2 font-heading text-base font-bold text-ink-strong">
+                        {p.calificacion}/5
+                      </span>
                     </div>
-
-                    <div className="my-[22px] h-px bg-border" />
-
-                    <p className="font-body text-[13px] font-bold text-ink">{t("proceso_recursos_titulo")}</p>
-                    <p className="mb-4 mt-[3px] font-body text-[13px] text-secondary">{t("proceso_recursos_subtitulo")}</p>
-
-                    <div className="grid gap-[14px]" style={{ gridTemplateColumns: "130px 1fr", alignItems: "center", columnGap: 16 }}>
-                      <label className="font-body text-[13px] font-semibold text-ink">{t("proceso_recursos_nombre")}</label>
-                      <input value={p.previewName} onChange={(e) => setField(i, "previewName", e.target.value)}
-                        className="w-full rounded-[10px] border border-border bg-surface px-[14px] py-[11px] font-body text-[14px] text-ink focus:border-secondary focus:outline-none focus:ring-2 focus:ring-secondary/20" />
-                      <label className="font-body text-[13px] font-semibold text-ink">{t("proceso_recursos_proyecto")}</label>
-                      <input value={p.previewProject} onChange={(e) => setField(i, "previewProject", e.target.value)}
-                        className="w-full rounded-[10px] border border-border bg-surface px-[14px] py-[11px] font-body text-[14px] text-ink focus:border-secondary focus:outline-none focus:ring-2 focus:ring-secondary/20" />
-                      <label className="font-body text-[13px] font-semibold leading-snug text-ink">{t("proceso_recursos_repo")}</label>
-                      <input value={p.repo} onChange={(e) => setField(i, "repo", e.target.value)}
-                        className="w-full rounded-[10px] border border-border bg-surface px-[14px] py-[11px] font-body text-[14px] text-ink focus:border-secondary focus:outline-none focus:ring-2 focus:ring-secondary/20" />
-                    </div>
-
-                    {submitError && (
-                      <p className="mt-4 font-body text-[13px] text-magenta">{submitError}</p>
-                    )}
-                    <div className="mt-6 flex items-center justify-end gap-3">
-                      <button
-                        type="button"
-                        onClick={() => cancelEdit(i)}
-                        className="rounded-xl border border-border bg-surface px-6 py-3 font-body text-[14px] font-semibold text-ink transition-colors duration-[var(--duration-fast)] hover:border-ink-muted hover:text-ink-strong"
-                      >
-                        {t("proceso_cancelar")}
-                      </button>
-                      <button
-                        onClick={() => { void submit(i); }}
-                        disabled={!submitOk || isUploading}
-                        className={cn(
-                          "rounded-xl bg-secondary px-6 py-3 font-body text-[14px] font-bold text-white transition-colors duration-[var(--duration-fast)]",
-                          submitOk && !isUploading ? "hover:bg-secondary/80" : "opacity-50 cursor-not-allowed",
-                        )}
-                      >
-                        {t("proceso_subir_propuesta")}
-                      </button>
-                    </div>
-                  </div>
-                )}
-
-                {/* Read-only body when sent */}
-                {isSent && p.expanded && (
-                  <div className="mt-[18px]">
-                    <label className="mb-2 block font-body text-[13px] font-bold text-ink">
-                      {t("description_label")}
-                    </label>
-                    <div className="rounded-xl border border-border bg-canvas p-[14px] font-body text-[14px] leading-relaxed text-ink" style={{ background: "#FBFAFD" }}>
-                      {p.desc}
-                    </div>
-
-                    <label className="mb-2 mt-5 block font-body text-[13px] font-bold text-ink">
-                      {t("proceso_doc_label")}
-                    </label>
-                    <div className="flex flex-wrap items-center gap-3">
-                      <div className="min-w-[200px] flex-1 truncate rounded-xl border border-border px-[15px] py-3 font-body text-[14px] text-primary" style={{ background: "#FBFAFD" }}>
-                        {p.link || t("proceso_sin_enlace")}
-                      </div>
-                      {p.fileName && (
-                        <div className="inline-flex items-center gap-2 rounded-xl border border-border bg-surface px-[14px] py-[11px] font-body text-[13px] font-semibold text-ink">
-                          <FileText className="size-[14px] text-magenta" aria-hidden="true" />
-                          {p.fileName}
-                        </div>
-                      )}
-                    </div>
-
-                    <label className="mb-2 mt-5 block font-body text-[13px] font-bold text-ink">
-                      {t("proceso_previsualizacion_label")}
-                    </label>
-                    <div className="overflow-hidden rounded-[14px] border border-border bg-surface">
-                      <div className="flex items-center gap-[7px] border-b border-border px-[14px] py-[11px]" style={{ background: "#F4F3F7" }}>
-                        <span className="size-[11px] rounded-full" style={{ background: "#F2655A" }} aria-hidden="true" />
-                        <span className="size-[11px] rounded-full" style={{ background: "#F5BE4F" }} aria-hidden="true" />
-                        <span className="size-[11px] rounded-full" style={{ background: "#62C554" }} aria-hidden="true" />
-                        <div className="ml-[10px] flex-1 truncate rounded-[7px] border border-border bg-surface px-3 py-[6px] font-body text-[12px] text-ink-muted">
-                          {p.repo || p.link || "preview.proyecto.app"}
-                        </div>
-                        {(p.repo || p.link) && (
-                          <a href={p.repo || p.link} target="_blank" rel="noopener noreferrer"
-                            className="inline-flex shrink-0 items-center gap-1 font-body text-xs font-bold text-primary hover:underline">
-                            <ExternalLink className="size-3" aria-hidden="true" />
-                            Abrir
-                          </a>
-                        )}
-                      </div>
-                      <div className="flex min-h-[150px] flex-col gap-[10px] px-7 py-[30px]" style={{ background: "linear-gradient(180deg,#FCFBFE,#F7F6FB)" }}>
-                        <p className="font-heading text-xl font-extrabold tracking-tight text-ink-strong">
-                          {p.previewName || t("proceso_preview_sin_nombre")}
-                        </p>
-                        <span className="self-start rounded-full bg-secondary/10 px-3 py-[5px] font-body text-[12px] font-semibold text-secondary">
-                          {p.previewProject || t("proceso_preview_sin_categoria")}
-                        </span>
-                        <p className="mt-1 font-body text-[13px] leading-relaxed text-ink-muted line-clamp-3">{p.desc}</p>
-                      </div>
-                    </div>
-
-                    <label className="mb-2 mt-5 block font-body text-[13px] font-bold text-ink">
-                      {t("proceso_observaciones_label")}
-                    </label>
-                    {p.status === "aceptada" ? (
-                      <div className="rounded-xl border border-accent/30 bg-accent/5 p-[14px] font-body text-[14px] leading-relaxed text-ink">
-                        {p.observaciones || t("proceso_revision_empty")}
-                      </div>
-                    ) : (
-                      <div
-                        className="min-h-[84px] rounded-xl border p-[14px] font-body text-[14px] leading-relaxed"
-                        style={p.observaciones
-                          ? { borderColor: "#F0CDBF", background: "#FFF6F2", color: "#9A3B23" }
-                          : { borderColor: "#E8E5EF", background: "#FBFAFD", color: "#B3AEC0" }}
-                      >
-                        {p.observaciones || t("proceso_observaciones_empty")}
-                      </div>
-                    )}
-
-                    {p.status === "aceptada" && p.calificacion != null && (
-                      <div className="mt-4 rounded-xl border border-highlight/30 bg-highlight/5 p-[14px]">
-                        <p className="mb-2 font-body text-[10px] font-bold uppercase tracking-wider text-ink-muted">
-                          {t("proceso_calificacion_empresa")}
-                        </p>
-                        <div className="flex items-center gap-1">
-                          {Array.from({ length: 5 }).map((_, i) => (
-                            <Star
-                              key={i}
-                              className={cn("size-5", i < p.calificacion! ? "fill-highlight text-highlight" : "text-border")}
-                              aria-hidden="true"
-                            />
-                          ))}
-                          <span className="ml-2 font-heading text-base font-bold text-ink-strong">
-                            {p.calificacion}/5
-                          </span>
-                        </div>
-                        {p.comentario_calificacion && (
-                          <p className="mt-2 font-body text-sm leading-relaxed text-ink">
-                            {p.comentario_calificacion}
-                          </p>
-                        )}
-                      </div>
+                    {p.comentario_calificacion && (
+                      <p className="mt-2 font-body text-sm leading-relaxed text-ink">
+                        {p.comentario_calificacion}
+                      </p>
                     )}
                   </div>
                 )}
               </div>
-            </div>
-          );
-        })}
+            );
+          }
 
-        {/* Ghost — next locked version (hidden when final state reached) */}
-        {!closed && latest?.status !== "aceptada" && latest?.status !== "noseleccionada" && (
-          <div className="flex gap-[18px]">
-            <div className="flex flex-col items-center" style={{ width: 32, flexShrink: 0, paddingTop: 1 }}>
-              <div
-                className="size-[30px] shrink-0 rounded-full bg-surface"
-                style={{ border: "2px dashed #D7D2E0" }}
-                aria-hidden="true"
-              />
-            </div>
-            <div className="min-w-0 flex-1 py-[2px]">
-              <p className="font-body text-base font-bold" style={{ color: "#B3AEC0" }}>
-                {t("proceso_propuesta_n", { n: proposals.length + 1 })}
-              </p>
-              <div className="mt-[5px] flex items-center gap-[7px] font-body text-[13px]" style={{ color: "#B3AEC0" }}>
-                <Lock className="size-[13px] shrink-0" aria-hidden="true" />
-                {lockCaption}
-              </div>
-            </div>
-          </div>
-        )}
-
-        {/* Closed banner */}
-        {closed && (
-          <div className="mt-[6px] flex items-center gap-[10px] rounded-xl border p-[14px] font-body text-[14px] font-semibold"
-            style={{ background: "#E0F3E9", borderColor: "#BFE6CF", color: "#1E7A4F" }}>
-            <Check className="size-[18px] shrink-0" aria-hidden="true" />
-            {t("proceso_cerrado")}
-          </div>
-        )}
+          return null;
+        })()}
       </div>
 
     </div>
