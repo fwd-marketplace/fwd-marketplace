@@ -71,6 +71,13 @@ const COLOR_TO_BG: Record<string, string> = {
     'text-warning':   'bg-warning/10',
     'text-primary':   'bg-primary/10',
 };
+const COLOR_TO_GLOW: Record<string, string> = {
+    'text-magenta':   '0 0 32px 8px rgba(236,0,140,0.32)',
+    'text-accent':    '0 0 32px 8px rgba(32,190,198,0.32)',
+    'text-highlight': '0 0 32px 8px rgba(255,203,5,0.38)',
+    'text-warning':   '0 0 32px 8px rgba(247,144,30,0.32)',
+    'text-primary':   '0 0 32px 8px rgba(10,108,185,0.32)',
+};
 
 const AREA_ICONS = [LayoutGrid, LineChart, Cloud, Smartphone, GraduationCap, HeartPulse, Truck, Megaphone, ShoppingCart, Briefcase] as const;
 
@@ -164,7 +171,7 @@ function FilterDropdown({
                 aria-haspopup="listbox"
                 aria-expanded={isOpen}
                 onClick={() => setIsOpen((o) => !o)}
-                className={`flex items-center gap-1 rounded-full px-3 py-1.5 text-xs font-semibold transition-colors duration-[var(--duration-fast)] ease-[var(--ease-out)] ${
+                className={`flex items-center gap-1 rounded-full px-3 py-1.5 text-sm font-semibold transition-colors duration-[var(--duration-fast)] ease-[var(--ease-out)] ${
                     selected ? 'bg-primary/10 text-primary' : 'text-ink-muted hover:bg-surface-sunken hover:text-ink'
                 }`}
             >
@@ -350,10 +357,10 @@ export default function MarketPlace({ initialProjects, catalogs, role = 'student
 
     return (
         <>
-        <div className="bg-marketplace-sky relative text-ink font-body">
+        <div className="bg-marketplace-sky relative min-h-screen text-ink font-body pb-20">
 
             {/* Hero — backdrop is contained here so it never stretches with the cards */}
-            <section className="relative overflow-hidden z-10 px-6 pt-10 pb-16 md:pt-14 md:pb-20">
+            <section className="relative overflow-hidden z-10 px-6 pt-10 pb-24 md:pt-14 md:pb-28">
                 <MarketplaceHeroBackdrop />
                 <div className="relative z-10 max-w-7xl mx-auto px-4 md:px-6 text-left">
                     <HeroJourneyBadge
@@ -372,13 +379,46 @@ export default function MarketPlace({ initialProjects, catalogs, role = 'student
                 </div>
             </section>
 
-        </div>{/* end blue zone */}
+            {/* Decorative stars — posiciones fijas para layout máximo de 9 cards */}
+            <div className="pointer-events-none absolute inset-x-0 bottom-0 z-0" style={{ top: '420px' }} aria-hidden="true">
+                {([
+                    { t: '8%',  l: '1%',   s: 10, g: true,  sp: true,  o: 0.6,  d: '3.2s', dl: '0.3s' },
+                    { t: '22%', l: '99%',  s: 10, g: true,  sp: true,  o: 0.65, d: '3.6s', dl: '0.8s' },
+                    { t: '50%', l: '1%',   s: 10, g: false, sp: true,  o: 0.55, d: '3.1s', dl: '1.4s' },
+                    { t: '72%', l: '99%',  s: 10, g: true,  sp: true,  o: 0.7,  d: '2.9s', dl: '0.5s' },
+                    { t: '35%', l: '22%',  s: 4,  g: false, sp: false, o: 0.25, d: '3.0s', dl: '1.0s' },
+                    { t: '45%', l: '62%',  s: 4,  g: false, sp: false, o: 0.2,  d: '3.4s', dl: '0.6s' },
+                    { t: '60%', l: '38%',  s: 10, g: true,  sp: true,  o: 0.3,  d: '3.2s', dl: '1.2s' },
+                    { t: '75%', l: '75%',  s: 4,  g: false, sp: false, o: 0.2,  d: '2.8s', dl: '0.9s' },
+                    { t: '85%', l: '18%',  s: 4,  g: true,  sp: false, o: 0.25, d: '3.5s', dl: '0.4s' },
+                ] as const).map((s, i) => {
+                    const fill = s.g ? 'var(--highlight)' : 'var(--surface)';
+                    if (s.sp) {
+                        return (
+                            <span key={i} className="absolute" style={{ top: s.t, left: s.l, opacity: s.o }}>
+                                <svg width={s.s} height={s.s} viewBox="0 0 24 24" fill="none"
+                                    style={{ display: 'block', filter: `drop-shadow(0 0 3px ${fill})`, animation: `constellation-spark-twinkle ${s.d} ease-in-out ${s.dl} infinite` }}>
+                                    <polygon points={CONTENT_SPARKLE_POINTS} fill={fill} />
+                                </svg>
+                            </span>
+                        );
+                    }
+                    return (
+                        <span key={i} className="absolute rounded-full" style={{
+                            top: s.t, left: s.l, width: s.s, height: s.s, background: fill,
+                            ['--star-opacity' as string]: s.o,
+                            animation: `constellation-twinkle ${s.d} ease-in-out ${s.dl} infinite`,
+                        }} />
+                    );
+                })}
+            </div>
 
-        {/* Search + filters — straddles the blue/white boundary */}
-        <div className="relative z-20 max-w-7xl mx-auto px-4 md:px-6 -mt-7">
-                <div className="flex flex-col gap-4 rounded-2xl bg-white px-3 py-3 shadow-elevated md:flex-row md:items-center md:gap-2 md:py-2 md:pl-6 md:pr-2">
+        {/* White panel: filter + cards + pagination */}
+        <div className="relative z-20 mx-4 md:mx-16 lg:mx-28 -mt-7">
+            <div className="bg-white rounded-3xl shadow-elevated overflow-hidden">
+                <div className="flex flex-col gap-5 px-8 py-4 border-b border-border md:flex-row md:items-center md:gap-3 md:py-3 md:px-10">
                     <div className="flex flex-1 items-center gap-3">
-                        <Search className="w-4 h-4 shrink-0 text-ink-muted" aria-hidden="true" />
+                        <Search className="w-5 h-5 shrink-0 text-ink-muted" aria-hidden="true" />
                         <label htmlFor="marketplace-search" className="sr-only">{t('search_label')}</label>
                         <input
                             id="marketplace-search"
@@ -386,7 +426,7 @@ export default function MarketPlace({ initialProjects, catalogs, role = 'student
                             value={searchQuery}
                             onChange={(e) => { setSearchQuery(e.target.value); resetToFirstPage(); }}
                             placeholder={t('search_placeholder')}
-                            className="w-full bg-transparent text-sm text-ink placeholder:text-ink-muted focus:outline-none"
+                            className="w-full bg-transparent text-sm text-ink placeholder:text-sm placeholder:text-ink-muted focus:outline-none"
                         />
                     </div>
                     <div className="flex flex-wrap items-center gap-1.5">
@@ -422,7 +462,7 @@ export default function MarketPlace({ initialProjects, catalogs, role = 'student
                             type="button"
                             aria-pressed={showAiOnly}
                             onClick={() => { setShowAiOnly((c) => !c); resetToFirstPage(); }}
-                            className={`rounded-full px-3 py-1.5 text-xs font-semibold transition-colors duration-[var(--duration-fast)] ease-[var(--ease-out)] ${
+                            className={`rounded-full px-3 py-1.5 text-sm font-semibold transition-colors duration-[var(--duration-fast)] ease-[var(--ease-out)] ${
                                 showAiOnly ? 'bg-primary/10 text-primary' : 'text-ink-muted hover:bg-surface-sunken hover:text-ink'
                             }`}
                         >
@@ -436,11 +476,9 @@ export default function MarketPlace({ initialProjects, catalogs, role = 'student
                         />
                     </div>
                 </div>
-            </div>
 
-        <div className="bg-white pb-20">
-            {/* Results */}
-            <div className="max-w-7xl mx-auto px-4 md:px-6 mt-8 relative z-10">
+                {/* Results */}
+                <div className="px-8 pt-6 pb-10 md:px-10">
                 <div className="flex items-center justify-between gap-4 mb-5">
                     <p className="text-sm font-semibold text-ink-muted">
                         {t('results_count', { count: totalResults })}
@@ -502,10 +540,13 @@ export default function MarketPlace({ initialProjects, catalogs, role = 'student
                                     }}
                                     className={cn(
                                         'group relative bg-surface rounded-2xl border border-border border-t-[5px] flex flex-col',
-                                        'shadow-[var(--shadow-soft)] hover:shadow-[var(--shadow-elevated)] hover:border-border-strong transition-all duration-[var(--duration-base)] ease-[var(--ease-out)]',
+                                        'hover:shadow-[var(--card-glow)] hover:border-border-strong transition-all duration-[var(--duration-base)] ease-[var(--ease-out)]',
                                         expired ? 'cursor-default opacity-75' : 'cursor-pointer',
                                     )}
-                                    style={{ borderTopColor: borderColor }}
+                                    style={{
+                                        borderTopColor: borderColor,
+                                        ['--card-glow' as string]: COLOR_TO_GLOW[colorClass] ?? '0 0 32px 8px rgba(10,108,185,0.30)',
+                                    }}
                                 >
                                     {/* Top row: icono + categoría | círculo match */}
                                     <div className="flex items-center justify-between px-5 pt-5 mb-3">
@@ -650,8 +691,9 @@ export default function MarketPlace({ initialProjects, catalogs, role = 'student
                         </button>
                     </nav>
                 )}
+                </div>
             </div>
-
+        </div>
         </div>
 
         {previewProject && (
