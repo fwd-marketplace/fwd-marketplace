@@ -2860,6 +2860,77 @@
       "fixed": "Fixed"
     }
   },
+  "admin_reportes": {
+    "eyebrow": "Analytics",
+    "title": "Reports",
+    "description": "Live overview of the FWD Talent ecosystem, computed from registered users, graduates, companies and projects.",
+    "export_csv": "Export CSV",
+    "export_pdf": "Export PDF",
+    "empty": "Not enough data.",
+    "kpi": {
+      "usuarios": "Users",
+      "egresados": "Graduates",
+      "empresas": "Companies",
+      "proyectos": "Projects",
+      "activos": "Active",
+      "pendientes": "Pending",
+      "verificados": "Verified",
+      "finalizados": "Completed"
+    },
+    "charts": {
+      "projects_by_state_title": "Projects by state",
+      "projects_by_state_subtitle": "Breakdown of all projects by their stage.",
+      "top_companies_title": "Top companies by projects",
+      "top_companies_subtitle": "The companies with the most published projects.",
+      "users_by_role_title": "Users by role",
+      "users_by_role_subtitle": "How accounts are split among juniors, companies and admins.",
+      "companies_by_type_title": "Companies by type",
+      "companies_by_type_subtitle": "Established companies versus entrepreneurs."
+    },
+    "enum_state": {
+      "borrador": "Draft",
+      "en_recepcion": "In intake",
+      "en_evaluacion": "Under review",
+      "adjudicado": "Awarded",
+      "en_desarrollo": "In development",
+      "cerrado": "Closed",
+      "cancelado": "Cancelled",
+      "pausado": "Paused"
+    },
+    "enum_role": {
+      "student": "Juniors",
+      "company": "Companies",
+      "admin": "Admins"
+    },
+    "enum_account": {
+      "activa": "Active",
+      "pendiente": "Pending",
+      "suspendida": "Suspended",
+      "rechazada": "Rejected"
+    },
+    "enum_verification": {
+      "verificado": "Verified",
+      "pendiente": "Pending",
+      "rechazado": "Rejected"
+    },
+    "enum_type": {
+      "empresa": "Companies",
+      "emprendedor": "Entrepreneurs"
+    },
+    "csv": {
+      "report_title": "FWD Talent Report",
+      "header_metric": "Metric",
+      "header_value": "Value",
+      "header_total": "Total",
+      "block_projects_by_state": "Projects by state",
+      "block_top_companies": "Top companies by projects",
+      "block_users_by_role": "Users by role",
+      "block_accounts": "Account status",
+      "block_verification": "Graduate verification",
+      "block_companies_by_type": "Companies by type",
+      "filename": "fwd-report"
+    }
+  },
   "admin_proyectos": {
     "view": "View",
     "detail": {

@@ -2851,6 +2851,77 @@
       "fixed": "Fijo"
     }
   },
+  "admin_reportes": {
+    "eyebrow": "Analítica",
+    "title": "Reportes",
+    "description": "Panorama del ecosistema FWD Talent calculado en vivo a partir de usuarios, egresados, empresas y proyectos registrados.",
+    "export_csv": "Exportar CSV",
+    "export_pdf": "Exportar PDF",
+    "empty": "Sin datos suficientes.",
+    "kpi": {
+      "usuarios": "Usuarios",
+      "egresados": "Egresados",
+      "empresas": "Empresas",
+      "proyectos": "Proyectos",
+      "activos": "Activos",
+      "pendientes": "Pendientes",
+      "verificados": "Verificados",
+      "finalizados": "Finalizados"
+    },
+    "charts": {
+      "projects_by_state_title": "Proyectos por estado",
+      "projects_by_state_subtitle": "Distribución del total de proyectos según su etapa.",
+      "top_companies_title": "Top empresas por proyectos",
+      "top_companies_subtitle": "Las empresas con más proyectos publicados.",
+      "users_by_role_title": "Usuarios por rol",
+      "users_by_role_subtitle": "Cómo se reparten las cuentas entre juniors, empresas y admins.",
+      "companies_by_type_title": "Empresas por tipo",
+      "companies_by_type_subtitle": "Empresas consolidadas frente a emprendedores."
+    },
+    "enum_state": {
+      "borrador": "Borrador",
+      "en_recepcion": "En recepción",
+      "en_evaluacion": "En evaluación",
+      "adjudicado": "Adjudicado",
+      "en_desarrollo": "En desarrollo",
+      "cerrado": "Cerrado",
+      "cancelado": "Cancelado",
+      "pausado": "Pausado"
+    },
+    "enum_role": {
+      "student": "Juniors",
+      "company": "Empresas",
+      "admin": "Admins"
+    },
+    "enum_account": {
+      "activa": "Activas",
+      "pendiente": "Pendientes",
+      "suspendida": "Suspendidas",
+      "rechazada": "Rechazadas"
+    },
+    "enum_verification": {
+      "verificado": "Verificados",
+      "pendiente": "Pendientes",
+      "rechazado": "Rechazados"
+    },
+    "enum_type": {
+      "empresa": "Empresas",
+      "emprendedor": "Emprendedores"
+    },
+    "csv": {
+      "report_title": "Reporte FWD Talent",
+      "header_metric": "Métrica",
+      "header_value": "Valor",
+      "header_total": "Total",
+      "block_projects_by_state": "Proyectos por estado",
+      "block_top_companies": "Top empresas por proyectos",
+      "block_users_by_role": "Usuarios por rol",
+      "block_accounts": "Estado de cuentas",
+      "block_verification": "Verificación de egresados",
+      "block_companies_by_type": "Empresas por tipo",
+      "filename": "reporte-fwd"
+    }
+  },
   "admin_proyectos": {
     "view": "Ver",
     "detail": {
