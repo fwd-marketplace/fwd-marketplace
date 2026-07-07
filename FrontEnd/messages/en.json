@@ -259,7 +259,13 @@
         "eyebrow": "Request received",
         "title": "Your account is under review",
         "description": "The FWD team will review your profile and notify you by email once your account is approved. This usually takes 24 to 48 hours.",
-        "cta": "Back to home"
+        "cta": "Back to home",
+        "approved": {
+          "eyebrow": "Account approved",
+          "title": "Your account was approved as a junior",
+          "description": "We verified that you are an FWD graduate. For security, log in to enable two-step verification and access your account.",
+          "cta": "Log in"
+        }
       },
       "step1": {
         "eyebrow": "First things first",

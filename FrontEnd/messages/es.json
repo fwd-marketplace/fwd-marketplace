@@ -259,7 +259,13 @@
         "eyebrow": "Solicitud recibida",
         "title": "Tu cuenta está en revisión",
         "description": "El equipo de FWD revisará tu perfil y te notificará por correo cuando tu cuenta esté aprobada. Esto suele tardar entre 24 y 48 horas.",
-        "cta": "Volver al inicio"
+        "cta": "Volver al inicio",
+        "approved": {
+          "eyebrow": "Cuenta aprobada",
+          "title": "Tu cuenta fue aprobada como junior",
+          "description": "Verificamos que sos egresado de FWD. Por seguridad, iniciá sesión para activar la verificación en dos pasos y entrar a tu cuenta.",
+          "cta": "Iniciar sesión"
+        }
       },
       "step1": {
         "eyebrow": "Primero lo primero",
