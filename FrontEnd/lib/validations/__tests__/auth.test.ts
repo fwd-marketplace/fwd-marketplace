@@ -191,6 +191,7 @@ describe("EmpresaProfileSchema", () => {
 describe("EmprendedorProfileSchema", () => {
   const VALID_EMPRENDEDOR = {
     projectName: "EcoLogik",
+    cedula: "1-2345-6789",
     stage: "mvp" as const,
     neededSupport: ["web", "backend"] as const,
     budget: "range_500_1000" as const,
@@ -212,6 +213,17 @@ describe("EmprendedorProfileSchema", () => {
   it("rejects when projectName is too short", () => {
     expect(
       EmprendedorProfileSchema.safeParse({ ...VALID_EMPRENDEDOR, projectName: "X" }).success
+    ).toBe(false);
+  });
+
+  it("rejects a missing cedula", () => {
+    const { cedula: _omit, ...sinCedula } = VALID_EMPRENDEDOR;
+    expect(EmprendedorProfileSchema.safeParse(sinCedula).success).toBe(false);
+  });
+
+  it("rejects a too-short cedula", () => {
+    expect(
+      EmprendedorProfileSchema.safeParse({ ...VALID_EMPRENDEDOR, cedula: "123" }).success
     ).toBe(false);
   });
 

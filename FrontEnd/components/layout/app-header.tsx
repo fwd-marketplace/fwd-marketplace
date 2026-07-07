@@ -41,22 +41,29 @@ const PROFILE_LABEL: Record<string, string> = {
  */
 export type HeaderTone = "light" | "student" | "public";
 
-const HEADER_TONES: Record<HeaderTone, { container: string; dark: boolean }> = {
+const HEADER_TONES: Record<HeaderTone, { container: string; dark: boolean; stripe: boolean }> = {
   light: {
-    container: "border-border bg-surface/80 backdrop-blur-sm",
+    container: "border-border bg-white shadow-[0_2px_8px_rgba(0,0,0,0.05)] dark:bg-secondary dark:border-white/10 dark:shadow-none",
     dark: false,
+    stripe: false,
   },
-  // Sesión del estudiante: morado oscuro sólido.
+  // Sesión del estudiante: blanco editorial con franja de identidad FWD en el borde inferior.
+  // En dark mode el fondo pasa al morado institucional profundo (bg-secondary en dark = oklch(0.16 0.03 288)).
   student: {
-    container: "border-white/10 bg-secondary",
-    dark: true,
+    container: "bg-white shadow-[0_2px_8px_rgba(0,0,0,0.05)] dark:bg-secondary dark:shadow-none",
+    dark: false,
+    stripe: true,
   },
-  // Páginas públicas: degradado morado -> azul FWD, distinto al del estudiante.
+  // Páginas públicas: mismo tratamiento blanco + franja.
   public: {
-    container: "border-white/10 bg-gradient-to-r from-secondary to-primary",
-    dark: true,
+    container: "bg-white shadow-[0_2px_8px_rgba(0,0,0,0.05)] dark:bg-secondary dark:shadow-none",
+    dark: false,
+    stripe: true,
   },
 };
+
+// Permite tipar CSS custom properties como inline style sin suprimir TypeScript.
+type NavbarStyle = React.CSSProperties & Record<`--${string}`, string>;
 
 type StarStyle = CSSProperties & Record<`--${string}`, string | number>;
 
@@ -149,6 +156,32 @@ function buildMenuLinks(role?: ApiRoleName): MenuLink[] {
   return links;
 }
 
+const BRAND_STRIPE_COLORS = [
+  "var(--primary)",
+  "var(--secondary)",
+  "var(--accent)",
+  "var(--highlight)",
+  "var(--warning)",
+  "var(--magenta)",
+] as const;
+
+function BrandStripe() {
+  // Pin --secondary al morado de marca (#662d91) solo en la franja para que el segmento
+  // morado no herede el valor casi-negro que .dark asigna a --secondary en el resto de la UI.
+  const stripeTokens: NavbarStyle = { "--secondary": "#662d91" };
+  return (
+    <div
+      style={stripeTokens}
+      className="absolute bottom-0 left-0 right-0 flex h-[5px] dark:saturate-[1.25] dark:brightness-[1.2]"
+      aria-hidden="true"
+    >
+      {BRAND_STRIPE_COLORS.map((color) => (
+        <div key={color} className="flex-1" style={{ backgroundColor: color }} />
+      ))}
+    </div>
+  );
+}
+
 export function AppHeader({
   userName = "",
   avatarUrl = "",
@@ -167,14 +200,15 @@ export function AppHeader({
   const menuLinks = buildMenuLinks(role);
   const [notifOpen, setNotifOpen] = useState(false);
 
-  const { container, dark } = HEADER_TONES[tone];
+  const { container, dark, stripe } = HEADER_TONES[tone];
 
   return (
     <header
       className={cn(
-        "sticky top-0 z-50 border-b",
+        "sticky top-0 z-50 relative",
+        stripe ? "" : "border-b",
         container,
-        dark && "relative",
+        "dark:shadow-[inset_0_1px_0_rgba(255,255,255,0.08),0_2px_20px_rgba(0,0,0,0.45)]",
       )}
     >
       {dark && (
@@ -182,25 +216,40 @@ export function AppHeader({
           <NavStars />
         </div>
       )}
+      {stripe && <BrandStripe />}
       <div className="relative z-10 mx-auto flex h-16 max-w-7xl items-center justify-between px-4 md:px-6">
-        <div className="flex items-center gap-6">
+        <div className="flex items-center">
           <Link
             href={`/${locale}/marketplace`}
             aria-label={t("logo_alt")}
-            className="flex size-10 shrink-0 items-center justify-center"
+            className="flex shrink-0 items-center gap-2"
           >
-            <NavbarLogoConstellation logoAlt={t("logo_alt")} />
+            <span className="flex size-10 items-center justify-center">
+              <NavbarLogoConstellation logoAlt={t("logo_alt")} />
+            </span>
+            <span
+              className={cn(
+                "hidden sm:block font-heading font-extrabold text-[17px] tracking-tight leading-none",
+                dark ? "text-white" : "text-ink-strong dark:text-white",
+              )}
+            >
+              {t("brand_name")}
+              <span className="text-primary" aria-hidden="true">.</span>
+            </span>
           </Link>
-
-          {/* Desktop nav links */}
-          {navLinks.length > 0 && (
-            <nav className="hidden items-center gap-1 md:flex" aria-label="Main navigation">
-              {navLinks.map((item) => (
-                <NavLink key={item.href} href={item.href} labelKey={item.key} dark={dark} />
-              ))}
-            </nav>
-          )}
         </div>
+
+        {/* Desktop nav links — centradas absolutamente */}
+        {navLinks.length > 0 && (
+          <nav
+            className="absolute left-1/2 hidden -translate-x-1/2 items-center gap-1 md:flex"
+            aria-label="Main navigation"
+          >
+            {navLinks.map((item) => (
+              <NavLink key={item.href} href={item.href} labelKey={item.key} dark={dark} />
+            ))}
+          </nav>
+        )}
 
         <div className="flex items-center gap-1">
           {/* Campana de notificaciones siempre visible a la par del perfil (solo con sesión) */}
@@ -246,14 +295,14 @@ function NavLink({ href, labelKey, dark = false }: { href: string; labelKey: str
     <Link
       href={fullHref}
       className={cn(
-        "rounded-full px-3 py-1.5 font-body text-sm font-medium transition-colors duration-[var(--duration-fast)] ease-[var(--ease-out)]",
+        "rounded-full px-3 py-1.5 font-heading text-sm font-normal tracking-[0.05em] transition-colors duration-[var(--duration-fast)] ease-[var(--ease-out)]",
         dark
           ? isActive
             ? "bg-white/20 text-white"
             : "text-white/75 hover:bg-white/10 hover:text-white"
           : isActive
-            ? "bg-primary/10 text-primary"
-            : "text-ink-muted hover:bg-surface-sunken hover:text-ink",
+            ? "bg-secondary/10 text-secondary dark:bg-white/20 dark:text-white"
+            : "text-secondary/60 hover:bg-secondary/5 hover:text-secondary dark:text-white/75 dark:hover:bg-white/10 dark:hover:text-white",
       )}
     >
       {t(labelKey)}
@@ -314,7 +363,7 @@ function UserMenu({
   // claro semitransparente con borde para que destaque.
   const avatarClass = dark
     ? "bg-white/15 text-white ring-1 ring-white/30"
-    : "bg-secondary text-secondary-foreground";
+    : "bg-secondary text-secondary-foreground dark:bg-white/15 dark:text-white dark:ring-1 dark:ring-white/30";
 
   const avatar = (
     <div
@@ -341,14 +390,14 @@ function UserMenu({
           <Link
             href={`/${locale}${PROFILE_HREF[role] ?? "/perfil-estudiante"}`}
             className={cn(
-              "rounded-full px-3 py-1.5 font-body text-sm font-medium transition-colors duration-[var(--duration-fast)] ease-[var(--ease-out)]",
+              "rounded-full px-3 py-1.5 font-heading text-sm font-normal tracking-[0.05em] transition-colors duration-[var(--duration-fast)] ease-[var(--ease-out)]",
               dark
                 ? pathname.includes(PROFILE_HREF[role] ?? "")
                   ? "bg-white/20 text-white"
                   : "text-white/75 hover:bg-white/10 hover:text-white"
                 : pathname.includes(PROFILE_HREF[role] ?? "")
-                  ? "bg-primary/10 text-primary"
-                  : "text-ink-muted hover:bg-surface-sunken hover:text-ink",
+                  ? "bg-secondary/10 text-secondary dark:bg-white/20 dark:text-white"
+                  : "text-secondary/60 hover:bg-secondary/5 hover:text-secondary dark:text-white/75 dark:hover:bg-white/10 dark:hover:text-white",
             )}
           >
             {t(PROFILE_LABEL[role] ?? "nav_my_profile")}
@@ -361,7 +410,7 @@ function UserMenu({
               aria-label={t("user_menu")}
               className={cn(
                 "group flex items-center gap-1 rounded-full p-0.5 transition-colors duration-[var(--duration-fast)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/40",
-                dark ? "hover:bg-white/10" : "hover:bg-surface-sunken",
+                dark ? "hover:bg-white/10" : "hover:bg-surface-sunken dark:hover:bg-white/10",
               )}
             >
               <span
@@ -380,7 +429,7 @@ function UserMenu({
               <ChevronDown
                 className={cn(
                   "size-4 transition-transform duration-[var(--duration-fast)] ease-[var(--ease-out)] group-data-[state=open]:rotate-180",
-                  dark ? "text-white/70" : "text-ink-muted",
+                  dark ? "text-white/70" : "text-ink-muted dark:text-white/60",
                 )}
                 aria-hidden="true"
               />
@@ -394,14 +443,14 @@ function UserMenu({
             >
               {userName && (
                 <div className="px-3 py-2 border-b border-border mb-1">
-                  <p className="font-body text-xs font-bold text-ink-strong truncate">{userName}</p>
+                  <p className="font-heading text-xs font-normal tracking-[0.05em] text-ink-strong truncate">{userName}</p>
                 </div>
               )}
               {menuLinks.map(({ key, href, Icon }) => (
                 <DropdownMenu.Item key={href} asChild>
                   <Link
                     href={`/${locale}${href}`}
-                    className="flex cursor-pointer items-center gap-2 rounded-lg px-3 py-2 font-body text-sm font-medium text-ink outline-none transition-colors duration-[var(--duration-fast)] ease-[var(--ease-out)] hover:bg-surface-sunken data-highlighted:bg-surface-sunken"
+                    className="flex cursor-pointer items-center gap-2 rounded-lg px-3 py-2 font-heading text-sm font-normal tracking-[0.05em] text-ink outline-none transition-colors duration-[var(--duration-fast)] ease-[var(--ease-out)] hover:bg-surface-sunken data-highlighted:bg-surface-sunken"
                   >
                     <Icon className="size-4" aria-hidden="true" />
                     {t(key)}
@@ -412,7 +461,7 @@ function UserMenu({
               <DropdownMenu.Item
                 onSelect={handleSwitchLanguage}
                 aria-label={t("language")}
-                className="flex cursor-pointer items-center justify-center gap-2 rounded-lg px-3 py-2 font-body text-sm font-medium text-ink outline-none transition-colors duration-[var(--duration-fast)] ease-[var(--ease-out)] hover:bg-surface-sunken data-highlighted:bg-surface-sunken"
+                className="flex cursor-pointer items-center justify-center gap-2 rounded-lg px-3 py-2 font-heading text-sm font-normal tracking-[0.05em] text-ink outline-none transition-colors duration-[var(--duration-fast)] ease-[var(--ease-out)] hover:bg-surface-sunken data-highlighted:bg-surface-sunken"
               >
                 <Languages className="size-4 text-ink-muted" aria-hidden="true" />
                 <span className={cn("text-xs font-semibold", !isEnglish ? "text-primary" : "text-ink-subtle")}>
@@ -428,7 +477,7 @@ function UserMenu({
                   event.preventDefault();
                   toggleTheme();
                 }}
-                className="flex cursor-pointer items-center justify-between gap-3 rounded-lg px-3 py-2 font-body text-sm font-medium text-ink outline-none transition-colors duration-[var(--duration-fast)] ease-[var(--ease-out)] hover:bg-surface-sunken data-highlighted:bg-surface-sunken"
+                className="flex cursor-pointer items-center justify-between gap-3 rounded-lg px-3 py-2 font-heading text-sm font-normal tracking-[0.05em] text-ink outline-none transition-colors duration-[var(--duration-fast)] ease-[var(--ease-out)] hover:bg-surface-sunken data-highlighted:bg-surface-sunken"
               >
                 <span className="flex items-center gap-2">
                   <Moon className="size-4" aria-hidden="true" />
@@ -440,7 +489,7 @@ function UserMenu({
               <DropdownMenu.Item
                 disabled={isPending}
                 onSelect={handleLogout}
-                className="flex cursor-pointer items-center gap-2 rounded-lg px-3 py-2 font-body text-sm font-medium text-ink outline-none transition-colors duration-[var(--duration-fast)] ease-[var(--ease-out)] data-disabled:cursor-not-allowed data-disabled:opacity-50 data-highlighted:bg-magenta/10 data-highlighted:text-magenta"
+                className="flex cursor-pointer items-center gap-2 rounded-lg px-3 py-2 font-heading text-sm font-normal tracking-[0.05em] text-ink outline-none transition-colors duration-[var(--duration-fast)] ease-[var(--ease-out)] data-disabled:cursor-not-allowed data-disabled:opacity-50 data-highlighted:bg-magenta/10 data-highlighted:text-magenta"
               >
                 <LogOut className="size-4" aria-hidden="true" />
                 {t("logout")}
@@ -472,7 +521,7 @@ function UserMenu({
           <div className="fixed inset-x-0 top-16 z-40 border-b border-border bg-surface shadow-[var(--shadow-elevated)]">
             <div className="mx-auto max-w-7xl px-4 py-3 space-y-1">
               {isAuthenticated && userName && (
-                <p className="px-3 pb-2 font-body text-xs font-bold text-ink-muted border-b border-border mb-2">
+                <p className="px-3 pb-2 font-heading text-xs font-normal tracking-[0.05em] text-ink-muted border-b border-border mb-2">
                   {userName}
                 </p>
               )}
@@ -493,7 +542,7 @@ function UserMenu({
                         setMobileOpen(false);
                         onOpenNotifications();
                       }}
-                      className="flex w-full items-center gap-2 rounded-lg px-3 py-2 font-body text-sm font-medium text-ink transition-colors hover:bg-surface-sunken"
+                      className="flex w-full items-center gap-2 rounded-lg px-3 py-2 font-heading text-sm font-normal tracking-[0.05em] text-ink transition-colors hover:bg-surface-sunken"
                     >
                       <Bell className="size-4" aria-hidden="true" />
                       {t("notifications")}
@@ -503,7 +552,7 @@ function UserMenu({
                         key={href}
                         href={`/${locale}${href}`}
                         onClick={() => setMobileOpen(false)}
-                        className="flex items-center gap-2 rounded-lg px-3 py-2 font-body text-sm font-medium text-ink transition-colors hover:bg-surface-sunken"
+                        className="flex items-center gap-2 rounded-lg px-3 py-2 font-heading text-sm font-normal tracking-[0.05em] text-ink transition-colors hover:bg-surface-sunken"
                       >
                         <Icon className="size-4" aria-hidden="true" />
                         {t(key)}
@@ -516,7 +565,7 @@ function UserMenu({
                         handleSwitchLanguage();
                       }}
                       aria-label={t("language")}
-                      className="flex w-full items-center justify-between gap-3 rounded-lg px-3 py-2 font-body text-sm font-medium text-ink transition-colors hover:bg-surface-sunken"
+                      className="flex w-full items-center justify-between gap-3 rounded-lg px-3 py-2 font-heading text-sm font-normal tracking-[0.05em] text-ink transition-colors hover:bg-surface-sunken"
                     >
                       <span className="flex items-center gap-2">
                         <Languages className="size-4" aria-hidden="true" />
@@ -535,7 +584,7 @@ function UserMenu({
                     <button
                       type="button"
                       onClick={toggleTheme}
-                      className="flex w-full items-center justify-between gap-3 rounded-lg px-3 py-2 font-body text-sm font-medium text-ink transition-colors hover:bg-surface-sunken"
+                      className="flex w-full items-center justify-between gap-3 rounded-lg px-3 py-2 font-heading text-sm font-normal tracking-[0.05em] text-ink transition-colors hover:bg-surface-sunken"
                     >
                       <span className="flex items-center gap-2">
                         <Moon className="size-4" aria-hidden="true" />
@@ -549,7 +598,7 @@ function UserMenu({
                       type="button"
                       disabled={isPending}
                       onClick={handleLogout}
-                      className="flex w-full items-center gap-2 rounded-lg px-3 py-2 font-body text-sm font-medium text-magenta transition-colors hover:bg-magenta/10 disabled:opacity-50"
+                      className="flex w-full items-center gap-2 rounded-lg px-3 py-2 font-heading text-sm font-normal tracking-[0.05em] text-magenta transition-colors hover:bg-magenta/10 disabled:opacity-50"
                     >
                       <LogOut className="size-4" />
                       {t("logout")}
@@ -590,7 +639,7 @@ function LogoutButton({ className, dark = false }: { className?: string; dark?: 
         "inline-flex size-9 items-center justify-center rounded-full transition-colors duration-[var(--duration-fast)] ease-[var(--ease-out)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/40 disabled:cursor-not-allowed disabled:opacity-50",
         dark
           ? "text-white/80 hover:bg-white/15 hover:text-white"
-          : "text-ink-muted hover:bg-magenta/10 hover:text-magenta",
+          : "text-secondary/50 hover:bg-secondary/10 hover:text-secondary dark:text-white/60 dark:hover:bg-white/10 dark:hover:text-white",
         className,
       )}
     >
@@ -618,7 +667,7 @@ function MobileNavLink({
       href={`/${locale}${href}`}
       onClick={onNavigate}
       className={cn(
-        "flex items-center rounded-lg px-3 py-2 font-body text-sm font-medium transition-colors duration-[var(--duration-fast)]",
+        "flex items-center rounded-lg px-3 py-2 font-heading text-sm font-normal tracking-[0.05em] transition-colors duration-[var(--duration-fast)]",
         isActive ? "bg-primary/10 text-primary" : "text-ink hover:bg-surface-sunken",
       )}
     >

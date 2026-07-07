@@ -41,9 +41,11 @@ export const EmpresaOnboardingSchema = z.object({
 /** PANTALLA 3C — Onboarding Emprendedor. */
 export const EmprendedorOnboardingSchema = z.object({
   tipo: z.literal("emprendedor"),
-  nombre_proyecto: z.string().min(1).max(255),
+  nombre_proyecto: z.string().min(2).max(100),
+  // El emprendedor es persona física: su cédula personal va a users.cedula.
+  cedula: z.string().min(5).max(20),
   etapa: z.enum(["idea", "mvp", "validating", "scaling"]),
-  soporte_tecnico: z.array(z.string().min(1)).min(1),
+  soporte_tecnico: z.array(z.enum(["web", "mobile", "backend", "ai", "ux", "data", "automation", "other"])).min(1),
   presupuesto: z.enum(["under_500", "range_500_1000", "range_1000_2500", "flexible"]),
   descripcion: z.string().max(400).optional(),
 });

@@ -16,8 +16,6 @@ export async function EmprendedorDone({ locale }: EmprendedorDoneProps) {
       <FwdGeoBackdrop />
       <CosmicBackdrop />
 
-
-
       <div className="relative flex flex-1 items-center justify-center px-4">
         <div className="w-full max-w-md rounded-[2rem] bg-surface px-6 py-8 text-center shadow-elevated sm:px-10 sm:py-12">
           <div className="mb-5 inline-flex h-14 w-14 items-center justify-center rounded-full bg-surface-sunken">

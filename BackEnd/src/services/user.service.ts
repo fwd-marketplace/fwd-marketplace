@@ -45,10 +45,16 @@ export async function loginUser(input: LoginInput) {
   });
 
   if (error) {
+    // Con confirm-email OFF, el error 400 de Supabase es casi siempre credenciales
+    // inválidas; se le da un código propio para localizarlo. El resto se pasa tal cual.
+    const supabaseCode = (error as { code?: string }).code;
+    if (error.status === 400 || supabaseCode === "invalid_credentials") {
+      throw new ApiError(401, "Credenciales inválidas", "INVALID_CREDENTIALS");
+    }
     throw new ApiError(error.status ?? 401, error.message);
   }
   if (!data.user || !data.session) {
-    throw new ApiError(401, "Credenciales inválidas");
+    throw new ApiError(401, "Credenciales inválidas", "INVALID_CREDENTIALS");
   }
 
   const ticket = await startEmailMfa({
@@ -151,15 +157,15 @@ export async function confirmPasswordReset(input: {
 
   if (input.tokenHash) {
     const { error } = await client.auth.verifyOtp({ token_hash: input.tokenHash, type: "recovery" });
-    if (error) throw new ApiError(400, "El enlace de recuperación es inválido o expiró");
+    if (error) throw new ApiError(400, "El enlace de recuperación es inválido o expiró", "RESET_LINK_INVALID");
   } else if (input.accessToken && input.refreshToken) {
     const { error } = await client.auth.setSession({
       access_token: input.accessToken,
       refresh_token: input.refreshToken,
     });
-    if (error) throw new ApiError(400, "El enlace de recuperación es inválido o expiró");
+    if (error) throw new ApiError(400, "El enlace de recuperación es inválido o expiró", "RESET_LINK_INVALID");
   } else {
-    throw new ApiError(400, "Falta el token de recuperación");
+    throw new ApiError(400, "Falta el token de recuperación", "RESET_TOKEN_MISSING");
   }
 
   const { error } = await client.auth.updateUser({ password: input.password });
@@ -202,7 +208,7 @@ export async function getUserFromToken(accessToken: string) {
   const { data, error } = await supabase.auth.getUser(accessToken);
 
   if (error || !data.user) {
-    throw new ApiError(401, "Token inválido o expirado");
+    throw new ApiError(401, "Token inválido o expirado", "TOKEN_INVALID");
   }
 
   return data.user;

@@ -201,6 +201,29 @@
     "footer_security": "Centro de Seguridad",
     "footer_copyright": "© 2026 FWD Marketplace. Conexión cifrada y segura."
   },
+  "api_errors": {
+    "CONNECTION_ERROR": "Error de conexión. Revisá tu internet e intentá de nuevo.",
+    "ONBOARDING_FORBIDDEN": "No podés completar el registro de otra cuenta.",
+    "CEDULA_TAKEN": "Ya existe una cuenta registrada con esa cédula.",
+    "ALREADY_ONBOARDED": "Esta cuenta ya completó el registro.",
+    "ONBOARDING_FAILED": "No se pudo completar el registro. Intentá de nuevo.",
+    "SIGNUPS_DISABLED": "Los registros de talento están deshabilitados temporalmente.",
+    "COMPANIES_DISABLED": "El registro de empresas está deshabilitado temporalmente.",
+    "EMPRENDEDORES_DISABLED": "El registro de emprendedores está deshabilitado temporalmente.",
+    "NOT_AUTHENTICATED": "Tu sesión expiró. Iniciá sesión de nuevo.",
+    "NO_EMAIL": "La cuenta no tiene un correo asociado.",
+    "EMAIL_REQUIRED": "El email es obligatorio.",
+    "PASSWORD_REQUIRED": "La contraseña es obligatoria.",
+    "PASSWORD_TOO_SHORT": "La contraseña debe tener al menos 8 caracteres.",
+    "VERIFICATION_TICKET_MISSING": "Falta el ticket de verificación.",
+    "CODE_INVALID_LENGTH": "El código debe ser de 6 dígitos.",
+    "RESET_TOKEN_MISSING": "Falta el token de recuperación.",
+    "REFRESH_TOKEN_REQUIRED": "Falta el token de sesión.",
+    "OAUTH_PROVIDER_UNSUPPORTED": "Proveedor de acceso no soportado.",
+    "INVALID_CREDENTIALS": "Correo o contraseña incorrectos.",
+    "RESET_LINK_INVALID": "El enlace de recuperación es inválido o expiró.",
+    "TOKEN_INVALID": "Tu sesión expiró. Iniciá sesión de nuevo."
+  },
   "register": {
     "brand": "FWD",
     "brand_suffix": "Marketplace",
@@ -456,7 +479,11 @@
         "label": "Nombre del proyecto",
         "placeholder": "Ej. EcoTrack App",
         "error_required": "Requerido",
-        "error_min_2": "Mínimo 2 caracteres"
+        "error_min_2": "Mínimo 2 caracteres",
+        "cedula_label": "Tu cédula",
+        "cedula_placeholder": "Ej. 1-2345-6789",
+        "cedula_error_required": "Ingresá tu cédula",
+        "cedula_error_min": "Cédula inválida"
       },
       "step2": {
         "eyebrow": "Etapa del proyecto",
@@ -562,6 +589,7 @@
     "nav_privacy": "Políticas",
     "settings": "Configuración",
     "learning_map": "Mapa de aprendizaje",
+    "brand_name": "FWD Marketplace",
     "logo_alt": "Logotipo FWD Marketplace",
     "profile_link": "Ver perfil",
     "open_menu": "Abrir menú",
@@ -625,7 +653,8 @@
     "mis_proyectos": "Mis proyectos",
     "matches": "Matches",
     "postulaciones": "Postulaciones",
-    "mi_empresa": "Mi empresa"
+    "mi_empresa": "Mi empresa",
+    "mi_emprendimiento": "Mi emprendimiento"
   },
   "perfil_junior": {
     "tabs": {
@@ -901,6 +930,8 @@
     "title": "Tu cielo",
     "eyebrow": "Mapa de aprendizaje",
     "back_label": "Volver al perfil",
+    "home_label": "Volver a inicio",
+    "brand_name": "FWD Marketplace",
     "sky_lit": "{pct}% del cielo iluminado",
     "xp_label": "XP",
     "streak_label": "días",
@@ -1482,6 +1513,23 @@
     ]
   },
   "mi_empresa": {
+    "actions": {
+      "save": "Guardar",
+      "cancel": "Cancelar",
+      "edit_section": "Editar sección"
+    },
+    "public": {
+      "close": "Cerrar",
+      "participate": "Participar",
+      "days": "{count} días",
+      "uses_ai": "Usa IA",
+      "offers": "{count} postulaciones",
+      "description": "Descripción",
+      "required_tech": "Tecnologías requeridas",
+      "projects_tab": "Proyectos",
+      "no_projects": "Este perfil aún no tiene proyectos publicados.",
+      "no_sectors": "Sin áreas especificadas."
+    },
     "badge": {
       "empresa": "Empresa",
       "emprendedor": "Emprendedor"
@@ -1504,10 +1552,12 @@
     "fields": {
       "company_name": "Nombre de la empresa",
       "project_name": "Nombre del proyecto",
+      "cedula": "Cédula",
       "project_description_placeholder": "Describí tu proyecto, el problema que resuelve y tu visión a largo plazo...",
       "employees": "Empleados",
       "employees_unit": "personas",
       "country": "País",
+      "country_value": "Costa Rica",
       "provincia": "Provincia",
       "canton": "Cantón",
       "comercial_name": "Nombre comercial",
@@ -1594,7 +1644,9 @@
       "contact_example_role": "Reclutadora de Talento",
       "contact_example_email": "ana@empresa.com",
       "contact_hint": "Agregá los contactos encargados del reclutamiento",
-      "loading_areas": "Cargando áreas..."
+      "loading_areas": "Cargando áreas...",
+      "website_emprendedor": "https://tuproyecto.com",
+      "website_empresa": "https://tuempresa.com"
     },
     "modalities": {
       "remote": "Remoto",
@@ -2672,6 +2724,222 @@
       "updated": "Empresa actualizada",
       "deleted": "Empresa eliminada",
       "error": "No se pudo completar la acción"
+    }
+  },
+  "admin_solicitudes": {
+    "eyebrow": "Administración",
+    "title": "Solicitudes",
+    "description": "Revisá y gestioná las solicitudes de admisión pendientes del ecosistema FWD Talent.",
+    "stats": {
+      "total": "Todas",
+      "total_badge": "Global",
+      "empresas": "Empresas",
+      "empresas_badge": "B2B",
+      "talentos": "Talentos",
+      "talentos_badge": "B2C",
+      "proyectos": "Proyectos",
+      "proyectos_badge": "Activos",
+      "reportes": "Reportes",
+      "reportes_badge": "Críticos"
+    },
+    "types": {
+      "Empresa": "Empresa",
+      "Emprendedor": "Emprendedor",
+      "Talento": "Talento",
+      "Otro": "Otro"
+    },
+    "filters": {
+      "search_placeholder": "Buscar por nombre, correo o ID...",
+      "type_aria": "Tipo",
+      "date_aria": "Fecha",
+      "type_all": "Tipo: Todos",
+      "date_all": "Fecha: Todos",
+      "date_today": "Hoy",
+      "date_week": "Esta semana",
+      "date_month": "Este mes",
+      "clear": "Limpiar filtros"
+    },
+    "type_meta": {
+      "Empresa": { "title": "Nueva empresa registrada", "origin": "Portal Empresas" },
+      "Emprendedor": { "title": "Nuevo emprendedor registrado", "origin": "Portal Emprendedores" },
+      "Talento": { "title": "Solicitud de verificación", "origin": "Registro Talento" },
+      "Otro": { "title": "Solicitud de cuenta", "origin": "Registro" }
+    },
+    "list": {
+      "empty": "No hay solicitudes pendientes con los filtros aplicados.",
+      "pending": "Pendiente",
+      "id": "ID:",
+      "origin": "Origen:",
+      "summary": "Mostrando <strong>{start} a {end}</strong> de <strong>{total}</strong> solicitudes"
+    },
+    "actions": {
+      "view": "Ver detalle",
+      "approve": "Aprobar",
+      "reject": "Rechazar",
+      "suspend": "Suspender",
+      "close": "Cerrar"
+    },
+    "messages": {
+      "approved": "Solicitud aprobada",
+      "rejected": "Solicitud rechazada",
+      "suspended": "Cuenta suspendida",
+      "error": "No se pudo completar la acción"
+    },
+    "modal": {
+      "fallback_title": "Detalle de la solicitud",
+      "subtitle": "Información completa del solicitante",
+      "loading": "Cargando perfil del solicitante...",
+      "no_profile": "Este usuario no tiene un perfil adicional asociado.",
+      "section_account": "Cuenta",
+      "section_talent": "Perfil de talento",
+      "section_company": "Perfil de empresa"
+    },
+    "fields": {
+      "full_name": "Nombre completo",
+      "email": "Correo",
+      "cedula": "Cedula",
+      "role": "Rol",
+      "account_status": "Estado de cuenta",
+      "registered": "Fecha de registro",
+      "id": "ID",
+      "specialty": "Especialidad",
+      "availability": "Disponibilidad",
+      "preferred_modality": "Modalidad preferida",
+      "titulo_fwd": "Titulo FWD",
+      "verification": "Verificacion",
+      "reputation": "Reputacion",
+      "description": "Descripcion",
+      "skills": "Skills",
+      "commercial_name": "Nombre comercial",
+      "type": "Tipo",
+      "cedula_juridica": "Cedula juridica",
+      "sector": "Sector",
+      "stage": "Etapa",
+      "employees": "Cantidad de empleados",
+      "modalities": "Modalidades",
+      "schedule": "Horario",
+      "budget": "Presupuesto",
+      "address": "Direccion",
+      "project_types": "Tipos de proyecto",
+      "tech_support": "Apoyo tecnico necesario",
+      "mission": "Mision",
+      "vision": "Vision",
+      "culture": "Cultura",
+      "values": "Valores",
+      "contacts": "Contactos"
+    },
+    "links": {
+      "portfolio": "Portafolio",
+      "website": "Sitio web"
+    },
+    "enum_role": {
+      "student": "Talento",
+      "company": "Empresa",
+      "admin": "Administrador"
+    },
+    "enum_especialidad": {
+      "frontend": "Frontend",
+      "backend": "Backend",
+      "fullstack": "Fullstack",
+      "ia": "IA"
+    },
+    "enum_disponibilidad": {
+      "immediate": "Inmediata",
+      "two_weeks": "En dos semanas",
+      "one_month": "En un mes",
+      "unavailable": "No disponible"
+    },
+    "enum_verificacion": {
+      "pendiente": "Pendiente",
+      "verificado": "Verificado",
+      "rechazado": "Rechazado"
+    },
+    "enum_etapa": {
+      "idea": "Idea",
+      "mvp": "MVP",
+      "validating": "Validando",
+      "scaling": "Escalando"
+    },
+    "enum_presupuesto": {
+      "under_500": "Menos de $500",
+      "range_500_1000": "$500 a $1.000",
+      "range_1000_2500": "$1.000 a $2.500",
+      "flexible": "Flexible"
+    },
+    "enum_horario": {
+      "flexible": "Flexible",
+      "fixed": "Fijo"
+    }
+  },
+  "admin_reportes": {
+    "eyebrow": "Analítica",
+    "title": "Reportes",
+    "description": "Panorama del ecosistema FWD Talent calculado en vivo a partir de usuarios, egresados, empresas y proyectos registrados.",
+    "export_csv": "Exportar CSV",
+    "export_pdf": "Exportar PDF",
+    "empty": "Sin datos suficientes.",
+    "kpi": {
+      "usuarios": "Usuarios",
+      "egresados": "Egresados",
+      "empresas": "Empresas",
+      "proyectos": "Proyectos",
+      "activos": "Activos",
+      "pendientes": "Pendientes",
+      "verificados": "Verificados",
+      "finalizados": "Finalizados"
+    },
+    "charts": {
+      "projects_by_state_title": "Proyectos por estado",
+      "projects_by_state_subtitle": "Distribución del total de proyectos según su etapa.",
+      "top_companies_title": "Top empresas por proyectos",
+      "top_companies_subtitle": "Las empresas con más proyectos publicados.",
+      "users_by_role_title": "Usuarios por rol",
+      "users_by_role_subtitle": "Cómo se reparten las cuentas entre juniors, empresas y admins.",
+      "companies_by_type_title": "Empresas por tipo",
+      "companies_by_type_subtitle": "Empresas consolidadas frente a emprendedores."
+    },
+    "enum_state": {
+      "borrador": "Borrador",
+      "en_recepcion": "En recepción",
+      "en_evaluacion": "En evaluación",
+      "adjudicado": "Adjudicado",
+      "en_desarrollo": "En desarrollo",
+      "cerrado": "Cerrado",
+      "cancelado": "Cancelado",
+      "pausado": "Pausado"
+    },
+    "enum_role": {
+      "student": "Juniors",
+      "company": "Empresas",
+      "admin": "Admins"
+    },
+    "enum_account": {
+      "activa": "Activas",
+      "pendiente": "Pendientes",
+      "suspendida": "Suspendidas",
+      "rechazada": "Rechazadas"
+    },
+    "enum_verification": {
+      "verificado": "Verificados",
+      "pendiente": "Pendientes",
+      "rechazado": "Rechazados"
+    },
+    "enum_type": {
+      "empresa": "Empresas",
+      "emprendedor": "Emprendedores"
+    },
+    "csv": {
+      "report_title": "Reporte FWD Talent",
+      "header_metric": "Métrica",
+      "header_value": "Valor",
+      "header_total": "Total",
+      "block_projects_by_state": "Proyectos por estado",
+      "block_top_companies": "Top empresas por proyectos",
+      "block_users_by_role": "Usuarios por rol",
+      "block_accounts": "Estado de cuentas",
+      "block_verification": "Verificación de egresados",
+      "block_companies_by_type": "Empresas por tipo",
+      "filename": "reporte-fwd"
     }
   },
   "admin_proyectos": {

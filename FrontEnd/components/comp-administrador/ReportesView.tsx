@@ -1,6 +1,7 @@
 "use client";
 
-import { useEffect, useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useState } from "react";
+import { useTranslations } from "next-intl";
 import { Download, FileText } from "lucide-react";
 import {
   Bar,
@@ -32,17 +33,6 @@ import type {
 const ACTIVE_STATES: ProjectState[] = ["en_recepcion", "en_evaluacion", "adjudicado", "en_desarrollo"];
 const TOP_COMPANIES = 6;
 
-const STATE_LABEL: Record<ProjectState, string> = {
-  borrador: "Borrador",
-  en_recepcion: "En recepción",
-  en_evaluacion: "En evaluación",
-  adjudicado: "Adjudicado",
-  en_desarrollo: "En desarrollo",
-  cerrado: "Cerrado",
-  cancelado: "Cancelado",
-  pausado: "Pausado",
-};
-
 const STATE_ORDER: ProjectState[] = ["borrador", "en_recepcion", "en_evaluacion", "adjudicado", "en_desarrollo", "cerrado", "cancelado", "pausado"];
 
 const STATE_COLOR: Record<ProjectState, string> = {
@@ -56,18 +46,14 @@ const STATE_COLOR: Record<ProjectState, string> = {
   pausado: "var(--border-strong)",
 };
 
-const ROLE_LABEL: Record<ApiRoleName, string> = { student: "Juniors", company: "Empresas", admin: "Admins" };
 const ROLE_COLOR: Record<ApiRoleName, string> = { student: "var(--primary)", company: "var(--secondary)", admin: "var(--highlight)" };
 
-const ACCOUNT_LABEL: Record<AccountState, string> = { activa: "Activas", pendiente: "Pendientes", suspendida: "Suspendidas", rechazada: "Rechazadas" };
 const ACCOUNT_COLOR: Record<AccountState, string> = { activa: "var(--accent)", pendiente: "var(--warning)", suspendida: "var(--magenta)", rechazada: "var(--ink-muted)" };
 const ACCOUNT_ORDER: AccountState[] = ["activa", "pendiente", "suspendida", "rechazada"];
 
-const VERIFICATION_LABEL: Record<StudentVerification, string> = { verificado: "Verificados", pendiente: "Pendientes", rechazado: "Rechazados" };
 const VERIFICATION_COLOR: Record<StudentVerification, string> = { verificado: "var(--accent)", pendiente: "var(--warning)", rechazado: "var(--magenta)" };
 const VERIFICATION_ORDER: StudentVerification[] = ["verificado", "pendiente", "rechazado"];
 
-const TYPE_LABEL: Record<CompanyType, string> = { empresa: "Empresas", emprendedor: "Emprendedores" };
 const TYPE_COLOR: Record<CompanyType, string> = { empresa: "var(--secondary)", emprendedor: "var(--warning)" };
 
 const CHART_TOOLTIP_STYLE = {
@@ -160,12 +146,14 @@ function ChartSection({
   title,
   subtitle,
   isEmpty,
+  emptyLabel,
   mounted,
   children,
 }: {
   title: string;
   subtitle: string;
   isEmpty: boolean;
+  emptyLabel: string;
   mounted: boolean;
   children: React.ReactNode;
 }) {
@@ -174,7 +162,7 @@ function ChartSection({
       <h2 className="font-heading text-lg font-bold text-ink-strong">{title}</h2>
       <p className="mb-4 mt-0.5 font-body text-xs text-ink-muted">{subtitle}</p>
       {isEmpty ? (
-        <p className="rounded-xl border border-dashed border-border px-4 py-10 text-center font-body text-sm text-ink-muted">Sin datos suficientes.</p>
+        <p className="rounded-xl border border-dashed border-border px-4 py-10 text-center font-body text-sm text-ink-muted">{emptyLabel}</p>
       ) : (
         <div className="h-72 w-full">{mounted ? children : null}</div>
       )}
@@ -193,8 +181,19 @@ export function ReportesView({
   students: AdminStudent[];
   companies: AdminCompany[];
 }) {
+  const t = useTranslations("admin_reportes");
   const [mounted, setMounted] = useState(false);
   useEffect(() => setMounted(true), []);
+
+  /** Traduce un valor enumerado por prefijo, con fallback al valor crudo si no hay clave. */
+  const tEnum = useCallback(
+    (prefix: string, value: string | null | undefined): string | null => {
+      if (!value) return null;
+      const key = `${prefix}.${value}`;
+      return t.has(key) ? t(key) : value;
+    },
+    [t],
+  );
 
   const kpis = useMemo(() => {
     const active = projects.filter((project) => ACTIVE_STATES.includes(project.estado.nombre)).length;
@@ -202,25 +201,25 @@ export function ReportesView({
     const verified = students.filter((student) => student.estado_verificacion === "verificado").length;
     const closed = projects.filter((project) => project.estado.nombre === "cerrado").length;
     return [
-      { label: "Usuarios", value: users.length },
-      { label: "Egresados", value: students.length },
-      { label: "Empresas", value: companies.length },
-      { label: "Proyectos", value: projects.length },
-      { label: "Activos", value: active },
-      { label: "Pendientes", value: pendingAccounts, highlight: true },
-      { label: "Verificados", value: verified },
-      { label: "Finalizados", value: closed },
+      { label: t("kpi.usuarios"), value: users.length },
+      { label: t("kpi.egresados"), value: students.length },
+      { label: t("kpi.empresas"), value: companies.length },
+      { label: t("kpi.proyectos"), value: projects.length },
+      { label: t("kpi.activos"), value: active },
+      { label: t("kpi.pendientes"), value: pendingAccounts, highlight: true },
+      { label: t("kpi.verificados"), value: verified },
+      { label: t("kpi.finalizados"), value: closed },
     ];
-  }, [projects, users, students, companies]);
+  }, [projects, users, students, companies, t]);
 
   const projectsByState = useMemo<Slice[]>(() => {
     const counts = countBy(projects, (project) => project.estado.nombre);
     return STATE_ORDER.filter((state) => (counts.get(state) ?? 0) > 0).map((state) => ({
-      name: STATE_LABEL[state],
+      name: tEnum("enum_state", state) ?? state,
       value: counts.get(state) ?? 0,
       color: STATE_COLOR[state],
     }));
-  }, [projects]);
+  }, [projects, tEnum]);
 
   const topCompanies = useMemo<Slice[]>(() => {
     const counts = countBy(projects, (project) => project.empresa?.nombre_comercial);
@@ -234,55 +233,56 @@ export function ReportesView({
     const counts = countBy(users, (user) => user.role?.nombre);
     return (["student", "company", "admin"] as ApiRoleName[])
       .filter((role) => (counts.get(role) ?? 0) > 0)
-      .map((role) => ({ name: ROLE_LABEL[role], value: counts.get(role) ?? 0, color: ROLE_COLOR[role] }));
-  }, [users]);
+      .map((role) => ({ name: tEnum("enum_role", role) ?? role, value: counts.get(role) ?? 0, color: ROLE_COLOR[role] }));
+  }, [users, tEnum]);
 
   const accountsByState = useMemo<Slice[]>(() => {
     const counts = countBy(users, (user) => user.estado_cuenta);
     return ACCOUNT_ORDER.filter((state) => (counts.get(state) ?? 0) > 0).map((state) => ({
-      name: ACCOUNT_LABEL[state],
+      name: tEnum("enum_account", state) ?? state,
       value: counts.get(state) ?? 0,
       color: ACCOUNT_COLOR[state],
     }));
-  }, [users]);
+  }, [users, tEnum]);
 
   const studentsByVerification = useMemo<Slice[]>(() => {
     const counts = countBy(students, (student) => student.estado_verificacion);
     return VERIFICATION_ORDER.filter((state) => (counts.get(state) ?? 0) > 0).map((state) => ({
-      name: VERIFICATION_LABEL[state],
+      name: tEnum("enum_verification", state) ?? state,
       value: counts.get(state) ?? 0,
       color: VERIFICATION_COLOR[state],
     }));
-  }, [students]);
+  }, [students, tEnum]);
 
   const companiesByType = useMemo<Slice[]>(() => {
     const counts = countBy(companies, (company) => company.tipo);
     return (["empresa", "emprendedor"] as CompanyType[])
       .filter((type) => (counts.get(type) ?? 0) > 0)
-      .map((type) => ({ name: TYPE_LABEL[type], value: counts.get(type) ?? 0, color: TYPE_COLOR[type] }));
-  }, [companies]);
+      .map((type) => ({ name: tEnum("enum_type", type) ?? type, value: counts.get(type) ?? 0, color: TYPE_COLOR[type] }));
+  }, [companies, tEnum]);
 
   function exportCsv() {
     const block = (heading: string[], rows: Slice[]) => [heading, ...rows.map((row) => [row.name, String(row.value)]), []];
+    const total = t("csv.header_total");
     const rows: string[][] = [
-      ["Reporte FWD Talent"],
+      [t("csv.report_title")],
       [],
-      ["Métrica", "Valor"],
+      [t("csv.header_metric"), t("csv.header_value")],
       ...kpis.map((kpi) => [kpi.label, String(kpi.value)]),
       [],
-      ...block(["Proyectos por estado", "Total"], projectsByState),
-      ...block(["Top empresas por proyectos", "Total"], topCompanies),
-      ...block(["Usuarios por rol", "Total"], usersByRole),
-      ...block(["Estado de cuentas", "Total"], accountsByState),
-      ...block(["Verificación de egresados", "Total"], studentsByVerification),
-      ...block(["Empresas por tipo", "Total"], companiesByType),
+      ...block([t("csv.block_projects_by_state"), total], projectsByState),
+      ...block([t("csv.block_top_companies"), total], topCompanies),
+      ...block([t("csv.block_users_by_role"), total], usersByRole),
+      ...block([t("csv.block_accounts"), total], accountsByState),
+      ...block([t("csv.block_verification"), total], studentsByVerification),
+      ...block([t("csv.block_companies_by_type"), total], companiesByType),
     ];
     const csv = rows.map((row) => row.map((cell) => `"${String(cell).replace(/"/g, '""')}"`).join(",")).join("\n");
     const blob = new Blob([csv], { type: "text/csv;charset=utf-8;" });
     const url = URL.createObjectURL(blob);
     const link = document.createElement("a");
     link.href = url;
-    link.download = "reporte-fwd.csv";
+    link.download = `${t("csv.filename")}.csv`;
     link.click();
     URL.revokeObjectURL(url);
   }
@@ -291,17 +291,17 @@ export function ReportesView({
     <div className="mx-auto max-w-7xl space-y-6 px-6 py-8 md:px-10">
       <header className="flex flex-col gap-4 lg:flex-row lg:items-start lg:justify-between">
         <div className="space-y-2">
-          <p className="font-body text-xs font-semibold uppercase tracking-[0.18em] text-primary">Analítica</p>
+          <p className="font-body text-xs font-semibold uppercase tracking-[0.18em] text-primary">{t("eyebrow")}</p>
           <h1 className="font-heading text-3xl font-bold tracking-tight text-ink-strong md:text-4xl">
-            Reportes<span className="text-primary" aria-hidden="true">.</span>
+            {t("title")}<span className="text-primary" aria-hidden="true">.</span>
           </h1>
           <p className="max-w-xl font-body text-sm text-ink-muted">
-            Panorama del ecosistema FWD Talent calculado en vivo a partir de usuarios, egresados, empresas y proyectos registrados.
+            {t("description")}
           </p>
         </div>
         <div className="flex flex-wrap gap-3">
-          <Button variant="outline" onClick={exportCsv}><Download className="size-4" aria-hidden="true" /> Exportar CSV</Button>
-          <Button onClick={() => window.print()}><FileText className="size-4" aria-hidden="true" /> Exportar PDF</Button>
+          <Button variant="outline" onClick={exportCsv}><Download className="size-4" aria-hidden="true" /> {t("export_csv")}</Button>
+          <Button onClick={() => window.print()}><FileText className="size-4" aria-hidden="true" /> {t("export_pdf")}</Button>
         </div>
       </header>
 
@@ -318,19 +318,19 @@ export function ReportesView({
       </section>
 
       <div className="grid grid-cols-1 gap-6 lg:grid-cols-2">
-        <ChartSection title="Proyectos por estado" subtitle="Distribución del total de proyectos según su etapa." isEmpty={projectsByState.length === 0} mounted={mounted}>
+        <ChartSection title={t("charts.projects_by_state_title")} subtitle={t("charts.projects_by_state_subtitle")} emptyLabel={t("empty")} isEmpty={projectsByState.length === 0} mounted={mounted}>
           <DonutChart data={projectsByState} />
         </ChartSection>
 
-        <ChartSection title="Top empresas por proyectos" subtitle="Las empresas con más proyectos publicados." isEmpty={topCompanies.length === 0} mounted={mounted}>
+        <ChartSection title={t("charts.top_companies_title")} subtitle={t("charts.top_companies_subtitle")} emptyLabel={t("empty")} isEmpty={topCompanies.length === 0} mounted={mounted}>
           <HorizontalBars data={topCompanies} />
         </ChartSection>
 
-        <ChartSection title="Usuarios por rol" subtitle="Cómo se reparten las cuentas entre juniors, empresas y admins." isEmpty={usersByRole.length === 0} mounted={mounted}>
+        <ChartSection title={t("charts.users_by_role_title")} subtitle={t("charts.users_by_role_subtitle")} emptyLabel={t("empty")} isEmpty={usersByRole.length === 0} mounted={mounted}>
           <DonutChart data={usersByRole} />
         </ChartSection>
 
-        <ChartSection title="Empresas por tipo" subtitle="Empresas consolidadas frente a emprendedores." isEmpty={companiesByType.length === 0} mounted={mounted}>
+        <ChartSection title={t("charts.companies_by_type_title")} subtitle={t("charts.companies_by_type_subtitle")} emptyLabel={t("empty")} isEmpty={companiesByType.length === 0} mounted={mounted}>
           <VerticalBars data={companiesByType} />
         </ChartSection>
       </div>

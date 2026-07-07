@@ -2,6 +2,7 @@
 
 import React, { useState, useTransition } from "react";
 import { useTranslations } from "next-intl";
+import { useApiErrorText } from "@/lib/i18n/api-error";
 import { useParams, useRouter } from "next/navigation";
 import Link from "next/link";
 import { ArrowLeft, Eye, EyeOff } from "lucide-react";
@@ -47,6 +48,7 @@ interface RegisterFormProps {
 
 export function RegisterForm({ badge }: RegisterFormProps) {
   const t = useTranslations("register.auth");
+  const errorText = useApiErrorText();
   const params = useParams();
   const router = useRouter();
   const locale = params.locale as string;
@@ -67,7 +69,7 @@ export function RegisterForm({ badge }: RegisterFormProps) {
     startTransition(async () => {
       const result = await startOAuth(provider, locale);
       if (!result.ok) {
-        setError(result.error);
+        setError(errorText(result.error));
         return;
       }
       window.location.href = result.data.url;
@@ -86,7 +88,7 @@ export function RegisterForm({ badge }: RegisterFormProps) {
       if (result.ok) {
         router.push(`/${locale}/register/role`);
       } else {
-        setError(result.error);
+        setError(errorText(result.error));
       }
     });
   }
