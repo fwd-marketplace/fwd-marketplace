@@ -9,8 +9,11 @@ import type {
   EmprendedorOnboarding,
 } from "../validations/onboarding";
 
-/** Resultado común del onboarding: el usuario queda pendiente de aprobación. */
-type OnboardingResult = { role: "student" | "company"; estado_cuenta: "pendiente" };
+/**
+ * Resultado del onboarding. Por defecto la cuenta queda 'pendiente' (aprobación del
+ * admin); un junior cuya cédula sea de egresado FWD verificado queda 'activa' de una.
+ */
+type OnboardingResult = { role: "student" | "company"; estado_cuenta: "pendiente" | "activa" };
 
 /**
  * El onboarding corre dentro de una función SECURITY DEFINER (ver
@@ -69,21 +72,30 @@ export async function onboardJunior(
   });
   if (error) mapOnboardingError(error);
 
-  // Verificación de egresado FWD: si la cédula está en el registro externo, la cuenta
-  // queda 'verificado' de una (sin revisión manual del admin) y se guarda su título FWD.
-  // Opción A: si no coincide o el registro no responde, se deja 'pendiente' y el registro
-  // NUNCA se bloquea; por eso el cotejo va en un try/catch que solo loguea.
+  // Verificación de egresado FWD: si la cédula está en el registro externo, la cuenta se
+  // ACTIVA de una (estado_cuenta='activa') y el estudiante queda 'verificado' con su
+  // título FWD, sin revisión manual del admin. Opción A: si no coincide o el registro no
+  // responde, la cuenta queda 'pendiente' y el registro NUNCA se bloquea; por eso el
+  // cotejo va en un try/catch que solo loguea.
+  let estadoCuenta: "pendiente" | "activa" = "pendiente";
   try {
     const match = await verificarEgresado(input.cedula);
     if (match.elegible) {
-      const { error: updateError } = await supabaseAdmin()
+      const admin = supabaseAdmin();
+      const { error: estudianteError } = await admin
         .from("estudiante")
         .update({ estado_verificacion: "verificado", titulo_fwd: match.titulo })
         .eq("id_usuario", userId);
-      if (updateError) {
-        logger.error("no se pudo marcar al egresado como verificado", {
-          error: updateError.message,
+      const { error: cuentaError } = await admin
+        .from("users")
+        .update({ estado_cuenta: "activa" })
+        .eq("id", userId);
+      if (estudianteError || cuentaError) {
+        logger.error("no se pudo activar al egresado verificado", {
+          error: (estudianteError ?? cuentaError)?.message,
         });
+      } else {
+        estadoCuenta = "activa";
       }
     }
   } catch (cause) {
@@ -92,7 +104,7 @@ export async function onboardJunior(
     });
   }
 
-  return { role: "student", estado_cuenta: "pendiente" };
+  return { role: "student", estado_cuenta: estadoCuenta };
 }
 
 /** Onboarding de empresa: users (pendiente) + empresario(tipo='empresa'), atómico. */
