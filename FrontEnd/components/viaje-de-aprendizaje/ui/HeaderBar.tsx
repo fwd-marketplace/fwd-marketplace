@@ -4,7 +4,7 @@ import { useState, useTransition } from "react";
 import Link from "next/link";
 import { useLocale, useTranslations } from "next-intl";
 import { useRouter } from "next/navigation";
-import { Star, Sparkles, Flame, LogOut } from "lucide-react";
+import { Star, Sparkles, Flame, LogOut, House } from "lucide-react";
 import { NavbarLogoConstellation } from "@/components/layout/NavbarLogoConstellation";
 import { NotificationPanel } from "@/components/layout/notification-panel";
 import { logoutUser } from "@/lib/actions/auth";
@@ -54,6 +54,14 @@ export function HeaderBar({ progress, xp, streak, userName, avatarUrl, role }: H
 
         {/* ── Izquierda: Logo + Título ───────────────────────────────── */}
         <div className="flex items-center gap-3 min-w-0">
+          <Link
+            href={`/${locale}/bienvenida`}
+            aria-label={t("home_label")}
+            title={t("home_label")}
+            className="inline-flex size-9 shrink-0 items-center justify-center rounded-full text-white/70 transition-colors duration-[var(--duration-fast)] hover:bg-white/15 hover:text-white"
+          >
+            <House size={18} aria-hidden="true" />
+          </Link>
           <Link
             href={`/${locale}/marketplace`}
             aria-label="FWD Marketplace"
