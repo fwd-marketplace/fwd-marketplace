@@ -2000,7 +2000,7 @@ function JuniorProcesoView({
                     <label className="mb-2 block font-body text-[13px] font-bold text-ink">
                       {t("description_label")}
                     </label>
-                    <div className="rounded-xl border border-border bg-canvas p-[14px] font-body text-[14px] leading-relaxed text-ink" style={{ background: "#FBFAFD" }}>
+                    <div className="rounded-xl border border-border bg-canvas p-[14px] font-body text-[14px] leading-relaxed text-ink">
                       {p.desc}
                     </div>
 
@@ -2008,7 +2008,7 @@ function JuniorProcesoView({
                       {t("proceso_doc_label")}
                     </label>
                     <div className="flex flex-wrap items-center gap-3">
-                      <div className="min-w-[200px] flex-1 truncate rounded-xl border border-border px-[15px] py-3 font-body text-[14px] text-primary" style={{ background: "#FBFAFD" }}>
+                      <div className="min-w-[200px] flex-1 truncate rounded-xl border border-border bg-canvas px-[15px] py-3 font-body text-[14px] text-primary">
                         {p.link || t("proceso_sin_enlace")}
                       </div>
                       {p.fileName && (
@@ -2023,7 +2023,7 @@ function JuniorProcesoView({
                       {t("proceso_previsualizacion_label")}
                     </label>
                     <div className="overflow-hidden rounded-[14px] border border-border bg-surface">
-                      <div className="flex items-center gap-[7px] border-b border-border px-[14px] py-[11px]" style={{ background: "#F4F3F7" }}>
+                      <div className="flex items-center gap-[7px] border-b border-border bg-surface-sunken px-[14px] py-[11px]">
                         <span className="size-[11px] rounded-full" style={{ background: "#F2655A" }} aria-hidden="true" />
                         <span className="size-[11px] rounded-full" style={{ background: "#F5BE4F" }} aria-hidden="true" />
                         <span className="size-[11px] rounded-full" style={{ background: "#62C554" }} aria-hidden="true" />
@@ -2038,7 +2038,7 @@ function JuniorProcesoView({
                           </a>
                         )}
                       </div>
-                      <div className="flex min-h-[150px] flex-col gap-[10px] px-7 py-[30px]" style={{ background: "linear-gradient(180deg,#FCFBFE,#F7F6FB)" }}>
+                      <div className="flex min-h-[150px] flex-col gap-[10px] bg-surface px-7 py-[30px]">
                         <p className="font-heading text-xl font-extrabold tracking-tight text-ink-strong">
                           {p.previewName || t("proceso_preview_sin_nombre")}
                         </p>
@@ -2058,10 +2058,12 @@ function JuniorProcesoView({
                       </div>
                     ) : (
                       <div
-                        className="min-h-[84px] rounded-xl border p-[14px] font-body text-[14px] leading-relaxed"
-                        style={p.observaciones
-                          ? { borderColor: "#F0CDBF", background: "#FFF6F2", color: "#9A3B23" }
-                          : { borderColor: "#E8E5EF", background: "#FBFAFD", color: "#B3AEC0" }}
+                        className={cn(
+                          "min-h-[84px] rounded-xl border p-[14px] font-body text-[14px] leading-relaxed",
+                          p.observaciones
+                            ? "border-warning/30 bg-warning/5 text-warning"
+                            : "border-border bg-canvas text-ink-muted",
+                        )}
                       >
                         {p.observaciones || t("proceso_observaciones_empty")}
                       </div>
@@ -2103,16 +2105,15 @@ function JuniorProcesoView({
           <div className="flex gap-[18px]">
             <div className="flex flex-col items-center" style={{ width: 32, flexShrink: 0, paddingTop: 1 }}>
               <div
-                className="size-[30px] shrink-0 rounded-full bg-surface"
-                style={{ border: "2px dashed #D7D2E0" }}
+                className="size-[30px] shrink-0 rounded-full border-2 border-dashed border-border bg-surface"
                 aria-hidden="true"
               />
             </div>
             <div className="min-w-0 flex-1 py-[2px]">
-              <p className="font-body text-base font-bold" style={{ color: "#B3AEC0" }}>
+              <p className="font-body text-base font-bold text-ink-muted">
                 {t("proceso_propuesta_n", { n: proposals.length + 1 })}
               </p>
-              <div className="mt-[5px] flex items-center gap-[7px] font-body text-[13px]" style={{ color: "#B3AEC0" }}>
+              <div className="mt-[5px] flex items-center gap-[7px] font-body text-[13px] text-ink-muted">
                 <Lock className="size-[13px] shrink-0" aria-hidden="true" />
                 {lockCaption}
               </div>
@@ -2122,8 +2123,7 @@ function JuniorProcesoView({
 
         {/* Closed banner */}
         {closed && (
-          <div className="mt-[6px] flex items-center gap-[10px] rounded-xl border p-[14px] font-body text-[14px] font-semibold"
-            style={{ background: "#E0F3E9", borderColor: "#BFE6CF", color: "#1E7A4F" }}>
+          <div className="mt-[6px] flex items-center gap-[10px] rounded-xl border border-accent/30 bg-accent/5 p-[14px] font-body text-[14px] font-semibold text-accent">
             <Check className="size-[18px] shrink-0" aria-hidden="true" />
             {t("proceso_cerrado")}
           </div>
@@ -2577,8 +2577,11 @@ function EmpresaProcesoView({
             return (
               <div
                 key={s.id}
-                className={cn("transition-opacity duration-[var(--duration-fast)]", isRej && !s.expanded && "opacity-50")}
-                style={{ background: s.expanded ? "#FAFAFC" : "#fff" }}
+                className={cn(
+                  "transition-opacity duration-[var(--duration-fast)]",
+                  s.expanded ? "bg-surface-sunken" : "bg-surface",
+                  isRej && !s.expanded && "opacity-50",
+                )}
               >
                 {/* Student row */}
                 <div
@@ -2599,7 +2602,7 @@ function EmpresaProcesoView({
                       <span className={cn("font-heading text-base font-bold", isRej ? "text-ink-muted" : "text-ink-strong")}>
                         {s.name}
                       </span>
-                      <span className="rounded-full bg-surface px-2.5 py-0.5 font-body text-xs font-semibold text-ink-muted" style={{ border: "1px solid #E7E3EF" }}>
+                      <span className="rounded-full border border-border bg-surface px-2.5 py-0.5 font-body text-xs font-semibold text-ink-muted">
                         {nVer} {nVer === 1 ? t("proceso_version_singular") : t("proceso_version_plural")}
                       </span>
                     </div>
