@@ -9,6 +9,7 @@ import { CosmicBackdrop } from "@/components/ui/cosmic-backdrop";
 import { ProgressDots } from "@/components/onboarding/ProgressDots";
 import { saveStep, getOnboarding, clearOnboarding } from "@/lib/onboarding-storage";
 import { saveEmpresaProfile } from "@/lib/actions/auth";
+import { useApiErrorText } from "@/lib/i18n/api-error";
 import { uploadEmpresarioLogo } from "@/lib/actions/perfil";
 
 const TOTAL_STEPS = 6;
@@ -469,6 +470,7 @@ function Step6({ onLogoFile }: { onLogoFile: (file: File) => void }) {
 
 export function EmpresaOnboarding() {
   const t = useTranslations("register");
+  const errorText = useApiErrorText();
   const params = useParams();
   const router = useRouter();
   const locale = params.locale as string;
@@ -549,12 +551,7 @@ export function EmpresaOnboarding() {
   }
 
   const stepValidationMessage = getStepValidationMessage();
-  // El backend puede devolver un código de error estable (ej. ALREADY_ONBOARDED); se traduce
-  // vía `register.errors.<code>` y cae al texto crudo si no hay clave.
-  const submitErrorText = submitError
-    ? (t.has(`errors.${submitError}`) ? t(`errors.${submitError}`) : submitError)
-    : null;
-  const footerMessage = submitErrorText ?? stepValidationMessage;
+  const footerMessage = errorText(submitError) ?? stepValidationMessage;
 
   return (
     <div className="relative flex min-h-[100dvh] flex-col bg-secondary">

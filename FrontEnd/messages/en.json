@@ -201,19 +201,30 @@
     "footer_security": "Security Center",
     "footer_copyright": "© 2026 FWD Marketplace. Secure encrypted connection."
   },
+  "api_errors": {
+    "CONNECTION_ERROR": "Connection error. Check your internet and try again.",
+    "ONBOARDING_FORBIDDEN": "You can't complete registration for another account.",
+    "CEDULA_TAKEN": "An account with that ID already exists.",
+    "ALREADY_ONBOARDED": "This account has already completed registration.",
+    "ONBOARDING_FAILED": "We couldn't complete registration. Please try again.",
+    "SIGNUPS_DISABLED": "Talent registration is temporarily disabled.",
+    "COMPANIES_DISABLED": "Company registration is temporarily disabled.",
+    "EMPRENDEDORES_DISABLED": "Entrepreneur registration is temporarily disabled.",
+    "NOT_AUTHENTICATED": "Your session expired. Please sign in again.",
+    "NO_EMAIL": "The account has no email associated.",
+    "EMAIL_REQUIRED": "Email is required.",
+    "PASSWORD_REQUIRED": "Password is required.",
+    "PASSWORD_TOO_SHORT": "Password must be at least 8 characters.",
+    "VERIFICATION_TICKET_MISSING": "The verification ticket is missing.",
+    "CODE_INVALID_LENGTH": "The code must be 6 digits.",
+    "RESET_TOKEN_MISSING": "The recovery token is missing.",
+    "REFRESH_TOKEN_REQUIRED": "The session token is missing.",
+    "OAUTH_PROVIDER_UNSUPPORTED": "Unsupported sign-in provider.",
+    "INVALID_CREDENTIALS": "Incorrect email or password.",
+    "RESET_LINK_INVALID": "The recovery link is invalid or expired.",
+    "TOKEN_INVALID": "Your session expired. Please sign in again."
+  },
   "register": {
-    "errors": {
-      "ONBOARDING_FORBIDDEN": "You can't complete registration for another account.",
-      "CEDULA_TAKEN": "An account with that ID already exists.",
-      "ALREADY_ONBOARDED": "This account has already completed registration.",
-      "ONBOARDING_FAILED": "We couldn't complete registration. Please try again.",
-      "SIGNUPS_DISABLED": "Talent registration is temporarily disabled.",
-      "COMPANIES_DISABLED": "Company registration is temporarily disabled.",
-      "EMPRENDEDORES_DISABLED": "Entrepreneur registration is temporarily disabled.",
-      "NOT_AUTHENTICATED": "Your session expired. Please sign in again.",
-      "NO_EMAIL": "The account has no email associated.",
-      "CONNECTION_ERROR": "Connection error. Check your internet and try again."
-    },
     "brand": "FWD",
     "brand_suffix": "Marketplace",
     "nav": {

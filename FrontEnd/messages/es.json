@@ -201,19 +201,30 @@
     "footer_security": "Centro de Seguridad",
     "footer_copyright": "© 2026 FWD Marketplace. Conexión cifrada y segura."
   },
+  "api_errors": {
+    "CONNECTION_ERROR": "Error de conexión. Revisá tu internet e intentá de nuevo.",
+    "ONBOARDING_FORBIDDEN": "No podés completar el registro de otra cuenta.",
+    "CEDULA_TAKEN": "Ya existe una cuenta registrada con esa cédula.",
+    "ALREADY_ONBOARDED": "Esta cuenta ya completó el registro.",
+    "ONBOARDING_FAILED": "No se pudo completar el registro. Intentá de nuevo.",
+    "SIGNUPS_DISABLED": "Los registros de talento están deshabilitados temporalmente.",
+    "COMPANIES_DISABLED": "El registro de empresas está deshabilitado temporalmente.",
+    "EMPRENDEDORES_DISABLED": "El registro de emprendedores está deshabilitado temporalmente.",
+    "NOT_AUTHENTICATED": "Tu sesión expiró. Iniciá sesión de nuevo.",
+    "NO_EMAIL": "La cuenta no tiene un correo asociado.",
+    "EMAIL_REQUIRED": "El email es obligatorio.",
+    "PASSWORD_REQUIRED": "La contraseña es obligatoria.",
+    "PASSWORD_TOO_SHORT": "La contraseña debe tener al menos 8 caracteres.",
+    "VERIFICATION_TICKET_MISSING": "Falta el ticket de verificación.",
+    "CODE_INVALID_LENGTH": "El código debe ser de 6 dígitos.",
+    "RESET_TOKEN_MISSING": "Falta el token de recuperación.",
+    "REFRESH_TOKEN_REQUIRED": "Falta el token de sesión.",
+    "OAUTH_PROVIDER_UNSUPPORTED": "Proveedor de acceso no soportado.",
+    "INVALID_CREDENTIALS": "Correo o contraseña incorrectos.",
+    "RESET_LINK_INVALID": "El enlace de recuperación es inválido o expiró.",
+    "TOKEN_INVALID": "Tu sesión expiró. Iniciá sesión de nuevo."
+  },
   "register": {
-    "errors": {
-      "ONBOARDING_FORBIDDEN": "No podés completar el registro de otra cuenta.",
-      "CEDULA_TAKEN": "Ya existe una cuenta registrada con esa cédula.",
-      "ALREADY_ONBOARDED": "Esta cuenta ya completó el registro.",
-      "ONBOARDING_FAILED": "No se pudo completar el registro. Intentá de nuevo.",
-      "SIGNUPS_DISABLED": "Los registros de talento están deshabilitados temporalmente.",
-      "COMPANIES_DISABLED": "El registro de empresas está deshabilitado temporalmente.",
-      "EMPRENDEDORES_DISABLED": "El registro de emprendedores está deshabilitado temporalmente.",
-      "NOT_AUTHENTICATED": "Tu sesión expiró. Iniciá sesión de nuevo.",
-      "NO_EMAIL": "La cuenta no tiene un correo asociado.",
-      "CONNECTION_ERROR": "Error de conexión. Revisá tu internet e intentá de nuevo."
-    },
     "brand": "FWD",
     "brand_suffix": "Marketplace",
     "nav": {

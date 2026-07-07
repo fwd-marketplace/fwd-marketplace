@@ -9,6 +9,7 @@ import { CosmicBackdrop } from "@/components/ui/cosmic-backdrop";
 import { ProgressDots } from "@/components/onboarding/ProgressDots";
 import { saveStep, getOnboarding, clearOnboarding } from "@/lib/onboarding-storage";
 import { saveEmprendedorProfile } from "@/lib/actions/auth";
+import { useApiErrorText } from "@/lib/i18n/api-error";
 
 const TOTAL_STEPS = 5;
 const OPTIONAL_STEPS = new Set([5]);
@@ -390,6 +391,7 @@ function Step5({ onChange }: { onChange: (val: string) => void }) {
 
 export function EmprendedorOnboarding() {
   const t = useTranslations("register");
+  const errorText = useApiErrorText();
   const params = useParams();
   const router = useRouter();
   const locale = params.locale as string;
@@ -464,12 +466,7 @@ export function EmprendedorOnboarding() {
   }
 
   const stepValidationMessage = getStepValidationMessage();
-  // El backend puede devolver un código de error estable (ej. CEDULA_TAKEN); se traduce
-  // vía `register.errors.<code>` y cae al texto crudo si no hay clave.
-  const submitErrorText = submitError
-    ? (t.has(`errors.${submitError}`) ? t(`errors.${submitError}`) : submitError)
-    : null;
-  const footerMessage = submitErrorText ?? stepValidationMessage;
+  const footerMessage = errorText(submitError) ?? stepValidationMessage;
 
   return (
     <div className="relative flex min-h-[100dvh] flex-col bg-secondary">
