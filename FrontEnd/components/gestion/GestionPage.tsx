@@ -362,7 +362,7 @@ export function GestionPage({ role, userId, initialProjectId, initialSection: in
   const [section, setSection]               = useState<Section>(initialSection);
 
   // Sidebar navigation — pure presentation state (which top-level view is active)
-  const [sidebarView, setSidebarView] = useState<"dashboard" | "procesos">("dashboard");
+  const [sidebarView, setSidebarView] = useState<"dashboard" | "procesos" | "mensajes">("dashboard");
 
   // Clean ?proyecto= from URL once used to pre-select
   useEffect(() => {
@@ -437,6 +437,17 @@ export function GestionPage({ role, userId, initialProjectId, initialSection: in
     const r = await getMyConversacionesAction();
     if (r.ok) setMyConversaciones(r.data);
   }, []);
+
+  // Mientras la vista de mensajes está activa, refrescar conversaciones cada 5 s.
+  // Esto garantiza que los chats directos aparezcan aunque el callback de escalada
+  // no llegue correctamente a través de la cadena de componentes.
+  useEffect(() => {
+    if (sidebarView !== "mensajes" || isEmpresa) return;
+    void refreshConversaciones();
+    let active = true;
+    const timer = setInterval(() => { if (active) void refreshConversaciones(); }, 5000);
+    return () => { active = false; clearInterval(timer); };
+  }, [sidebarView, isEmpresa, refreshConversaciones]);
 
   // Al abrir el chat de un proyecto, el backend marca esos mensajes como leídos;
   // limpiamos el badge "pendiente" de ese proyecto de inmediato (optimista).
@@ -642,19 +653,27 @@ export function GestionPage({ role, userId, initialProjectId, initialSection: in
         </div>
 
         {/* Mensajes */}
-        <div className="group relative">
-          <button
-            type="button"
-            aria-label="Mensajes"
-            disabled
-            className="flex size-10 items-center justify-center rounded-[14px] text-ink-muted/30 transition-all duration-[var(--duration-fast)] ease-[var(--ease-out)] cursor-not-allowed"
-          >
-            <Mail className="size-[18px]" aria-hidden="true" />
-          </button>
-          <span role="tooltip" className="pointer-events-none absolute left-[calc(100%+12px)] top-1/2 z-50 -translate-y-1/2 whitespace-nowrap rounded-xl bg-ink-strong px-3 py-1.5 font-body text-xs font-semibold text-white opacity-0 shadow-lg transition-opacity duration-[var(--duration-fast)] group-hover:opacity-100">
-            Mensajes (próximamente)
-          </span>
-        </div>
+        {!isEmpresa && (
+          <div className="group relative">
+            <button
+              type="button"
+              onClick={() => { setSidebarView("mensajes"); }}
+              aria-current={sidebarView === "mensajes" ? "page" : undefined}
+              aria-label="Mensajes"
+              className={cn(
+                "flex size-10 items-center justify-center rounded-[14px] transition-all duration-[var(--duration-fast)] ease-[var(--ease-out)]",
+                sidebarView === "mensajes"
+                  ? "bg-secondary text-white shadow-sm"
+                  : "text-ink-muted hover:bg-secondary/10 hover:text-secondary",
+              )}
+            >
+              <Mail className="size-[18px]" aria-hidden="true" />
+            </button>
+            <span role="tooltip" className="pointer-events-none absolute left-[calc(100%+12px)] top-1/2 z-50 -translate-y-1/2 whitespace-nowrap rounded-xl bg-ink-strong px-3 py-1.5 font-body text-xs font-semibold text-white opacity-0 shadow-lg transition-opacity duration-[var(--duration-fast)] group-hover:opacity-100">
+              Mensajes
+            </span>
+          </div>
+        )}
 
       </nav>
 
@@ -965,6 +984,19 @@ export function GestionPage({ role, userId, initialProjectId, initialSection: in
             onSave={handleSaveProject}
             onClose={() => setFormMode(null)}
           />
+        ) : !isEmpresa && sidebarView === "mensajes" ? (
+          <MensajesView
+            myOffers={myOffers}
+            myConversaciones={myConversaciones}
+            projects={sidebarProjects}
+            selectedProjectId={selectedId}
+            selectedProject={selectedProject}
+            projectLoading={projectLoading && !!selectedId && !selectedProject}
+            t={t}
+            userId={userId}
+            onConversationActivity={refreshConversaciones}
+            onSelectProject={(id) => handleSelect(id, "chat")}
+          />
         ) : !selectedId ? (
           !isEmpresa && sidebarView === "procesos" ? (
             <ProcesosView
@@ -1080,7 +1112,7 @@ export function GestionPage({ role, userId, initialProjectId, initialSection: in
                 userId={userId}
                 disponible={disponible}
                 onBack={() => { setSidebarView("procesos"); handleBack(); }}
-                onOpenChat={() => setSection("chat")}
+                onOpenChat={() => { setSidebarView("mensajes"); setSection("chat"); }}
               />
             )}
             {section === "matches" && isEmpresa && (
@@ -2332,7 +2364,7 @@ function formatChatTime(iso: string) {
 // una vez que existe conversación, que únicamente se abre cuando el bot escala (pregunta no técnica).
 
 function JuniorContactoPanel({
-  projectId, projectTitulo, empresaNombre, t, userId, onConversationActivity,
+  projectId, projectTitulo, empresaNombre, t, userId, onConversationActivity, hideBotFallback,
 }: {
   projectId: string | null;
   projectTitulo: string;
@@ -2340,6 +2372,7 @@ function JuniorContactoPanel({
   t: T;
   userId: string | null;
   onConversationActivity?: () => void;
+  hideBotFallback?: boolean;
 }) {
   const [rawMsgs, setRawMsgs] = useState<ApiMensaje[]>([]);
   const [draft, setDraft] = useState("");
@@ -2424,7 +2457,7 @@ function JuniorContactoPanel({
         <div className="flex flex-1 items-center justify-center">
           <Loader2 className="size-6 animate-spin text-primary" aria-label={t("chat_loading")} />
         </div>
-      ) : hasConversacion ? (
+      ) : hasConversacion || hideBotFallback ? (
         <div className="flex min-h-0 flex-1 flex-col">
           <div className="shrink-0 flex items-center gap-3 border-b border-border bg-surface px-6 py-4">
             <div className="flex size-9 shrink-0 items-center justify-center rounded-full bg-secondary/15 font-heading text-sm font-bold text-secondary">
@@ -2505,6 +2538,7 @@ function JuniorContactoPanel({
           {projectId && (
             <div className="mx-auto w-full max-w-3xl">
               <ProjectChatbot
+                key={projectId ?? ""}
                 embedded
                 projectId={projectId}
                 projectTitulo={projectTitulo}
@@ -5103,5 +5137,220 @@ function ConfirmDeleteDialog({
         </div>
       </div>
     </>
+  );
+}
+
+// ── MensajesView ──────────────────────────────────────────────────────────────
+
+function MensajesView({
+  myOffers,
+  myConversaciones,
+  projects,
+  selectedProjectId,
+  selectedProject,
+  projectLoading,
+  t,
+  userId,
+  onConversationActivity,
+  onSelectProject,
+}: {
+  myOffers: MyOffer[];
+  myConversaciones: ConversacionItem[];
+  projects: ApiProject[];
+  selectedProjectId: string | null;
+  selectedProject: ApiProject | null;
+  projectLoading: boolean;
+  t: T;
+  userId: string | null;
+  onConversationActivity: () => Promise<void>;
+  onSelectProject: (id: string) => void;
+}) {
+  // Tracks which panel item the user clicked: "asistente" = bot, "directo" = human chat
+  const [activeMode, setActiveMode] = useState<"asistente" | "directo">("asistente");
+  const [activePanelId, setActivePanelId] = useState<string | null>(selectedProjectId);
+
+  const directChatIds = new Set(myConversaciones.map((c) => c.proyecto.id));
+  const empresaPorId = new Map(projects.map((p) => [p.id, p.empresa?.nombre_comercial ?? ""]));
+
+  const asistentesItems = myOffers
+    .filter((o) => o.proyecto)
+    .filter((o, idx, arr) => arr.findIndex((x) => x.proyecto?.id === o.proyecto?.id) === idx);
+
+  const titleForId = (id: string) =>
+    myOffers.find((o) => o.proyecto?.id === id)?.proyecto?.titulo
+    ?? myConversaciones.find((c) => c.proyecto.id === id)?.proyecto.titulo
+    ?? "";
+
+  function selectAsistente(id: string) {
+    setActiveMode("asistente");
+    setActivePanelId(id);
+    onSelectProject(id);
+  }
+
+  function selectDirecto(id: string) {
+    setActiveMode("directo");
+    setActivePanelId(id);
+    onSelectProject(id);
+  }
+
+  // After escalation: refresh conversaciones so the project appears in Directos
+  // (stay in bot view — user can switch to Directos when ready)
+  function handleEscalated() {
+    void onConversationActivity();
+  }
+
+  const activeProject = selectedProject ?? null;
+  const activeTitle = activePanelId
+    ? (activeProject?.titulo ?? titleForId(activePanelId))
+    : "";
+  const activeEmpresa = activeProject?.empresa?.nombre_comercial ?? null;
+
+  return (
+    <div className="flex" style={{ minHeight: "calc(100vh - 8rem)" }}>
+
+      {/* Left panel — chat list */}
+      <div className="w-[280px] shrink-0 overflow-y-auto border-r border-border">
+
+        {/* Asistentes */}
+        <div className="px-4 pt-5 pb-3">
+          <p className="mb-2 font-body text-[10px] font-bold uppercase tracking-widest text-ink-muted">
+            {t("mensajes_asistentes")}
+          </p>
+          {asistentesItems.length === 0 && (
+            <p className="font-body text-[12px] text-ink-muted/60">{t("mensajes_sin_asistentes")}</p>
+          )}
+          <ul className="flex flex-col gap-0.5">
+            {asistentesItems.map((offer) => {
+              if (!offer.proyecto) return null;
+              const id = offer.proyecto.id;
+              const isSelected = id === activePanelId && activeMode === "asistente";
+              const empresa = empresaPorId.get(id) ?? offer.proyecto.titulo;
+              return (
+                <li key={id}>
+                  <button
+                    type="button"
+                    onClick={() => selectAsistente(id)}
+                    className={cn(
+                      "flex w-full items-center gap-3 rounded-xl px-3 py-2.5 text-left transition-all duration-[var(--duration-fast)] ease-[var(--ease-out)]",
+                      isSelected ? "bg-secondary/10 ring-1 ring-secondary/20" : "hover:bg-canvas",
+                    )}
+                  >
+                    <div className="flex size-9 shrink-0 items-center justify-center rounded-full bg-secondary/15">
+                      <Sparkles className="size-4 text-secondary" aria-hidden="true" />
+                    </div>
+                    <div className="min-w-0 flex-1">
+                      <p className="truncate font-body text-[13px] font-semibold text-ink-strong">
+                        {t("mensajes_asistente_nombre", { empresa })}
+                      </p>
+                      <p className="truncate font-body text-[11px] text-ink-muted">
+                        {offer.proyecto.titulo}
+                      </p>
+                    </div>
+                  </button>
+                </li>
+              );
+            })}
+          </ul>
+        </div>
+
+        {/* Directos */}
+        <div className="border-t border-border px-4 pt-4 pb-3">
+          <p className="mb-2 font-body text-[10px] font-bold uppercase tracking-widest text-ink-muted">
+            {t("mensajes_directos")}
+          </p>
+          {myConversaciones.length === 0 && (
+            <p className="font-body text-[12px] text-ink-muted/60">{t("mensajes_sin_directos")}</p>
+          )}
+          {myConversaciones.length > 0 && (
+            <ul className="flex flex-col gap-0.5">
+              {myConversaciones.map((conv) => {
+                const isSelected = conv.proyecto.id === activePanelId && activeMode === "directo";
+                const empresa = empresaPorId.get(conv.proyecto.id) ?? conv.proyecto.titulo;
+                const initial = empresa[0]?.toUpperCase() ?? "?";
+                return (
+                  <li key={conv.proyecto.id}>
+                    <button
+                      type="button"
+                      onClick={() => selectDirecto(conv.proyecto.id)}
+                      className={cn(
+                        "flex w-full items-center gap-3 rounded-xl px-3 py-2.5 text-left transition-all duration-[var(--duration-fast)] ease-[var(--ease-out)]",
+                        isSelected ? "bg-primary/10 ring-1 ring-primary/20" : "hover:bg-canvas",
+                      )}
+                    >
+                      <div className="flex size-9 shrink-0 items-center justify-center rounded-full bg-primary/15 font-body text-[14px] font-bold text-primary">
+                        {initial}
+                      </div>
+                      <div className="min-w-0 flex-1">
+                        <div className="flex items-center justify-between gap-2">
+                          <p className="min-w-0 truncate font-body text-[13px] font-semibold text-ink-strong">
+                            {empresa}
+                          </p>
+                          {conv.no_leidos > 0 && (
+                            <span className="shrink-0 rounded-full bg-magenta px-[6px] py-[2px] font-body text-[10px] font-bold text-white">
+                              {conv.no_leidos}
+                            </span>
+                          )}
+                        </div>
+                        <p className="truncate font-body text-[11px] text-ink-muted">
+                          {conv.ultimo_mensaje || conv.proyecto.titulo}
+                        </p>
+                      </div>
+                    </button>
+                  </li>
+                );
+              })}
+            </ul>
+          )}
+        </div>
+      </div>
+
+      {/* Right panel */}
+      <div className="min-w-0 flex-1 bg-canvas">
+        {activePanelId ? (
+          projectLoading ? (
+            <div className="flex h-full items-center justify-center py-20">
+              <Loader2 className="size-6 animate-spin text-primary" aria-hidden="true" />
+            </div>
+          ) : activeMode === "asistente" ? (
+            // Bot — persists history in localStorage; "Hablar con empresa" triggers escalation
+            <div className="mx-auto w-full max-w-3xl px-4 pt-6">
+              <ProjectChatbot
+                key={activePanelId}
+                embedded
+                projectId={activePanelId}
+                projectTitulo={activeTitle}
+                onEscalated={handleEscalated}
+              />
+            </div>
+          ) : (
+            // Human chat — bot fallback hidden so only real messages show
+            <JuniorContactoPanel
+              key={activePanelId}
+              projectId={activePanelId}
+              projectTitulo={activeTitle}
+              empresaNombre={activeEmpresa}
+              t={t}
+              userId={userId}
+              onConversationActivity={onConversationActivity}
+              hideBotFallback
+            />
+          )
+        ) : (
+          <div className="flex h-full flex-col items-center justify-center gap-4 px-8 py-20 text-center">
+            <div className="flex size-14 items-center justify-center rounded-2xl bg-secondary/10">
+              <Mail className="size-6 text-secondary" aria-hidden="true" />
+            </div>
+            <div>
+              <p className="font-heading text-lg font-extrabold tracking-tight text-ink-strong">
+                {t("mensajes_vacio_titulo")}<span className="text-secondary" aria-hidden="true">.</span>
+              </p>
+              <p className="mt-1 max-w-xs font-body text-sm leading-relaxed text-ink-muted">
+                {t("mensajes_vacio_desc")}
+              </p>
+            </div>
+          </div>
+        )}
+      </div>
+    </div>
   );
 }

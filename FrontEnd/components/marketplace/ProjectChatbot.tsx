@@ -36,17 +36,29 @@ function stripEscalationTag(text: string): string {
   return text.replace(ESCALATION_TAG, "").replace(/\s*\[\[?[A-Z]*$/i, "").trimEnd();
 }
 
+function lsGet<T>(key: string, fallback: T): T {
+  if (typeof window === "undefined") return fallback;
+  try { const raw = localStorage.getItem(key); return raw ? (JSON.parse(raw) as T) : fallback; }
+  catch { return fallback; }
+}
+function lsSet(key: string, value: unknown): void {
+  try { localStorage.setItem(key, JSON.stringify(value)); } catch {}
+}
+
 export function ProjectChatbot({ projectId, projectTitulo, embedded = false, onEscalated }: Props) {
   const t = useTranslations("project_chatbot");
   const locale = useLocale();
 
+  const msgKey = `chatbot_msgs_${projectId}`;
+  const escalateKey = `chatbot_escalated_${projectId}`;
+
   const [open, setOpen] = useState(embedded);
-  const [messages, setMessages] = useState<AiChatMessage[]>([]);
+  const [messages, setMessages] = useState<AiChatMessage[]>(() => lsGet<AiChatMessage[]>(msgKey, []));
   const [input, setInput] = useState("");
   const [streamingText, setStreamingText] = useState("");
   const [isStreaming, setIsStreaming] = useState(false);
   const [error, setError] = useState("");
-  const [escalateSuggested, setEscalateSuggested] = useState(false);
+  const [escalateSuggested, setEscalateSuggested] = useState(() => lsGet<boolean>(escalateKey, false));
 
   // Escalamiento a humano (Nivel 1).
   const [escalateOpen, setEscalateOpen] = useState(false);
@@ -63,6 +75,9 @@ export function ProjectChatbot({ projectId, projectTitulo, embedded = false, onE
   useEffect(() => {
     scrollRef.current?.scrollTo({ top: scrollRef.current.scrollHeight });
   }, [messages, streamingText, open]);
+
+  useEffect(() => { lsSet(msgKey, messages); }, [messages, msgKey]);
+  useEffect(() => { lsSet(escalateKey, escalateSuggested); }, [escalateSuggested, escalateKey]);
 
   async function handleSend() {
     const text = input.trim();
