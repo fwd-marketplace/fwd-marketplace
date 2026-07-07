@@ -2694,6 +2694,151 @@
       "error": "No se pudo completar la acción"
     }
   },
+  "admin_solicitudes": {
+    "eyebrow": "Administración",
+    "title": "Solicitudes",
+    "description": "Revisá y gestioná las solicitudes de admisión pendientes del ecosistema FWD Talent.",
+    "stats": {
+      "total": "Todas",
+      "total_badge": "Global",
+      "empresas": "Empresas",
+      "empresas_badge": "B2B",
+      "talentos": "Talentos",
+      "talentos_badge": "B2C",
+      "proyectos": "Proyectos",
+      "proyectos_badge": "Activos",
+      "reportes": "Reportes",
+      "reportes_badge": "Críticos"
+    },
+    "types": {
+      "Empresa": "Empresa",
+      "Emprendedor": "Emprendedor",
+      "Talento": "Talento",
+      "Otro": "Otro"
+    },
+    "filters": {
+      "search_placeholder": "Buscar por nombre, correo o ID...",
+      "type_aria": "Tipo",
+      "date_aria": "Fecha",
+      "type_all": "Tipo: Todos",
+      "date_all": "Fecha: Todos",
+      "date_today": "Hoy",
+      "date_week": "Esta semana",
+      "date_month": "Este mes",
+      "clear": "Limpiar filtros"
+    },
+    "type_meta": {
+      "Empresa": { "title": "Nueva empresa registrada", "origin": "Portal Empresas" },
+      "Emprendedor": { "title": "Nuevo emprendedor registrado", "origin": "Portal Emprendedores" },
+      "Talento": { "title": "Solicitud de verificación", "origin": "Registro Talento" },
+      "Otro": { "title": "Solicitud de cuenta", "origin": "Registro" }
+    },
+    "list": {
+      "empty": "No hay solicitudes pendientes con los filtros aplicados.",
+      "pending": "Pendiente",
+      "id": "ID:",
+      "origin": "Origen:",
+      "summary": "Mostrando <strong>{start} a {end}</strong> de <strong>{total}</strong> solicitudes"
+    },
+    "actions": {
+      "view": "Ver detalle",
+      "approve": "Aprobar",
+      "reject": "Rechazar",
+      "suspend": "Suspender",
+      "close": "Cerrar"
+    },
+    "messages": {
+      "approved": "Solicitud aprobada",
+      "rejected": "Solicitud rechazada",
+      "suspended": "Cuenta suspendida",
+      "error": "No se pudo completar la acción"
+    },
+    "modal": {
+      "fallback_title": "Detalle de la solicitud",
+      "subtitle": "Información completa del solicitante",
+      "loading": "Cargando perfil del solicitante...",
+      "no_profile": "Este usuario no tiene un perfil adicional asociado.",
+      "section_account": "Cuenta",
+      "section_talent": "Perfil de talento",
+      "section_company": "Perfil de empresa"
+    },
+    "fields": {
+      "full_name": "Nombre completo",
+      "email": "Correo",
+      "cedula": "Cedula",
+      "role": "Rol",
+      "account_status": "Estado de cuenta",
+      "registered": "Fecha de registro",
+      "id": "ID",
+      "specialty": "Especialidad",
+      "availability": "Disponibilidad",
+      "preferred_modality": "Modalidad preferida",
+      "titulo_fwd": "Titulo FWD",
+      "verification": "Verificacion",
+      "reputation": "Reputacion",
+      "description": "Descripcion",
+      "skills": "Skills",
+      "commercial_name": "Nombre comercial",
+      "type": "Tipo",
+      "cedula_juridica": "Cedula juridica",
+      "sector": "Sector",
+      "stage": "Etapa",
+      "employees": "Cantidad de empleados",
+      "modalities": "Modalidades",
+      "schedule": "Horario",
+      "budget": "Presupuesto",
+      "address": "Direccion",
+      "project_types": "Tipos de proyecto",
+      "tech_support": "Apoyo tecnico necesario",
+      "mission": "Mision",
+      "vision": "Vision",
+      "culture": "Cultura",
+      "values": "Valores",
+      "contacts": "Contactos"
+    },
+    "links": {
+      "portfolio": "Portafolio",
+      "website": "Sitio web"
+    },
+    "enum_role": {
+      "student": "Talento",
+      "company": "Empresa",
+      "admin": "Administrador"
+    },
+    "enum_especialidad": {
+      "frontend": "Frontend",
+      "backend": "Backend",
+      "fullstack": "Fullstack",
+      "ia": "IA"
+    },
+    "enum_disponibilidad": {
+      "immediate": "Inmediata",
+      "two_weeks": "En dos semanas",
+      "one_month": "En un mes",
+      "unavailable": "No disponible"
+    },
+    "enum_verificacion": {
+      "pendiente": "Pendiente",
+      "verificado": "Verificado",
+      "rechazado": "Rechazado"
+    },
+    "enum_etapa": {
+      "idea": "Idea",
+      "mvp": "MVP",
+      "validating": "Validando",
+      "scaling": "Escalando"
+    },
+    "enum_presupuesto": {
+      "under_500": "Menos de $500",
+      "range_500_1000": "$500 a $1.000",
+      "range_1000_2500": "$1.000 a $2.500",
+      "flexible": "Flexible"
+    },
+    "enum_horario": {
+      "flexible": "Flexible",
+      "fixed": "Fijo"
+    }
+  },
   "admin_proyectos": {
     "view": "Ver",
     "detail": {
