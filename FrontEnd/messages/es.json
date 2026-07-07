@@ -1152,6 +1152,10 @@
     },
     "badge_expired": "Plazo vencido",
     "badge_applied": "Ya postulaste",
+    "badge_new": "Nuevo",
+    "badge_ia": "IA",
+    "weeks_unit": "sem",
+    "match_label": "Match",
     "view_my_offer": "Ver mi propuesta"
   },
   "bienvenida": {

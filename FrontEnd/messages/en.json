@@ -1152,6 +1152,10 @@
     },
     "badge_expired": "Deadline passed",
     "badge_applied": "Already applied",
+    "badge_new": "New",
+    "badge_ia": "AI",
+    "weeks_unit": "wk",
+    "match_label": "Match",
     "view_my_offer": "View my offer"
   },
   "bienvenida": {

@@ -19,11 +19,10 @@ import {
     ChevronDown,
     ChevronLeft,
     ChevronRight,
-    CheckCircle2,
     Clock,
-    Zap,
-    X,
+    Sparkles,
 } from 'lucide-react';
+import { cn } from '@/lib/utils';
 import { MarketplaceHeroBackdrop } from '@/components/marketplace/MarketplaceHeroBackdrop';
 import { HeroJourneyBadge } from '@/components/ui/HeroJourneyBadge';
 import { buildSparklePoints } from '@/lib/logo-constellation';
@@ -50,12 +49,28 @@ type DurationBucket = keyof typeof DURATION_RANGES;
 type SortOrder = 'sort_recent_desc' | 'sort_duration_asc';
 
 const BRAND_COLORS = [
-    'text-primary',
     'text-magenta',
     'text-accent',
+    'text-highlight',
     'text-warning',
-    'text-secondary',
+    'text-primary',
 ] as const;
+
+// Mapas de color para el borde superior y el badge por área.
+const COLOR_TO_VAR: Record<string, string> = {
+    'text-magenta':   'var(--magenta)',
+    'text-accent':    'var(--accent)',
+    'text-highlight': 'var(--highlight)',
+    'text-warning':   'var(--warning)',
+    'text-primary':   'var(--primary)',
+};
+const COLOR_TO_BG: Record<string, string> = {
+    'text-magenta':   'bg-magenta/10',
+    'text-accent':    'bg-accent/10',
+    'text-highlight': 'bg-highlight/10',
+    'text-warning':   'bg-warning/10',
+    'text-primary':   'bg-primary/10',
+};
 
 const AREA_ICONS = [LayoutGrid, LineChart, Cloud, Smartphone, GraduationCap, HeartPulse, Truck, Megaphone, ShoppingCart, Briefcase] as const;
 
@@ -64,12 +79,34 @@ interface FilterOption {
     label: string;
 }
 
+/**
+ * Replica exacta de computeMatchScore del BackEnd (match.service.ts).
+ * Función pura: skills del proyecto vs skills del estudiante + disponibilidad + reputación.
+ */
+function computeMatchScore(
+    projectSkills: string[],
+    studentSkills: string[],
+    disponible: boolean,
+    reputacion: number | null = null,
+): number {
+    const studentSet = new Set(studentSkills.map((s) => s.toLowerCase()));
+    const matched = projectSkills.filter((s) => studentSet.has(s.toLowerCase()));
+    const cobertura = projectSkills.length > 0 ? matched.length / projectSkills.length : 0.5;
+    const base = cobertura * 80 + (disponible ? 20 : 0);
+    const repBonus = reputacion != null ? (reputacion / 5) * 10 : 0;
+    return Math.min(100, Math.round(base + repBonus));
+}
+
+
 interface Props {
     initialProjects: ApiProject[];
     catalogs: CatalogsResponse;
     role?: ApiRoleName | null;
     appliedProjectIds?: string[];
     initialSavedIds?: string[];
+    studentSkills?: string[];
+    studentDisponible?: boolean;
+    studentReputacion?: number | null;
 }
 
 function isExpired(fechaCierre: string | null): boolean {
@@ -77,21 +114,31 @@ function isExpired(fechaCierre: string | null): boolean {
     return new Date(fechaCierre) < new Date();
 }
 
+const AREA_COLOR_OVERRIDE: Record<string, string> = {
+    'ventas':      'text-magenta',
+    'operaciones': 'text-accent',
+};
+
 function getAreaColor(areaId: string, areas: CatalogsResponse['areas']): string {
     const index = areas.findIndex((a) => a.id === areaId);
-    return BRAND_COLORS[index >= 0 ? index % BRAND_COLORS.length : 0] ?? 'text-primary';
+    const area = areas[index];
+    if (area) {
+        const key = area.nombre.toLowerCase().trim();
+        if (key in AREA_COLOR_OVERRIDE) return AREA_COLOR_OVERRIDE[key]!;
+    }
+    return BRAND_COLORS[index >= 0 ? index % BRAND_COLORS.length : 0] ?? 'text-magenta';
 }
 
 function getAreaIcon(areaId: string, areas: CatalogsResponse['areas'], colorClass: string): ReactNode {
     const index = areas.findIndex((a) => a.id === areaId);
     const Icon = AREA_ICONS[index >= 0 ? index % AREA_ICONS.length : 0] ?? Briefcase;
-    return <Icon className={`w-6 h-6 ${colorClass}`} />;
+    return <Icon className={`w-5 h-5 ${colorClass}`} />;
 }
 
-function getMatchColor(match: number): string {
-    if (match >= 85) return 'bg-accent/10 text-accent';
-    if (match >= 70) return 'bg-primary/10 text-primary';
-    return 'bg-magenta/10 text-magenta';
+function isNewProject(fechaPublicacion: string | null): boolean {
+    if (!fechaPublicacion) return false;
+    const MS_PER_DAY = 86_400_000;
+    return Date.now() - new Date(fechaPublicacion).getTime() < 7 * MS_PER_DAY;
 }
 
 function FilterDropdown({
@@ -118,7 +165,7 @@ function FilterDropdown({
                 aria-expanded={isOpen}
                 onClick={() => setIsOpen((o) => !o)}
                 className={`flex items-center gap-1 rounded-full px-3 py-1.5 text-xs font-semibold transition-colors duration-[var(--duration-fast)] ease-[var(--ease-out)] ${
-                    selected ? 'bg-white/25 text-white' : 'text-white/80 hover:bg-white/15 hover:text-white'
+                    selected ? 'bg-primary/10 text-primary' : 'text-ink-muted hover:bg-surface-sunken hover:text-ink'
                 }`}
             >
                 {selected ? selected.label : triggerLabel}
@@ -168,7 +215,7 @@ function FilterDropdown({
     );
 }
 
-export default function MarketPlace({ initialProjects, catalogs, role = 'student', appliedProjectIds = [], initialSavedIds = [] }: Props) {
+export default function MarketPlace({ initialProjects, catalogs, role = 'student', appliedProjectIds = [], initialSavedIds = [], studentSkills = [], studentDisponible = true, studentReputacion = null }: Props) {
     const t = useTranslations('marketplace_page');
     const locale = useLocale();
 
@@ -303,10 +350,10 @@ export default function MarketPlace({ initialProjects, catalogs, role = 'student
 
     return (
         <>
-        <div className="bg-marketplace-sky relative min-h-screen text-ink font-body pb-20">
+        <div className="bg-marketplace-sky relative text-ink font-body">
 
             {/* Hero — backdrop is contained here so it never stretches with the cards */}
-            <section className="relative overflow-hidden z-10 px-6 pt-10 pb-24 md:pt-14 md:pb-32">
+            <section className="relative overflow-hidden z-10 px-6 pt-10 pb-16 md:pt-14 md:pb-20">
                 <MarketplaceHeroBackdrop />
                 <div className="relative z-10 max-w-7xl mx-auto px-4 md:px-6 text-left">
                     <HeroJourneyBadge
@@ -325,11 +372,13 @@ export default function MarketPlace({ initialProjects, catalogs, role = 'student
                 </div>
             </section>
 
-            {/* Search + filters */}
-            <div className="relative z-20 max-w-7xl mx-auto px-4 md:px-6 -mt-10 md:-mt-14">
-                <div className="flex flex-col gap-4 rounded-full bg-white/10 px-3 py-3 shadow-elevated backdrop-blur-md md:flex-row md:items-center md:gap-2 md:py-2 md:pl-6 md:pr-2">
+        </div>{/* end blue zone */}
+
+        {/* Search + filters — straddles the blue/white boundary */}
+        <div className="relative z-20 max-w-7xl mx-auto px-4 md:px-6 -mt-7">
+                <div className="flex flex-col gap-4 rounded-2xl bg-white px-3 py-3 shadow-elevated md:flex-row md:items-center md:gap-2 md:py-2 md:pl-6 md:pr-2">
                     <div className="flex flex-1 items-center gap-3">
-                        <Search className="w-4 h-4 shrink-0 text-white/70" aria-hidden="true" />
+                        <Search className="w-4 h-4 shrink-0 text-ink-muted" aria-hidden="true" />
                         <label htmlFor="marketplace-search" className="sr-only">{t('search_label')}</label>
                         <input
                             id="marketplace-search"
@@ -337,7 +386,7 @@ export default function MarketPlace({ initialProjects, catalogs, role = 'student
                             value={searchQuery}
                             onChange={(e) => { setSearchQuery(e.target.value); resetToFirstPage(); }}
                             placeholder={t('search_placeholder')}
-                            className="w-full bg-transparent text-sm text-white placeholder:text-white/55 focus:outline-none"
+                            className="w-full bg-transparent text-sm text-ink placeholder:text-ink-muted focus:outline-none"
                         />
                     </div>
                     <div className="flex flex-wrap items-center gap-1.5">
@@ -374,7 +423,7 @@ export default function MarketPlace({ initialProjects, catalogs, role = 'student
                             aria-pressed={showAiOnly}
                             onClick={() => { setShowAiOnly((c) => !c); resetToFirstPage(); }}
                             className={`rounded-full px-3 py-1.5 text-xs font-semibold transition-colors duration-[var(--duration-fast)] ease-[var(--ease-out)] ${
-                                showAiOnly ? 'bg-white/25 text-white' : 'text-white/80 hover:bg-white/15 hover:text-white'
+                                showAiOnly ? 'bg-primary/10 text-primary' : 'text-ink-muted hover:bg-surface-sunken hover:text-ink'
                             }`}
                         >
                             {t('filter_ai_projects')}
@@ -389,53 +438,18 @@ export default function MarketPlace({ initialProjects, catalogs, role = 'student
                 </div>
             </div>
 
-            {/* Ambient stars scattered in the cards area */}
-            <div className="pointer-events-none absolute inset-x-0 bottom-0 z-0" style={{ top: '420px' }} aria-hidden="true">
-                {([
-                    // bordes izquierdo / derecho
-                    { t: '8%',  l: '1%',   s: 10, g: true,  sp: true,  o: 0.6,  d: '3.2s', dl: '0.3s' },
-                    { t: '22%', l: '99%',  s: 10, g: true,  sp: true,  o: 0.65, d: '3.6s', dl: '0.8s' },
-                    { t: '50%', l: '1%',   s: 10, g: false, sp: true,  o: 0.55, d: '3.1s', dl: '1.4s' },
-                    { t: '72%', l: '99%',  s: 10, g: true,  sp: true,  o: 0.7,  d: '2.9s', dl: '0.5s' },
-                    // centro — visibles cuando los cards no llenan la pantalla
-                    { t: '35%', l: '22%',  s: 4,  g: false, sp: false, o: 0.25, d: '3.0s', dl: '1.0s' },
-                    { t: '45%', l: '62%',  s: 4,  g: false, sp: false, o: 0.2,  d: '3.4s', dl: '0.6s' },
-                    { t: '60%', l: '38%',  s: 10, g: true,  sp: true,  o: 0.3,  d: '3.2s', dl: '1.2s' },
-                    { t: '75%', l: '75%',  s: 4,  g: false, sp: false, o: 0.2,  d: '2.8s', dl: '0.9s' },
-                    { t: '85%', l: '18%',  s: 4,  g: true,  sp: false, o: 0.25, d: '3.5s', dl: '0.4s' },
-                ] as const).map((s, i) => {
-                    const fill = s.g ? 'var(--highlight)' : 'var(--surface)';
-                    if (s.sp) {
-                        return (
-                            <span key={i} className="absolute" style={{ top: s.t, left: s.l, opacity: s.o }}>
-                                <svg width={s.s} height={s.s} viewBox="0 0 24 24" fill="none"
-                                    style={{ display: 'block', filter: `drop-shadow(0 0 3px ${fill})`, animation: `constellation-spark-twinkle ${s.d} ease-in-out ${s.dl} infinite` }}>
-                                    <polygon points={CONTENT_SPARKLE_POINTS} fill={fill} />
-                                </svg>
-                            </span>
-                        );
-                    }
-                    return (
-                        <span key={i} className="absolute rounded-full" style={{
-                            top: s.t, left: s.l, width: s.s, height: s.s, background: fill,
-                            ['--star-opacity' as string]: s.o,
-                            animation: `constellation-twinkle ${s.d} ease-in-out ${s.dl} infinite`,
-                        }} />
-                    );
-                })}
-            </div>
-
+        <div className="bg-white pb-20">
             {/* Results */}
             <div className="max-w-7xl mx-auto px-4 md:px-6 mt-8 relative z-10">
                 <div className="flex items-center justify-between gap-4 mb-5">
-                    <p className="text-sm font-semibold text-white">
+                    <p className="text-sm font-semibold text-ink-muted">
                         {t('results_count', { count: totalResults })}
                     </p>
                     {hasActiveFilters && (
                         <button
                             type="button"
                             onClick={clearAllFilters}
-                            className="text-sm font-semibold text-white hover:underline"
+                            className="text-sm font-semibold text-primary hover:underline"
                         >
                             {t('clear_filters')}
                         </button>
@@ -456,116 +470,123 @@ export default function MarketPlace({ initialProjects, catalogs, role = 'student
                             const isSaved = savedProjectIds.has(project.id);
                             const hasApplied = appliedProjectIds.includes(project.id);
                             const expired = isExpired(project.fecha_cierre);
+                            const isNew = isNewProject(project.fecha_publicacion);
                             const colorClass = project.area
                                 ? getAreaColor(project.area.id, activeCatalogs.areas)
                                 : 'text-primary';
+                            const skills = project.skills.flatMap((s) => (s.skill ? [s.skill] : []));
+                            const borderColor = COLOR_TO_VAR[colorClass] ?? 'var(--primary)';
+                            const durationWeeks = Math.ceil(project.plazo_dias / 7);
+
                             const icon = project.area
                                 ? getAreaIcon(project.area.id, activeCatalogs.areas, colorClass)
-                                : <Briefcase className="w-6 h-6 text-primary" />;
-                            const skills = project.skills.flatMap((s) => (s.skill ? [s.skill] : []));
+                                : <Briefcase className={`w-5 h-5 ${colorClass}`} />;
+
+                            const projectSkillNames = project.skills.flatMap((s) => s.skill ? [s.skill.nombre] : []);
+                            const matchScore = studentSkills.length > 0
+                                ? computeMatchScore(projectSkillNames, studentSkills, studentDisponible, studentReputacion)
+                                : null;
+                            const matchBorderClass = colorClass.replace('text-', 'border-');
 
                             return (
                                 <div
                                     key={project.id}
-                                    className="bg-surface rounded-2xl p-6 border border-border flex flex-col hover:shadow-soft hover:border-border-strong transition-all duration-[var(--duration-base)] ease-[var(--ease-out)]"
+                                    role="article"
+                                    tabIndex={expired ? undefined : 0}
+                                    onClick={() => !expired && setPreviewProject(project)}
+                                    onKeyDown={(e) => {
+                                        if ((e.key === 'Enter' || e.key === ' ') && !expired) {
+                                            e.preventDefault();
+                                            setPreviewProject(project);
+                                        }
+                                    }}
+                                    className={cn(
+                                        'group relative bg-surface rounded-2xl border border-border border-t-[5px] flex flex-col',
+                                        'shadow-[var(--shadow-soft)] hover:shadow-[var(--shadow-elevated)] hover:border-border-strong transition-all duration-[var(--duration-base)] ease-[var(--ease-out)]',
+                                        expired ? 'cursor-default opacity-75' : 'cursor-pointer',
+                                    )}
+                                    style={{ borderTopColor: borderColor }}
                                 >
-                                    {/* Header */}
-                                    <div className="flex justify-between items-start mb-4">
-                                        <div className="flex items-center gap-3">
-                                            <div className="w-11 h-11 rounded-xl bg-canvas flex items-center justify-center border border-border shrink-0">
+                                    {/* Top row: icono + categoría | círculo match */}
+                                    <div className="flex items-center justify-between px-5 pt-5 mb-3">
+                                        <div className="flex items-center gap-2.5 min-w-0">
+                                            <div className={cn('w-9 h-9 rounded-xl flex items-center justify-center border border-border shrink-0', COLOR_TO_BG[colorClass] ?? 'bg-primary/10')}>
                                                 {icon}
                                             </div>
-                                            <span className={`text-[11px] font-bold uppercase tracking-wider ${colorClass}`}>
+                                            <span className={cn('text-[11px] font-bold uppercase tracking-wider truncate', colorClass)}>
                                                 {project.area?.nombre ?? '—'}
                                             </span>
                                         </div>
-                                        <div className="flex items-center gap-1.5 shrink-0">
-                                            {expired && (
-                                                <span className="flex items-center gap-1 px-2.5 py-1 rounded-lg text-xs font-bold bg-magenta/10 text-magenta">
-                                                    <Clock className="w-3.5 h-3.5" />
-                                                    {t('badge_expired')}
-                                                </span>
-                                            )}
-                                            {hasApplied && !expired && (
-                                                <span className="flex items-center gap-1 px-2.5 py-1 rounded-lg text-xs font-bold bg-accent/10 text-accent">
-                                                    <CheckCircle2 className="w-3.5 h-3.5" />
-                                                    {t('badge_applied')}
-                                                </span>
-                                            )}
-                                            {project.usa_ia && !hasApplied && !expired && (
-                                                <span className="flex items-center gap-1 px-2.5 py-1 rounded-lg text-xs font-bold bg-accent/10 text-accent">
-                                                    <Zap className="w-3.5 h-3.5" />
-                                                    IA
-                                                </span>
-                                            )}
-                                        </div>
+                                        {matchScore !== null && (
+                                            <div className="flex flex-col items-center shrink-0 ml-3">
+                                                <div className={cn('relative flex h-12 w-12 items-center justify-center rounded-full border-4', matchBorderClass)}>
+                                                    <span className={cn('font-bold text-sm', colorClass)}>
+                                                        {matchScore}%
+                                                    </span>
+                                                </div>
+                                                <span className={cn('text-[10px] mt-1 font-medium', colorClass)}>{t('match_label')}</span>
+                                            </div>
+                                        )}
                                     </div>
 
-                                    {/* Body */}
-                                    <h3 className="font-heading text-xl font-bold text-ink-strong mb-1 leading-tight">
-                                        {project.titulo}
-                                    </h3>
-                                    {project.empresa && (
-                                        <p className="text-xs text-ink-muted mb-2">
-                                            {project.empresa.nombre_comercial}
+                                    {/* Title + company + description */}
+                                    <div className="px-5 flex-1">
+                                        <h3 className="font-heading text-[17px] font-bold text-ink-strong mb-0.5 leading-tight">
+                                            {project.titulo}
+                                        </h3>
+                                        {project.empresa && (
+                                            <p className="text-xs text-ink-muted mb-2">
+                                                {project.empresa.nombre_comercial}
+                                            </p>
+                                        )}
+                                        <p className="text-sm text-ink-muted leading-relaxed line-clamp-3 mb-4">
+                                            {project.descripcion}
                                         </p>
-                                    )}
-                                    <p className="text-ink-muted text-sm leading-relaxed mb-5 line-clamp-3">
-                                        {project.descripcion}
-                                    </p>
 
-                                    {/* Meta */}
-                                    <div className="grid grid-cols-2 gap-4 mb-5">
-                                        <div>
-                                            <p className="text-[10px] font-bold text-ink-subtle uppercase tracking-wider mb-1">
-                                                {t('compensation_label')}
+                                        {/* Skills como texto separado por puntos */}
+                                        {skills.length > 0 && (
+                                            <p className={cn('text-sm font-semibold mb-5', colorClass)}>
+                                                {skills.slice(0, 4).map((s) => s.nombre).join(' · ')}
+                                                {skills.length > 4 ? ' · …' : ''}
                                             </p>
-                                            <p className="text-sm font-bold text-accent">
-                                                {project.compensacion != null
-                                                    ? formatCompensacion(project.compensacion, project.moneda)
-                                                    : '—'}
-                                            </p>
-                                        </div>
-                                        <div>
-                                            <p className="text-[10px] font-bold text-ink-subtle uppercase tracking-wider mb-1">
-                                                {t('duration')}
-                                            </p>
-                                            <p className="text-sm font-semibold text-ink-strong">
-                                                {project.plazo_dias} días
-                                            </p>
-                                        </div>
+                                        )}
                                     </div>
 
-                                    {/* Skills */}
-                                    {skills.length > 0 && (
-                                        <div className="flex flex-wrap gap-2 mb-5">
-                                            {skills.slice(0, 4).map((skill) => (
-                                                <span
-                                                    key={skill.id}
-                                                    className="border border-primary text-primary text-[11px] font-bold px-3 py-1 rounded-full uppercase tracking-wider"
-                                                >
-                                                    {skill.nombre}
-                                                </span>
-                                            ))}
-                                            {skills.length > 4 && (
-                                                <span className="border border-primary text-primary text-[11px] font-bold px-3 py-1 rounded-full uppercase tracking-wider">
-                                                    +{skills.length - 4}
-                                                </span>
-                                            )}
-                                        </div>
-                                    )}
+                                    {/* Divider */}
+                                    <div className="mx-5 border-t border-border" />
 
-                                    {/* Footer */}
-                                    <div className="mt-auto flex items-center gap-2">
+                                    {/* Footer: metadata */}
+                                    <div className="px-5 py-3.5 flex items-center gap-4 text-xs text-ink-muted">
+                                        <span className="flex items-center gap-1.5">
+                                            <Clock className="w-3.5 h-3.5 shrink-0" aria-hidden="true" />
+                                            {durationWeeks} {t('weeks_unit')}
+                                        </span>
+                                        {project.compensacion != null && (
+                                            <span className="flex items-center gap-1.5">
+                                                <Briefcase className="w-3.5 h-3.5 shrink-0" aria-hidden="true" />
+                                                {formatCompensacion(project.compensacion, project.moneda)}
+                                            </span>
+                                        )}
+                                        {project.usa_ia && (
+                                            <span className={cn('flex items-center gap-1', colorClass)}>
+                                                <Sparkles className="w-3.5 h-3.5 shrink-0" aria-hidden="true" />
+                                                {t('badge_ia')}
+                                            </span>
+                                        )}
+                                    </div>
+
+                                    {/* Acciones */}
+                                    <div className="px-5 pb-5 flex items-center gap-2">
                                         <button
                                             type="button"
                                             disabled={expired}
-                                            onClick={() => !expired && setPreviewProject(project)}
-                                            className={`flex-1 rounded-full px-5 py-2.5 text-sm font-semibold text-center transition-colors duration-[var(--duration-fast)] ease-[var(--ease-out)] ${
+                                            onClick={(e) => { e.stopPropagation(); if (!expired) setPreviewProject(project); }}
+                                            className={cn(
+                                                'flex-1 rounded-full px-5 py-2.5 text-sm font-semibold text-center transition-colors duration-[var(--duration-fast)] ease-[var(--ease-out)]',
                                                 expired
                                                     ? 'bg-surface-sunken text-ink-muted cursor-not-allowed'
-                                                    : 'bg-secondary text-white hover:bg-secondary/80'
-                                            }`}
+                                                    : 'bg-secondary text-white hover:bg-secondary/80',
+                                            )}
                                         >
                                             {expired ? t('badge_expired') : hasApplied ? t('view_my_offer') : t('view_project')}
                                         </button>
@@ -573,14 +594,15 @@ export default function MarketPlace({ initialProjects, catalogs, role = 'student
                                             type="button"
                                             aria-label={isSaved ? t('saved_project') : t('save_project')}
                                             aria-pressed={isSaved}
-                                            onClick={() => toggleSaved(project.id)}
-                                            className={`size-10 shrink-0 flex items-center justify-center rounded-full border transition-colors duration-[var(--duration-fast)] ease-[var(--ease-out)] bg-highlight ${
+                                            onClick={(e) => { e.stopPropagation(); void toggleSaved(project.id); }}
+                                            className={cn(
+                                                'size-10 shrink-0 flex items-center justify-center rounded-full border transition-colors duration-[var(--duration-fast)] ease-[var(--ease-out)]',
                                                 isSaved
-                                                    ? 'border-white text-white'
-                                                    : 'border-white text-white/0'
-                                            }`}
+                                                    ? 'bg-highlight border-highlight text-ink-strong'
+                                                    : 'border-border text-ink-muted hover:bg-highlight hover:border-highlight hover:text-ink-strong',
+                                            )}
                                         >
-                                            <Bookmark className={`w-4 h-4 stroke-white ${isSaved ? 'fill-white' : 'fill-none'}`} />
+                                            <Bookmark className={cn('w-4 h-4', isSaved ? 'fill-ink-strong' : 'fill-none')} aria-hidden="true" />
                                         </button>
                                     </div>
                                 </div>
@@ -597,7 +619,7 @@ export default function MarketPlace({ initialProjects, catalogs, role = 'student
                             aria-label={t('pagination_prev')}
                             disabled={safePage === 1}
                             onClick={() => setCurrentPage((p) => Math.max(1, p - 1))}
-                            className="w-9 h-9 flex items-center justify-center rounded-lg border border-white/40 text-white bg-transparent hover:bg-white/10 transition-colors duration-[var(--duration-fast)] ease-[var(--ease-out)] disabled:opacity-30 disabled:pointer-events-none"
+                            className="w-9 h-9 flex items-center justify-center rounded-lg border border-border text-ink-muted bg-transparent hover:bg-surface-sunken transition-colors duration-[var(--duration-fast)] ease-[var(--ease-out)] disabled:opacity-30 disabled:pointer-events-none"
                         >
                             <ChevronLeft className="w-4 h-4" />
                         </button>
@@ -610,8 +632,8 @@ export default function MarketPlace({ initialProjects, catalogs, role = 'student
                                 onClick={() => setCurrentPage(page)}
                                 className={`w-9 h-9 flex items-center justify-center rounded-lg text-sm font-semibold transition-colors duration-[var(--duration-fast)] ease-[var(--ease-out)] ${
                                     page === safePage
-                                        ? 'bg-white/25 text-white border border-white/40'
-                                        : 'border border-white/40 text-white/70 bg-transparent hover:bg-white/10'
+                                        ? 'bg-primary text-white border border-primary'
+                                        : 'border border-border text-ink-muted bg-transparent hover:bg-surface-sunken'
                                 }`}
                             >
                                 {page}
@@ -622,7 +644,7 @@ export default function MarketPlace({ initialProjects, catalogs, role = 'student
                             aria-label={t('pagination_next')}
                             disabled={safePage === totalPages}
                             onClick={() => setCurrentPage((p) => Math.min(totalPages, p + 1))}
-                            className="w-9 h-9 flex items-center justify-center rounded-lg border border-white/40 text-white bg-transparent hover:bg-white/10 transition-colors duration-[var(--duration-fast)] ease-[var(--ease-out)] disabled:opacity-30 disabled:pointer-events-none"
+                            className="w-9 h-9 flex items-center justify-center rounded-lg border border-border text-ink-muted bg-transparent hover:bg-surface-sunken transition-colors duration-[var(--duration-fast)] ease-[var(--ease-out)] disabled:opacity-30 disabled:pointer-events-none"
                         >
                             <ChevronRight className="w-4 h-4" />
                         </button>
