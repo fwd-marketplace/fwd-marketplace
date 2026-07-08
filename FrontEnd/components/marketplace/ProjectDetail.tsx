@@ -18,6 +18,7 @@ import {
   Zap,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { PrototipoPreview } from "@/components/shared/prototipo-preview";
 import { submitOfferAction } from "@/lib/actions/marketplace";
 import { cn } from "@/lib/utils";
 import { formatCompensacion, compensacionUpdatedAfterPublish } from "@/lib/marketplace/compensation";
@@ -67,8 +68,12 @@ function ApplyForm({ project }: { project: ApiProject }) {
   const {
     register,
     handleSubmit,
+    watch,
     formState: { errors, isSubmitting },
   } = useForm<OfferFormValues>({ resolver: zodResolver(offerSchema) });
+
+  // Vista previa en vivo del prototipo desplegado (misma que el portafolio del junior).
+  const prototipoUrl = (watch("prototipo_url") ?? "").trim();
 
   const onSubmit = async (data: OfferFormValues) => {
     setSubmitError("");
@@ -153,6 +158,9 @@ function ApplyForm({ project }: { project: ApiProject }) {
           />
           {errors.prototipo_url && (
             <p className="font-body text-xs text-magenta">{t("offer_prototipo_invalid")}</p>
+          )}
+          {prototipoUrl && !errors.prototipo_url && (
+            <PrototipoPreview url={prototipoUrl} title={project.titulo} className="mt-2" />
           )}
         </div>
 

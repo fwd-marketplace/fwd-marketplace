@@ -2104,6 +2104,15 @@
     "no_leidos": "{count, plural, one {# unread message} other {# unread messages}}",
     "cargando": "Loading conversation"
   },
+  "prototipo_preview": {
+    "preview_btn": "Preview",
+    "open_btn": "Open",
+    "modal_title": "Preview",
+    "open_new_tab": "Open in new tab",
+    "close": "Close",
+    "iframe_error": "Couldn't show the preview here (the site may block embedding). Open it in a new tab.",
+    "sin_url": "No prototype link"
+  },
   "gestion_page": {
     "compensation_updated": "Compensation updated on {date}",
     "paused_no_price_notice": "This project is paused and hidden from the marketplace because it has no compensation. Add one to reactivate and publish it.",

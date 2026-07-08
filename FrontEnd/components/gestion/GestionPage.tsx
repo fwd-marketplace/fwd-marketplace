@@ -4,6 +4,7 @@ import { useState, useRef, useEffect, useCallback, type ReactNode } from "react"
 import { useLocale, useTranslations } from "next-intl";
 import { ProjectMatchPanel } from "@/components/gestion/ProjectMatchPanel";
 import { ChatPanel } from "@/components/features/proyecto/ChatPanel";
+import { PrototipoPreview } from "@/components/shared/prototipo-preview";
 import {
   Activity,
   AlertCircle,
@@ -132,6 +133,7 @@ interface EmpresaProposal {
   expanded: boolean;
   desc: string;
   link: string;
+  repo: string;
   previewName: string;
   previewProject: string;
   comment: string;
@@ -286,6 +288,7 @@ function buildEmpresaStudents(
         expanded: false,
         desc: offer.propuesta,
         link: offer.prototipo_url ?? "",
+        repo: offer.url_repositorio ?? "",
         previewName: title,
         previewProject: area,
         comment: offer.comentario_revision ?? "",
@@ -2618,54 +2621,6 @@ function ProcesoPanel({
   return <JuniorProcesoView offers={offers} project={project} locale={locale} t={t} userId={userId} disponible={disponible} {...(onBack ? { onBack } : {})} {...(onOpenChat ? { onOpenChat } : {})} />;
 }
 
-// ── Browser mockup ────────────────────────────────────────────────────────────
-
-function LinkPreview({
-  href, title, area, excerpt,
-}: {
-  href: string;
-  title: string;
-  area?: string | undefined;
-  excerpt?: string | undefined;
-}) {
-  return (
-    <div className="overflow-hidden rounded-2xl border border-border">
-      <div className="flex items-center gap-2 border-b border-border bg-surface px-3 py-2.5">
-        <span className="size-2.5 rounded-full bg-[#F2655A]" aria-hidden="true" />
-        <span className="size-2.5 rounded-full bg-[#F5BE4F]" aria-hidden="true" />
-        <span className="size-2.5 rounded-full bg-[#62C554]" aria-hidden="true" />
-        <div className="ml-2 flex-1 truncate rounded-md border border-border bg-canvas px-3 py-1 font-body text-xs text-ink-muted">
-          {href}
-        </div>
-        <a
-          href={href}
-          target="_blank"
-          rel="noopener noreferrer"
-          className="inline-flex shrink-0 items-center gap-1 font-body text-xs font-bold text-primary hover:underline"
-        >
-          <ExternalLink className="size-3" aria-hidden="true" />
-          Abrir
-        </a>
-      </div>
-      <div className="flex min-h-36 flex-col gap-2.5 bg-gradient-to-b from-canvas to-surface px-7 py-6">
-        <p className="font-heading text-xl font-extrabold tracking-tight text-ink-strong line-clamp-1">
-          {title || t_noop("proceso_preview_sin_nombre")}
-        </p>
-        {area && (
-          <span className="self-start rounded-full bg-secondary/10 px-3 py-1 font-body text-xs font-semibold text-secondary">
-            {area}
-          </span>
-        )}
-        {excerpt && (
-          <p className="font-body text-sm leading-relaxed text-ink-muted line-clamp-3">{excerpt}</p>
-        )}
-      </div>
-    </div>
-  );
-}
-
-function t_noop(k: string) { return k; }
-
 // ── Junior proceso view ───────────────────────────────────────────────────────
 
 function JuniorProcesoView({
@@ -3332,32 +3287,29 @@ function JuniorProcesoView({
                 <label className="mb-2 mt-5 block font-body text-[13px] font-bold text-ink">
                   {t("proceso_previsualizacion_label")}
                 </label>
-                <div className="overflow-hidden rounded-[14px] border border-border bg-surface">
-                  <div className="flex items-center gap-[7px] border-b border-border px-[14px] py-[11px]" style={{ background: "#F4F3F7" }}>
-                    <span className="size-[11px] rounded-full" style={{ background: "#F2655A" }} aria-hidden="true" />
-                    <span className="size-[11px] rounded-full" style={{ background: "#F5BE4F" }} aria-hidden="true" />
-                    <span className="size-[11px] rounded-full" style={{ background: "#62C554" }} aria-hidden="true" />
-                    <div className="ml-[10px] flex-1 truncate rounded-[7px] border border-border bg-surface px-3 py-[6px] font-body text-[12px] text-ink-muted">
-                      {p.repo || p.link || "preview.proyecto.app"}
-                    </div>
-                    {(p.repo || p.link) && (
-                      <a href={p.repo || p.link} target="_blank" rel="noopener noreferrer"
-                        className="inline-flex shrink-0 items-center gap-1 font-body text-xs font-bold text-primary hover:underline">
-                        <ExternalLink className="size-3" aria-hidden="true" />
-                        Abrir
-                      </a>
-                    )}
-                  </div>
-                  <div className="flex min-h-[150px] flex-col gap-[10px] px-7 py-[30px]" style={{ background: "linear-gradient(180deg,#FCFBFE,#F7F6FB)" }}>
-                    <p className="font-heading text-xl font-extrabold tracking-tight text-ink-strong">
-                      {p.previewName || t("proceso_preview_sin_nombre")}
-                    </p>
-                    <span className="self-start rounded-full bg-secondary/10 px-3 py-[5px] font-body text-[12px] font-semibold text-secondary">
-                      {p.previewProject || t("proceso_preview_sin_categoria")}
-                    </span>
-                    <p className="mt-1 font-body text-[13px] leading-relaxed text-ink-muted line-clamp-3">{p.desc}</p>
-                  </div>
-                </div>
+                {p.link ? (
+                  <PrototipoPreview url={p.link} title={p.previewName || undefined} />
+                ) : (
+                  <p className="font-body text-[13px] text-ink-muted">{t("proceso_sin_enlace")}</p>
+                )}
+
+                {p.repo && (
+                  <>
+                    <label className="mb-2 mt-5 block font-body text-[13px] font-bold text-ink">
+                      {t("proceso_recursos_repo")}
+                    </label>
+                    <a
+                      href={p.repo}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="inline-flex max-w-full items-center gap-2 rounded-xl border border-border bg-surface px-4 py-2.5 font-body text-[13px] font-semibold text-primary transition-colors hover:border-primary/40 hover:bg-primary/5"
+                    >
+                      <GitBranch className="size-4 shrink-0" aria-hidden="true" />
+                      <span className="truncate">{p.repo}</span>
+                      <ExternalLink className="size-3.5 shrink-0" aria-hidden="true" />
+                    </a>
+                  </>
+                )}
 
                 <label className="mb-2 mt-5 block font-body text-[13px] font-bold text-ink">
                   {t("proceso_observaciones_label")}
@@ -3997,12 +3949,25 @@ function EmpresaProcesoView({
                                     <label className="mb-2 mt-5 block font-body text-sm font-bold text-ink">
                                       {t("proceso_ver_prototipo")}
                                     </label>
-                                    <LinkPreview
-                                      href={p.link}
-                                      title={p.previewName}
-                                      area={p.previewProject || undefined}
-                                      excerpt={p.desc}
-                                    />
+                                    <PrototipoPreview url={p.link} title={p.previewName || undefined} />
+                                  </>
+                                )}
+
+                                {p.repo && (
+                                  <>
+                                    <label className="mb-2 mt-5 block font-body text-sm font-bold text-ink">
+                                      {t("proceso_recursos_repo")}
+                                    </label>
+                                    <a
+                                      href={p.repo}
+                                      target="_blank"
+                                      rel="noopener noreferrer"
+                                      className="inline-flex max-w-full items-center gap-2 rounded-xl border border-border bg-surface px-4 py-2.5 font-body text-sm font-semibold text-primary transition-colors hover:border-primary/40 hover:bg-primary/5"
+                                    >
+                                      <GitBranch className="size-4 shrink-0" aria-hidden="true" />
+                                      <span className="truncate">{p.repo}</span>
+                                      <ExternalLink className="size-3.5 shrink-0" aria-hidden="true" />
+                                    </a>
                                   </>
                                 )}
 
