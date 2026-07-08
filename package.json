@@ -1,9 +1,17 @@
 {
   "scripts": {
-    "dev": "next dev"
+    "dev": "next dev",
+    "prepare": "husky",
+    "install:all": "npm install && npm install --prefix FrontEnd && npm install --prefix BackEnd"
   },
   "dependencies": {
     "eslint-config-next": "^15.5.19",
     "next": "^15.5.19"
+  },
+  "devDependencies": {
+    "@commitlint/cli": "^21.0.2",
+    "@commitlint/config-conventional": "^21.0.2",
+    "husky": "^9.1.7",
+    "lint-staged": "^17.0.7"
   }
 }
