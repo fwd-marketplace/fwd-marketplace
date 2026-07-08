@@ -1,6 +1,6 @@
 import { setRequestLocale } from "next-intl/server";
 import { getMe } from "@/lib/api/profile";
-import { getMyOffers, getProjectById } from "@/lib/api/marketplace";
+import { getMyOffers, getProjectById, getSavedProjects } from "@/lib/api/marketplace";
 import { GestionPage } from "@/components/gestion/GestionPage";
 import type { ApiProject, ApiRoleName, MyOffer } from "@/lib/api/types";
 
@@ -32,14 +32,17 @@ export default async function GestionRoute({ params, searchParams }: Props) {
   // Pre-load offers and project server-side so GestionPage has them immediately.
   let initialOffers: MyOffer[] = [];
   let initialProject: ApiProject | null = null;
+  let initialSavedProjects: ApiProject[] = [];
 
   if (isStudent) {
-    const [offersResult, projectResult] = await Promise.all([
+    const [offersResult, projectResult, savedResult] = await Promise.all([
       getMyOffers(),
       proyecto ? getProjectById(proyecto) : Promise.resolve(null),
+      getSavedProjects(),
     ]);
     if (offersResult.ok) initialOffers = offersResult.data.ofertas;
     if (projectResult && projectResult.ok) initialProject = projectResult.data;
+    if (savedResult.ok) initialSavedProjects = savedResult.data.proyectos;
   } else if (proyecto) {
     const projectResult = await getProjectById(proyecto);
     if (projectResult.ok) initialProject = projectResult.data;
@@ -54,6 +57,7 @@ export default async function GestionRoute({ params, searchParams }: Props) {
       disponible={disponible}
       initialOffers={initialOffers}
       initialProject={initialProject}
+      initialSavedProjects={initialSavedProjects}
     />
   );
 }
