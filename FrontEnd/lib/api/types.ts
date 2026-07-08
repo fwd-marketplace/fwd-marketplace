@@ -239,11 +239,17 @@ export type MatchCandidate = {
   score: number;
   matchedSkills: string[];
   missingSkills: string[];
+  /** El estudiante ya postuló a este proyecto. */
+  yaPostulo: boolean;
+  /** La empresa ya invitó a este estudiante a este proyecto (persistido). */
+  yaInvitado: boolean;
 };
 
 export type ProjectMatchesResponse = {
   /** false si el administrador desactivó el matching (enable_matching). */
   enabled: boolean;
+  /** true solo si el proyecto sigue recibiendo propuestas (en_recepcion). */
+  puedeInvitar: boolean;
   candidates: MatchCandidate[];
 };
 

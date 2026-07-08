@@ -1411,7 +1411,9 @@
     "busy": "Ocupado",
     "view_profile": "Ver perfil",
     "invite": "Invitar",
-    "invited": "Invitado"
+    "invited": "Invitado",
+    "already_applied": "Ya postuló",
+    "not_receiving": "Este proyecto ya no recibe propuestas. Los candidatos se muestran solo como referencia."
   },
   "talento": {
     "view_profile": "Ver perfil",
