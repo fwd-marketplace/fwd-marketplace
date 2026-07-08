@@ -86,7 +86,7 @@ export function ChatPanel({
     if (!isEmpresa || !userId) return counts;
     rawMsgs.forEach((m) => {
       const fromJunior = m.remitente?.id && m.remitente.id !== userId;
-      const toMe = m.id_destinatario === userId || m.destinatario_info?.id === userId;
+      const toMe = m.destinatario_info?.id === userId;
       if (fromJunior && toMe && m.leida === false) {
         const jid = m.remitente!.id;
         counts.set(jid, (counts.get(jid) ?? 0) + 1);
@@ -108,7 +108,7 @@ export function ChatPanel({
     if (!isEmpresa || !selectedJuniorId || !project?.id || !userId) return;
     setRawMsgs((prev) =>
       prev.map((m) =>
-        m.remitente?.id === selectedJuniorId && m.id_destinatario === userId && m.leida === false
+        m.remitente?.id === selectedJuniorId && m.destinatario_info?.id === userId && m.leida === false
           ? { ...m, leida: true }
           : m,
       ),
