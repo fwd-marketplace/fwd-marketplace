@@ -83,6 +83,73 @@ async function cerrarProyectoAdjudicado(
   );
 }
 
+/**
+ * La empresa reabre un proyecto adjudicado: DESHACE la adjudicación (p. ej. el junior adjudicado
+ * abandonó, o fue un error). El proyecto vuelve a 'en_recepcion' (vuelve al marketplace y acepta
+ * postulaciones) y TODAS las ofertas que estaban 'adjudicada' o 'no_seleccionada' vuelven a
+ * 'enviada', para que la empresa vuelva a evaluar el pool completo. Al dejar de estar 'adjudicada',
+ * el junior queda libre para postular a otros proyectos. Solo el dueño; solo desde adjudicado/en
+ * desarrollo.
+ */
+export async function reabrirAdjudicacion(accessToken: string, userId: string, projectId: string) {
+  const client = supabaseForToken(accessToken);
+
+  const { data: proyecto, error: projError } = await client
+    .from("proyecto")
+    .select("id, titulo, estado:estado_proyecto(nombre), empresa:empresario(id_usuario)")
+    .eq("id", projectId)
+    .maybeSingle();
+  if (projError) throw new ApiError(500, projError.message);
+  if (!proyecto) throw new ApiError(404, "Proyecto no encontrado");
+  if (proyecto.empresa?.id_usuario !== userId) throw new ApiError(403, "Este proyecto no es tuyo");
+
+  const estadoActual = proyecto.estado?.nombre;
+  if (estadoActual !== "adjudicado" && estadoActual !== "en_desarrollo") {
+    throw new ApiError(409, "Solo se puede reabrir un proyecto adjudicado o en desarrollo");
+  }
+
+  const { data: ofertas, error: ofertasError } = await client
+    .from("oferta")
+    .select("id, id_usuario, estado:estado_oferta(nombre)")
+    .eq("id_proyecto", projectId);
+  if (ofertasError) throw new ApiError(500, ofertasError.message);
+
+  // Todas las que estaban adjudicada o rechazada vuelven a 'enviada' (pool reabierto).
+  const afectadas = (ofertas ?? []).filter((o) =>
+    o.estado?.nombre === "adjudicada" || o.estado?.nombre === "no_seleccionada",
+  );
+  if (afectadas.length > 0) {
+    const enviadaId = await getEstadoOfertaId(client, "enviada");
+    const { error: updOfertasError } = await client
+      .from("oferta")
+      .update({ id_estado: enviadaId, updated_at: new Date().toISOString() })
+      .in("id", afectadas.map((o) => o.id));
+    if (updOfertasError) throw new ApiError(400, updOfertasError.message);
+  }
+
+  // Proyecto -> en_recepcion.
+  const recepcionId = await getEstadoProyectoId(client, "en_recepcion");
+  const { data: updated, error: updError } = await client
+    .from("proyecto")
+    .update({ id_estado: recepcionId })
+    .eq("id", projectId)
+    .select("id, estado:estado_proyecto(nombre)")
+    .single();
+  if (updError) throw new ApiError(400, updError.message);
+
+  // Notificar a los juniors afectados (best-effort).
+  if (afectadas.length > 0) {
+    await crearNotificaciones(
+      accessToken,
+      afectadas.map((o) => o.id_usuario),
+      MENSAJES_NOTIFICACION.proyectoReabierto(proyecto.titulo ?? ""),
+      TIPO_POR_MENSAJE.proyectoReabierto,
+    );
+  }
+
+  return updated;
+}
+
 /** Estados de proyecto en los que una adjudicación ya NO ocupa al estudiante. */
 const ESTADOS_PROYECTO_INACTIVOS = ["cerrado", "cancelado"];
 

@@ -31,6 +31,7 @@ import {
   MessageSquare,
   PackageCheck,
   PauseCircle,
+  RotateCcw,
   Pencil,
   Plus,
   Send,
@@ -48,6 +49,8 @@ import { Button } from "@/components/ui/button";
 import {
   getCatalogsAction,
   cancelProjectAction,
+  changeProjectStateAction,
+  reabrirProyectoAction,
   createProjectAction,
   updateProjectAction,
   deleteProjectAction,
@@ -343,7 +346,7 @@ export function GestionPage({ role, userId, initialProjectId, initialSection: in
   const [deleteError, setDeleteError] = useState<string | null>(null);
 
   // Pause / cancel project action
-  type ProjectActionKind = "resume" | "pause" | "cancel-step1" | "cancel-step2";
+  type ProjectActionKind = "resume" | "pause" | "cancel-step1" | "cancel-step2" | "finalize" | "reopen";
   const [projectActionKind, setProjectActionKind] = useState<ProjectActionKind | null>(null);
   const [projectActionPending, setProjectActionPending] = useState(false);
   const [projectActionError, setProjectActionError] = useState<string | null>(null);
@@ -602,6 +605,49 @@ export function GestionPage({ role, userId, initialProjectId, initialSection: in
       setSidebarProjects((prev) => prev.filter((p) => p.id !== selectedId));
       setSelectedId(null);
       setSelectedProject(null);
+      setProjectActionKind(null);
+    } else {
+      setProjectActionError(r.error);
+    }
+  };
+
+  // Finaliza (cierra) el proyecto: fin de ciclo explícito. Libera al junior adjudicado.
+  const handleFinalizeProject = async () => {
+    if (!selectedId) return;
+    setProjectActionPending(true);
+    setProjectActionError(null);
+    const r = await changeProjectStateAction(selectedId, "cerrado");
+    setProjectActionPending(false);
+    if (r.ok) {
+      setSidebarProjects((prev) =>
+        prev.map((p) => p.id === selectedId ? { ...p, estado: { ...p.estado, nombre: "cerrado" as const } } : p),
+      );
+      setSelectedProject((prev) =>
+        prev ? { ...prev, estado: { ...prev.estado, nombre: "cerrado" as const } } : prev,
+      );
+      setProjectActionKind(null);
+    } else {
+      setProjectActionError(r.error);
+    }
+  };
+
+  // Reabre el proyecto: deshace la adjudicación, vuelve a recepción y las propuestas a "enviada".
+  const handleReopenProject = async () => {
+    if (!selectedId) return;
+    setProjectActionPending(true);
+    setProjectActionError(null);
+    const r = await reabrirProyectoAction(selectedId);
+    setProjectActionPending(false);
+    if (r.ok) {
+      setSidebarProjects((prev) =>
+        prev.map((p) => p.id === selectedId ? { ...p, estado: { ...p.estado, nombre: "en_recepcion" as const } } : p),
+      );
+      setSelectedProject((prev) =>
+        prev ? { ...prev, estado: { ...prev.estado, nombre: "en_recepcion" as const } } : prev,
+      );
+      // Las propuestas volvieron a "enviada": recargar para reflejarlo en Proceso.
+      const or = await getProjectOffersAction(selectedId);
+      if (or.ok) setProjectOffers(or.data.ofertas);
       setProjectActionKind(null);
     } else {
       setProjectActionError(r.error);
@@ -1091,6 +1137,8 @@ export function GestionPage({ role, userId, initialProjectId, initialSection: in
                 onResume={() => setProjectActionKind("resume")}
                 onPause={() => setProjectActionKind("pause")}
                 onCancel={() => setProjectActionKind("cancel-step1")}
+                onFinalize={() => setProjectActionKind("finalize")}
+                onReopen={() => setProjectActionKind("reopen")}
               />
             )}
             {section === "chat" && (
@@ -1182,6 +1230,8 @@ export function GestionPage({ role, userId, initialProjectId, initialSection: in
           onResume={() => void handleResumeProject()}
           onPause={() => void handlePauseProject()}
           onCancel={() => void handleCancelProject()}
+          onFinalize={() => void handleFinalizeProject()}
+          onReopen={() => void handleReopenProject()}
           onAdvanceToFinal={() => { setProjectActionError(null); setProjectActionKind("cancel-step2"); }}
           onClose={() => { setProjectActionKind(null); setProjectActionError(null); }}
         />
@@ -2237,7 +2287,7 @@ function ProcesosView({
 // ── Info panel ────────────────────────────────────────────────────────────────
 
 function InfoPanel({
-  project, locale, t, isEmpresa, onEdit, onResume, onPause, onCancel,
+  project, locale, t, isEmpresa, onEdit, onResume, onPause, onCancel, onFinalize, onReopen,
 }: {
   project: ApiProject | null;
   locale: string;
@@ -2247,6 +2297,8 @@ function InfoPanel({
   onResume: () => void;
   onPause: () => void;
   onCancel: () => void;
+  onFinalize: () => void;
+  onReopen: () => void;
 }) {
   if (!project) return null;
   const skills = project.skills.filter((s) => s.skill != null);
@@ -2256,6 +2308,8 @@ function InfoPanel({
   );
   const isFinal = project.estado.nombre === "cerrado" || project.estado.nombre === "cancelado";
   const isPaused = project.estado.nombre === "pausado";
+  // Proyecto con junior adjudicado y trabajo en curso: se puede finalizar (cerrar) o reabrir.
+  const isAdjudicado = project.estado.nombre === "adjudicado" || project.estado.nombre === "en_desarrollo";
   const missingCompensacion = project.compensacion == null;
   // Los pausados también se editan: es como la empresa agrega la compensación que falta para republicar.
   const canEdit = isEmpresa && (project.estado.nombre === "borrador" || project.estado.nombre === "en_recepcion" || isPaused);
@@ -2263,6 +2317,8 @@ function InfoPanel({
   const canResume = isEmpresa && isPaused && !missingCompensacion;
   const canPause = isEmpresa && !isFinal && !isPaused;
   const canCancel = isEmpresa && !isFinal;
+  const canFinalize = isEmpresa && isAdjudicado;
+  const canReopen = isEmpresa && isAdjudicado;
   return (
     <div className="px-6 py-10 md:px-10">
       <div className="mb-6">
@@ -2307,6 +2363,28 @@ function InfoPanel({
                   className="flex size-8 items-center justify-center rounded-full border border-border text-ink-muted transition-colors duration-[var(--duration-fast)] ease-[var(--ease-out)] hover:border-warning/40 hover:text-warning"
                 >
                   <PauseCircle className="size-3.5" aria-hidden="true" />
+                </button>
+              )}
+              {canReopen && (
+                <button
+                  type="button"
+                  onClick={onReopen}
+                  aria-label={t("action_reopen_btn")}
+                  title={t("action_reopen_btn")}
+                  className="flex size-8 items-center justify-center rounded-full border border-border text-ink-muted transition-colors duration-[var(--duration-fast)] ease-[var(--ease-out)] hover:border-warning/40 hover:text-warning"
+                >
+                  <RotateCcw className="size-3.5" aria-hidden="true" />
+                </button>
+              )}
+              {canFinalize && (
+                <button
+                  type="button"
+                  onClick={onFinalize}
+                  aria-label={t("action_finalize_btn")}
+                  title={t("action_finalize_btn")}
+                  className="flex size-8 items-center justify-center rounded-full border border-border text-ink-muted transition-colors duration-[var(--duration-fast)] ease-[var(--ease-out)] hover:border-accent/40 hover:text-accent"
+                >
+                  <CheckCircle2 className="size-3.5" aria-hidden="true" />
                 </button>
               )}
               {canCancel && (
@@ -4920,7 +4998,7 @@ function UnsavedChangesDialog({
 
 // ── Project action dialog (resume / pause / cancel) ──────────────────────────
 
-type ProjectActionKindProp = "resume" | "pause" | "cancel-step1" | "cancel-step2";
+type ProjectActionKindProp = "resume" | "pause" | "cancel-step1" | "cancel-step2" | "finalize" | "reopen";
 
 function ProjectActionDialog({
   kind,
@@ -4930,6 +5008,8 @@ function ProjectActionDialog({
   onResume,
   onPause,
   onCancel,
+  onFinalize,
+  onReopen,
   onAdvanceToFinal,
   onClose,
 }: {
@@ -4940,6 +5020,8 @@ function ProjectActionDialog({
   onResume: () => void;
   onPause: () => void;
   onCancel: () => void;
+  onFinalize: () => void;
+  onReopen: () => void;
   onAdvanceToFinal: () => void;
   onClose: () => void;
 }) {
@@ -5090,6 +5172,72 @@ function ProjectActionDialog({
                 className="flex-1 rounded-full bg-magenta px-4 py-2.5 font-body text-sm font-semibold text-white transition-colors hover:bg-magenta/80 disabled:opacity-60"
               >
                 {pending ? <Loader2 className="mx-auto size-4 animate-spin" /> : t("cancel_step2_confirm")}
+              </button>
+            </div>
+          </>
+        )}
+
+        {kind === "finalize" && (
+          <>
+            <div className="mb-1 flex size-10 items-center justify-center rounded-full bg-accent/10">
+              <CheckCircle2 className="size-5 text-accent" aria-hidden="true" />
+            </div>
+            <h3 className="mt-3 font-heading text-lg font-extrabold tracking-tight text-ink-strong">
+              {t("finalize_dialog_title")}<span className="text-accent" aria-hidden="true">.</span>
+            </h3>
+            <p className="mt-1 font-body text-sm text-ink-muted">{t("finalize_dialog_body")}</p>
+            {error && (
+              <p className="mt-3 rounded-xl bg-magenta/10 px-3 py-2 font-body text-sm font-semibold text-magenta">{error}</p>
+            )}
+            <div className="mt-5 flex gap-3">
+              <button
+                type="button"
+                onClick={onClose}
+                disabled={pending}
+                className="flex-1 rounded-full border border-border px-4 py-2.5 font-body text-sm font-semibold text-ink-muted transition-colors hover:bg-surface-sunken disabled:opacity-50"
+              >
+                {t("finalize_dialog_back")}
+              </button>
+              <button
+                type="button"
+                onClick={onFinalize}
+                disabled={pending}
+                className="flex-1 rounded-full bg-accent px-4 py-2.5 font-body text-sm font-semibold text-white transition-colors hover:bg-accent/80 disabled:opacity-60"
+              >
+                {pending ? <Loader2 className="mx-auto size-4 animate-spin" /> : t("finalize_dialog_confirm")}
+              </button>
+            </div>
+          </>
+        )}
+
+        {kind === "reopen" && (
+          <>
+            <div className="mb-1 flex size-10 items-center justify-center rounded-full bg-warning/10">
+              <RotateCcw className="size-5 text-warning" aria-hidden="true" />
+            </div>
+            <h3 className="mt-3 font-heading text-lg font-extrabold tracking-tight text-ink-strong">
+              {t("reopen_dialog_title")}<span className="text-warning" aria-hidden="true">.</span>
+            </h3>
+            <p className="mt-1 font-body text-sm text-ink-muted">{t("reopen_dialog_body")}</p>
+            {error && (
+              <p className="mt-3 rounded-xl bg-magenta/10 px-3 py-2 font-body text-sm font-semibold text-magenta">{error}</p>
+            )}
+            <div className="mt-5 flex gap-3">
+              <button
+                type="button"
+                onClick={onClose}
+                disabled={pending}
+                className="flex-1 rounded-full border border-border px-4 py-2.5 font-body text-sm font-semibold text-ink-muted transition-colors hover:bg-surface-sunken disabled:opacity-50"
+              >
+                {t("reopen_dialog_back")}
+              </button>
+              <button
+                type="button"
+                onClick={onReopen}
+                disabled={pending}
+                className="flex-1 rounded-full bg-warning px-4 py-2.5 font-body text-sm font-semibold text-white transition-colors hover:bg-warning/80 disabled:opacity-60"
+              >
+                {pending ? <Loader2 className="mx-auto size-4 animate-spin" /> : t("reopen_dialog_confirm")}
               </button>
             </div>
           </>
