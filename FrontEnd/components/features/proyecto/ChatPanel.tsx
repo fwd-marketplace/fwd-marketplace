@@ -2,7 +2,7 @@
 
 import { useEffect, useRef, useState } from "react";
 import { useLocale, useTranslations } from "next-intl";
-import { ChevronRight, MessageSquare, Send } from "lucide-react";
+import { ChevronRight, Loader2, MessageSquare, Send } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { intlLocale } from "@/lib/i18n/date-locale";
 import { getProjectMensajesAction, sendMensajeAction } from "@/lib/actions/mensajes";
@@ -39,17 +39,20 @@ export function ChatPanel({
   const t = useTranslations("project_chat");
   const locale = useLocale();
   const [rawMsgs, setRawMsgs] = useState<ApiMensaje[]>([]);
+  const [loaded, setLoaded] = useState(false);
   const [draft, setDraft] = useState("");
   const [sending, setSending] = useState(false);
   const [sendError, setSendError] = useState("");
   const [selectedJuniorId, setSelectedJuniorId] = useState<string | null>(null);
   const bottomRef = useRef<HTMLDivElement>(null);
 
-  // Load + poll cada 4 s
+  // Load + poll cada 4 s. `loaded` evita mostrar estados intermedios (vacío / selector) mientras
+  // llega la primera respuesta: hasta entonces se muestra un spinner, sin parpadeos.
   useEffect(() => {
     if (!project?.id || !userId) return;
     let active = true;
     setRawMsgs([]);
+    setLoaded(false);
 
     const load = async () => {
       try {
@@ -59,6 +62,8 @@ export function ChatPanel({
       } catch {
         // Ignora fallos transitorios del transporte de Server Actions (p. ej. durante Fast Refresh
         // en dev). El siguiente poll reintenta; los errores reales ya llegan como Result.err.
+      } finally {
+        if (active) setLoaded(true);
       }
     };
 
@@ -100,36 +105,35 @@ export function ChatPanel({
     setSelectedJuniorId(null);
   }, [project?.id]);
 
-  // Si el proyecto tiene un solo junior conversando, se abre su hilo directo (sin obligar a la
-  // empresa a elegir de una lista de uno). Con varios, sí muestra el selector.
-  const soleJuniorId = juniors.length === 1 ? juniors[0]!.id : null;
-  useEffect(() => {
-    if (isEmpresa && soleJuniorId && !selectedJuniorId) setSelectedJuniorId(soleJuniorId);
-  }, [isEmpresa, soleJuniorId, selectedJuniorId]);
+  // Junior activo (empresa): el que eligió en el selector, o —si hay uno solo— ése directamente,
+  // sin obligarla a elegir de una lista de uno. Se deriva en render (no en un efecto) para que el
+  // selector nunca parpadee antes de mostrar el hilo. Con varios juniors y ninguno elegido, es null
+  // y se muestra el selector.
+  const activeJuniorId = selectedJuniorId ?? (isEmpresa && juniors.length === 1 ? juniors[0]!.id : null);
 
   // Al abrir el hilo de un junior, marcar como leídos SOLO sus mensajes (backend con `?remitente=`).
   // Optimista primero para que el badge desaparezca al instante; luego re-sincroniza con el servidor.
   useEffect(() => {
-    if (!isEmpresa || !selectedJuniorId || !project?.id || !userId) return;
+    if (!isEmpresa || !activeJuniorId || !project?.id || !userId) return;
     setRawMsgs((prev) =>
       prev.map((m) =>
-        m.remitente?.id === selectedJuniorId && m.destinatario_info?.id === userId && m.leida === false
+        m.remitente?.id === activeJuniorId && m.destinatario_info?.id === userId && m.leida === false
           ? { ...m, leida: true }
           : m,
       ),
     );
-    void getProjectMensajesAction(project.id, selectedJuniorId).then((r) => {
+    void getProjectMensajesAction(project.id, activeJuniorId).then((r) => {
       if (r.ok) setRawMsgs(r.data);
     });
-  }, [isEmpresa, selectedJuniorId, project?.id, userId]);
+  }, [isEmpresa, activeJuniorId, project?.id, userId]);
 
   // Filter messages for the selected junior (empresa) or all (junior)
-  const visibleMsgs = isEmpresa && selectedJuniorId
+  const visibleMsgs = isEmpresa && activeJuniorId
     ? rawMsgs.filter((m) => {
         const isMine = m.remitente?.id === userId;
         return isMine
-          ? m.destinatario_info?.id === selectedJuniorId
-          : m.remitente?.id === selectedJuniorId;
+          ? m.destinatario_info?.id === activeJuniorId
+          : m.remitente?.id === activeJuniorId;
       })
     : rawMsgs;
 
@@ -141,22 +145,22 @@ export function ChatPanel({
 
   // Header display info
   const otherName    = isEmpresa
-    ? (selectedJuniorId ? juniorDisplayName(juniors.find((j) => j.id === selectedJuniorId)) : t("label_junior"))
+    ? (activeJuniorId ? juniorDisplayName(juniors.find((j) => j.id === activeJuniorId)) : t("label_junior"))
     : (project?.empresa?.nombre_comercial ?? t("label_empresa"));
   const otherInitial = isEmpresa
-    ? (selectedJuniorId ? (juniors.find((j) => j.id === selectedJuniorId)?.nombre[0]?.toUpperCase() ?? "J") : "J")
+    ? (activeJuniorId ? (juniors.find((j) => j.id === activeJuniorId)?.nombre[0]?.toUpperCase() ?? "J") : "J")
     : (project?.empresa?.nombre_comercial?.[0]?.toUpperCase() ?? "E");
 
   const send = async () => {
     const text = draft.trim();
     if (!text || sending) return;
     if (!project?.id || !userId) return;
-    if (isEmpresa && !selectedJuniorId) return;
+    if (isEmpresa && !activeJuniorId) return;
 
     setSending(true);
     setSendError("");
     try {
-      const r = await sendMensajeAction(project.id, text, isEmpresa ? (selectedJuniorId ?? undefined) : undefined);
+      const r = await sendMensajeAction(project.id, text, isEmpresa ? (activeJuniorId ?? undefined) : undefined);
       if (r.ok) {
         setDraft("");
         // Reload to get server-confirmed message
@@ -176,6 +180,16 @@ export function ChatPanel({
     if (e.key === "Enter" && !e.shiftKey) { e.preventDefault(); void send(); }
   };
 
+  // Spinner mientras llega la primera carga: evita mostrar "sin conversaciones" o el selector antes
+  // de tiempo (parpadeo al entrar a un chat).
+  if (!loaded) {
+    return (
+      <div className="flex h-full items-center justify-center">
+        <Loader2 className="size-6 animate-spin text-primary" aria-label={t("cargando")} />
+      </div>
+    );
+  }
+
   return (
     <div className="flex h-full flex-col">
       {/* Empresa: sin conversaciones aún */}
@@ -188,8 +202,8 @@ export function ChatPanel({
         </div>
       )}
 
-      {/* Empresa: lista de juniors para seleccionar (sin junior seleccionado) */}
-      {isEmpresa && juniors.length > 0 && !selectedJuniorId && (
+      {/* Empresa: lista de juniors para seleccionar (varios juniors, ninguno activo) */}
+      {isEmpresa && juniors.length > 0 && !activeJuniorId && (
         <div className="min-h-0 flex-1 overflow-y-auto">
           <div className="border-b border-border bg-surface px-6 py-4">
             <p className="font-body text-xs font-bold uppercase tracking-wider text-ink-muted">
@@ -255,8 +269,8 @@ export function ChatPanel({
         </div>
       )}
 
-      {/* Empresa: tabs cuando hay junior seleccionado */}
-      {isEmpresa && juniors.length > 0 && selectedJuniorId && (
+      {/* Empresa: tabs para cambiar de junior (solo cuando hay varios) */}
+      {isEmpresa && juniors.length > 1 && activeJuniorId && (
         <div className="shrink-0 flex gap-0 border-b border-border bg-surface overflow-x-auto">
           <button
             type="button"
@@ -274,13 +288,13 @@ export function ChatPanel({
                 onClick={() => setSelectedJuniorId(j.id)}
                 className={cn(
                   "shrink-0 inline-flex items-center gap-1.5 px-4 py-3 font-body text-sm font-semibold transition-colors duration-[var(--duration-fast)] ease-[var(--ease-out)] border-b-2",
-                  selectedJuniorId === j.id
+                  activeJuniorId === j.id
                     ? "border-secondary text-secondary"
                     : "border-transparent text-ink-muted hover:text-ink hover:border-border",
                 )}
               >
                 {juniorDisplayName(j)}
-                {unread > 0 && selectedJuniorId !== j.id && (
+                {unread > 0 && activeJuniorId !== j.id && (
                   <span className="size-2 shrink-0 rounded-full bg-magenta" aria-label={t("no_leidos", { count: unread })} />
                 )}
               </button>
@@ -290,7 +304,7 @@ export function ChatPanel({
       )}
 
       {/* Header con nombre del interlocutor */}
-      {(!isEmpresa || selectedJuniorId) && (
+      {(!isEmpresa || activeJuniorId) && (
         <div className="shrink-0 flex items-center gap-3 border-b border-border bg-surface px-6 py-4">
           <div className="flex size-9 shrink-0 items-center justify-center rounded-full bg-secondary/15 font-heading text-sm font-bold text-secondary">
             {otherInitial}
@@ -303,7 +317,7 @@ export function ChatPanel({
       )}
 
       {/* Mensajes */}
-      {(!isEmpresa || selectedJuniorId) && (
+      {(!isEmpresa || activeJuniorId) && (
         <div className="min-h-0 flex-1 overflow-y-auto px-6 py-6">
           {visibleMsgs.length === 0 ? (
             <div className="flex h-full flex-col items-center justify-center gap-3 text-center">
@@ -349,7 +363,7 @@ export function ChatPanel({
       )}
 
       {/* Input */}
-      {(!isEmpresa || selectedJuniorId) && (
+      {(!isEmpresa || activeJuniorId) && (
         <div className="shrink-0 border-t border-border bg-surface px-4 py-3">
           <div className="flex items-end gap-2">
             <textarea
