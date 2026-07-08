@@ -133,9 +133,11 @@ export function ChatPanel({
       })
     : rawMsgs;
 
+  // Solo autoscroll al llegar un mensaje nuevo (no en cada render). `block: "nearest"` mantiene el
+  // scroll dentro del contenedor del chat en vez de mover la página entera.
   useEffect(() => {
-    bottomRef.current?.scrollIntoView({ behavior: "smooth" });
-  }, [visibleMsgs]);
+    bottomRef.current?.scrollIntoView({ behavior: "smooth", block: "nearest" });
+  }, [visibleMsgs.length]);
 
   // Header display info
   const otherName    = isEmpresa
@@ -188,7 +190,7 @@ export function ChatPanel({
 
       {/* Empresa: lista de juniors para seleccionar (sin junior seleccionado) */}
       {isEmpresa && juniors.length > 0 && !selectedJuniorId && (
-        <div className="flex-1 overflow-y-auto">
+        <div className="min-h-0 flex-1 overflow-y-auto">
           <div className="border-b border-border bg-surface px-6 py-4">
             <p className="font-body text-xs font-bold uppercase tracking-wider text-ink-muted">
               {t("seleccionar_junior")}
@@ -302,7 +304,7 @@ export function ChatPanel({
 
       {/* Mensajes */}
       {(!isEmpresa || selectedJuniorId) && (
-        <div className="flex-1 overflow-y-auto px-6 py-6">
+        <div className="min-h-0 flex-1 overflow-y-auto px-6 py-6">
           {visibleMsgs.length === 0 ? (
             <div className="flex h-full flex-col items-center justify-center gap-3 text-center">
               <div className="flex size-14 items-center justify-center rounded-2xl bg-primary/10">

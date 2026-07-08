@@ -5445,7 +5445,7 @@ function EmpresaMensajesView({
   });
 
   return (
-    <div className="flex" style={{ minHeight: "calc(100vh - 8rem)" }}>
+    <div className="flex overflow-hidden" style={{ height: "calc(100vh - 8rem)" }}>
       {/* Lista de conversaciones */}
       <div className="w-[280px] shrink-0 overflow-y-auto border-r border-border">
         <div className="px-4 pt-5 pb-3">
