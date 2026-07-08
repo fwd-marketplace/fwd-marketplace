@@ -47,6 +47,9 @@ export const MENSAJES_NOTIFICACION = {
     `La empresa aprobó tu entregable para el proyecto "${titulo}". Bien hecho.`,
   entregableCambiosSolicitados: (titulo: string): string =>
     `La empresa solicitó cambios en tu entregable para "${titulo}". Revisá el comentario y subí una versión nueva.`,
+  // Junior → la empresa reabrió un proyecto que estaba adjudicado (deshizo la adjudicación)
+  proyectoReabierto: (titulo: string): string =>
+    `La empresa reabrió el proyecto "${titulo}" y tu propuesta volvió a estar en evaluación.`,
   // Ambos → eventos de cierre/eliminación de proyecto
   proyectoCerrado: (titulo: string): string =>
     `Gracias por tu trabajo en "${titulo}". El proyecto se cerró con éxito.`,
@@ -72,6 +75,7 @@ export const TIPO_POR_MENSAJE: Record<keyof typeof MENSAJES_NOTIFICACION, TipoNo
   seguimientoAdjudicacion:      TIPO_ADJUDICACION,
   entregableAprobado:           TIPO_ADJUDICACION,
   entregableCambiosSolicitados: "entregable_subido",
+  proyectoReabierto:            TIPO_CAMBIO_ESTADO,
   proyectoCerrado:              TIPO_ADJUDICACION,
   proyectoEliminado:            TIPO_CAMBIO_ESTADO,
   nuevoMensaje:                 "nuevo_mensaje" as TipoNotificacion,

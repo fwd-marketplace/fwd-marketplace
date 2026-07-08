@@ -1,6 +1,7 @@
 import type { Request, Response } from "express";
 import { z } from "zod";
 import * as projectService from "../services/proyecto.service";
+import { reabrirAdjudicacion } from "../services/oferta.service";
 import { matchStudentsForProject } from "../services/match.service";
 import { invitarEstudiante } from "../services/invitacion.service";
 import { ApiError } from "../utils/ApiError";
@@ -155,6 +156,15 @@ export async function cancel(req: Request, res: Response) {
   if (!parsed.success) throw new ApiError(400, "El id del proyecto no es válido");
   const result = await projectService.cancelMyProject(readToken(req), req.user.id, parsed.data);
   res.status(200).json(result);
+}
+
+/** PATCH /api/projects/:id/reabrir (empresa deshace la adjudicación y vuelve a recibir propuestas) */
+export async function reabrir(req: Request, res: Response) {
+  if (!req.user) throw new ApiError(401, "No autenticado");
+  const parsed = idParamSchema.safeParse(req.params.id);
+  if (!parsed.success) throw new ApiError(400, "El id del proyecto no es válido");
+  const project = await reabrirAdjudicacion(readToken(req), req.user.id, parsed.data);
+  res.status(200).json({ project });
 }
 
 /** PATCH /api/projects/:id/pausar (empresa pausa temporalmente su proyecto) */
