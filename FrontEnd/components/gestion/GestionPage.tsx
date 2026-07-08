@@ -12,7 +12,6 @@ import {
   ArrowRight,
   Ban,
   Bookmark,
-  Briefcase,
   Calendar,
   Check,
   CheckCircle2,
@@ -171,24 +170,6 @@ const OFFER_STATE_CONFIG: Record<
   adjudicada:        { label: "Adjudicada",         dot: "bg-accent",   badge: "bg-accent/10 text-accent border-accent/20",      step: 2 },
   no_seleccionada:   { label: "No seleccionada",    dot: "bg-magenta",  badge: "bg-magenta/10 text-magenta border-magenta/20",   step: 2 },
 };
-
-function juniorCircle(status: ProposalStatus): { bg: string; icon: ReactNode } {
-  switch (status) {
-    case "nuevo":
-      return { bg: "border-2 border-border bg-transparent", icon: null };
-    case "editando":
-      return { bg: "border-2 border-secondary bg-transparent", icon: null };
-    case "enviada":
-    case "revision":
-      return { bg: "bg-accent", icon: <Check className="size-3.5 text-white" aria-hidden="true" /> };
-    case "cambios":
-      return { bg: "bg-warning", icon: <span className="font-heading text-sm font-bold leading-none text-white">!</span> };
-    case "aceptada":
-      return { bg: "bg-accent", icon: <Check className="size-3.5 text-white" aria-hidden="true" /> };
-    case "noseleccionada":
-      return { bg: "bg-ink-muted/50", icon: <X className="size-3.5 text-white" aria-hidden="true" /> };
-  }
-}
 
 function empresaCircle(status: EmpresaStatus): { bg: string; icon: ReactNode } {
   switch (status) {
@@ -2074,7 +2055,7 @@ function GuardadosView({
               <div className="flex shrink-0 items-center gap-2">
                 <a
                   href={`/${locale}/marketplace/${project.id}`}
-                  className="rounded-full bg-secondary px-4 py-1.5 font-body text-xs font-semibold text-white transition-opacity hover:opacity-80"
+                  className="rounded-full bg-secondary px-4 py-1.5 font-body text-xs font-semibold text-white transition-opacity duration-[var(--duration-fast)] ease-[var(--ease-out)] hover:opacity-80"
                 >
                   {t("guardados_view")}
                 </a>
@@ -2082,7 +2063,7 @@ function GuardadosView({
                   type="button"
                   aria-label={t("guardados_remove")}
                   onClick={() => onRemove(project.id)}
-                  className="flex size-8 items-center justify-center rounded-full border border-border text-ink-muted transition-colors hover:border-magenta hover:text-magenta"
+                  className="flex size-8 items-center justify-center rounded-full border border-border text-ink-muted transition-colors duration-[var(--duration-fast)] ease-[var(--ease-out)] hover:border-magenta hover:text-magenta"
                 >
                   <Bookmark className="size-3.5 fill-current" aria-hidden="true" />
                 </button>

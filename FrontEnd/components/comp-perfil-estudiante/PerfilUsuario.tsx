@@ -4,13 +4,11 @@ import React, { useEffect, useRef, useState, useTransition } from "react";
 import { useTranslations, useLocale } from "next-intl";
 import { intlLocale } from "@/lib/i18n/date-locale";
 import { useSearchParams } from "next/navigation";
-import Link from "next/link";
 import {
   Mail,
   Globe,
   Plus,
   X,
-  Briefcase,
   History,
   Edit2,
   Check,
@@ -59,7 +57,6 @@ import type {
 } from "@/lib/api/types";
 import { marcarNotificacionLeidaAction, marcarTodasLeidasAction } from "@/lib/actions/notificaciones";
 import { updateStudentProfile, uploadStudentAvatar, deleteStudentAvatar, createPortafolioItemAction, updatePortafolioItemAction, deletePortafolioItemAction } from "@/lib/actions/perfil";
-import { FwdGeoBackdrop } from "@/components/ui/fwd-geo-backdrop";
 import { replicarCalificacionAction } from "@/lib/actions/marketplace";
 import { getInitials } from "@/lib/api/safe-json";
 import type { HeroJourneyData } from "@/lib/hero-journey/mock";
@@ -476,7 +473,6 @@ function PreviewModal({
 }
 
 const NOTIF_PAGE_SIZE = 10;
-const APP_PAGE_SIZE = 6;
 
 export default function PerfilUsuario({
   initialProfile,
@@ -660,23 +656,6 @@ export default function PerfilUsuario({
   }
   function badgeLabel(code: string): string {
     return code in MODALITY_LABELS ? MODALITY_LABELS[code as keyof typeof MODALITY_LABELS] : code;
-  }
-
-  // ── Status styles ──────────────────────────────────────────────────────────
-
-  function getStatusStyles(status: Application["status"]) {
-    switch (status) {
-      case "enviada":
-        return { strip: "bg-primary", badge: "bg-primary/10 text-primary border-primary/20", label: t("status.enviada") };
-      case "vista":
-        return { strip: "bg-warning", badge: "bg-warning/10 text-warning border-warning/20", label: t("status.vista") };
-      case "en_proceso":
-        return { strip: "bg-secondary", badge: "bg-secondary/10 text-secondary border-secondary/20", label: t("status.en_proceso") };
-      case "aceptada":
-        return { strip: "bg-accent", badge: "bg-accent/15 text-accent border-accent/20", label: t("status.aceptada") };
-      case "rechazada":
-        return { strip: "bg-magenta", badge: "bg-magenta/10 text-magenta border-magenta/20", label: t("status.rechazada") };
-    }
   }
 
   // ── Handlers ───────────────────────────────────────────────────────────────
