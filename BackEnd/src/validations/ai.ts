@@ -102,3 +102,44 @@ export const CompensacionRawSchema = z.object({
 });
 
 export type CompensacionRaw = z.infer<typeof CompensacionRawSchema>;
+
+/**
+ * Cuerpo de `POST /ai/sugerir-cotizacion` (flujo del junior): a partir de una descripción del
+ * proyecto, la IA propone cómo llenar el formulario de la calculadora de cotización. El cálculo
+ * del monto lo hace después la lógica pura del FrontEnd; la IA solo estima los campos.
+ */
+export const SugerirCotizacionRequestSchema = z.object({
+  descripcion: z.string().min(10).max(5000),
+  locale: LocaleSchema.default("es"),
+});
+
+export type SugerirCotizacionInput = z.infer<typeof SugerirCotizacionRequestSchema>;
+
+/**
+ * Validación del JSON que devuelve el modelo para la sugerencia de cotización. Permisivo a
+ * propósito (el modelo varía en formato): el service normaliza, acota y descarta lo inválido.
+ * Las claves son las del contrato del prompt (snake_case).
+ */
+export const CotizacionRawSchema = z.object({
+  modo_alcance: z.string().optional(),
+  horas_estimadas: z.union([z.number(), z.string()]).optional(),
+  semanas: z.union([z.number(), z.string()]).optional(),
+  horas_por_semana: z.union([z.number(), z.string()]).optional(),
+  complejidad: z.string().optional(),
+  stack: z.array(z.string()).optional(),
+  funcionalidades: z
+    .array(
+      z.object({
+        nombre: z.string().optional(),
+        cantidad: z.union([z.number(), z.string()]).optional(),
+        tamano: z.string().optional(),
+      }),
+    )
+    .optional(),
+  tarifa_hora: z.union([z.number(), z.string()]).optional(),
+  modalidad: z.string().optional(),
+  aplica_iva: z.boolean().optional(),
+  justificacion: z.string().optional(),
+});
+
+export type CotizacionRaw = z.infer<typeof CotizacionRawSchema>;

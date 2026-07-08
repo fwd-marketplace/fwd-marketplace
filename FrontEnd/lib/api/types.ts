@@ -199,6 +199,40 @@ export type SuggestCompensacionResponse = {
   sugerencia: CompensacionSuggestion;
 };
 
+export type SuggestCotizacionInput = {
+  descripcion: string;
+};
+
+/** Una funcionalidad sugerida por la IA para la calculadora de cotización. */
+export type CotizacionFuncionalidadSuggestion = {
+  nombre: string;
+  cantidad: number;
+  tamano: "muy_pequena" | "pequena" | "media" | "grande";
+};
+
+/**
+ * Sugerencia de la IA para llenar el formulario de la calculadora de cotización (del junior).
+ * Mapea 1:1 al estado de `PricingCalculator`. El monto NO viene aquí: lo calcula la lógica pura.
+ */
+export type CotizacionSuggestion = {
+  modoAlcance: "horas" | "semanas";
+  horasEstimadas: number;
+  semanas: number;
+  horasPorSemana: number;
+  complejidad: "baja" | "media" | "alta";
+  stack: string[];
+  funcionalidades: CotizacionFuncionalidadSuggestion[];
+  /** Tarifa por hora en USD, ya acotada al rango permitido. */
+  tarifaHora: number;
+  modalidad: "remoto" | "hibrido" | "presencial";
+  aplicaIva: boolean;
+  justificacion: string;
+};
+
+export type SuggestCotizacionResponse = {
+  sugerencia: CotizacionSuggestion;
+};
+
 export type ProjectOffer = {
   id: string;
   propuesta: string;

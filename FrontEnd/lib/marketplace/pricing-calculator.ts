@@ -23,6 +23,8 @@ export type Complejidad = "baja" | "media" | "alta";
 export type Modalidad = "remoto" | "hibrido" | "presencial";
 /** Cómo declara el junior el alcance: en horas directas o en semanas de trabajo. */
 export type ModoAlcance = "horas" | "semanas";
+/** Tamaño (complejidad) de una funcionalidad individual del proyecto. */
+export type TamanoFuncionalidad = "muy_pequena" | "pequena" | "media" | "grande";
 
 // ── Constantes de mercado (junior, Costa Rica) ──────────────────────────────────
 /** Rango de referencia de la tarifa por hora del junior (USD). */
@@ -33,8 +35,22 @@ export const TARIFA_HORA_DEFAULT = 12;
 /** Horas de trabajo por semana asumidas cuando el alcance se declara en semanas (junior part-time). */
 export const HORAS_POR_SEMANA_DEFAULT = 20;
 
-/** Horas de trabajo estimadas por cada funcionalidad/entregable declarado. */
-export const HORAS_POR_FUNCIONALIDAD = 3;
+/**
+ * Tipo de cambio de referencia (colones por dólar) para ingresar/mostrar la tarifa en CRC.
+ * El cálculo se hace siempre en USD (rango y monto de la plataforma); CRC es solo de presentación.
+ */
+export const TIPO_CAMBIO_CRC_POR_USD = 525;
+
+/** Orden de presentación de los tamaños de funcionalidad (de menor a mayor esfuerzo). */
+export const TAMANOS_FUNCIONALIDAD: TamanoFuncionalidad[] = ["muy_pequena", "pequena", "media", "grande"];
+
+/** Horas de trabajo estimadas por cada funcionalidad según su tamaño/complejidad. */
+export const HORAS_POR_TAMANO_FUNCIONALIDAD: Record<TamanoFuncionalidad, number> = {
+  muy_pequena: 1,
+  pequena: 3,
+  media: 6,
+  grande: 12,
+};
 
 /** Multiplicador de esfuerzo según la complejidad del proyecto. */
 export const COMPLEJIDAD_FACTOR: Record<Complejidad, number> = {
@@ -54,6 +70,42 @@ export const MODALIDAD_FACTOR: Record<Modalidad, number> = {
 export const UPLIFT_POR_SKILL = 0.025;
 export const UPLIFT_SKILL_MAX = 0.25;
 
+/**
+ * Tecnologías seleccionables para declarar el stack del proyecto. Se muestran como pastillas
+ * en la calculadora; la cantidad seleccionada alimenta `cantidadSkills` del cálculo.
+ */
+export const STACK_TECNOLOGICO_OPCIONES = [
+  "React",
+  "Next.js",
+  "Vue",
+  "Angular",
+  "TypeScript",
+  "JavaScript",
+  "Node.js",
+  "Express",
+  "Python",
+  "Django",
+  "Java",
+  "PHP",
+  "Laravel",
+  ".NET",
+  "Go",
+  "React Native",
+  "Flutter",
+  "Tailwind CSS",
+  "PostgreSQL",
+  "MySQL",
+  "MongoDB",
+  "Supabase",
+  "Firebase",
+  "GraphQL",
+  "REST API",
+  "Docker",
+  "AWS",
+  "Git",
+  "Figma",
+] as const;
+
 /** IVA de Costa Rica. */
 export const IVA_RATE = 0.13;
 
@@ -69,8 +121,8 @@ export interface PricingInput {
   complejidad: Complejidad;
   /** Cantidad de skills/herramientas requeridas por el proyecto. */
   cantidadSkills: number;
-  /** Cantidad de funcionalidades / entregables a construir. */
-  cantidadFuncionalidades: number;
+  /** Cantidad de funcionalidades a construir, agrupadas por su tamaño/complejidad. */
+  funcionalidadesPorTamano: Record<TamanoFuncionalidad, number>;
   tarifaHora: number;
   modalidad: Modalidad;
   aplicaIva: boolean;
@@ -83,6 +135,14 @@ export interface PricingBreakdown {
   horasFuncionalidades: number;
   /** Horas totales tras aplicar complejidad y modalidad. */
   horasAjustadas: number;
+  /** Costo del alcance base (horas base × tarifa, sin ajustes de complejidad/modalidad). */
+  costoAlcance: number;
+  /** Costo de las funcionalidades (horas de funcionalidades × tarifa, sin ajustes). */
+  costoFuncionalidades: number;
+  /** Monto que agrega el factor de complejidad sobre el costo base sin ajustes. */
+  ajusteComplejidad: number;
+  /** Monto que agrega el factor de modalidad sobre el costo ya ajustado por complejidad. */
+  ajusteModalidad: number;
   /** horasAjustadas × tarifa, antes del premium de stack. */
   subtotal: number;
   /** Premium en USD por las herramientas especializadas requeridas. */
@@ -120,8 +180,11 @@ export function calcularCotizacion(input: PricingInput): PricingBreakdown {
         (toNonNegative(input.horasPorSemana) || HORAS_POR_SEMANA_DEFAULT)
       : toNonNegative(input.horasEstimadas);
 
-  const horasFuncionalidades =
-    toNonNegative(input.cantidadFuncionalidades) * HORAS_POR_FUNCIONALIDAD;
+  const horasFuncionalidades = TAMANOS_FUNCIONALIDAD.reduce(
+    (horas, tamano) =>
+      horas + toNonNegative(input.funcionalidadesPorTamano?.[tamano]) * HORAS_POR_TAMANO_FUNCIONALIDAD[tamano],
+    0,
+  );
 
   const complejidadFactor = COMPLEJIDAD_FACTOR[input.complejidad];
   const modalidadFactor = MODALIDAD_FACTOR[input.modalidad];
@@ -131,6 +194,13 @@ export function calcularCotizacion(input: PricingInput): PricingBreakdown {
 
   const tarifaHora = toNonNegative(input.tarifaHora);
   const subtotal = horasAjustadas * tarifaHora;
+
+  // Costo atribuido a cada apartado (reconcilia: alcance + funcionalidades + ajustes = subtotal).
+  const costoAlcance = horasBase * tarifaHora;
+  const costoFuncionalidades = horasFuncionalidades * tarifaHora;
+  const costoBaseSinAjustes = costoAlcance + costoFuncionalidades;
+  const ajusteComplejidad = costoBaseSinAjustes * (complejidadFactor - 1);
+  const ajusteModalidad = costoBaseSinAjustes * complejidadFactor * (modalidadFactor - 1);
 
   const upliftPct = Math.min(
     toNonNegative(input.cantidadSkills) * UPLIFT_POR_SKILL,
@@ -147,6 +217,10 @@ export function calcularCotizacion(input: PricingInput): PricingBreakdown {
     horasBase,
     horasFuncionalidades,
     horasAjustadas: Math.round(horasAjustadas * 100) / 100,
+    costoAlcance: Math.round(costoAlcance),
+    costoFuncionalidades: Math.round(costoFuncionalidades),
+    ajusteComplejidad: Math.round(ajusteComplejidad),
+    ajusteModalidad: Math.round(ajusteModalidad),
     subtotal: Math.round(subtotal),
     upliftStack: Math.round(upliftStack),
     neto,
@@ -160,6 +234,10 @@ export function calcularCotizacion(input: PricingInput): PricingBreakdown {
 export function esCotizacionValida(input: PricingInput): boolean {
   const horasBase =
     input.modoAlcance === "semanas" ? toNonNegative(input.semanas) : toNonNegative(input.horasEstimadas);
-  const alcance = horasBase + toNonNegative(input.cantidadFuncionalidades);
+  const totalFuncionalidades = TAMANOS_FUNCIONALIDAD.reduce(
+    (total, tamano) => total + toNonNegative(input.funcionalidadesPorTamano?.[tamano]),
+    0,
+  );
+  const alcance = horasBase + totalFuncionalidades;
   return alcance > 0 && toNonNegative(input.tarifaHora) > 0;
 }

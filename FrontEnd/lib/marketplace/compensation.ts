@@ -12,6 +12,21 @@ export function formatCompensacion(amount: number, moneda = "USD"): string {
   return `$${amount.toLocaleString("en-US", { maximumFractionDigits: 0 })} ${moneda}`;
 }
 
+/** Monedas soportadas para ingresar/mostrar la tarifa de la cotización. */
+export type Moneda = "USD" | "CRC";
+
+/** Símbolo de cada moneda (₡ es un símbolo de moneda, no un emoji). */
+export const SIMBOLO_MONEDA: Record<Moneda, string> = { USD: "$", CRC: "₡" };
+
+/**
+ * Formatea un monto con el símbolo de la moneda y, opcionalmente, su código:
+ * "$1,500 USD" / "₡105,000 CRC" (con código) o "$1,500" / "₡105,000" (sin código).
+ */
+export function formatMonto(amount: number, moneda: Moneda = "USD", conCodigo = true): string {
+  const numero = amount.toLocaleString("en-US", { maximumFractionDigits: 0 });
+  return conCodigo ? `${SIMBOLO_MONEDA[moneda]}${numero} ${moneda}` : `${SIMBOLO_MONEDA[moneda]}${numero}`;
+}
+
 /** Buckets de precio para filtrar el marketplace (min inclusivo, max exclusivo). */
 export type CompensacionBucket = "low" | "mid" | "high";
 

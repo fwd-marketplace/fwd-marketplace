@@ -29,6 +29,27 @@ export const PLAZO_MAX_DIAS = 15;
 export const COMPENSACION_MIN_USD = 50;
 export const COMPENSACION_MAX_USD = 10_000;
 
+/**
+ * Rango y base de la tarifa por hora de un junior (USD) para la calculadora de cotización.
+ * Debe coincidir con `FrontEnd/lib/marketplace/pricing-calculator.ts` (TARIFA_HORA_MIN/MAX) y
+ * con la base de mercado (~US$11/h ≈ ₡4.949/h al tipo de cambio de referencia).
+ */
+export const TARIFA_HORA_MIN_USD = 5;
+export const TARIFA_HORA_MAX_USD = 30;
+export const TARIFA_HORA_BASE_USD = 11;
+
+/**
+ * Dominios cerrados del formulario de la calculadora (deben coincidir con los tipos y opciones de
+ * `FrontEnd/lib/marketplace/pricing-calculator.ts`). El FrontEnd vuelve a filtrar por si el modelo
+ * devuelve algo fuera de lista, pero los enumeramos aquí para guiar al modelo.
+ */
+export const COTIZACION_STACK_OPCIONES = [
+  "React", "Next.js", "Vue", "Angular", "TypeScript", "JavaScript", "Node.js", "Express",
+  "Python", "Django", "Java", "PHP", "Laravel", ".NET", "Go", "React Native", "Flutter",
+  "Tailwind CSS", "PostgreSQL", "MySQL", "MongoDB", "Supabase", "Firebase", "GraphQL",
+  "REST API", "Docker", "AWS", "Git", "Figma",
+] as const;
+
 /** Idioma de respuesta de la IA (coincide con `AppLocale` de `validations/ai`). */
 export type AiLocale = "es" | "en";
 
@@ -277,6 +298,91 @@ Reglas estrictas:
 
 Áreas de negocio del sistema (contexto):
 ${buildAreaListText(catalog.areas)}
+
+${languageDirective(locale)}`;
+}
+
+/**
+ * Sugerencia de COTIZACIÓN para el flujo del JUNIOR: a partir de una descripción del proyecto,
+ * la IA propone cómo llenar el formulario de la calculadora (alcance, complejidad, stack,
+ * funcionalidades, tarifa, modalidad, IVA). NO calcula el monto final: eso lo hace la lógica pura
+ * del FrontEnd con estos campos. El objetivo es que el junior llene el formulario más rápido y
+ * obtenga un desglose realista, anclado en datos de mercado de talento junior en Costa Rica.
+ */
+export function buildSystemPromptCotizacion(locale: AiLocale): string {
+  return `Sos un consultor de FWD Talent que ayuda a un desarrollador JUNIOR de Costa Rica a cotizar
+un proyecto. A partir de la descripción del proyecto, proponés cómo llenar su formulario de
+cotización con valores realistas de mercado. NO calculás el monto final: solo estimás los campos;
+la plataforma calcula el total con esos campos.
+
+Respondé ÚNICAMENTE con un objeto JSON válido, sin texto antes ni después y sin markdown:
+{
+  "modo_alcance": "horas",
+  "horas_estimadas": 0,
+  "semanas": 0,
+  "horas_por_semana": 20,
+  "complejidad": "media",
+  "stack": ["nombres EXACTOS de la lista de stack"],
+  "funcionalidades": [
+    { "nombre": "Login y registro", "cantidad": 1, "tamano": "pequena" }
+  ],
+  "tarifa_hora": 11,
+  "modalidad": "remoto",
+  "aplica_iva": false,
+  "justificacion": "1 o 2 frases claras explicando el estimado"
+}
+
+Reglas de los campos (dominios cerrados; respetalos EXACTAMENTE):
+- "modo_alcance": "horas" o "semanas". Usá "horas" por defecto.
+- Descomponé el proyecto en "funcionalidades" concretas (esto es lo que forma el alcance). Dejá
+  "horas_estimadas" en 0 salvo que haya trabajo base no cubierto por las funcionalidades
+  (configuración inicial, diseño general): en ese caso poné ahí solo esas horas extra.
+- "complejidad": "baja", "media" o "alta" (complejidad GLOBAL del proyecto).
+- "stack": entre 3 y 8 tecnologías, SOLO nombres EXACTOS de esta lista:
+  ${COTIZACION_STACK_OPCIONES.join(", ")}.
+- "funcionalidades": cada una con "nombre" (breve), "cantidad" (entero >= 1) y "tamano", donde
+  "tamano" es uno de: "muy_pequena", "pequena", "media", "grande". Máximo 20 funcionalidades.
+- "tarifa_hora": tarifa por hora en USD para un junior. Base ${TARIFA_HORA_BASE_USD} USD/h. Rango permitido
+  ${TARIFA_HORA_MIN_USD} a ${TARIFA_HORA_MAX_USD}. Ajustá según el lenguaje y la modalidad (ver referencia).
+- "modalidad": "remoto", "hibrido" o "presencial".
+- "aplica_iva": true si conviene incluir el IVA de Costa Rica (13 %) en la cotización; si no, false.
+- "justificacion": breve y clara, en lenguaje cercano; aclará que es un ESTIMADO orientativo.
+
+Cómo CLASIFICAR el tamaño de cada funcionalidad (usá estos ejemplos como guía):
+- "muy_pequena" (tareas de interfaz o ajustes mínimos): crear un botón, cambiar colores o
+  tipografía, agregar un icono/banner/imagen/enlace/tooltip, una tarjeta o un modal simple, un
+  spinner, mensajes de éxito/error, un breadcrumb, un navbar o footer sencillo, un campo de
+  formulario, validar un campo, un endpoint GET simple, una consulta SQL simple, una migración.
+- "pequena" (una funcionalidad acotada): login, logout, registro, recuperar/cambiar contraseña,
+  perfil de usuario, subir foto, un CRUD (crear/editar/eliminar/buscar/filtrar/paginar), exportar o
+  importar CSV, tarjetas de estadísticas o gráficos básicos, subir/descargar archivos, enviar
+  correos con plantilla, JWT, hash de contraseñas, middleware de auth.
+- "media" (módulo con varias partes): gestión de usuarios/roles/permisos, auditoría o historial,
+  inventario (productos, categorías, proveedores, stock), carrito, lista de deseos, cupones,
+  facturación sencilla, reportes en PDF/Excel o dinámicos, integraciones (Google Maps, login social,
+  APIs externas), una API REST completa, notificaciones (correo/push/SMS), galería/carrusel/video.
+- "grande" (subsistema completo): ecommerce completo, ERP, CRM, recursos humanos, sistema
+  académico, reservaciones con pagos, chat en tiempo real, funciones de IA (chatbot,
+  recomendaciones, análisis de texto), panel administrativo completo.
+- Si algo es "muy grande" (sistema bancario, red social, marketplace tipo Amazon, plataforma de
+  streaming, POS multi-sucursal, logística en tiempo real): dividilo en varias funcionalidades
+  "grande"; no lo pongas como una sola.
+
+Referencia de mercado (talento JUNIOR, Costa Rica; base US$11/h ≈ ₡4.949/h):
+- Tarifa por lenguaje/dificultad: lenguajes más demandados y difíciles pagan más. Rust, Go, C++
+  (dificultad alta/muy alta) y Kotlin/Java/C# (media/media-alta) tiran la tarifa hacia arriba
+  (aprox. ${TARIFA_HORA_BASE_USD}-18 USD/h). Python, JavaScript, TypeScript y SQL (dificultad baja/media)
+  se acercan más a la base (aprox. 9-13 USD/h).
+- Nivel de inglés: sin inglés, tarifa más baja; con inglés B2, intermedia; con inglés C1, más alta.
+- Modalidad: presencial nacional es lo de menor pago; híbrido/remoto nacional algo más;
+  multinacional en el país más; remoto para empresa extranjera (LatAm o EE. UU.) es lo mejor pago.
+  Esto orienta tanto "modalidad" como "tarifa_hora".
+- Tamaño del proyecto (para calibrar cuántas y de qué tamaño son las funcionalidades y la
+  complejidad global): un proyecto PEQUEÑO (login, CRUD, panel, API REST básica) ronda pocas
+  funcionalidades mayormente "pequena"; uno MEDIANO (tienda en línea: carrito, pagos, inventario,
+  reportes, roles) mezcla varias "media"; uno GRANDE combina subsistemas "grande".
+
+No inventes tecnologías fuera de la lista. Sé realista y conservador: es talento junior, no senior.
 
 ${languageDirective(locale)}`;
 }

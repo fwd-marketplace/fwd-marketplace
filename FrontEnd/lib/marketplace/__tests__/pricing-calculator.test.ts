@@ -3,12 +3,20 @@ import {
   calcularCotizacion,
   esCotizacionValida,
   HORAS_POR_SEMANA_DEFAULT,
-  HORAS_POR_FUNCIONALIDAD,
+  HORAS_POR_TAMANO_FUNCIONALIDAD,
   IVA_RATE,
   UPLIFT_SKILL_MAX,
   type PricingInput,
+  type TamanoFuncionalidad,
 } from "../pricing-calculator";
 import { COMPENSACION_MIN, COMPENSACION_MAX } from "../compensation";
+
+/** Construye el mapa de funcionalidades por tamaño con todos los tamaños en 0 salvo los indicados. */
+function funcionalidades(
+  overrides: Partial<Record<TamanoFuncionalidad, number>> = {},
+): Record<TamanoFuncionalidad, number> {
+  return { muy_pequena: 0, pequena: 0, media: 0, grande: 0, ...overrides };
+}
 
 /** Entrada base sencilla: 10 h, complejidad baja, sin skills, sin funcionalidades, tarifa $10, remoto, sin IVA. */
 function baseInput(overrides: Partial<PricingInput> = {}): PricingInput {
@@ -17,7 +25,7 @@ function baseInput(overrides: Partial<PricingInput> = {}): PricingInput {
     horasEstimadas: 10,
     complejidad: "baja",
     cantidadSkills: 0,
-    cantidadFuncionalidades: 0,
+    funcionalidadesPorTamano: funcionalidades(),
     tarifaHora: 10,
     modalidad: "remoto",
     aplicaIva: false,
@@ -47,11 +55,45 @@ describe("calcularCotizacion", () => {
     expect(r.horasBase).toBe(30);
   });
 
-  it("cada funcionalidad agrega horas fijas", () => {
-    const r = calcularCotizacion(baseInput({ cantidadFuncionalidades: 4 }));
-    expect(r.horasFuncionalidades).toBe(4 * HORAS_POR_FUNCIONALIDAD);
+  it("cada funcionalidad agrega horas según su tamaño", () => {
+    const r = calcularCotizacion(baseInput({ funcionalidadesPorTamano: funcionalidades({ pequena: 4 }) }));
+    expect(r.horasFuncionalidades).toBe(4 * HORAS_POR_TAMANO_FUNCIONALIDAD.pequena);
     // (10 + 12) × $10 = 220
     expect(r.subtotal).toBe(220);
+  });
+
+  it("suma las horas de todos los tamaños de funcionalidad", () => {
+    const r = calcularCotizacion(
+      baseInput({ funcionalidadesPorTamano: funcionalidades({ muy_pequena: 2, media: 1, grande: 1 }) }),
+    );
+    const esperadas =
+      2 * HORAS_POR_TAMANO_FUNCIONALIDAD.muy_pequena +
+      HORAS_POR_TAMANO_FUNCIONALIDAD.media +
+      HORAS_POR_TAMANO_FUNCIONALIDAD.grande;
+    expect(r.horasFuncionalidades).toBe(esperadas);
+  });
+
+  it("desglosa el costo por apartado y reconcilia con el subtotal", () => {
+    // 10 h base + 4 funcionalidades pequeñas (12 h) = 22 h; complejidad media (1.3), presencial (1.15), $10/h.
+    const r = calcularCotizacion(
+      baseInput({
+        horasEstimadas: 10,
+        funcionalidadesPorTamano: funcionalidades({ pequena: 4 }),
+        complejidad: "media",
+        modalidad: "presencial",
+        tarifaHora: 10,
+      }),
+    );
+    expect(r.costoAlcance).toBe(100); // 10 h × $10
+    expect(r.costoFuncionalidades).toBe(120); // 12 h × $10
+    // Los cuatro apartados suman el subtotal.
+    expect(r.costoAlcance + r.costoFuncionalidades + r.ajusteComplejidad + r.ajusteModalidad).toBe(r.subtotal);
+  });
+
+  it("sin ajustes de complejidad ni modalidad los montos son cero", () => {
+    const r = calcularCotizacion(baseInput({ complejidad: "baja", modalidad: "remoto" }));
+    expect(r.ajusteComplejidad).toBe(0);
+    expect(r.ajusteModalidad).toBe(0);
   });
 
   it("la complejidad alta multiplica el esfuerzo", () => {
@@ -95,7 +137,9 @@ describe("calcularCotizacion", () => {
   });
 
   it("normaliza entradas inválidas (NaN / negativos) a cero", () => {
-    const r = calcularCotizacion(baseInput({ horasEstimadas: Number.NaN, cantidadFuncionalidades: -5, tarifaHora: -10 }));
+    const r = calcularCotizacion(
+      baseInput({ horasEstimadas: Number.NaN, funcionalidadesPorTamano: funcionalidades({ pequena: -5 }), tarifaHora: -10 }),
+    );
     expect(r.subtotal).toBe(0);
     expect(r.total).toBe(COMPENSACION_MIN); // acotado desde 0
   });
@@ -103,7 +147,7 @@ describe("calcularCotizacion", () => {
 
 describe("esCotizacionValida", () => {
   it("es falsa sin alcance", () => {
-    expect(esCotizacionValida(baseInput({ horasEstimadas: 0, cantidadFuncionalidades: 0 }))).toBe(false);
+    expect(esCotizacionValida(baseInput({ horasEstimadas: 0, funcionalidadesPorTamano: funcionalidades() }))).toBe(false);
   });
 
   it("es falsa sin tarifa", () => {
