@@ -1,6 +1,7 @@
 import { describe, it, expect } from "vitest";
 import {
   formatCompensacion,
+  formatMonto,
   isInCompensacionBucket,
   compensacionUpdatedAfterPublish,
 } from "../compensation";
@@ -16,6 +17,20 @@ describe("formatCompensacion", () => {
 
   it("respeta la moneda recibida", () => {
     expect(formatCompensacion(50, "USD")).toBe("$50 USD");
+  });
+});
+
+describe("formatMonto", () => {
+  it("formatea USD con símbolo y código", () => {
+    expect(formatMonto(1500, "USD")).toBe("$1,500 USD");
+  });
+
+  it("formatea colones con el símbolo ₡", () => {
+    expect(formatMonto(105000, "CRC")).toBe("₡105,000 CRC");
+  });
+
+  it("omite el código cuando se pide sin código", () => {
+    expect(formatMonto(6300, "CRC", false)).toBe("₡6,300");
   });
 });
 

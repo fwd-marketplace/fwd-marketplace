@@ -9,6 +9,7 @@ import {
   mejorarMensaje,
   sugerirStack,
   sugerirCompensacion,
+  sugerirCotizacion,
 } from "../controllers/ai.controller";
 
 const MINUTE = 60 * 1000;
@@ -33,5 +34,6 @@ router.post("/mejorar-mensaje", authenticate, aiLimiter, asyncHandler(mejorarMen
 router.post("/generar-propuesta", authenticate, aiLimiter, asyncHandler(generarPropuesta));
 router.post("/sugerir-stack", authenticate, aiLimiter, asyncHandler(sugerirStack));
 router.post("/sugerir-compensacion", authenticate, aiLimiter, asyncHandler(sugerirCompensacion));
+router.post("/sugerir-cotizacion", authenticate, aiLimiter, asyncHandler(sugerirCotizacion));
 
 export default router;

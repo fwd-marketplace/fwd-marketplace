@@ -3,7 +3,9 @@
 import { useEffect, useMemo, useRef, useState } from "react";
 import { createPortal } from "react-dom";
 import { useLocale, useTranslations } from "next-intl";
-import { Calculator, Check, ChevronDown, FileDown, Plus, Receipt, Sparkles, Trash2, X } from "lucide-react";
+import { Calculator, Check, ChevronDown, FileDown, Loader2, Plus, Receipt, Sparkles, Trash2, X } from "lucide-react";
+import { suggestCotizacionAction } from "@/lib/actions/ai";
+import type { CotizacionSuggestion } from "@/lib/api/types";
 import {
   calcularCotizacion,
   esCotizacionValida,
@@ -15,13 +17,14 @@ import {
   TAMANOS_FUNCIONALIDAD,
   COMPLEJIDAD_FACTOR,
   MODALIDAD_FACTOR,
+  TIPO_CAMBIO_CRC_POR_USD,
   type Complejidad,
   type Modalidad,
   type ModoAlcance,
   type TamanoFuncionalidad,
   type PricingBreakdown,
 } from "@/lib/marketplace/pricing-calculator";
-import { COMPENSACION_MIN, COMPENSACION_MAX, formatCompensacion } from "@/lib/marketplace/compensation";
+import { COMPENSACION_MIN, COMPENSACION_MAX, formatMonto, type Moneda } from "@/lib/marketplace/compensation";
 
 /**
  * Calculadora de cotización de la propuesta (contraoferta del junior). Es un panel que se despliega
@@ -31,10 +34,7 @@ import { COMPENSACION_MIN, COMPENSACION_MAX, formatCompensacion } from "@/lib/ma
  * El cálculo es en vivo (useMemo, sin efectos); la UI solo dispara `onApply` / `onCancel`.
  */
 
-const CONTROL_CLS =
-  "w-full rounded-lg border border-border bg-surface px-3 py-2 font-body text-sm text-ink outline-none transition-colors duration-[var(--duration-fast)] ease-[var(--ease-out)] focus:border-primary";
-
-/** Variante compacta para controles densos (filas de funcionalidades). */
+/** Control compacto y denso usado en toda la calculadora (inputs y selects). */
 const CONTROL_CLS_SM =
   "rounded-lg border border-border bg-surface px-2 py-1 font-body text-xs text-ink outline-none transition-colors duration-[var(--duration-fast)] ease-[var(--ease-out)] focus:border-primary";
 
@@ -108,11 +108,13 @@ function DesglosePorApartado({
   breakdown,
   factorComplejidad,
   factorModalidad,
+  formatear,
   compact,
 }: {
   breakdown: PricingBreakdown;
   factorComplejidad: number;
   factorModalidad: number;
+  formatear: (montoUsd: number) => string;
   compact?: boolean;
 }) {
   const t = useTranslations("gestion_page");
@@ -143,7 +145,7 @@ function DesglosePorApartado({
         .map((linea) => (
           <div key={linea.label} className="flex justify-between gap-4">
             <dt>{linea.label}</dt>
-            <dd className="text-ink">{formatCompensacion(linea.monto)}</dd>
+            <dd className="text-ink">{formatear(linea.monto)}</dd>
           </div>
         ))}
     </dl>
@@ -172,15 +174,81 @@ export function PricingCalculator({
   const [funcionalidades, setFuncionalidades] = useState<FuncionalidadDeclarada[]>([]);
   const proximoIdFuncionalidad = useRef(0);
   const [tarifaHora, setTarifaHora] = useState(String(TARIFA_HORA_DEFAULT));
+  const [moneda, setMoneda] = useState<Moneda>("USD");
   const [modalidad, setModalidad] = useState<Modalidad>("remoto");
   const [aplicaIva, setAplicaIva] = useState(false);
   const [fechaPdf, setFechaPdf] = useState<string | null>(null);
   const [imprimiendo, setImprimiendo] = useState(false);
   const [montado, setMontado] = useState(false);
   const [desgloseAbierto, setDesgloseAbierto] = useState(false);
+  // Autocompletado con IA: descripción del proyecto -> campos del formulario.
+  const [iaAbierto, setIaAbierto] = useState(false);
+  const [iaDescripcion, setIaDescripcion] = useState("");
+  const [iaCargando, setIaCargando] = useState(false);
+  const [iaError, setIaError] = useState<string | null>(null);
+  const [iaJustificacion, setIaJustificacion] = useState<string | null>(null);
 
   // El resumen imprimible se monta con un portal en el body; solo existe en el cliente.
   useEffect(() => setMontado(true), []);
+
+  /** Longitud mínima de la descripción que exige el BackEnd (validación de `sugerir-cotizacion`). */
+  const IA_DESCRIPCION_MIN = 10;
+
+  /** Vuelca la sugerencia de la IA en el estado del formulario (el cálculo del monto es reactivo). */
+  function aplicarSugerenciaIa(sugerencia: CotizacionSuggestion) {
+    setModoAlcance(sugerencia.modoAlcance);
+    setHorasEstimadas(sugerencia.horasEstimadas > 0 ? String(sugerencia.horasEstimadas) : "");
+    setSemanas(sugerencia.semanas > 0 ? String(sugerencia.semanas) : "");
+    setHorasPorSemana(String(sugerencia.horasPorSemana || HORAS_POR_SEMANA_DEFAULT));
+    setComplejidad(sugerencia.complejidad);
+
+    // El modelo se guía por la lista de stack, pero filtramos por si devuelve algo fuera de ella.
+    const stackValido = sugerencia.stack.filter((tecnologia) =>
+      (STACK_TECNOLOGICO_OPCIONES as readonly string[]).includes(tecnologia),
+    );
+    setStackSeleccionado(stackValido);
+    if (stackValido.length > 0) setStackAbierto(true);
+
+    setFuncionalidades(
+      sugerencia.funcionalidades.map((funcionalidad) => {
+        proximoIdFuncionalidad.current += 1;
+        return {
+          id: proximoIdFuncionalidad.current,
+          nombre: funcionalidad.nombre,
+          cantidad: String(Math.max(1, funcionalidad.cantidad)),
+          complejidad: funcionalidad.tamano,
+        };
+      }),
+    );
+
+    // La tarifa llega en USD; si el usuario está en CRC, se convierte para conservar la moneda elegida.
+    const tarifa =
+      moneda === "CRC" ? Math.round(sugerencia.tarifaHora * TIPO_CAMBIO_CRC_POR_USD) : sugerencia.tarifaHora;
+    setTarifaHora(String(tarifa));
+    setModalidad(sugerencia.modalidad);
+    setAplicaIva(sugerencia.aplicaIva);
+
+    setIaJustificacion(sugerencia.justificacion || null);
+    setDesgloseAbierto(true);
+    setIaAbierto(false);
+  }
+
+  async function generarConIa() {
+    const descripcion = iaDescripcion.trim();
+    if (descripcion.length < IA_DESCRIPCION_MIN) {
+      setIaError(t("calc_ia_min"));
+      return;
+    }
+    setIaCargando(true);
+    setIaError(null);
+    const resultado = await suggestCotizacionAction({ descripcion });
+    setIaCargando(false);
+    if (!resultado.ok) {
+      setIaError(resultado.error);
+      return;
+    }
+    aplicarSugerenciaIa(resultado.data);
+  }
 
   function toggleStack(tecnologia: string) {
     setStackSeleccionado((previas) =>
@@ -232,18 +300,43 @@ export function PricingCalculator({
       complejidad,
       cantidadSkills: stackSeleccionado.length,
       funcionalidadesPorTamano,
-      tarifaHora: toNumber(tarifaHora),
+      tarifaHora: moneda === "CRC" ? toNumber(tarifaHora) / TIPO_CAMBIO_CRC_POR_USD : toNumber(tarifaHora),
       modalidad,
       aplicaIva,
     }),
-    [modoAlcance, horasEstimadas, semanas, horasPorSemana, complejidad, stackSeleccionado, funcionalidadesPorTamano, tarifaHora, modalidad, aplicaIva],
+    [modoAlcance, horasEstimadas, semanas, horasPorSemana, complejidad, stackSeleccionado, funcionalidadesPorTamano, tarifaHora, moneda, modalidad, aplicaIva],
   );
 
   const valida = esCotizacionValida(pricingInput);
   const breakdown = useMemo(() => calcularCotizacion(pricingInput), [pricingInput]);
-  const rangeVars = { min: COMPENSACION_MIN, max: COMPENSACION_MAX };
   const factorComplejidad = COMPLEJIDAD_FACTOR[complejidad];
   const factorModalidad = MODALIDAD_FACTOR[modalidad];
+
+  // Presentación por moneda: el cálculo es en USD; en CRC se convierte solo para mostrar.
+  function mostrarMonto(montoUsd: number): string {
+    const monto = moneda === "CRC" ? montoUsd * TIPO_CAMBIO_CRC_POR_USD : montoUsd;
+    return formatMonto(monto, moneda);
+  }
+
+  // Al cambiar de moneda, convierte la tarifa para conservar la tarifa real (no reinicia el estimado).
+  function cambiarMoneda(nueva: Moneda) {
+    if (nueva === moneda) return;
+    const actual = toNumber(tarifaHora);
+    if (actual > 0) {
+      const convertida =
+        nueva === "CRC" ? actual * TIPO_CAMBIO_CRC_POR_USD : actual / TIPO_CAMBIO_CRC_POR_USD;
+      setTarifaHora(String(nueva === "CRC" ? Math.round(convertida) : Math.round(convertida * 100) / 100));
+    }
+    setMoneda(nueva);
+  }
+
+  const rangeVars = { min: mostrarMonto(COMPENSACION_MIN), max: mostrarMonto(COMPENSACION_MAX) };
+  const tarifaMinMoneda = moneda === "CRC" ? TARIFA_HORA_MIN * TIPO_CAMBIO_CRC_POR_USD : TARIFA_HORA_MIN;
+  const tarifaMaxMoneda = moneda === "CRC" ? TARIFA_HORA_MAX * TIPO_CAMBIO_CRC_POR_USD : TARIFA_HORA_MAX;
+  const tarifaHintVars = {
+    min: formatMonto(tarifaMinMoneda, moneda, false),
+    max: formatMonto(tarifaMaxMoneda, moneda, false),
+  };
 
   // Lanza la impresión (Guardar como PDF) tras pintar la fecha; fuerza tema claro y lo restaura al terminar.
   useEffect(() => {
@@ -286,14 +379,60 @@ export function PricingCalculator({
             <p className="mt-0.5 font-body text-xs text-ink-muted">{t("calc_subtitulo")}</p>
           </div>
         </div>
-        {/* TODO(ia): conectar el autocompletado con IA del formulario de cotización. */}
         <button
           type="button"
+          aria-expanded={iaAbierto}
+          onClick={() => {
+            setIaError(null);
+            setIaAbierto((abierto) => !abierto);
+          }}
           className="flex shrink-0 items-center gap-1.5 rounded-full border border-secondary/30 bg-secondary/5 px-3 py-1.5 font-body text-xs font-semibold text-secondary transition-colors duration-[var(--duration-fast)] ease-[var(--ease-out)] hover:bg-secondary/10"
         >
           <Sparkles className="size-3.5" aria-hidden="true" /> {t("calc_ia_ayuda")}
         </button>
       </div>
+
+      {/* Panel de autocompletado con IA */}
+      {iaAbierto && (
+        <div className="mb-3 rounded-xl border border-secondary/30 bg-secondary/5 p-3">
+          <label htmlFor="calc-ia-descripcion" className="mb-1.5 block font-body text-xs font-semibold text-ink">
+            {t("calc_ia_descripcion_label")}
+          </label>
+          <textarea
+            id="calc-ia-descripcion"
+            value={iaDescripcion}
+            onChange={(e) => setIaDescripcion(e.target.value)}
+            placeholder={t("calc_ia_descripcion_placeholder")}
+            rows={3}
+            className={CONTROL_CLS_SM + " w-full resize-y"}
+          />
+          {iaError && <p className="mt-1.5 font-body text-[11px] text-magenta">{iaError}</p>}
+          <div className="mt-2 flex justify-end">
+            <button
+              type="button"
+              disabled={iaCargando}
+              onClick={generarConIa}
+              className="flex items-center gap-1.5 rounded-full bg-secondary px-4 py-1.5 font-body text-xs font-semibold text-white transition-opacity duration-[var(--duration-fast)] ease-[var(--ease-out)] hover:opacity-90 disabled:cursor-not-allowed disabled:opacity-40"
+            >
+              {iaCargando ? (
+                <Loader2 className="size-3.5 animate-spin" aria-hidden="true" />
+              ) : (
+                <Sparkles className="size-3.5" aria-hidden="true" />
+              )}
+              {iaCargando ? t("calc_ia_generando") : t("calc_ia_generar")}
+            </button>
+          </div>
+        </div>
+      )}
+
+      {iaJustificacion && !iaAbierto && (
+        <div className="mb-3 flex items-start gap-2 rounded-xl border border-secondary/20 bg-secondary/5 p-3">
+          <Sparkles className="mt-0.5 size-3.5 shrink-0 text-secondary" aria-hidden="true" />
+          <p className="font-body text-[11px] text-ink-muted">
+            <span className="font-semibold text-secondary">{t("calc_ia_nota")}</span> {iaJustificacion}
+          </p>
+        </div>
+      )}
 
       <div className="space-y-3">
         {/* Alcance */}
@@ -317,10 +456,10 @@ export function PricingCalculator({
               onChange={(e) => setHorasEstimadas(e.target.value)}
               placeholder={t("calc_horas_label")}
               aria-label={t("calc_horas_label")}
-              className={CONTROL_CLS + " mt-2"}
+              className={CONTROL_CLS_SM + " mt-2 w-28"}
             />
           ) : (
-            <div className="mt-2 grid grid-cols-2 gap-2">
+            <div className="mt-2 flex gap-2">
               <input
                 type="number"
                 min={0}
@@ -329,7 +468,7 @@ export function PricingCalculator({
                 onChange={(e) => setSemanas(e.target.value)}
                 placeholder={t("calc_semanas_label")}
                 aria-label={t("calc_semanas_label")}
-                className={CONTROL_CLS}
+                className={CONTROL_CLS_SM + " w-24"}
               />
               <input
                 type="number"
@@ -339,7 +478,7 @@ export function PricingCalculator({
                 onChange={(e) => setHorasPorSemana(e.target.value)}
                 placeholder={t("calc_horas_semana_label")}
                 aria-label={t("calc_horas_semana_label")}
-                className={CONTROL_CLS}
+                className={CONTROL_CLS_SM + " w-24"}
               />
             </div>
           )}
@@ -486,19 +625,28 @@ export function PricingCalculator({
         {/* Tarifa */}
         <div>
           <label className="mb-1.5 block font-body text-xs font-semibold text-ink">{t("calc_tarifa_label")}</label>
-          <input
-            type="number"
-            min={TARIFA_HORA_MIN}
-            max={TARIFA_HORA_MAX}
-            inputMode="decimal"
-            value={tarifaHora}
-            onChange={(e) => setTarifaHora(e.target.value)}
-            aria-label={t("calc_tarifa_label")}
-            className={CONTROL_CLS}
-          />
-          <p className="mt-1 font-body text-[11px] text-ink-muted">
-            {t("calc_tarifa_hint", { min: TARIFA_HORA_MIN, max: TARIFA_HORA_MAX })}
-          </p>
+          <div className="flex items-center gap-2">
+            <input
+              type="number"
+              min={tarifaMinMoneda}
+              max={tarifaMaxMoneda}
+              inputMode="decimal"
+              value={tarifaHora}
+              onChange={(e) => setTarifaHora(e.target.value)}
+              aria-label={t("calc_tarifa_label")}
+              className={CONTROL_CLS_SM + " w-24"}
+            />
+            <SegmentedControl<Moneda>
+              ariaLabel={t("calc_moneda_label")}
+              value={moneda}
+              onChange={cambiarMoneda}
+              options={[
+                { value: "USD", label: t("calc_moneda_usd") },
+                { value: "CRC", label: t("calc_moneda_crc") },
+              ]}
+            />
+          </div>
+          <p className="mt-1 font-body text-[11px] text-ink-muted">{t("calc_tarifa_hint", tarifaHintVars)}</p>
         </div>
 
         {/* Modalidad */}
@@ -542,30 +690,30 @@ export function PricingCalculator({
               </div>
               <div className="flex justify-between">
                 <dt>{t("calc_desglose_subtotal")}</dt>
-                <dd className="text-ink">{formatCompensacion(breakdown.subtotal)}</dd>
+                <dd className="text-ink">{mostrarMonto(breakdown.subtotal)}</dd>
               </div>
               {breakdown.upliftStack > 0 && (
                 <div className="flex justify-between">
                   <dt>{t("calc_desglose_stack")}</dt>
-                  <dd className="text-ink">+{formatCompensacion(breakdown.upliftStack)}</dd>
+                  <dd className="text-ink">+{mostrarMonto(breakdown.upliftStack)}</dd>
                 </div>
               )}
               {breakdown.iva > 0 && (
                 <>
                   <div className="flex justify-between">
                     <dt>{t("calc_desglose_neto")}</dt>
-                    <dd className="text-ink">{formatCompensacion(breakdown.neto)}</dd>
+                    <dd className="text-ink">{mostrarMonto(breakdown.neto)}</dd>
                   </div>
                   <div className="flex justify-between">
                     <dt>{t("calc_desglose_iva")}</dt>
-                    <dd className="text-ink">+{formatCompensacion(breakdown.iva)}</dd>
+                    <dd className="text-ink">+{mostrarMonto(breakdown.iva)}</dd>
                   </div>
                 </>
               )}
             </dl>
             <div className="mt-2 flex items-center justify-between border-t border-border pt-2">
               <span className="font-body text-xs font-semibold text-ink">{t("calc_total_label")}</span>
-              <span className="font-heading text-lg font-black text-primary">{formatCompensacion(breakdown.total)}</span>
+              <span className="font-heading text-lg font-black text-primary">{mostrarMonto(breakdown.total)}</span>
             </div>
             {breakdown.fueAcotado && (
               <p className="mt-1.5 font-body text-[11px] text-warning">{t("calc_acotado_aviso", rangeVars)}</p>
@@ -586,10 +734,11 @@ export function PricingCalculator({
             breakdown={breakdown}
             factorComplejidad={factorComplejidad}
             factorModalidad={factorModalidad}
+            formatear={mostrarMonto}
           />
           <div className="mt-2 flex items-center justify-between border-t border-primary/20 pt-2">
             <span className="font-body text-sm font-semibold text-ink">{t("calc_total_label")}</span>
-            <span className="font-heading text-xl font-black text-primary">{formatCompensacion(breakdown.total)}</span>
+            <span className="font-heading text-xl font-black text-primary">{mostrarMonto(breakdown.total)}</span>
           </div>
           {breakdown.fueAcotado && (
             <p className="mt-1.5 font-body text-[11px] text-warning">{t("calc_acotado_aviso", rangeVars)}</p>
@@ -637,7 +786,7 @@ export function PricingCalculator({
       {/* initialMonto se usa como referencia externa; el panel arranca vacío para recotizar. */}
       {typeof initialMonto === "number" && (
         <p className="mt-2 text-right font-body text-[11px] text-ink-muted">
-          {t("calc_monto_actual")}: {formatCompensacion(initialMonto)}
+          {t("calc_monto_actual")}: {mostrarMonto(initialMonto)}
         </p>
       )}
 
@@ -669,7 +818,7 @@ export function PricingCalculator({
             </div>
             <div className="flex justify-between gap-4">
               <dt className="text-ink-muted">{t("calc_tarifa_label")}</dt>
-              <dd className="text-right font-semibold">{formatCompensacion(toNumber(tarifaHora))}</dd>
+              <dd className="text-right font-semibold">{formatMonto(toNumber(tarifaHora), moneda)}</dd>
             </div>
             <div className="flex justify-between gap-4">
               <dt className="text-ink-muted">{t("calc_modalidad_label")}</dt>
@@ -715,10 +864,11 @@ export function PricingCalculator({
             breakdown={breakdown}
             factorComplejidad={factorComplejidad}
             factorModalidad={factorModalidad}
+            formatear={mostrarMonto}
           />
           <div className="mt-2 flex items-center justify-between border-t border-border pt-2">
             <span className="font-heading text-base font-bold text-ink-strong">{t("calc_total_label")}</span>
-            <span className="font-heading text-2xl font-black text-primary">{formatCompensacion(breakdown.total)}</span>
+            <span className="font-heading text-2xl font-black text-primary">{mostrarMonto(breakdown.total)}</span>
           </div>
         </section>
 

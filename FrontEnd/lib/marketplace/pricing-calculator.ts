@@ -35,6 +35,12 @@ export const TARIFA_HORA_DEFAULT = 12;
 /** Horas de trabajo por semana asumidas cuando el alcance se declara en semanas (junior part-time). */
 export const HORAS_POR_SEMANA_DEFAULT = 20;
 
+/**
+ * Tipo de cambio de referencia (colones por dólar) para ingresar/mostrar la tarifa en CRC.
+ * El cálculo se hace siempre en USD (rango y monto de la plataforma); CRC es solo de presentación.
+ */
+export const TIPO_CAMBIO_CRC_POR_USD = 525;
+
 /** Orden de presentación de los tamaños de funcionalidad (de menor a mayor esfuerzo). */
 export const TAMANOS_FUNCIONALIDAD: TamanoFuncionalidad[] = ["muy_pequena", "pequena", "media", "grande"];
 

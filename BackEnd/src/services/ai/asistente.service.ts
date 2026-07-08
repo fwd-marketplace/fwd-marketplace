@@ -6,20 +6,26 @@ import {
   ProposalRawSchema,
   StackRawSchema,
   CompensacionRawSchema,
+  CotizacionRawSchema,
   type AppLocale,
   type ProposalRaw,
   type StackRaw,
   type CompensacionRaw,
+  type CotizacionRaw,
 } from "../../validations/ai";
 import {
   buildSystemPromptConversacion,
   buildSystemPromptPropuesta,
   buildSystemPromptStack,
   buildSystemPromptCompensacion,
+  buildSystemPromptCotizacion,
   COMPENSACION_MAX_USD,
   COMPENSACION_MIN_USD,
   PLAZO_MAX_DIAS,
   PLAZO_MIN_DIAS,
+  TARIFA_HORA_BASE_USD,
+  TARIFA_HORA_MAX_USD,
+  TARIFA_HORA_MIN_USD,
   type CatalogArea,
   type CatalogSkill,
   type ProjectCatalog,
@@ -717,6 +723,153 @@ export async function sugerirCompensacion(
   const raw = parseCompensacion(completion.content);
   return {
     compensacion: clampCompensacion(raw.compensacion),
+    justificacion: raw.justificacion?.trim() ?? "",
+  };
+}
+
+// ── Sugerencia de cotización (flujo del junior: llenar la calculadora) ─────────────
+
+/** Modo de alcance, complejidad, modalidad y tamaño de funcionalidad: dominios cerrados del form. */
+type CotizacionModoAlcance = "horas" | "semanas";
+type CotizacionComplejidad = "baja" | "media" | "alta";
+type CotizacionModalidad = "remoto" | "hibrido" | "presencial";
+type CotizacionTamano = "muy_pequena" | "pequena" | "media" | "grande";
+
+/** Una funcionalidad sugerida, ya normalizada al dominio del formulario. */
+export interface CotizacionFuncionalidad {
+  nombre: string;
+  cantidad: number;
+  tamano: CotizacionTamano;
+}
+
+/**
+ * Sugerencia para llenar el formulario de la calculadora de cotización. Mapea 1:1 a los campos
+ * que maneja `FrontEnd/components/gestion/PricingCalculator.tsx`. El monto NO viene aquí: lo
+ * calcula la lógica pura del FrontEnd con estos campos.
+ */
+export interface CotizacionSuggestion {
+  modoAlcance: CotizacionModoAlcance;
+  horasEstimadas: number;
+  semanas: number;
+  horasPorSemana: number;
+  complejidad: CotizacionComplejidad;
+  stack: string[];
+  funcionalidades: CotizacionFuncionalidad[];
+  /** Tarifa por hora en USD, ya acotada al rango permitido. */
+  tarifaHora: number;
+  modalidad: CotizacionModalidad;
+  aplicaIva: boolean;
+  justificacion: string;
+}
+
+export interface SugerirCotizacionParams {
+  descripcion: string;
+  userId: string;
+  accessToken: string;
+  /** Idioma en el que debe responder la IA (locale del usuario). */
+  locale: AppLocale;
+  signal?: AbortSignal;
+}
+
+const HORAS_POR_SEMANA_COTIZACION_DEFAULT = 20;
+const MAX_FUNCIONALIDADES_COTIZACION = 20;
+const TAMANOS_VALIDOS: readonly CotizacionTamano[] = ["muy_pequena", "pequena", "media", "grande"];
+const COMPLEJIDADES_VALIDAS: readonly CotizacionComplejidad[] = ["baja", "media", "alta"];
+const MODALIDADES_VALIDAS: readonly CotizacionModalidad[] = ["remoto", "hibrido", "presencial"];
+
+/** Convierte number|string|undefined a un número finito >= 0 (0 si no es parseable). */
+function toNonNegativeNumber(value: number | string | undefined): number {
+  const parsed = typeof value === "number" ? value : Number.parseFloat(String(value ?? ""));
+  return Number.isFinite(parsed) && parsed > 0 ? parsed : 0;
+}
+
+/** Escoge `value` si está dentro del conjunto permitido; si no, devuelve `fallback`. */
+function pickEnum<T extends string>(value: string | undefined, allowed: readonly T[], fallback: T): T {
+  return allowed.includes((value ?? "") as T) ? (value as T) : fallback;
+}
+
+/** Acota la tarifa por hora al rango permitido; cae en la base si no es parseable. */
+function clampTarifa(value: number | string | undefined): number {
+  const parsed = typeof value === "number" ? value : Number.parseFloat(String(value ?? ""));
+  if (!Number.isFinite(parsed) || parsed <= 0) {
+    return TARIFA_HORA_BASE_USD;
+  }
+  return Math.min(TARIFA_HORA_MAX_USD, Math.max(TARIFA_HORA_MIN_USD, Math.round(parsed * 100) / 100));
+}
+
+/** Parsea y valida el JSON de la cotización; lanza 502 si no es usable. */
+function parseCotizacion(content: string): CotizacionRaw {
+  const candidate = extractJsonObject(content);
+  const mensajeError = "No se pudo generar la cotización. Llená el formulario manualmente.";
+  if (!candidate) {
+    throw new ApiError(502, mensajeError);
+  }
+  let parsed: unknown;
+  try {
+    parsed = JSON.parse(candidate);
+  } catch {
+    throw new ApiError(502, mensajeError);
+  }
+  const result = CotizacionRawSchema.safeParse(parsed);
+  if (!result.success) {
+    throw new ApiError(502, mensajeError);
+  }
+  return result.data;
+}
+
+/** Normaliza las funcionalidades crudas del modelo al dominio del formulario (cap y defaults). */
+function normalizeFuncionalidades(raw: CotizacionRaw["funcionalidades"]): CotizacionFuncionalidad[] {
+  if (!raw) {
+    return [];
+  }
+  return raw.slice(0, MAX_FUNCIONALIDADES_COTIZACION).map((funcionalidad) => ({
+    nombre: funcionalidad.nombre?.trim() ?? "",
+    cantidad: Math.max(1, Math.floor(toNonNegativeNumber(funcionalidad.cantidad)) || 1),
+    tamano: pickEnum(funcionalidad.tamano, TAMANOS_VALIDOS, "media"),
+  }));
+}
+
+/**
+ * A partir de la descripción del proyecto (flujo del junior), sugiere cómo llenar la calculadora de
+ * cotización: alcance, complejidad, stack, funcionalidades, tarifa, modalidad e IVA. Normaliza y
+ * acota todo al dominio del formulario; el monto final lo calcula la lógica pura del FrontEnd. El
+ * FrontEnd vuelve a filtrar el stack contra sus opciones por si el modelo devuelve algo fuera de lista.
+ */
+export async function sugerirCotizacion(params: SugerirCotizacionParams): Promise<CotizacionSuggestion> {
+  const messages: ChatMessage[] = [
+    { role: "system", content: buildSystemPromptCotizacion(params.locale) },
+    { role: "user", content: `Descripción: ${params.descripcion}\n\nGenerá la cotización en el JSON pedido.` },
+  ];
+
+  const completion = await createChatCompletion({
+    messages,
+    temperature: TEMPERATURE_PROPUESTA,
+    json: true,
+    signal: params.signal,
+  });
+
+  logger.info("ai_usage", {
+    userId: params.userId,
+    action: "sugerir_cotizacion",
+    provider: completion.provider,
+    model: completion.model,
+    totalTokens: completion.usage?.totalTokens ?? null,
+    latencyMs: completion.latencyMs,
+  });
+
+  const raw = parseCotizacion(completion.content);
+  const horasPorSemana = toNonNegativeNumber(raw.horas_por_semana) || HORAS_POR_SEMANA_COTIZACION_DEFAULT;
+  return {
+    modoAlcance: pickEnum<CotizacionModoAlcance>(raw.modo_alcance, ["horas", "semanas"], "horas"),
+    horasEstimadas: Math.round(toNonNegativeNumber(raw.horas_estimadas)),
+    semanas: Math.round(toNonNegativeNumber(raw.semanas)),
+    horasPorSemana: Math.round(horasPorSemana),
+    complejidad: pickEnum(raw.complejidad, COMPLEJIDADES_VALIDAS, "media"),
+    stack: (raw.stack ?? []).map((tecnologia) => tecnologia.trim()).filter(Boolean),
+    funcionalidades: normalizeFuncionalidades(raw.funcionalidades),
+    tarifaHora: clampTarifa(raw.tarifa_hora),
+    modalidad: pickEnum(raw.modalidad, MODALIDADES_VALIDAS, "remoto"),
+    aplicaIva: raw.aplica_iva === true,
     justificacion: raw.justificacion?.trim() ?? "",
   };
 }

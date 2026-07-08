@@ -4,11 +4,14 @@ import type {
   AiChatMessage,
   AiLocale,
   CompensacionSuggestion,
+  CotizacionSuggestion,
   GenerateProposalResponse,
   ProjectProposal,
   StackSuggestion,
   SuggestCompensacionInput,
   SuggestCompensacionResponse,
+  SuggestCotizacionInput,
+  SuggestCotizacionResponse,
   SuggestStackInput,
   SuggestStackResponse,
 } from "@/lib/api/types";
@@ -60,6 +63,23 @@ export function suggestCompensacion(
 ): Promise<Result<CompensacionSuggestion>> {
   return asResult(async () => {
     const response = await apiAuth<SuggestCompensacionResponse>("/ai/sugerir-compensacion", {
+      method: "POST",
+      body: JSON.stringify({ ...input, locale }),
+    });
+    return response.sugerencia;
+  });
+}
+
+/**
+ * Sugiere cómo llenar la calculadora de cotización del junior a partir de la descripción del
+ * proyecto (no es streaming). El monto final lo calcula la lógica pura del FrontEnd con estos campos.
+ */
+export function suggestCotizacion(
+  input: SuggestCotizacionInput,
+  locale: AiLocale,
+): Promise<Result<CotizacionSuggestion>> {
+  return asResult(async () => {
+    const response = await apiAuth<SuggestCotizacionResponse>("/ai/sugerir-cotizacion", {
       method: "POST",
       body: JSON.stringify({ ...input, locale }),
     });
