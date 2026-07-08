@@ -2074,7 +2074,7 @@ function GuardadosView({
               <div className="flex shrink-0 items-center gap-2">
                 <a
                   href={`/${locale}/marketplace/${project.id}`}
-                  className="rounded-full bg-secondary px-4 py-1.5 font-body text-xs font-semibold text-white transition-opacity hover:opacity-80"
+                  className="rounded-full bg-secondary px-4 py-1.5 font-body text-xs font-semibold text-white transition-opacity duration-[var(--duration-fast)] ease-[var(--ease-out)] hover:opacity-80"
                 >
                   {t("guardados_view")}
                 </a>
@@ -2082,7 +2082,7 @@ function GuardadosView({
                   type="button"
                   aria-label={t("guardados_remove")}
                   onClick={() => onRemove(project.id)}
-                  className="flex size-8 items-center justify-center rounded-full border border-border text-ink-muted transition-colors hover:border-magenta hover:text-magenta"
+                  className="flex size-8 items-center justify-center rounded-full border border-border text-ink-muted transition-colors duration-[var(--duration-fast)] ease-[var(--ease-out)] hover:border-magenta hover:text-magenta"
                 >
                   <Bookmark className="size-3.5 fill-current" aria-hidden="true" />
                 </button>
