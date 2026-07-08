@@ -4,6 +4,7 @@ import { useState, useRef, useEffect, useCallback, type ReactNode } from "react"
 import { useLocale, useTranslations } from "next-intl";
 import { ProjectMatchPanel } from "@/components/gestion/ProjectMatchPanel";
 import { ChatPanel } from "@/components/features/proyecto/ChatPanel";
+import { PrototipoPreview } from "@/components/shared/prototipo-preview";
 import {
   Activity,
   AlertCircle,
@@ -132,6 +133,7 @@ interface EmpresaProposal {
   expanded: boolean;
   desc: string;
   link: string;
+  repo: string;
   previewName: string;
   previewProject: string;
   comment: string;
@@ -286,6 +288,7 @@ function buildEmpresaStudents(
         expanded: false,
         desc: offer.propuesta,
         link: offer.prototipo_url ?? "",
+        repo: offer.url_repositorio ?? "",
         previewName: title,
         previewProject: area,
         comment: offer.comentario_revision ?? "",
@@ -439,11 +442,14 @@ export function GestionPage({ role, userId, initialProjectId, initialSection: in
     if (r.ok) setMyConversaciones(r.data);
   }, []);
 
-  // Mientras la vista de mensajes está activa, refrescar conversaciones cada 5 s.
-  // Esto garantiza que los chats directos aparezcan aunque el callback de escalada
-  // no llegue correctamente a través de la cadena de componentes.
+  // Refresca conversaciones cada 5 s para mantener vivos los indicadores "sin ver" y los chats
+  // nuevos. Junior: solo mientras mira "Mensajes" (ahí vive su lista de Directos). Empresa:
+  // siempre, porque el badge de pendientes vive en el ícono "Mensajes" del rail y en su bandeja,
+  // visibles en toda la vista de gestión. Antes la empresa nunca refrescaba y el badge quedaba
+  // congelado al montar.
   useEffect(() => {
-    if (sidebarView !== "mensajes" || isEmpresa) return;
+    const debePollear = isEmpresa || sidebarView === "mensajes";
+    if (!debePollear) return;
     void refreshConversaciones();
     let active = true;
     const timer = setInterval(() => { if (active) void refreshConversaciones(); }, 5000);
@@ -602,13 +608,17 @@ export function GestionPage({ role, userId, initialProjectId, initialSection: in
     }
   };
 
+  // Total de mensajes sin leer (todas las conversaciones): alimenta el badge del ícono "Mensajes"
+  // del rail, para que junior y empresa vean de un vistazo si tienen chats pendientes.
+  const totalNoLeidos = myConversaciones.reduce((sum, c) => sum + c.no_leidos, 0);
+
   return (
     <div className="flex min-h-[calc(100vh-4rem)] gap-4 bg-canvas px-4 pt-10 pb-6">
 
       {/* ── Navigation rail flotante ── */}
       <nav
         className="sticky top-10 self-start flex h-fit shrink-0 w-[72px] flex-col items-center gap-5 rounded-2xl border border-border bg-surface py-6 shadow-[var(--shadow-soft)]"
-        aria-label="Navegación principal"
+        aria-label={t("aria_nav_principal")}
       >
 
         {/* Dashboard */}
@@ -617,7 +627,7 @@ export function GestionPage({ role, userId, initialProjectId, initialSection: in
             type="button"
             onClick={() => { setSidebarView("dashboard"); handleBack(); }}
             aria-current={sidebarView === "dashboard" && !selectedId ? "page" : undefined}
-            aria-label="Dashboard"
+            aria-label={t("aria_dashboard")}
             className={cn(
               "flex size-10 items-center justify-center rounded-[14px] transition-all duration-[var(--duration-fast)] ease-[var(--ease-out)]",
               sidebarView === "dashboard" && !selectedId
@@ -628,53 +638,62 @@ export function GestionPage({ role, userId, initialProjectId, initialSection: in
             <LayoutDashboard className="size-[18px]" aria-hidden="true" />
           </button>
           <span role="tooltip" className="pointer-events-none absolute left-[calc(100%+12px)] top-1/2 z-50 -translate-y-1/2 whitespace-nowrap rounded-xl bg-ink-strong px-3 py-1.5 font-body text-xs font-semibold text-white opacity-0 shadow-lg transition-opacity duration-[var(--duration-fast)] group-hover:opacity-100">
-            Dashboard
+            {t("aria_dashboard")}
           </span>
         </div>
 
-        {/* Procesos */}
-        <div className="group relative">
-          <button
-            type="button"
-            onClick={() => { setSidebarView("procesos"); handleBack(); }}
-            aria-current={sidebarView === "procesos" && !selectedId ? "page" : undefined}
-            aria-label="Procesos"
-            className={cn(
-              "flex size-10 items-center justify-center rounded-[14px] transition-all duration-[var(--duration-fast)] ease-[var(--ease-out)]",
-              sidebarView === "procesos" && !selectedId
-                ? "bg-secondary text-white shadow-sm"
-                : "text-ink-muted hover:bg-secondary/10 hover:text-secondary",
-            )}
-          >
-            <GitBranch className="size-[18px]" aria-hidden="true" />
-          </button>
-          <span role="tooltip" className="pointer-events-none absolute left-[calc(100%+12px)] top-1/2 z-50 -translate-y-1/2 whitespace-nowrap rounded-xl bg-ink-strong px-3 py-1.5 font-body text-xs font-semibold text-white opacity-0 shadow-lg transition-opacity duration-[var(--duration-fast)] group-hover:opacity-100">
-            Procesos
-          </span>
-        </div>
-
-        {/* Mensajes */}
+        {/* Procesos (solo junior): la empresa no tiene una vista de procesos separada del dashboard,
+            así que mostrarle este botón duplicaba el dashboard. Su seguimiento es por proyecto. */}
         {!isEmpresa && (
           <div className="group relative">
             <button
               type="button"
-              onClick={() => { setSidebarView("mensajes"); }}
-              aria-current={sidebarView === "mensajes" ? "page" : undefined}
-              aria-label="Mensajes"
+              onClick={() => { setSidebarView("procesos"); handleBack(); }}
+              aria-current={sidebarView === "procesos" && !selectedId ? "page" : undefined}
+              aria-label={t("aria_procesos")}
               className={cn(
                 "flex size-10 items-center justify-center rounded-[14px] transition-all duration-[var(--duration-fast)] ease-[var(--ease-out)]",
-                sidebarView === "mensajes"
+                sidebarView === "procesos" && !selectedId
                   ? "bg-secondary text-white shadow-sm"
                   : "text-ink-muted hover:bg-secondary/10 hover:text-secondary",
               )}
             >
-              <Mail className="size-[18px]" aria-hidden="true" />
+              <GitBranch className="size-[18px]" aria-hidden="true" />
             </button>
             <span role="tooltip" className="pointer-events-none absolute left-[calc(100%+12px)] top-1/2 z-50 -translate-y-1/2 whitespace-nowrap rounded-xl bg-ink-strong px-3 py-1.5 font-body text-xs font-semibold text-white opacity-0 shadow-lg transition-opacity duration-[var(--duration-fast)] group-hover:opacity-100">
-              Mensajes
+              {t("aria_procesos")}
             </span>
           </div>
         )}
+
+        {/* Mensajes (junior y empresa): bandeja de conversaciones con badge de sin-leer */}
+        <div className="group relative">
+          <button
+            type="button"
+            onClick={() => { setSidebarView("mensajes"); if (isEmpresa) handleBack(); }}
+            aria-current={sidebarView === "mensajes" ? "page" : undefined}
+            aria-label={t("aria_mensajes")}
+            className={cn(
+              "flex size-10 items-center justify-center rounded-[14px] transition-all duration-[var(--duration-fast)] ease-[var(--ease-out)]",
+              sidebarView === "mensajes"
+                ? "bg-secondary text-white shadow-sm"
+                : "text-ink-muted hover:bg-secondary/10 hover:text-secondary",
+            )}
+          >
+            <Mail className="size-[18px]" aria-hidden="true" />
+          </button>
+          {totalNoLeidos > 0 && sidebarView !== "mensajes" && (
+            <span
+              aria-hidden="true"
+              className="pointer-events-none absolute -right-1 -top-1 flex min-w-[18px] items-center justify-center rounded-full bg-magenta px-1 py-px font-body text-[10px] font-bold leading-none text-white shadow-sm"
+            >
+              {totalNoLeidos > 9 ? "9+" : totalNoLeidos}
+            </span>
+          )}
+          <span role="tooltip" className="pointer-events-none absolute left-[calc(100%+12px)] top-1/2 z-50 -translate-y-1/2 whitespace-nowrap rounded-xl bg-ink-strong px-3 py-1.5 font-body text-xs font-semibold text-white opacity-0 shadow-lg transition-opacity duration-[var(--duration-fast)] group-hover:opacity-100">
+            {t("aria_mensajes")}
+          </span>
+        </div>
 
       </nav>
 
@@ -998,6 +1017,14 @@ export function GestionPage({ role, userId, initialProjectId, initialSection: in
             onConversationActivity={refreshConversaciones}
             onSelectProject={(id) => handleSelect(id, "chat")}
           />
+        ) : isEmpresa && sidebarView === "mensajes" ? (
+          <EmpresaMensajesView
+            myConversaciones={myConversaciones}
+            selectedProjectId={selectedId}
+            t={t}
+            userId={userId}
+            onSelectProject={(id) => handleSelect(id, "chat")}
+          />
         ) : !selectedId ? (
           !isEmpresa && sidebarView === "procesos" ? (
             <ProcesosView
@@ -1017,6 +1044,7 @@ export function GestionPage({ role, userId, initialProjectId, initialSection: in
               locale={locale}
               onCreateProject={() => setFormMode("create")}
               onSelectProject={(id) => handleSelect(id, isEmpresa ? "info" : "proceso")}
+              onDeleteProject={isEmpresa ? setDeleteTarget : undefined}
             />
           )
         ) : projectLoading && !selectedProject ? (
@@ -1068,6 +1096,7 @@ export function GestionPage({ role, userId, initialProjectId, initialSection: in
             {section === "chat" && (
               isEmpresa ? (
                 <ChatPanel
+                  key={selectedId}
                   isEmpresa={isEmpresa}
                   project={selectedProject}
                   userId={userId}
@@ -1112,7 +1141,7 @@ export function GestionPage({ role, userId, initialProjectId, initialSection: in
                 t={t}
                 userId={userId}
                 disponible={disponible}
-                onBack={() => { setSidebarView("procesos"); handleBack(); }}
+                onBack={() => { setSidebarView(isEmpresa ? "dashboard" : "procesos"); handleBack(); }}
                 onOpenChat={() => { setSidebarView("mensajes"); setSection("chat"); }}
               />
             )}
@@ -1176,6 +1205,7 @@ function WelcomePanel({
   locale,
   onCreateProject,
   onSelectProject,
+  onDeleteProject,
 }: {
   isEmpresa: boolean;
   hasProjects: boolean;
@@ -1185,6 +1215,7 @@ function WelcomePanel({
   locale: string;
   onCreateProject: () => void;
   onSelectProject: (id: string) => void;
+  onDeleteProject?: ((id: string) => void) | undefined;
 }) {
   const [offerPage, setOfferPage] = useState(0);
   const [calendarProjectId, setCalendarProjectId] = useState<string | null>(null);
@@ -1266,20 +1297,24 @@ function WelcomePanel({
             </button>
           </div>
           {projects.map((p) => (
-            <button
+            <div
               key={p.id}
-              type="button"
-              onClick={() => onSelectProject(p.id)}
-              className="group flex w-full items-center gap-4 rounded-xl border border-border bg-surface p-4 text-left shadow-[var(--shadow-soft)] transition-all duration-[var(--duration-fast)] hover:border-primary/30 hover:shadow-[var(--shadow-elevated)]"
+              className="group flex w-full items-center gap-4 rounded-xl border border-border bg-surface p-4 shadow-[var(--shadow-soft)] transition-all duration-[var(--duration-fast)] hover:border-primary/30 hover:shadow-[var(--shadow-elevated)]"
             >
-              <div className="min-w-0 flex-1">
-                <p className="truncate font-heading text-sm font-bold text-ink-strong group-hover:text-primary">
-                  {p.titulo}
-                </p>
-                <p className="mt-0.5 font-body text-xs text-ink-muted">
-                  {p.area?.nombre ?? "—"} · {p.n_ofertas ?? 0} {t("proposals_count", { count: p.n_ofertas ?? 0 }).replace(/^\d+ /, "")}
-                </p>
-              </div>
+              <button
+                type="button"
+                onClick={() => onSelectProject(p.id)}
+                className="flex min-w-0 flex-1 items-center gap-4 text-left"
+              >
+                <div className="min-w-0 flex-1">
+                  <p className="truncate font-heading text-sm font-bold text-ink-strong group-hover:text-primary">
+                    {p.titulo}
+                  </p>
+                  <p className="mt-0.5 font-body text-xs text-ink-muted">
+                    {p.area?.nombre ?? "—"} · {p.n_ofertas ?? 0} {t("proposals_count", { count: p.n_ofertas ?? 0 }).replace(/^\d+ /, "")}
+                  </p>
+                </div>
+              </button>
               {(p.n_por_revisar ?? 0) > 0 && (
                 <span className="shrink-0 rounded-full bg-warning/10 px-2.5 py-1 font-body text-[10px] font-bold text-warning">
                   {t("por_revisar_badge", { count: p.n_por_revisar ?? 0 })}
@@ -1288,8 +1323,18 @@ function WelcomePanel({
               <span className={cn("shrink-0 rounded-full px-2.5 py-1 font-body text-[10px] font-bold", estadoColor[p.estado.nombre] ?? estadoColor.en_recepcion)}>
                 {p.estado.nombre === "en_recepcion" ? t("welcome_state_published") : t(`state_${p.estado.nombre}`)}
               </span>
+              {p.estado.nombre === "borrador" && onDeleteProject && (
+                <button
+                  type="button"
+                  onClick={() => onDeleteProject(p.id)}
+                  aria-label={t("aria_eliminar_proyecto")}
+                  className="flex size-7 shrink-0 items-center justify-center rounded-full text-ink-muted/50 opacity-0 transition-all hover:bg-magenta/10 hover:text-magenta focus-visible:opacity-100 group-hover:opacity-100"
+                >
+                  <Trash2 className="size-3.5" aria-hidden="true" />
+                </button>
+              )}
               <ChevronRight className="size-4 shrink-0 text-ink-muted/40 transition-colors group-hover:text-primary" aria-hidden="true" />
-            </button>
+            </div>
           ))}
           {cerrados > 0 && (
             <p className="pt-1 text-center font-body text-xs text-ink-muted">
@@ -2576,54 +2621,6 @@ function ProcesoPanel({
   return <JuniorProcesoView offers={offers} project={project} locale={locale} t={t} userId={userId} disponible={disponible} {...(onBack ? { onBack } : {})} {...(onOpenChat ? { onOpenChat } : {})} />;
 }
 
-// ── Browser mockup ────────────────────────────────────────────────────────────
-
-function LinkPreview({
-  href, title, area, excerpt,
-}: {
-  href: string;
-  title: string;
-  area?: string | undefined;
-  excerpt?: string | undefined;
-}) {
-  return (
-    <div className="overflow-hidden rounded-2xl border border-border">
-      <div className="flex items-center gap-2 border-b border-border bg-surface px-3 py-2.5">
-        <span className="size-2.5 rounded-full bg-[#F2655A]" aria-hidden="true" />
-        <span className="size-2.5 rounded-full bg-[#F5BE4F]" aria-hidden="true" />
-        <span className="size-2.5 rounded-full bg-[#62C554]" aria-hidden="true" />
-        <div className="ml-2 flex-1 truncate rounded-md border border-border bg-canvas px-3 py-1 font-body text-xs text-ink-muted">
-          {href}
-        </div>
-        <a
-          href={href}
-          target="_blank"
-          rel="noopener noreferrer"
-          className="inline-flex shrink-0 items-center gap-1 font-body text-xs font-bold text-primary hover:underline"
-        >
-          <ExternalLink className="size-3" aria-hidden="true" />
-          Abrir
-        </a>
-      </div>
-      <div className="flex min-h-36 flex-col gap-2.5 bg-gradient-to-b from-canvas to-surface px-7 py-6">
-        <p className="font-heading text-xl font-extrabold tracking-tight text-ink-strong line-clamp-1">
-          {title || t_noop("proceso_preview_sin_nombre")}
-        </p>
-        {area && (
-          <span className="self-start rounded-full bg-secondary/10 px-3 py-1 font-body text-xs font-semibold text-secondary">
-            {area}
-          </span>
-        )}
-        {excerpt && (
-          <p className="font-body text-sm leading-relaxed text-ink-muted line-clamp-3">{excerpt}</p>
-        )}
-      </div>
-    </div>
-  );
-}
-
-function t_noop(k: string) { return k; }
-
 // ── Junior proceso view ───────────────────────────────────────────────────────
 
 function JuniorProcesoView({
@@ -3290,32 +3287,29 @@ function JuniorProcesoView({
                 <label className="mb-2 mt-5 block font-body text-[13px] font-bold text-ink">
                   {t("proceso_previsualizacion_label")}
                 </label>
-                <div className="overflow-hidden rounded-[14px] border border-border bg-surface">
-                  <div className="flex items-center gap-[7px] border-b border-border px-[14px] py-[11px]" style={{ background: "#F4F3F7" }}>
-                    <span className="size-[11px] rounded-full" style={{ background: "#F2655A" }} aria-hidden="true" />
-                    <span className="size-[11px] rounded-full" style={{ background: "#F5BE4F" }} aria-hidden="true" />
-                    <span className="size-[11px] rounded-full" style={{ background: "#62C554" }} aria-hidden="true" />
-                    <div className="ml-[10px] flex-1 truncate rounded-[7px] border border-border bg-surface px-3 py-[6px] font-body text-[12px] text-ink-muted">
-                      {p.repo || p.link || "preview.proyecto.app"}
-                    </div>
-                    {(p.repo || p.link) && (
-                      <a href={p.repo || p.link} target="_blank" rel="noopener noreferrer"
-                        className="inline-flex shrink-0 items-center gap-1 font-body text-xs font-bold text-primary hover:underline">
-                        <ExternalLink className="size-3" aria-hidden="true" />
-                        Abrir
-                      </a>
-                    )}
-                  </div>
-                  <div className="flex min-h-[150px] flex-col gap-[10px] px-7 py-[30px]" style={{ background: "linear-gradient(180deg,#FCFBFE,#F7F6FB)" }}>
-                    <p className="font-heading text-xl font-extrabold tracking-tight text-ink-strong">
-                      {p.previewName || t("proceso_preview_sin_nombre")}
-                    </p>
-                    <span className="self-start rounded-full bg-secondary/10 px-3 py-[5px] font-body text-[12px] font-semibold text-secondary">
-                      {p.previewProject || t("proceso_preview_sin_categoria")}
-                    </span>
-                    <p className="mt-1 font-body text-[13px] leading-relaxed text-ink-muted line-clamp-3">{p.desc}</p>
-                  </div>
-                </div>
+                {p.link ? (
+                  <PrototipoPreview url={p.link} title={p.previewName || undefined} />
+                ) : (
+                  <p className="font-body text-[13px] text-ink-muted">{t("proceso_sin_enlace")}</p>
+                )}
+
+                {p.repo && (
+                  <>
+                    <label className="mb-2 mt-5 block font-body text-[13px] font-bold text-ink">
+                      {t("proceso_recursos_repo")}
+                    </label>
+                    <a
+                      href={p.repo}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="inline-flex max-w-full items-center gap-2 rounded-xl border border-border bg-surface px-4 py-2.5 font-body text-[13px] font-semibold text-primary transition-colors hover:border-primary/40 hover:bg-primary/5"
+                    >
+                      <GitBranch className="size-4 shrink-0" aria-hidden="true" />
+                      <span className="truncate">{p.repo}</span>
+                      <ExternalLink className="size-3.5 shrink-0" aria-hidden="true" />
+                    </a>
+                  </>
+                )}
 
                 <label className="mb-2 mt-5 block font-body text-[13px] font-bold text-ink">
                   {t("proceso_observaciones_label")}
@@ -3955,12 +3949,25 @@ function EmpresaProcesoView({
                                     <label className="mb-2 mt-5 block font-body text-sm font-bold text-ink">
                                       {t("proceso_ver_prototipo")}
                                     </label>
-                                    <LinkPreview
-                                      href={p.link}
-                                      title={p.previewName}
-                                      area={p.previewProject || undefined}
-                                      excerpt={p.desc}
-                                    />
+                                    <PrototipoPreview url={p.link} title={p.previewName || undefined} />
+                                  </>
+                                )}
+
+                                {p.repo && (
+                                  <>
+                                    <label className="mb-2 mt-5 block font-body text-sm font-bold text-ink">
+                                      {t("proceso_recursos_repo")}
+                                    </label>
+                                    <a
+                                      href={p.repo}
+                                      target="_blank"
+                                      rel="noopener noreferrer"
+                                      className="inline-flex max-w-full items-center gap-2 rounded-xl border border-border bg-surface px-4 py-2.5 font-body text-sm font-semibold text-primary transition-colors hover:border-primary/40 hover:bg-primary/5"
+                                    >
+                                      <GitBranch className="size-4 shrink-0" aria-hidden="true" />
+                                      <span className="truncate">{p.repo}</span>
+                                      <ExternalLink className="size-3.5 shrink-0" aria-hidden="true" />
+                                    </a>
                                   </>
                                 )}
 
@@ -5207,10 +5214,12 @@ function MensajesView({
     onSelectProject(id);
   }
 
-  // After escalation: refresh conversaciones so the project appears in Directos
-  // (stay in bot view — user can switch to Directos when ready)
-  function handleEscalated() {
-    void onConversationActivity();
+  // Al iniciarse la conversación (escalada del bot): refresca "Directos" para que aparezca
+  // listada Y abre de una el chat humano con la empresa. Antes se quedaba en el bot y la
+  // conversación solo era accesible desde la notificación.
+  async function handleEscalated() {
+    await onConversationActivity();
+    if (activePanelId) selectDirecto(activePanelId);
   }
 
   const activeProject = selectedProject ?? null;
@@ -5360,6 +5369,118 @@ function MensajesView({
               </p>
               <p className="mt-1 max-w-xs font-body text-sm leading-relaxed text-ink-muted">
                 {t("mensajes_vacio_desc")}
+              </p>
+            </div>
+          </div>
+        )}
+      </div>
+    </div>
+  );
+}
+
+// ── Bandeja de mensajes de la EMPRESA ─────────────────────────────────────────
+// Espejo de la MensajesView del junior, adaptada al modelo de la empresa: una lista de
+// conversaciones (un proyecto por fila, con badge de sin-leer) y, a la derecha, el ChatPanel
+// del proyecto elegido (que a su vez tiene el selector de juniors). Antes la empresa solo
+// llegaba al chat entrando a cada proyecto; esto le da una bandeja unificada e intuitiva.
+function EmpresaMensajesView({
+  myConversaciones,
+  selectedProjectId,
+  t,
+  userId,
+  onSelectProject,
+}: {
+  myConversaciones: ConversacionItem[];
+  selectedProjectId: string | null;
+  t: T;
+  userId: string | null;
+  onSelectProject: (id: string) => void;
+}) {
+  // Sin leer primero; dentro de cada grupo, la conversación más reciente arriba.
+  const conversacionesOrdenadas = [...myConversaciones].sort((a, b) => {
+    if ((b.no_leidos > 0 ? 1 : 0) !== (a.no_leidos > 0 ? 1 : 0)) {
+      return (b.no_leidos > 0 ? 1 : 0) - (a.no_leidos > 0 ? 1 : 0);
+    }
+    return (b.ultimo_mensaje ?? "").localeCompare(a.ultimo_mensaje ?? "");
+  });
+
+  // Proyecto del chat activo, construido AL INSTANTE desde la conversación (ya está en memoria).
+  // Así el ChatPanel nunca recibe el proyecto de otra conversación mientras carga (parpadeo).
+  const activeConv = myConversaciones.find((c) => c.proyecto.id === selectedProjectId);
+  const chatProject = activeConv
+    ? { id: activeConv.proyecto.id, titulo: activeConv.proyecto.titulo, empresa: null }
+    : null;
+
+  return (
+    <div className="flex overflow-hidden" style={{ height: "calc(100vh - 8rem)" }}>
+      {/* Lista de conversaciones */}
+      <div className="w-[280px] shrink-0 overflow-y-auto border-r border-border">
+        <div className="px-4 pt-5 pb-3">
+          <p className="mb-2 font-body text-[10px] font-bold uppercase tracking-widest text-ink-muted">
+            {t("mensajes_empresa_titulo")}
+          </p>
+          {conversacionesOrdenadas.length === 0 && (
+            <p className="font-body text-[12px] text-ink-muted/60">{t("mensajes_empresa_vacio")}</p>
+          )}
+          <ul className="flex flex-col gap-0.5">
+            {conversacionesOrdenadas.map((conv) => {
+              const isSelected = conv.proyecto.id === selectedProjectId;
+              const titulo = conv.proyecto.titulo;
+              const initial = titulo[0]?.toUpperCase() ?? "?";
+              return (
+                <li key={conv.proyecto.id}>
+                  <button
+                    type="button"
+                    onClick={() => onSelectProject(conv.proyecto.id)}
+                    className={cn(
+                      "flex w-full items-center gap-3 rounded-xl px-3 py-2.5 text-left transition-all duration-[var(--duration-fast)] ease-[var(--ease-out)]",
+                      isSelected ? "bg-primary/10 ring-1 ring-primary/20" : "hover:bg-canvas",
+                    )}
+                  >
+                    <div className="flex size-9 shrink-0 items-center justify-center rounded-full bg-primary/15 font-body text-[14px] font-bold text-primary">
+                      {initial}
+                    </div>
+                    <div className="min-w-0 flex-1">
+                      <div className="flex items-center justify-between gap-2">
+                        <p className={cn(
+                          "min-w-0 truncate font-body text-[13px] text-ink-strong",
+                          conv.no_leidos > 0 ? "font-extrabold" : "font-semibold",
+                        )}>
+                          {titulo}
+                        </p>
+                        {conv.no_leidos > 0 && (
+                          <span className="shrink-0 rounded-full bg-magenta px-[6px] py-[2px] font-body text-[10px] font-bold text-white">
+                            {conv.no_leidos > 9 ? "9+" : conv.no_leidos}
+                          </span>
+                        )}
+                      </div>
+                      <p className="truncate font-body text-[11px] text-ink-muted">
+                        {t("mensajes_empresa_n_juniors", { count: conv.n_participantes })}
+                      </p>
+                    </div>
+                  </button>
+                </li>
+              );
+            })}
+          </ul>
+        </div>
+      </div>
+
+      {/* Chat del proyecto elegido */}
+      <div className="min-w-0 flex-1 bg-canvas">
+        {selectedProjectId && chatProject ? (
+          <ChatPanel key={selectedProjectId} isEmpresa project={chatProject} userId={userId} />
+        ) : (
+          <div className="flex h-full flex-col items-center justify-center gap-4 px-8 py-20 text-center">
+            <div className="flex size-14 items-center justify-center rounded-2xl bg-primary/10">
+              <Mail className="size-6 text-primary" aria-hidden="true" />
+            </div>
+            <div>
+              <p className="font-heading text-lg font-extrabold tracking-tight text-ink-strong">
+                {t("mensajes_empresa_vacio_titulo")}<span className="text-primary" aria-hidden="true">.</span>
+              </p>
+              <p className="mt-1 max-w-xs font-body text-sm leading-relaxed text-ink-muted">
+                {t("mensajes_empresa_vacio_desc")}
               </p>
             </div>
           </div>

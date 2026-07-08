@@ -1647,7 +1647,8 @@
       "add_placeholder": "Add stack..."
     },
     "culture": {
-      "add_value_placeholder": "New value..."
+      "add_value_placeholder": "New value...",
+      "add_value": "Add value"
     },
     "validation": {
       "url_invalid": "The URL must start with https:// or http://",
@@ -2104,7 +2105,18 @@
     "send": "Send message",
     "hint": "Enter to send · Shift+Enter for new line",
     "seleccionar_junior": "Conversations",
-    "sin_conversaciones": "No conversations yet"
+    "sin_conversaciones": "No conversations yet",
+    "no_leidos": "{count, plural, one {# unread message} other {# unread messages}}",
+    "cargando": "Loading conversation"
+  },
+  "prototipo_preview": {
+    "preview_btn": "Preview",
+    "open_btn": "Open",
+    "modal_title": "Preview",
+    "open_new_tab": "Open in new tab",
+    "close": "Close",
+    "iframe_error": "Couldn't show the preview here (the site may block embedding). Open it in a new tab.",
+    "sin_url": "No prototype link"
   },
   "gestion_page": {
     "compensation_updated": "Compensation updated on {date}",
@@ -2213,6 +2225,15 @@
     "mensajes_sin_directos": "No direct chats yet. When the assistant can't help, you'll be able to write to the company.",
     "mensajes_vacio_titulo": "Your messages",
     "mensajes_vacio_desc": "Select a chat from the list to view the conversation.",
+    "mensajes_empresa_titulo": "Conversations",
+    "mensajes_empresa_vacio": "No conversations yet. They'll show up when a junior writes to you.",
+    "mensajes_empresa_n_juniors": "{count, plural, one {# junior} other {# juniors}}",
+    "mensajes_empresa_vacio_titulo": "Pick a conversation",
+    "mensajes_empresa_vacio_desc": "Select a project on the left to read and reply to the juniors' messages.",
+    "aria_nav_principal": "Main navigation",
+    "aria_dashboard": "Dashboard",
+    "aria_procesos": "Processes",
+    "aria_mensajes": "Messages",
     "section_proceso": "Process",
     "section_matches": "Matches",
     "action_pause_btn": "Pause project",
