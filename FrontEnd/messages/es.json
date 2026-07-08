@@ -1633,7 +1633,8 @@
       "add_placeholder": "Añadir stack..."
     },
     "culture": {
-      "add_value_placeholder": "Nuevo valor..."
+      "add_value_placeholder": "Nuevo valor...",
+      "add_value": "Agregar valor"
     },
     "validation": {
       "url_invalid": "La URL debe comenzar con https:// o http://",
@@ -2200,6 +2201,15 @@
     "mensajes_sin_directos": "Todavía no hay chats directos. Cuando el asistente no pueda ayudarte, podrás escribirle a la empresa.",
     "mensajes_vacio_titulo": "Tus mensajes",
     "mensajes_vacio_desc": "Seleccioná un chat de la lista para ver la conversación.",
+    "mensajes_empresa_titulo": "Conversaciones",
+    "mensajes_empresa_vacio": "Todavía no hay conversaciones. Aparecerán cuando un junior te escriba.",
+    "mensajes_empresa_n_juniors": "{count, plural, one {# junior} other {# juniors}}",
+    "mensajes_empresa_vacio_titulo": "Elegí una conversación",
+    "mensajes_empresa_vacio_desc": "Seleccioná un proyecto de la izquierda para ver y responder los mensajes de los juniors.",
+    "aria_nav_principal": "Navegación principal",
+    "aria_dashboard": "Dashboard",
+    "aria_procesos": "Procesos",
+    "aria_mensajes": "Mensajes",
     "section_proceso": "Proceso",
     "section_matches": "Matches",
     "action_pause_btn": "Pausar proyecto",

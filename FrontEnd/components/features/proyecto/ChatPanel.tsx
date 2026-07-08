@@ -95,12 +95,17 @@ export function ChatPanel({
     return counts;
   })();
 
-  // (no auto-select — empresa must pick a junior from the list)
-
   // Reset junior selection when project changes
   useEffect(() => {
     setSelectedJuniorId(null);
   }, [project?.id]);
+
+  // Si el proyecto tiene un solo junior conversando, se abre su hilo directo (sin obligar a la
+  // empresa a elegir de una lista de uno). Con varios, sí muestra el selector.
+  const soleJuniorId = juniors.length === 1 ? juniors[0]!.id : null;
+  useEffect(() => {
+    if (isEmpresa && soleJuniorId && !selectedJuniorId) setSelectedJuniorId(soleJuniorId);
+  }, [isEmpresa, soleJuniorId, selectedJuniorId]);
 
   // Al abrir el hilo de un junior, marcar como leídos SOLO sus mensajes (backend con `?remitente=`).
   // Optimista primero para que el badge desaparezca al instante; luego re-sincroniza con el servidor.

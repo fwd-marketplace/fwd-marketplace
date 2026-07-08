@@ -836,11 +836,19 @@ export function CompanyProfile({
                           </>
                         )}
                         {isEditing('culture') && (
-                          <form onSubmit={handleAddValue} className="inline-flex items-center">
+                          <form onSubmit={handleAddValue} className="inline-flex items-center gap-1">
                             <input type="text" placeholder={t('culture.add_value_placeholder')}
                               value={newValueInput} onChange={(e) => setNewValueInput(e.target.value)}
                               className="w-32 rounded border border-border bg-surface-sunken px-2 py-1 text-xs text-ink focus:border-primary focus:outline-none"
                             />
+                            <button
+                              type="submit"
+                              disabled={!newValueInput.trim()}
+                              aria-label={t('culture.add_value')}
+                              className="flex size-6 shrink-0 items-center justify-center rounded-full bg-secondary text-white transition-opacity hover:opacity-90 disabled:opacity-40"
+                            >
+                              <Plus className="size-3.5" />
+                            </button>
                           </form>
                         )}
                       </div>
