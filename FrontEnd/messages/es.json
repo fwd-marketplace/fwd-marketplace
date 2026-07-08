@@ -791,6 +791,11 @@
       "manage": "Gestionar postulaciones",
       "empty": "Aún no te has postulado a ningún proyecto."
     },
+    "gamification": {
+      "streak_label": "Racha",
+      "badges_label": "Insignias",
+      "journey_label": "Viaje del heroe"
+    },
     "work": {
       "project_name_placeholder": "Mi proyecto increíble",
       "project_desc_placeholder": "Breve descripción de qué hace este proyecto...",
