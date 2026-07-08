@@ -24,17 +24,25 @@ Para selects y filtros (onboarding y marketplace).
 
 ### GET /api/projects  (Bearer)
 Listado visible (publicados + los propios de la empresa). Query opcional:
-`area` (uuid), `skill` (uuid), `plazoMax` (5-15), `q` (texto en el título).
+`area` (uuid), `skill` (uuid), `plazoMax` (5-15), `compensacionMin` (50-10000),
+`compensacionMax` (50-10000), `q` (texto en el título).
 ```json
 { "projects": [{
   "id": "uuid", "titulo": "...", "descripcion": "...", "usa_ia": false,
-  "plazo_dias": 10, "fecha_publicacion": "...", "fecha_cierre": "...",
+  "compensacion": 750, "moneda": "USD", "compensacion_actualizada_en": null,
+  "plazo_dias": 10, "tecnologias_extra": ["Rust"], "fecha_publicacion": "...", "fecha_cierre": "...",
   "estado": { "id": "uuid", "nombre": "en_recepcion" },
   "area":   { "id": "uuid", "nombre": "..." },
   "empresa":{ "id": "uuid", "nombre_comercial": "...", "tipo": "empresa" },
   "skills": [{ "skill": { "id": "uuid", "nombre": "React", "tipo": "tecnologia", "categoria": "Frontend" } }]
 }] }
 ```
+Solo se listan proyectos en `en_recepcion` con `compensacion` definida.
+
+### GET /api/projects/mias  (Bearer — empresa)
+Solo los proyectos PROPIOS de la empresa, incluyendo borradores. Para "Mis Proyectos".
+Misma forma de item que `GET /projects`. → `{ "projects": [ ... ] }`
+(403 si el usuario no tiene perfil de empresa).
 
 ### GET /api/projects/:id  (Bearer)
 → `{ "project": { ...misma forma que el item de arriba... } }` (404 si no existe/no visible).
@@ -42,11 +50,24 @@ Listado visible (publicados + los propios de la empresa). Query opcional:
 ### POST /api/projects  (Bearer — empresa con cuenta activa)
 ```json
 { "titulo": "Landing", "descripcion": "...", "id_area_negocio": "uuid",
-  "plazo_dias": 10, "usa_ia": false, "skills": ["uuid"], "publicar": true }
+  "plazo_dias": 10, "usa_ia": false, "compensacion": 750, "skills": ["uuid"],
+  "tecnologias_extra": ["Rust", "GraphQL"], "publicar": true }
 ```
+- `titulo`: 1-255 caracteres. `descripcion`: mínimo 1.
+- `plazo_dias`: entero **entre 5 y 15** (fuera de rango → `400`).
+- `compensacion`: número **entre 50 y 10000** (USD). **Obligatorio si `publicar: true`**.
+- `id_area_negocio`: uuid del catálogo. `skills`: lista de uuids del catálogo (opcional).
+- `tecnologias_extra`: tecnologías "Otros" escritas a mano que NO están en el catálogo de skills
+  (opcional, hasta 20, cada una 1-50 caracteres). Se guardan por-proyecto, no en el catálogo global.
 - `publicar: true` → estado `en_recepcion` (visible) y calcula `fecha_cierre`.
-- `publicar: false`/omitido → queda en `borrador`.
+- `publicar: false`/omitido → queda en `borrador` (compensacion opcional).
 → `201 { "project": { "id": "uuid", "titulo": "...", "estado": { "nombre": "en_recepcion" } } }`
+
+### PATCH /api/projects/:id  (Bearer — empresa dueña)
+Edita datos del proyecto en `borrador`, `en_recepcion` o `pausado`.
+- `compensacion`: 50-10000 USD. En `en_recepcion`: se puede **subir** con postulaciones activas
+  (notifica a postulantes); **bajar** solo si no hay postulaciones activas.
+- Proyectos `pausado` sin compensación: agregar `compensacion` y luego `PATCH .../reactivar`.
 
 ### PATCH /api/projects/:id/estado  (Bearer — empresa dueña del proyecto)
 La empresa gestiona el ciclo de vida de su proyecto. `estado` debe ser uno de:
@@ -89,6 +110,26 @@ Errores típicos: 409 si ya postuló o si el proyecto no está en recepción; 40
 }] }
 ```
 
+### GET /api/ofertas/:id  (Bearer — empresa dueña del proyecto)
+Detalle de una postulación con los datos de **contacto** del junior, para que la
+empresa pueda escribirle tras adjudicar. Solo la empresa dueña del proyecto al que
+pertenece la oferta puede verla (404 si no existe, 403 si no es suya).
+```json
+{ "oferta": {
+  "id": "uuid", "propuesta": "...", "prototipo_url": "...", "fecha_envio": "...",
+  "estado": { "nombre": "adjudicada" },
+  "proyecto": { "id": "uuid", "titulo": "..." },
+  "junior": {
+    "id": "uuid", "nombre": "Ana", "apellido1": "Soto", "apellido2": "Jiménez",
+    "correo": "ana@example.com",
+    "estudiante": {
+      "url_github": "https://github.com/ana", "url_linkedin": "", "url_portfolio": ""
+    }
+  }
+} }
+```
+Los links del `estudiante` pueden venir `null`/`""` si el junior no los completó.
+
 ### PATCH /api/ofertas/:id  (Bearer — empresa dueña)
 ```json
 { "accion": "aceptar" }   // o "rechazar"
@@ -106,6 +147,117 @@ Errores típicos: 409 si ya postuló o si el proyecto no está en recepción; 40
 | `PATCH /api/admin/users/:id/suspender` | Bearer admin | `{ user: {...} }` (estado → suspendida) |
 | `GET /api/admin/projects` | Bearer admin | `{ projects: [...] }` (todos, incluye borradores) |
 | `PATCH /api/admin/projects/:id/cancelar` | Bearer admin | `{ project: {...} }` (estado → cancelado) |
+| `GET /api/admin/students` | Bearer admin | `{ students: [...] }` (TODOS los estudiantes para la vista "Talento": `id, especialidad, modalidad_preferida, disponibilidad, titulo_fwd, estado_verificacion, reputacion, url_avatar, skills: [...], usuario: { nombre, apellido1, correo }`) |
+| `GET /api/admin/students/pending` | Bearer admin | `{ students: [...] }` (egresados FWD con `estado_verificacion='pendiente'`; trae `titulo_fwd` + datos del usuario) |
+| `PATCH /api/admin/students/:id/verificar` | Bearer admin | `{ student: {...} }` (`estado_verificacion` → `verificado`; lo hace visible a empresas). `:id` = `estudiante.id` |
+| `PATCH /api/admin/students/:id/rechazar` | Bearer admin | `{ student: {...} }` (`estado_verificacion` → `rechazado`). `:id` = `estudiante.id` |
+
+> **Verificación de egresados FWD.** El `titulo_fwd` del junior es **auto-declarado** (lo edita
+> en su perfil). El admin lo revisa y fija `estudiante.estado_verificacion`. Solo los `verificado`
+> son visibles para empresas/admin (RLS). Si el junior **cambia su `titulo_fwd`**, su estado vuelve
+> a `pendiente` automáticamente (hay que re-verificarlo). El `estado_verificacion` viene en
+> `GET /api/users/me` y `GET /api/users/me/perfil` para que el FE muestre el estado/badge.
+
+## IA — Asistente para crear proyectos
+
+Ayuda a una empresa (a menudo sin perfil técnico) a definir un proyecto en lenguaje
+natural: hace preguntas aclaratorias y luego genera una propuesta estructurada que
+**prellena el formulario manual** de "Crear proyecto" (el usuario revisa/edita y guarda).
+
+- Ambas rutas son `Bearer` (empresa autenticada) y tienen **rate limit por usuario**:
+  20 req/min; al excederlo, `429` + `Retry-After`.
+- La key del proveedor vive solo en el BackEnd (`GROQ_API_KEY`). Si no está configurada,
+  responde `503`. Siempre debe existir el escape "continuar manualmente" en el FrontEnd.
+
+### POST /api/ai/asistente-proyecto  (Bearer — streaming SSE)
+Maneja un turno conversacional. Como la API no tiene memoria, se envía **todo el historial**.
+```json
+{ "history": [
+  { "role": "user", "content": "Quiero una app para agendar citas" },
+  { "role": "assistant", "content": "¿Es web o móvil?" },
+  { "role": "user", "content": "Web, para mis clientes" }
+] }
+```
+- `role`: `user` o `assistant` (el `system` lo pone el BackEnd; no se envía). `content`: 1-5000.
+- Respuesta: `Content-Type: text/event-stream`. Eventos:
+  - `event: delta` → `data: { "text": "fragmento" }` (ir concatenando para el efecto "escribiendo").
+  - `event: done`  → `data: { "usage": { "promptTokens": n, "completionTokens": n, "totalTokens": n } | null }`.
+  - `event: error` → `data: { "error": "mensaje" }` (si el proveedor falla a mitad; degradar a manual).
+- Validación del body inválida → `400` (JSON, antes de abrir el stream).
+
+### POST /api/ai/generar-propuesta  (Bearer)
+A partir de la conversación (mismo `history`) devuelve el JSON estructurado final, **ya mapeado
+al formulario** (con ids resueltos contra el catálogo real).
+```json
+{ "propuesta": {
+  "nombre": "Agenda de citas online",
+  "objetivo": "Permite que los pacientes reserven citas, vean su historial y reciban recordatorios.",
+  "funcionalidades": [
+    "los pacientes reservan citas eligiendo fecha y hora disponibles",
+    "cada paciente ve su historial de visitas",
+    "el sistema envía un correo de recordatorio 24h antes"
+  ],
+  "publico_objetivo": "pacientes de una clínica dental que reservan en línea",
+  "descripcion": "Permite que los pacientes reserven citas...\n\nFuncionalidades principales:\n- ...\n\nPúblico objetivo: ...",
+  "area_negocio": "Desarrollo Web",
+  "id_area_negocio": "uuid | null",
+  "plazo_dias": 12,
+  "habilidades": [{ "id": "uuid", "nombre": "React" }],
+  "usa_ia": false,
+  "estilos_diseno": ["Minimalista y profesional: tonos sobrios y mucho espacio en blanco", "Cálido y cercano: colores suaves e ilustraciones"],
+  "preguntas_pendientes": ["¿Necesitan pasarela de pagos?"]
+} }
+```
+- **`descripcion`**: texto **natural y detallado** redactado por el asistente (2-3 párrafos, en la
+  voz de FWD: cálida y clara, no robótica), listo para precargar el `descripcion` del `POST /projects`.
+  Si el modelo no lo devuelve, el backend lo **compone como respaldo** (objetivo + funcionalidades +
+  público). `objetivo`, `funcionalidades` y `publico_objetivo` vienen también por separado por si el
+  FE quiere mostrarlos.
+- `plazo_dias`: entero **acotado a 5-15** (rango del `POST /projects`). Mapear a `plazo_dias`.
+- `habilidades`: **solo** habilidades válidas del catálogo (las inventadas se descartan). Usar los
+  `id` para precargar las casillas; mapean a `skills: [uuid]` del `POST /projects`.
+- `id_area_negocio`: uuid del área o `null` si el modelo no acertó una del catálogo (que el FE
+  deje elegir). `nombre`→`titulo`, `descripcion`→`descripcion`, `usa_ia`→toggle "usa IA".
+- `preguntas_pendientes`: aspectos sin aclarar (mostrar como avisos; no bloquean el guardado).
+- `estilos_diseno`: 2-3 ideas de estilo visual (informativo, para que la empresa elija; no se persiste).
+- Si el modelo no devuelve algo usable → `502`: el FrontEnd debe **degradar al formulario manual**.
+
+> **Memoria / evolución (interno del BackEnd, no cambia el API):** al generar, el asistente se
+> apoya en ejemplos de proyectos reales ya publicados y en las propuestas anteriores de la propia
+> empresa para subir la calidad; y guarda cada propuesta generada (tabla `ai_propuesta_ejemplo`,
+> migración `0024`). Es best-effort: si la migración no está aplicada, el asistente funciona igual.
+> El FrontEnd no hace nada distinto por esto.
+
+> Flujo FE: propuesta → prellenar el modal "Nuevo proyecto" (editable) → el usuario confirma con
+> el `POST /api/projects` de siempre. El asistente nunca crea el proyecto por su cuenta.
+
+### POST /api/ai/sugerir-stack  (Bearer)
+Para el formulario **manual**: la empresa ya escribió la descripción y quiere que la IA le
+recomiende el stack. Devuelve habilidades del catálogo (no inventa) + una justificación corta.
+```json
+{ "titulo": "Agenda de citas", "descripcion": "Una web para reservar turnos...", "id_area_negocio": "uuid" }
+```
+- `descripcion`: requerido (10-5000). `titulo` e `id_area_negocio`: opcionales (dan más contexto).
+→ `200 { "sugerencia": { "habilidades": [{ "id": "uuid", "nombre": "React" }], "justificacion": "..." } }`
+- Usar los `id` para **pre-marcar las casillas** de habilidades del formulario manual. `502` si el
+  modelo falla (degradar: que el usuario elija a mano). Mismo rate limit por usuario que el resto de `/ai`.
+
+## Pendientes para el FrontEnd
+
+Trabajo de FrontEnd que habilitan los endpoints de arriba (lo construye el grupo de FrontEnd;
+el BackEnd ya expone la API). Marcá cada ítem como hecho cuando la pantalla lo consuma.
+
+- **Vista "Talento" del admin (`EgresadosView`).** Hoy renderiza datos mock; cablearla a
+  `GET /api/admin/students` (como hace `administrador.tsx` con sus server actions) para mostrar
+  estudiantes reales. Campos disponibles: nombre/correo (en `usuario`), `especialidad`, `skills`,
+  `titulo_fwd`, `estado_verificacion`, `reputacion`, `disponibilidad`, `modalidad_preferida`,
+  `url_avatar`. **No existen** en el modelo: estado laboral (contratado/disponible), empresa
+  actual ni las stats de empleabilidad — eso requiere decisión de producto + migración aparte.
+
+- **Detalle de postulación con contacto del junior.** En la vista de una postulación recibida
+  (empresa), consumir `GET /api/ofertas/:id` para mostrar el contacto del junior (`correo` +
+  `url_github` / `url_linkedin` / `url_portfolio`) y un CTA para contactarlo (mailto / abrir
+  link). Cierra el paso final del flujo de la empresa tras adjudicar.
 
 ## Notas para el FrontEnd
 

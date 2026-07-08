@@ -24,7 +24,14 @@ vi.mock("../../config/supabase", () => ({
       insert: chain,
       update: chain,
       eq: chain,
-      order: chain,
+      neq: chain,
+      // .in() es el terminal del chequeo de "estudiante ocupado" (estudiantesOcupados).
+      // Usa su propia clave para no chocar con el insert/lista sobre la tabla 'oferta'.
+      // Por defecto vacío = el estudiante NO tiene proyecto activo (está disponible).
+      in: () => Promise.resolve(responses["ocupados"] ?? { data: [], error: null }),
+      // En oferta.service, .order() es siempre el terminal de las queries de lista,
+      // así que resuelve la respuesta (igual que maybeSingle/single).
+      order: () => Promise.resolve(responses[table] ?? { data: null, error: null }),
       maybeSingle: () => Promise.resolve(responses[table] ?? { data: null, error: null }),
       single: () => Promise.resolve(responses[table] ?? { data: null, error: null }),
     });
@@ -32,11 +39,18 @@ vi.mock("../../config/supabase", () => ({
   },
 }));
 
-import { createOferta } from "../oferta.service";
+import {
+  createOferta,
+  decideOferta,
+  getOfertaContacto,
+  listMyOfertas,
+  listProjectOfertas,
+} from "../oferta.service";
 
 const TOKEN = "token";
 const USER = "user-1";
 const PROJECT = "project-1";
+const OFERTA = "oferta-1";
 const input = { propuesta: "Me interesa este proyecto" };
 
 /** Estado por defecto: junior aprobado, proyecto en recepción, estado e inserción OK. */
@@ -82,9 +96,174 @@ describe("createOferta", () => {
     await expect(createOferta(TOKEN, USER, PROJECT, input)).rejects.toMatchObject({ statusCode: 409 });
   });
 
-  it("mapea la violación de unicidad (23505) a 409 'ya postulaste'", async () => {
+  it("rechaza (409) si ya postuló y la última no está en 'solicitar_cambios'", async () => {
     happyPath();
-    responses["oferta"] = { data: null, error: { code: "23505", message: "duplicate key" } };
+    // Ya existe una postulación en 'enviada': solo se permite reenviar cuando la
+    // empresa solicitó cambios, así que vuelve a postular debe dar 409.
+    responses["oferta"] = {
+      data: [{ id: "oferta-prev", estado: { nombre: "enviada" }, fecha_envio: "2026-06-10T00:00:00Z" }],
+      error: null,
+    };
     await expect(createOferta(TOKEN, USER, PROJECT, input)).rejects.toMatchObject({ statusCode: 409 });
+  });
+
+  it("rechaza (409) si el estudiante ya tiene un proyecto activo", async () => {
+    happyPath();
+    responses["ocupados"] = {
+      data: [{ id_usuario: USER, estado: { nombre: "adjudicada" }, proyecto: { estado: { nombre: "en_desarrollo" } } }],
+      error: null,
+    };
+    await expect(createOferta(TOKEN, USER, PROJECT, input)).rejects.toMatchObject({ statusCode: 409 });
+  });
+});
+
+/**
+ * Estado por defecto para decidir: la oferta existe y es de un proyecto del
+ * usuario. La misma respuesta de "oferta" sirve para la búsqueda de propiedad
+ * (lee id_proyecto) y para el update final (devuelve id + estado), porque el
+ * mock no aplica el update: devuelve la data configurada para la tabla.
+ */
+function decideHappyPath(estadoFinal = "adjudicada") {
+  responses["oferta"] = {
+    data: { id: OFERTA, id_proyecto: PROJECT, id_usuario: USER, estado: { nombre: estadoFinal } },
+    error: null,
+  };
+  responses["proyecto"] = { data: { empresa: { id_usuario: USER } }, error: null };
+  responses["estado_oferta"] = { data: { id: "estado-x" }, error: null };
+  // Al adjudicar, el servicio pasa el proyecto a 'adjudicado' (cierra la recepción).
+  responses["estado_proyecto"] = { data: { id: "estado-adjudicado" }, error: null };
+}
+
+describe("decideOferta", () => {
+  it("adjudica cuando la empresa es dueña y la acción es aceptar", async () => {
+    decideHappyPath("adjudicada");
+    const oferta = await decideOferta(TOKEN, USER, OFERTA, { accion: "aceptar" });
+    expect(oferta).toMatchObject({ id: OFERTA, estado: { nombre: "adjudicada" } });
+  });
+
+  it("marca no_seleccionada cuando la acción es rechazar", async () => {
+    decideHappyPath("no_seleccionada");
+    const oferta = await decideOferta(TOKEN, USER, OFERTA, { accion: "rechazar" });
+    expect(oferta).toMatchObject({ id: OFERTA, estado: { nombre: "no_seleccionada" } });
+  });
+
+  it("rechaza (404) si la postulación no existe", async () => {
+    decideHappyPath();
+    responses["oferta"] = { data: null, error: null };
+    await expect(
+      decideOferta(TOKEN, USER, OFERTA, { accion: "aceptar" }),
+    ).rejects.toMatchObject({ statusCode: 404 });
+  });
+
+  it("rechaza (403) si el proyecto no es del usuario", async () => {
+    decideHappyPath();
+    responses["proyecto"] = { data: { empresa: { id_usuario: "otra-empresa" } }, error: null };
+    await expect(
+      decideOferta(TOKEN, USER, OFERTA, { accion: "aceptar" }),
+    ).rejects.toMatchObject({ statusCode: 403 });
+  });
+
+  it("rechaza (409) al aceptar si el estudiante ya tiene un proyecto activo", async () => {
+    decideHappyPath();
+    responses["ocupados"] = {
+      data: [{ id_usuario: USER, estado: { nombre: "adjudicada" }, proyecto: { estado: { nombre: "en_desarrollo" } } }],
+      error: null,
+    };
+    await expect(
+      decideOferta(TOKEN, USER, OFERTA, { accion: "aceptar" }),
+    ).rejects.toMatchObject({ statusCode: 409 });
+  });
+});
+
+/** Estado por defecto para ver el contacto: oferta de un proyecto del usuario. */
+function contactoHappyPath() {
+  responses["oferta"] = {
+    data: {
+      id: OFERTA,
+      id_proyecto: PROJECT,
+      propuesta: "Me interesa este proyecto",
+      prototipo_url: null,
+      fecha_envio: "2026-06-12T00:00:00Z",
+      estado: { nombre: "adjudicada" },
+      proyecto: { id: PROJECT, titulo: "Landing" },
+      junior: {
+        id: "junior-1",
+        nombre: "Ana",
+        apellido1: "Soto",
+        apellido2: null,
+        correo: "ana@example.com",
+        estudiante: {
+          url_github: "https://github.com/ana",
+          url_linkedin: "",
+          url_portfolio: "",
+        },
+      },
+    },
+    error: null,
+  };
+  responses["proyecto"] = { data: { empresa: { id_usuario: USER } }, error: null };
+}
+
+describe("getOfertaContacto", () => {
+  it("devuelve el contacto del junior cuando la empresa es dueña", async () => {
+    contactoHappyPath();
+    const oferta = await getOfertaContacto(TOKEN, USER, OFERTA);
+    expect(oferta).toMatchObject({
+      id: OFERTA,
+      junior: {
+        correo: "ana@example.com",
+        estudiante: { url_github: "https://github.com/ana" },
+      },
+    });
+  });
+
+  it("rechaza (404) si la postulación no existe", async () => {
+    contactoHappyPath();
+    responses["oferta"] = { data: null, error: null };
+    await expect(getOfertaContacto(TOKEN, USER, OFERTA)).rejects.toMatchObject({ statusCode: 404 });
+  });
+
+  it("rechaza (403) si el proyecto no es del usuario", async () => {
+    contactoHappyPath();
+    responses["proyecto"] = { data: { empresa: { id_usuario: "otra-empresa" } }, error: null };
+    await expect(getOfertaContacto(TOKEN, USER, OFERTA)).rejects.toMatchObject({ statusCode: 403 });
+  });
+});
+
+describe("listMyOfertas", () => {
+  it("devuelve las postulaciones del junior autenticado", async () => {
+    responses["oferta"] = {
+      data: [{ id: OFERTA, estado: { nombre: "enviada" }, proyecto: { id: PROJECT, titulo: "Landing" } }],
+      error: null,
+    };
+    const ofertas = await listMyOfertas(TOKEN, USER);
+    expect(ofertas).toMatchObject([{ id: OFERTA, estado: { nombre: "enviada" } }]);
+  });
+
+  it("propaga un error de la consulta como 500", async () => {
+    responses["oferta"] = { data: null, error: { message: "boom" } };
+    await expect(listMyOfertas(TOKEN, USER)).rejects.toMatchObject({ statusCode: 500 });
+  });
+});
+
+describe("listProjectOfertas", () => {
+  it("devuelve las postulaciones cuando el proyecto es del usuario", async () => {
+    responses["proyecto"] = { data: { id: PROJECT, empresa: { id_usuario: USER } }, error: null };
+    responses["oferta"] = {
+      data: [{ id: OFERTA, junior: { id: "junior-1", nombre: "Ana", apellido1: "Soto" } }],
+      error: null,
+    };
+    const ofertas = await listProjectOfertas(TOKEN, USER, PROJECT);
+    expect(ofertas).toMatchObject([{ id: OFERTA, junior: { nombre: "Ana" } }]);
+  });
+
+  it("rechaza (404) si el proyecto no existe", async () => {
+    responses["proyecto"] = { data: null, error: null };
+    await expect(listProjectOfertas(TOKEN, USER, PROJECT)).rejects.toMatchObject({ statusCode: 404 });
+  });
+
+  it("rechaza (403) si el proyecto no es del usuario", async () => {
+    responses["proyecto"] = { data: { id: PROJECT, empresa: { id_usuario: "otra-empresa" } }, error: null };
+    await expect(listProjectOfertas(TOKEN, USER, PROJECT)).rejects.toMatchObject({ statusCode: 403 });
   });
 });

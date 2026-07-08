@@ -1,7 +1,40 @@
 {
+  "traduccion": {
+    "ver_traduccion": "Ver traducción",
+    "ver_original": "Ver original"
+  },
+  "hero_journey": {
+    "llamado_label": "El Llamado",
+    "llamado_cta": "Da el primer paso hacia tu carrera.",
+    "llamado_cta_achieved": "Ya respondiste al llamado.",
+    "preparacion_label": "La Preparación",
+    "preparacion_cta": "Afila tus herramientas antes del reto.",
+    "preparacion_cta_achieved": "Estás listo para el siguiente paso.",
+    "desafio_label": "El Desafío",
+    "desafio_cta": "Encuentra tu primer proyecto real.",
+    "desafio_cta_achieved": "Ya aceptaste el desafío.",
+    "transformacion_label": "La Transformación",
+    "transformacion_cta": "Demuestra lo que sabés hacer.",
+    "transformacion_cta_achieved": "Tu trabajo ya habla por vos.",
+    "reconocimiento_label": "El Reconocimiento",
+    "reconocimiento_cta": "Tu esfuerzo habla por sí solo.",
+    "reconocimiento_cta_achieved": "La comunidad te reconoce."
+  },
   "site": {
     "name": "FWD Marketplace",
     "description": "Marketplace de proyectos freelance para juniors egresados de Fundación Forward Costa Rica."
+  },
+  "site_footer": {
+    "brand_name": "FWD Marketplace",
+    "logo_alt": "Logotipo de Fundación Forward Costa Rica",
+    "description": "Conectamos talento junior egresado de Fundación Forward con empresas que buscan desarrollar proyectos reales.",
+    "links_title": "Recursos",
+    "terms": "Términos de uso",
+    "privacy": "Políticas de privacidad",
+    "copyright": "© 2026 Fundación Forward Costa Rica",
+    "rights": "FWD Marketplace • Todos los derechos reservados",
+    "facebook": "Seguir a Fundación Forward en Facebook",
+    "linkedin": "Seguir a Fundación Forward en LinkedIn"
   },
   "nav": {
     "marketplace": "Marketplace",
@@ -18,10 +51,11 @@
     "cta_empresa": "Soy empresa",
     "hero": {
       "eyebrow": "Fundación Forward Costa Rica",
+      "logo_alt": "Logo de Fundación Forward Costa Rica formándose como una constelación",
       "title": "Tu primer proyecto freelance",
       "description": "Conecta con empresas reales, construye tu portafolio y empieza tu carrera profesional.",
-      "cta_projects": "Ver proyectos",
-      "cta_company": "Soy empresa",
+      "cta_projects": "Unirme a la comunidad",
+      "cta_company": "Dar un vistazo rápido",
       "card_eyebrow": "Proyecto destacado",
       "card_title": "Dashboard de Analítica",
       "card_company": "TechFlow Systems",
@@ -39,13 +73,6 @@
       "description": "Únete a cientos de talentos que ya construyen su carrera con proyectos reales y empresas que confían en FWD.",
       "cta_projects": "Ver proyectos",
       "cta_register": "Crear cuenta gratis"
-    },
-    "featured_projects": {
-      "eyebrow": "Proyectos",
-      "title": "Oportunidades disponibles",
-      "badge_featured": "Destacado",
-      "duration": "semanas",
-      "link_all": "Ver todos"
     },
     "value_prop": {
       "talents_title": "Para talentos",
@@ -76,12 +103,20 @@
     "how_it_works": {
       "eyebrow": "Cómo funciona",
       "title": "En 3 pasos simples",
+      "audience_juniors": "Para estudiantes",
+      "audience_empresas": "Para empresas",
       "step1_title": "Crea tu perfil",
       "step1_desc": "Completa tu perfil con tus habilidades, stack tecnológico y disponibilidad.",
       "step2_title": "Encuentra proyectos",
       "step2_desc": "Explora proyectos reales de empresas que buscan exactamente tu perfil.",
       "step3_title": "Entrega y cobra",
-      "step3_desc": "Trabaja en el proyecto, entrega a tiempo y recibe tu pago seguro."
+      "step3_desc": "Trabaja en el proyecto, entrega a tiempo y recibe tu pago seguro.",
+      "empresa_step1_title": "Publica tu proyecto",
+      "empresa_step1_desc": "Describe tu proyecto, el stack que necesitas y el presupuesto disponible.",
+      "empresa_step2_title": "Recibe postulaciones",
+      "empresa_step2_desc": "Estudiantes con el perfil correcto te enviarán su carta y portafolio.",
+      "empresa_step3_title": "Contrata y paga",
+      "empresa_step3_desc": "Elige al mejor candidato, recibe la entrega y paga de forma segura."
     }
   },
   "login": {
@@ -102,22 +137,106 @@
     "submitting": "Ingresando...",
     "pending_approval": "Tu cuenta está pendiente de aprobación. Te avisaremos cuando sea activada.",
     "account_suspended": "Tu cuenta ha sido suspendida o rechazada. Contacta a soporte.",
+    "mfa_sent": "Te enviamos un código de 6 dígitos a tu correo.",
+    "mfa_description": "Revisá tu correo e ingresá el código de 6 dígitos para completar el inicio de sesión.",
+    "mfa_code_label": "Código de verificación",
+    "mfa_code_placeholder": "000000",
+    "mfa_submit": "Verificar e ingresar",
+    "mfa_back": "Volver",
     "terms_prefix": "Al ingresar aceptas los",
-    "terms_link": "Términos de Servicio",
+    "terms_link": "Términos y condiciones",
     "terms_connector": "y la",
     "privacy_link": "Política de Privacidad",
     "no_account": "¿No tienes cuenta?",
-    "register_link": "Regístrate aquí"
+    "register_link": "Crear una",
+    "back_home": "Volver al inicio"
+  },
+  "oauth_callback": {
+    "loading": "Completando inicio de sesión...",
+    "error_title": "No pudimos iniciar sesión",
+    "error_no_session": "No se recibió la sesión del proveedor. Intentá iniciar sesión de nuevo.",
+    "error_suspended": "Tu cuenta está suspendida o rechazada.",
+    "back_to_login": "Volver al inicio de sesión"
+  },
+  "auth_footer": {
+    "privacy": "Política de Privacidad",
+    "terms": "Términos y condiciones",
+    "copyright": "© 2026 FWD Marketplace. Conexión cifrada y segura."
+  },
+  "reset_password": {
+    "brand": "FWD Marketplace",
+    "back_to_login": "Volver al inicio de sesión",
+    "title": "Restablecé tu contraseña",
+    "description": "Ingresá tu correo y te enviaremos un enlace seguro para definir una nueva contraseña.",
+    "email_label": "Correo electrónico",
+    "email_placeholder": "nombre@ejemplo.com",
+    "password_label": "Nueva contraseña",
+    "password_placeholder": "Tu nueva contraseña",
+    "confirm_label": "Confirmar nueva contraseña",
+    "confirm_placeholder": "Repetí tu nueva contraseña",
+    "show_password": "Mostrar contraseña",
+    "hide_password": "Ocultar contraseña",
+    "hint": "La contraseña debe tener al menos 8 caracteres.",
+    "submit": "Enviar enlace de recuperación",
+    "submitting": "Enviando...",
+    "secure_connection": "Conexión cifrada y segura",
+    "success_title": "Revisá tu correo",
+    "success_message": "Si existe una cuenta con {email}, te enviamos un enlace seguro para confirmar tu nueva contraseña.",
+    "error_email": "Ingresá un correo electrónico válido.",
+    "error_password_length": "La contraseña debe tener al menos 8 caracteres.",
+    "error_mismatch": "Las contraseñas no coinciden.",
+    "error_generic": "No pudimos procesar tu solicitud. Intentá de nuevo.",
+    "request_hint": "Te enviaremos un enlace seguro a tu correo.",
+    "new_title": "Definí tu nueva contraseña",
+    "new_description": "Elegí una contraseña nueva para tu cuenta. Debe tener al menos 8 caracteres.",
+    "new_submit": "Guardar contraseña",
+    "new_success_title": "Contraseña actualizada",
+    "new_success_message": "Tu contraseña se cambió correctamente. Ya podés iniciar sesión con la nueva.",
+    "invalid_link_title": "Enlace inválido o expirado",
+    "invalid_link_message": "Este enlace de recuperación no es válido o ya venció. Pedí uno nuevo para continuar.",
+    "request_again": "Pedir un enlace nuevo",
+    "go_to_login": "Ir al inicio de sesión",
+    "footer_privacy": "Política de Privacidad",
+    "footer_terms": "Términos de Servicio",
+    "footer_security": "Centro de Seguridad",
+    "footer_copyright": "© 2026 FWD Marketplace. Conexión cifrada y segura."
+  },
+  "api_errors": {
+    "CONNECTION_ERROR": "Error de conexión. Revisá tu internet e intentá de nuevo.",
+    "ONBOARDING_FORBIDDEN": "No podés completar el registro de otra cuenta.",
+    "CEDULA_TAKEN": "Ya existe una cuenta registrada con esa cédula.",
+    "ALREADY_ONBOARDED": "Esta cuenta ya completó el registro.",
+    "ONBOARDING_FAILED": "No se pudo completar el registro. Intentá de nuevo.",
+    "SIGNUPS_DISABLED": "Los registros de talento están deshabilitados temporalmente.",
+    "COMPANIES_DISABLED": "El registro de empresas está deshabilitado temporalmente.",
+    "EMPRENDEDORES_DISABLED": "El registro de emprendedores está deshabilitado temporalmente.",
+    "NOT_AUTHENTICATED": "Tu sesión expiró. Iniciá sesión de nuevo.",
+    "NO_EMAIL": "La cuenta no tiene un correo asociado.",
+    "EMAIL_REQUIRED": "El email es obligatorio.",
+    "PASSWORD_REQUIRED": "La contraseña es obligatoria.",
+    "PASSWORD_TOO_SHORT": "La contraseña debe tener al menos 8 caracteres.",
+    "VERIFICATION_TICKET_MISSING": "Falta el ticket de verificación.",
+    "CODE_INVALID_LENGTH": "El código debe ser de 6 dígitos.",
+    "RESET_TOKEN_MISSING": "Falta el token de recuperación.",
+    "REFRESH_TOKEN_REQUIRED": "Falta el token de sesión.",
+    "OAUTH_PROVIDER_UNSUPPORTED": "Proveedor de acceso no soportado.",
+    "INVALID_CREDENTIALS": "Correo o contraseña incorrectos.",
+    "RESET_LINK_INVALID": "El enlace de recuperación es inválido o expiró.",
+    "TOKEN_INVALID": "Tu sesión expiró. Iniciá sesión de nuevo."
   },
   "register": {
     "brand": "FWD",
-    "brand_suffix": "Talent",
+    "brand_suffix": "Marketplace",
     "nav": {
       "step_counter": "Paso {current} de {total}",
       "back": "Volver",
       "next": "Continuar",
       "finish": "Finalizar",
-      "finishing": "Guardando..."
+      "finishing": "Guardando...",
+      "error_step1": "Completá todos los campos para continuar",
+      "error_select_one": "Seleccioná una opción para continuar",
+      "error_select_several": "Seleccioná al menos una opción para continuar",
+      "error_field_required": "Este campo es requerido para continuar"
     },
     "role": {
       "eyebrow": "Empieza aquí",
@@ -150,9 +269,12 @@
       "submitting": "Creando cuenta...",
       "passwords_mismatch": "Las contraseñas no coinciden",
       "terms_prefix": "Al registrarte aceptas los",
-      "terms_link": "Términos de Servicio",
+      "terms_link": "Términos y condiciones",
       "terms_connector": "y la",
       "privacy_link": "Política de Privacidad",
+      "login_link": "Iniciar sesión",
+      "already_account": "¿Ya tienes cuenta?",
+      "back_home": "Volver al inicio",
       "amcham_badge": "Avalado por AmCham Costa Rica"
     },
     "junior": {
@@ -160,7 +282,13 @@
         "eyebrow": "Solicitud recibida",
         "title": "Tu cuenta está en revisión",
         "description": "El equipo de FWD revisará tu perfil y te notificará por correo cuando tu cuenta esté aprobada. Esto suele tardar entre 24 y 48 horas.",
-        "cta": "Volver al inicio"
+        "cta": "Volver al inicio",
+        "approved": {
+          "eyebrow": "Cuenta aprobada",
+          "title": "Tu cuenta fue aprobada como junior",
+          "description": "Verificamos que sos egresado de FWD. Por seguridad, iniciá sesión para activar la verificación en dos pasos y entrar a tu cuenta.",
+          "cta": "Iniciar sesión"
+        }
       },
       "step1": {
         "eyebrow": "Primero lo primero",
@@ -169,11 +297,14 @@
         "label_nombre": "Nombre",
         "placeholder_nombre": "Ej. María",
         "label_apellido1": "Primer apellido",
+        "error_required": "Requerido",
+        "error_min_2": "Mínimo 2 caracteres",
+        "error_min_5": "Mínimo 5 caracteres",
         "placeholder_apellido1": "Ej. García",
         "label_apellido2": "Segundo apellido",
         "placeholder_apellido2": "Ej. López",
         "label_cedula": "Número de cédula",
-        "placeholder_cedula": "Ej. 1-1234-5678"
+        "placeholder_cedula": "Tu número de cédula (ej. 1-1234-5678)"
       },
       "step2": {
         "eyebrow": "Tu especialización",
@@ -219,6 +350,25 @@
         "selected_count": "{count} seleccionadas"
       },
       "step6": {
+        "perfil_junior": {
+          "work": {
+            "add_modal_title": "Agregar nuevo proyecto",
+            "fields": {
+              "name": "Nombre del proyecto",
+              "url": "URL / Enlace",
+              "description": "Descripción breve",
+              "techs": "Tecnologías (separadas por comas)",
+              "techs_placeholder": "Ej. React, Node.js"
+            },
+            "create": "Crear proyecto",
+            "cancel": "Cancelar",
+            "preview_btn": "Vista previa",
+            "errors": {
+              "name_required": "El nombre del proyecto es obligatorio.",
+              "url_required": "La URL del proyecto es obligatoria."
+            }
+          }
+        },
         "eyebrow": "Opcional",
         "title": "¿Tienes portafolio o proyectos?",
         "description": "Agrega enlaces para mostrar tu trabajo. Puedes completar esto después.",
@@ -249,7 +399,9 @@
         "title": "¿Cómo se llama tu empresa?",
         "description": "Este nombre aparecerá en tu perfil y en los proyectos que publiques.",
         "label": "Nombre de la empresa",
-        "placeholder": "Ej. Acme Technologies S.A."
+        "placeholder": "Ej. Acme Technologies S.A.",
+        "error_required": "Requerido",
+        "error_min_2": "Mínimo 2 caracteres"
       },
       "step2": {
         "eyebrow": "Tu sector",
@@ -272,7 +424,9 @@
         "title": "¿A qué se dedica tu empresa?",
         "description": "Una descripción breve que ayude a los talentos a conocerte.",
         "label": "Descripción",
-        "placeholder": "Describe el enfoque, propósito y cultura de tu empresa..."
+        "placeholder": "Describe el enfoque, propósito y cultura de tu empresa...",
+        "error_required": "Requerido",
+        "error_min_10": "Mínimo 10 caracteres"
       },
       "step4": {
         "eyebrow": "Datos de contacto",
@@ -281,7 +435,9 @@
         "direccion_label": "Dirección",
         "direccion_placeholder": "Av. Principal 123, San José",
         "cedula_label": "Cédula jurídica",
-        "cedula_placeholder": "3-101-XXXXXX"
+        "cedula_placeholder": "3-101-XXXXXX",
+        "error_required": "Requerido",
+        "error_min_5": "Mínimo 5 caracteres"
       },
       "step5": {
         "eyebrow": "Tipo de proyectos",
@@ -321,7 +477,13 @@
         "title": "¿Cómo se llama tu proyecto?",
         "description": "El nombre de tu startup, producto o idea que querés desarrollar.",
         "label": "Nombre del proyecto",
-        "placeholder": "Ej. EcoTrack App"
+        "placeholder": "Ej. EcoTrack App",
+        "error_required": "Requerido",
+        "error_min_2": "Mínimo 2 caracteres",
+        "cedula_label": "Tu cédula",
+        "cedula_placeholder": "Ej. 1-2345-6789",
+        "cedula_error_required": "Ingresá tu cédula",
+        "cedula_error_min": "Cédula inválida"
       },
       "step2": {
         "eyebrow": "Etapa del proyecto",
@@ -370,127 +532,136 @@
       }
     }
   },
-  "empresa_dashboard": {
-    "title": "GLOBAL TECH SOLUTIONS",
-    "company_desc": "Líder global en soluciones tecnológicas para la industria 4.0, enfocados en optimizar procesos productivos mediante talento especializado.",
-    "label_empresa": "Empresa",
-    "tag_socio": "Socio Industrial",
-    "tag_location": "Costa Rica",
-    "tag_size": "1-10 empleados",
-    "edit_profile_btn": "Editar perfil",
-    "view_projects_btn": "Ver proyectos",
-    "stats": {
-      "active_projects": "Proyectos activos",
-      "applications": "Postulaciones",
-      "reviewed": "Revisadas",
-      "pending_match": "Match pendiente"
-    },
-    "projects": {
-      "title": "Tus proyectos",
-      "new_btn": "Nuevo",
-      "paused": "Pausado",
-      "published_days": "Publicado hace {days} días",
-      "label_applied": "Aplicaron"
-    },
-    "compatibility": {
-      "title": "Compatibilidad de candidatos",
-      "subtitle": "Selecciona un proyecto para filtrar",
-      "match_total": "Match total",
-      "tech_stack": "Stack técnico",
-      "availability": "Disponibilidad",
-      "modality": "Modalidad",
-      "empty_state": "No hay candidatos recomendados para este proyecto aún."
-    },
-    "applications": {
-      "title": "Quiénes se postularon",
-      "empty_state": "No hay postulaciones registradas.",
-      "table": {
-        "junior": "Talento",
-        "project": "Proyecto",
-        "match": "Match",
-        "status": "Estado",
-        "actions": "Acciones"
-      },
-      "status": {
-        "reviewed": "Revisada",
-        "pending": "Pendiente",
-        "interview": "Entrevista",
-        "accepted": "Aceptado",
-        "rejected": "Rechazado"
-      },
-      "actions": {
-        "view": "Ver perfil",
-        "accept": "Aceptar",
-        "reject": "Rechazar",
-        "completed": "Completado"
-      }
-    },
-    "new_project_modal": {
-      "title": "Nuevo proyecto",
-      "name_label": "Nombre del proyecto",
-      "placeholder": "Ej. E-commerce Mobile Sync",
-      "status_label": "Estado inicial",
-      "active": "Activo",
-      "paused": "Pausado",
-      "cancel": "Cancelar",
-      "submit": "Crear proyecto",
-      "success_message": "Proyecto creado exitosamente."
-    },
-    "notifications": {
-      "accepted": "{name} ha sido aceptado al proyecto.",
-      "rejected": "Se ha notificado a {name} que no fue seleccionado."
-    }
-  },
-  "mis_proyectos": {
-    "published_on": "Publicado el {date}",
-    "modality_label": "Modalidad",
-    "level_label": "Nivel",
-    "budget_label": "Presupuesto",
-    "edit_btn": "Editar Proyecto",
-    "pause_btn": "Pausar Proyecto",
-    "reactivate_btn": "Reactivar Proyecto",
-    "status_active": "ACTIVO",
-    "status_paused": "PAUSADO",
-    "tabs": {
-      "project": "Proyecto",
-      "mockups": "Maquetas",
-      "applications": "Postulaciones"
-    },
-    "objective_title": "Objetivo del Proyecto",
-    "scope_title": "Alcance y Requerimientos",
-    "deliverables_title": "Entregables Esperados",
-    "stack_title": "STACK TECNOLÓGICO",
-    "metrics_title": "MÉTRICAS DE PROGRESO",
-    "metrics_talent_match": "Match de Talento",
-    "metrics_active_applicants": "Postulantes Activos",
-    "mockups_empty": "No hay maquetas cargadas para este proyecto.",
-    "applications_empty": "No hay postulaciones registradas aún.",
-    "edit_modal": {
-      "title": "Editar proyecto",
-      "name_label": "Nombre del proyecto",
-      "modality_label": "Modalidad",
-      "budget_label": "Presupuesto",
-      "cancel": "Cancelar",
-      "save": "Guardar cambios",
-      "success": "Proyecto actualizado exitosamente."
-    },
-    "notifications": {
-      "paused": "El proyecto ha sido pausado.",
-      "reactivated": "El proyecto ha sido reactivado."
-    }
+  "project_detail": {
+    "label_compensacion": "Compensación",
+    "label_duracion": "Duración",
+    "label_area": "Área",
+    "duracion_dias": "{n} días",
+    "back": "Volver al marketplace",
+    "uses_ia": "Usa IA",
+    "compensation_updated": "Compensación actualizada el {date}",
+    "duration": "{days} días",
+    "posted_on": "Publicado el",
+    "skills_required": "Tecnologías requeridas",
+    "offer_title": "Postulá a este proyecto",
+    "offer_subtitle": "Contanos por qué sos la persona indicada para este proyecto.",
+    "offer_propuesta_label": "Tu propuesta",
+    "offer_propuesta_placeholder": "Describí tu experiencia, tu enfoque para este proyecto y por qué sos la persona indicada...",
+    "offer_propuesta_min": "Mínimo 50 caracteres",
+    "offer_propuesta_required": "La propuesta es requerida",
+    "offer_prototipo_label": "URL de prototipo desplegado (opcional)",
+    "offer_prototipo_placeholder": "https://tu-demo.netlify.app",
+    "offer_prototipo_invalid": "Ingresá una URL válida",
+    "offer_repo_label": "Repositorio (opcional)",
+    "offer_repo_placeholder": "https://github.com/usuario/proyecto",
+    "offer_doc_url_label": "Documentación o archivo (opcional)",
+    "offer_doc_url_placeholder": "https://drive.google.com/...",
+    "offer_doc_notes_label": "Notas técnicas (opcional)",
+    "offer_doc_notes_placeholder": "Detalles del stack, decisiones técnicas, cómo correr el demo...",
+    "offer_url_invalid": "Ingresá una URL válida",
+    "offer_submit": "Enviar postulación",
+    "offer_submitting": "Enviando...",
+    "offer_success": "Postulación enviada. Te avisaremos cuando la empresa revise tu propuesta.",
+    "offer_error_generic": "No se pudo enviar la postulación. Intentá de nuevo.",
+    "owner_banner_title": "Este es tu proyecto",
+    "owner_banner_desc": "Las postulaciones recibidas te esperan en el panel de empresa.",
+    "owner_banner_cta": "Ver postulaciones",
+    "offer_expired": "Este proyecto ya no acepta nuevas propuestas. El plazo de recepción ha vencido.",
+    "offer_busy_title": "Ya tenés un proyecto activo",
+    "offer_busy_message": "No podés postular a otro proyecto hasta que el que tenés adjudicado se cierre. Así repartimos las oportunidades entre todos.",
+    "offer_expired_chip": "Plazo vencido",
+    "offer_already_sent": "Ya enviaste una propuesta para este proyecto. Podés revisarla en Mis Postulaciones.",
+    "offer_documentacion_tecnica_label": "Documentación técnica adicional (opcional)",
+    "offer_documentacion_tecnica_placeholder": "Describí tu enfoque técnico, herramientas que usarías, estimaciones de tiempo, decisiones de arquitectura...",
+    "offer_documentacion_url_label": "Enlace a documentación o PDF (opcional)",
+    "offer_documentacion_url_placeholder": "https://docs.google.com/...",
+    "offer_documentacion_url_invalid": "Ingresá una URL válida"
   },
   "app_header": {
     "notifications": "Notificaciones",
-    "user_menu": "Menú de usuario"
+    "user_menu": "Menú de usuario",
+    "logout": "Cerrar sesión",
+    "nav_home": "Inicio",
+    "nav_marketplace": "Marketplace",
+    "nav_my_applications": "Mis postulaciones",
+    "nav_mensajes": "Mensajes",
+    "nav_my_profile": "Mi perfil",
+    "nav_my_projects": "Mis proyectos",
+    "nav_postulaciones": "Postulaciones",
+    "nav_my_company": "Mi empresa",
+    "nav_terms": "Términos y condiciones",
+    "nav_privacy": "Políticas",
+    "settings": "Configuración",
+    "learning_map": "Mapa de aprendizaje",
+    "brand_name": "FWD Marketplace",
+    "logo_alt": "Logotipo FWD Marketplace",
+    "profile_link": "Ver perfil",
+    "open_menu": "Abrir menú",
+    "nav_gestion": "Gestión",
+    "language": "Idioma",
+    "lang_es": "Español",
+    "lang_en": "English",
+    "dark_mode": "Modo oscuro"
+  },
+  "mis_postulaciones": {
+    "title": "Mis postulaciones",
+    "subtitle": "Aquí aparecen todos los proyectos a los que te postulaste.",
+    "empty_title": "Todavía no te postulaste a ningún proyecto",
+    "empty_body": "Explorá el marketplace y encontrá un proyecto que se adapte a tus habilidades.",
+    "empty_cta": "Ver proyectos",
+    "sent_on": "Enviado el",
+    "proposal_label": "Tu propuesta",
+    "prototype_link": "Ver prototipo",
+    "repo_link": "Ver repositorio",
+    "project_removed": "Proyecto no disponible",
+    "state_enviada": "Enviada",
+    "state_en_revision": "En revisión",
+    "state_adjudicada": "Adjudicada",
+    "state_no_seleccionada": "No seleccionada",
+    "entregable_label": "Entregable",
+    "entregable_submit_cta": "Entregar trabajo",
+    "entregable_url_label": "URL del entregable",
+    "entregable_url_placeholder": "https://github.com/tu-usuario/tu-proyecto",
+    "entregable_send_btn": "Enviar",
+    "entregable_sending": "Enviando...",
+    "entregable_cancel": "Cancelar",
+    "entregable_view_link": "Ver entregable",
+    "entregable_state_enviado": "Enviado",
+    "entregable_state_aprobado": "Aprobado",
+    "entregable_state_cambios_solicitados": "Cambios solicitados",
+    "entregable_feedback_label": "Cambios solicitados:",
+    "entregable_tipo_label": "Tipo de entregable",
+    "entregable_tipo_parcial": "Entrega parcial",
+    "entregable_tipo_final": "Entrega final",
+    "entregable_new_version": "Subir nueva versión",
+    "view_project_btn": "Ver proyecto",
+    "withdraw_btn_aria": "Retirar postulación",
+    "docs_label": "Documentación técnica",
+    "docs_url_link": "Ver documentación",
+    "see_more": "Ver más",
+    "see_less": "Ver menos",
+    "awarded_banner": "Este proyecto te fue adjudicado",
+    "go_to_messages": "Ir a mensajes",
+    "expiring_soon_hours": "El plazo vence en {hours} h — no olvides tu entregable",
+    "expiring_soon_less_than_hour": "El plazo vence en menos de 1 hora",
+    "withdraw_modal_title": "Retirar postulación",
+    "withdraw_modal_desc": "¿Seguro que querés retirar tu postulación para \"{titulo}\"? Esta acción no se puede deshacer.",
+    "withdraw_modal_cancel": "Cancelar",
+    "withdraw_modal_confirm": "Sí, retirar",
+    "withdraw_modal_removing": "Retirando...",
+    "withdraw_btn": "Retirar postulación",
+    "rating_from_company": "Calificación de la empresa"
   },
   "empresa_subnav": {
     "back": "Volver",
     "mis_proyectos": "Mis proyectos",
     "matches": "Matches",
     "postulaciones": "Postulaciones",
-    "mi_empresa": "Mi empresa"
+    "mi_empresa": "Mi empresa",
+    "mi_emprendimiento": "Mi emprendimiento"
   },
   "perfil_junior": {
+    "show_suggestions": "Mostrar sugerencias",
     "tabs": {
       "nav_label": "Navegación de perfil",
       "perfil": "Mi perfil",
@@ -501,18 +672,65 @@
     },
     "hero": {
       "edit_profile": "Editar perfil",
-      "role_label": "Rol",
+      "role_label": "Especialidad",
       "program_label": "Programa / Cohorte",
+      "name_label": "Nombre",
+      "lastname1_label": "Primer apellido",
+      "lastname2_label": "Segundo apellido",
+      "modality_label": "Modalidad preferida",
+      "name_required": "El nombre y el primer apellido son obligatorios.",
+      "unnamed": "Sin nombre",
       "save": "Guardar",
-      "cancel": "Cancelar"
+      "cancel": "Cancelar",
+      "reputation_label": "reputación acumulada"
+    },
+    "calificaciones": {
+      "title": "Proyectos realizados",
+      "subtitle": "Los proyectos completados y las calificaciones que recibiste de las empresas.",
+      "empty": "Aún no tenés calificaciones de empresas.",
+      "comment_label": "Comentario de la empresa",
+      "your_reply": "Tu réplica",
+      "reply_btn": "Responder a esta calificación",
+      "reply_placeholder": "Escribí tu réplica a esta calificación...",
+      "reply_send": "Enviar réplica",
+      "reply_sending": "Enviando...",
+      "reply_cancel": "Cancelar"
+    },
+    "avatar": {
+      "alt": "Foto de perfil",
+      "change": "Cambiar foto de perfil",
+      "delete": "Eliminar foto de perfil",
+      "invalid_type": "El archivo debe ser una imagen.",
+      "too_large": "La imagen supera el máximo de 5 MB."
+    },
+    "specialty_options": {
+      "placeholder": "Elegí una especialidad",
+      "frontend": "Frontend",
+      "backend": "Backend",
+      "fullstack": "Fullstack",
+      "ia": "Inteligencia Artificial"
+    },
+    "availability_options": {
+      "placeholder": "Elegí tu disponibilidad",
+      "immediate": "Inmediata",
+      "two_weeks": "En dos semanas",
+      "one_month": "En un mes",
+      "unavailable": "No disponible"
+    },
+    "modality_options": {
+      "remote": "Remoto",
+      "hybrid": "Híbrido",
+      "onsite": "Presencial"
     },
     "personal": {
       "title": "Información Personal",
       "edit": "Editar",
-      "location_field": "Ubicación",
+      "location_field": "Disponibilidad",
       "email_field": "Correo Electrónico",
+      "email_readonly": "El correo se gestiona desde tu cuenta y no se puede cambiar aquí.",
       "bio_field": "Biografía profesional",
-      "location_display": "Ubicación",
+      "bio_empty": "Todavía no agregaste una biografía.",
+      "location_display": "Disponibilidad",
       "email_display": "Contacto",
       "bio_heading": "Sobre Mí",
       "save_changes": "Guardar cambios",
@@ -521,36 +739,123 @@
     "stack": {
       "title": "Mi Stack Tecnológico",
       "add": "Agregar",
-      "placeholder": "Ej. Node.js, GraphQL, PostgreSQL...",
+      "placeholder": "Busca o escribe una tecnología...",
       "add_btn": "Añadir",
       "cancel_btn": "Cancelar",
       "remove_skill": "Quitar {skill}",
-      "empty": "No hay tecnologías agregadas aún."
+      "empty": "No hay tecnologías agregadas aún.",
+      "catalog_hint": "Las tecnologías del catálogo se destacan en azul. Las personalizadas en amarillo.",
+      "catalog_label": "Catálogo",
+      "add_custom": "Agregar nueva",
+      "legend_catalog": "Del catálogo",
+      "legend_custom": "Personalizada"
+    },
+    "knowledge": {
+      "title": "Conocimientos adicionales",
+      "description": "Saberes más allá de lo técnico (contabilidad, RRHH, marketing...) que amplían tu perfil y mejoran tus matches.",
+      "add": "Agregar",
+      "placeholder": "Ej. Contabilidad, Recursos Humanos, Marketing...",
+      "add_btn": "Añadir",
+      "cancel_btn": "Cancelar",
+      "remove": "Quitar {name}",
+      "empty": "Aún no agregaste conocimientos adicionales.",
+      "hint": "Elegí de las sugerencias o escribí el tuyo: todo se guarda y cuenta para el match."
     },
     "links": {
       "title": "Enlaces del Talento",
       "github": "GitHub",
       "linkedin": "LinkedIn",
-      "portfolio": "Portafolio"
+      "portfolio": "Portafolio",
+      "edit": "Editar",
+      "save": "Guardar",
+      "cancel": "Cancelar",
+      "empty": "Todavía no agregaste enlaces.",
+      "github_placeholder": "https://github.com/tu-usuario",
+      "linkedin_placeholder": "https://linkedin.com/in/tu-usuario",
+      "portfolio_placeholder": "https://tu-portafolio.com"
     },
     "activity": {
       "title": "Actividad Reciente",
       "view_all": "Ver todo el historial",
+      "ver_notificaciones": "Ver todas las notificaciones",
+      "empty": "Aún no hay actividad registrada.",
       "just_now": "Hace un momento",
       "updated_personal": "Actualizó su información personal de contacto",
       "removed_skill": "Eliminó la habilidad '{skill}' de su stack",
-      "added_skill": "Agregó la habilidad '{skill}' a su stack"
+      "added_skill": "Agregó la habilidad '{skill}' a su stack",
+      "removed_knowledge": "Eliminó el conocimiento '{name}' de su perfil",
+      "added_knowledge": "Agregó el conocimiento '{name}' a su perfil"
     },
     "applications_sidebar": {
       "title": "Postulaciones",
-      "manage": "Gestionar postulaciones"
+      "manage": "Gestionar postulaciones",
+      "empty": "Aún no te has postulado a ningún proyecto."
+    },
+    "gamification": {
+      "streak_label": "Racha",
+      "badges_label": "Insignias",
+      "journey_label": "Viaje del heroe"
     },
     "work": {
-      "title": "Mi trabajo",
+      "project_name_placeholder": "Mi proyecto increíble",
+      "project_desc_placeholder": "Breve descripción de qué hace este proyecto...",
+      "title": "Mi portafolio",
       "description": "Gestioná y exhibí tus desarrollos más impactantes. Visualizá tus productos terminados y añadí nuevas piezas a tu portafolio profesional.",
       "badge_product": "Product",
       "add_title": "Agregar proyecto",
-      "add_formats": "Formatos soportados: Link, Figma, GitHub"
+      "add_formats": "Formatos soportados: Link, Figma, GitHub",
+      "add_project": "Agregar proyecto",
+      "my_projects": "Mis proyectos",
+      "my_projects_help": "Gestioná y exhibí tus desarrollos más impactantes.",
+      "preview_btn": "Vista previa",
+      "open_btn": "Abrir",
+      "edit_btn": "Editar",
+      "save_btn": "Guardar",
+      "preview_modal_title": "Vista previa",
+      "open_in_new_tab": "Abrir en nueva pestaña",
+      "close": "Cerrar",
+      "iframe_error": "Este sitio no permite ser embebido. Podés abrirlo directamente.",
+      "no_projects": "Todavía no hay proyectos en tu portafolio.",
+      "show_more": "Ver {count} más",
+      "show_less": "Ver menos",
+      "add_modal_title": "Agregar nuevo proyecto",
+      "edit_modal_title": "Editar proyecto",
+      "fields": {
+        "name": "Nombre del proyecto",
+        "url": "URL demo / Enlace",
+        "repo_url": "URL repositorio (opcional)",
+        "description": "Descripción breve",
+        "techs": "Tecnologías",
+        "techs_placeholder": "Ej. React, Tailwind, Next.js"
+      },
+      "create": "Crear proyecto",
+      "cancel": "Cancelar",
+      "errors": {
+        "name_required": "El nombre del proyecto es obligatorio.",
+        "url_required": "La URL del proyecto es obligatoria."
+      },
+      "confirm_delete": {
+        "title": "Eliminar proyecto",
+        "message": "¿Estás seguro que querés eliminar este proyecto?",
+        "cancel": "Cancelar",
+        "confirm": "Eliminar"
+      },
+      "work": {
+        "add_modal_title": "Agregar nuevo proyecto",
+        "fields": {
+          "name": "Nombre del proyecto",
+          "url": "URL / Enlace",
+          "description": "Descripción breve",
+          "techs": "Tecnologías",
+          "techs_placeholder": "Ej. React, Tailwind, Next.js"
+        },
+        "create": "Crear proyecto",
+        "cancel": "Cancelar",
+        "errors": {
+          "name_required": "El nombre del proyecto es obligatorio.",
+          "url_required": "La URL del proyecto es obligatoria."
+        }
+      }
     },
     "applications": {
       "title": "Mis postulaciones",
@@ -568,16 +873,30 @@
       "stats": {
         "active": "Postulaciones Activas",
         "interviews": "Entrevistas Programadas",
-        "compatibility": "Índice de Compatibilidad"
+        "compatibility": "Índice de Compatibilidad",
+        "in_progress": "Proyectos en proceso",
+        "awarded": "Proyectos adjudicados"
       },
+      "go_to_marketplace": "Ir a gestión",
+      "saved_title": "Proyectos guardados",
+      "saved_empty": "No tenés proyectos guardados. Usa el botón guardar en el marketplace para agregarlos aquí.",
+      "saved_expired": "Vencido",
+      "saved_view": "Ver proyecto",
+      "saved_remove": "Quitar de guardados",
       "opportunities_title": "Otras oportunidades para ti",
       "opportunities_description": "Proyectos que podrían encajar con tu trayectoria profesional.",
       "view_details": "Ver detalles",
       "explore_routes": "Explora nuevas rutas"
     },
     "notifications": {
-      "activity_title": "Actividad Reciente",
+      "activity_title": "Notificaciones",
       "mark_all_read": "Marcar todas como leídas",
+      "mark_read": "Marcar como leída",
+      "unread": "sin leer",
+      "empty": "No tenés notificaciones por el momento.",
+      "page_info": "Mostrando {from}–{to} de {total}",
+      "prev": "Anterior",
+      "next": "Siguiente",
       "today": "Hoy",
       "yesterday": "Ayer",
       "older_empty": "No hay notificaciones más antiguas."
@@ -603,12 +922,28 @@
       "terms": "Términos de Servicio",
       "privacy": "Política de Privacidad",
       "support": "Soporte"
+    },
+    "two_point_zero": {
+      "title": "Próximamente",
+      "work": "2.0: Portafolio de proyectos",
+      "applications": "2.0: Más oportunidades para vos",
+      "notifications": "2.0: Notificaciones de matching y actividad",
+      "suggested": "2.0: Match algorítmico y recomendaciones"
     }
+  },
+  "junior_subnav": {
+    "back": "Volver al marketplace",
+    "inicio": "Inicio",
+    "marketplace": "Marketplace",
+    "viaje": "Mapa",
+    "perfil": "Mi perfil"
   },
   "viaje": {
     "title": "Tu cielo",
-    "eyebrow": "Viaje de aprendizaje",
+    "eyebrow": "Mapa de aprendizaje",
     "back_label": "Volver al perfil",
+    "home_label": "Volver a inicio",
+    "brand_name": "FWD Marketplace",
     "sky_lit": "{pct}% del cielo iluminado",
     "xp_label": "XP",
     "streak_label": "días",
@@ -627,9 +962,10 @@
     "panel_state_available": "Disponible",
     "panel_state_locked": "Bloqueada",
     "panel_unlocked_eyebrow": "Encendida",
-    "panel_unlocked_prefix": "La encendiste el",
+    "panel_unlocked_prefix": "La encendiste",
     "panel_unlocked_joining": "completando",
-    "panel_available_eyebrow": "Cómo encenderla",
+    "panel_available_eyebrow": "Lista para encender",
+    "panel_available_quiz_required": "Aprobá el quiz para encender esta estrella.",
     "panel_locked_eyebrow": "Cómo desbloquearla",
     "panel_locked_via_prefix": "Te espera en",
     "panel_btn_light": "Encender estrella",
@@ -637,55 +973,266 @@
     "panel_close": "Cerrar",
     "celeb_eyebrow": "Nueva habilidad",
     "celeb_sub_prefix": "Encendiste una estrella en",
-    "celeb_btn": "Seguí explorando"
+    "celeb_btn": "Seguí explorando",
+    "tab_info": "Info",
+    "tab_quiz": "Quiz",
+    "tab_info_content_eyebrow": "Contenido explicativo",
+    "tab_info_content_placeholder": "Proximamente tu asistente de aprendizaje completara esta seccion con explicaciones, ejemplos y contexto sobre este tema.",
+    "tab_info_resources_eyebrow": "Recursos recomendados",
+    "tab_info_videos_eyebrow": "Videos recomendados",
+    "tab_quiz_locked_msg": "Desbloquea esta estrella primero para acceder al quiz.",
+    "tab_quiz_coming_soon": "Quiz en camino.",
+    "tab_quiz_round": "Parte {n} de 3",
+    "tab_quiz_submit": "Verificar respuestas",
+    "tab_quiz_retake": "Intentar de nuevo",
+    "tab_quiz_pass": "Muy bien. Ganaste un punto de maestria.",
+    "tab_quiz_fail": "Casi. Revisa las respuestas e intentalo de nuevo.",
+    "tab_quiz_already_max": "Maestria completa. Esta estrella brilla al maximo.",
+    "tab_quiz_all_done_title": "Maestria completa",
+    "tab_quiz_all_done_body": "Completaste las 3 partes del quiz. Esta estrella brilla al maximo.",
+    "tab_quiz_hint_aria": "Ver pista",
+    "tab_quiz_hint_placeholder": "La asistente de aprendizaje dara una pista personalizada aqui. Disponible proximamente.",
+    "tab_quiz_stage_done_title": "Parte {n} completada",
+    "tab_quiz_stage_done_body": "Ganaste un punto de maestria. Hay {remaining} mas por completar.",
+    "tab_quiz_stage_last_body": "Ganaste el ultimo punto de maestria. Cerrando...",
+    "tab_quiz_next_stage": "Ir a la parte {n}",
+    "tab_quiz_continue": "Continuar",
+    "contenido": {
+      "terminal": {
+        "intro": "La terminal es una ventana donde le escribís órdenes a la computadora en texto, sin menús ni botones.",
+        "bloques": [
+          { "titulo": "Cómo funciona", "cuerpo": "Escribís un comando, presionás Enter y la máquina lo ejecuta al instante. Cada comando es un verbo: `ls` lista, `cd` entra a una carpeta, `mkdir` crea una." },
+          { "titulo": "Un ejemplo", "cuerpo": "Para crear una carpeta y entrar en ella: `mkdir mi-proyecto` y luego `cd mi-proyecto`. Dos líneas hacen lo que con el mouse serían varios clics." },
+          { "titulo": "Por qué importa", "cuerpo": "Casi todas las herramientas de desarrollo (Git, Node, npm) viven en la terminal. Dominarla te vuelve mucho más rápido y es el primer paso para todo lo demás." }
+        ]
+      },
+      "git": {
+        "intro": "Git es un sistema que guarda la historia de tu código: cada cambio queda registrado y podés volver atrás cuando quieras.",
+        "bloques": [
+          { "titulo": "Cómo funciona", "cuerpo": "Trabajás y, cuando algo funciona, hacés un `commit`: una foto de tu proyecto en ese momento con un mensaje que explica qué cambiaste." },
+          { "titulo": "Un ejemplo", "cuerpo": "Si rompés algo hoy, podés volver al commit de ayer sin perder nada. Y con `branches` probás ideas nuevas sin tocar la versión que ya funciona." },
+          { "titulo": "Por qué importa", "cuerpo": "Es la forma en que los equipos trabajan sobre el mismo proyecto sin pisarse. Sin Git, colaborar en serio es imposible." }
+        ]
+      },
+      "htmlcss": {
+        "intro": "HTML pone los ladrillos de una página; CSS los pinta y los ordena. Juntos son la base de todo lo que ves en la web.",
+        "bloques": [
+          { "titulo": "Cómo funciona", "cuerpo": "HTML describe el contenido con etiquetas (`<h1>` para un título, `<button>` para un botón). CSS decide cómo se ve: color, tamaño, posición." },
+          { "titulo": "Un ejemplo", "cuerpo": "`<button>Enviar</button>` crea el botón; en CSS, `button { background: blue; border-radius: 8px; }` lo vuelve azul con esquinas redondeadas." },
+          { "titulo": "Por qué importa", "cuerpo": "Ninguna interfaz existe sin HTML y CSS. React, Next.js y Tailwind construyen encima de esto, así que entenderlo bien te ahorra dolores más adelante." }
+        ]
+      },
+      "javascript": {
+        "intro": "JavaScript es el lenguaje que le da vida a la web: hace que las páginas reaccionen a lo que hace el usuario.",
+        "bloques": [
+          { "titulo": "Cómo funciona", "cuerpo": "Con JS respondés a eventos (un clic, una tecla), cambiás la página al vuelo y pedís datos a un servidor sin recargar." },
+          { "titulo": "Un ejemplo", "cuerpo": "Un botón que muestra un mensaje al hacer clic: `boton.addEventListener('click', () => alert('¡Hola!'))`. HTML lo dibuja, JS lo hace responder." },
+          { "titulo": "Por qué importa", "cuerpo": "Es el único lenguaje que corre nativo en el navegador y también en el servidor (Node.js). Todo el stack de FWD se apoya en él." }
+        ]
+      },
+      "react": {
+        "intro": "React es una librería para construir interfaces armándolas con piezas reutilizables llamadas componentes.",
+        "bloques": [
+          { "titulo": "Cómo funciona", "cuerpo": "Dividís la pantalla en componentes (un botón, una tarjeta, un formulario) y React actualiza solo lo que cambia cuando los datos cambian." },
+          { "titulo": "Un ejemplo", "cuerpo": "Un componente `<Tarjeta titulo=\"React\" />` que reusás cuantas veces quieras, cada una con su propio contenido, sin repetir código." },
+          { "titulo": "Por qué importa", "cuerpo": "Es el corazón del frontend en FWD Talent. Casi todo lo que vas a construir del lado visual pasa por React." }
+        ]
+      },
+      "typescript": {
+        "intro": "TypeScript es JavaScript con una red de seguridad: le agregás tipos para que los errores salten antes de llegar al usuario.",
+        "bloques": [
+          { "titulo": "Cómo funciona", "cuerpo": "Le decís a cada variable qué clase de dato guarda (texto, número, lista). Si te equivocás, el editor te avisa mientras escribís." },
+          { "titulo": "Un ejemplo", "cuerpo": "`function saludar(nombre: string)` deja claro que espera texto. Si le pasás un número, TypeScript lo marca antes de ejecutar nada." },
+          { "titulo": "Por qué importa", "cuerpo": "En proyectos que crecen, los tipos son documentación viva y evitan bugs difíciles. El repo de FWD es `strict`, así que es parte del día a día." }
+        ]
+      },
+      "nextjs": {
+        "intro": "Next.js es el framework de React que usa FWD: te da rutas, render en el servidor y despliegue listos para producción.",
+        "bloques": [
+          { "titulo": "Cómo funciona", "cuerpo": "Cada archivo dentro de la carpeta de rutas se vuelve una página. Podés renderizar en el servidor para que cargue rápido y salga bien en buscadores." },
+          { "titulo": "Un ejemplo", "cuerpo": "Crear `app/proyectos/page.tsx` te da automáticamente la ruta `/proyectos`, sin configurar nada extra." },
+          { "titulo": "Por qué importa", "cuerpo": "Es la base sobre la que corre FWD Talent. Aprenderlo te acerca directo a cómo se construye el producto real." }
+        ]
+      },
+      "tailwind": {
+        "intro": "Tailwind te deja diseñar aplicando clases de utilidad directamente en el HTML, sin saltar a archivos de CSS aparte.",
+        "bloques": [
+          { "titulo": "Cómo funciona", "cuerpo": "En vez de escribir CSS, componés estilos con clases pequeñas: `p-4` da padding, `rounded-full` redondea, `bg-primary` pinta el fondo." },
+          { "titulo": "Un ejemplo", "cuerpo": "`<button class=\"px-4 py-2 rounded-full bg-primary\">` es un botón estilizado completo, sin abrir un `.css`." },
+          { "titulo": "Por qué importa", "cuerpo": "Acelera muchísimo el diseño y mantiene todo consistente con los tokens del sistema. Es el estándar de estilos en el repo de FWD." }
+        ]
+      },
+      "nodejs": {
+        "intro": "Node.js te deja correr JavaScript fuera del navegador, del lado del servidor. Es la puerta de entrada al backend.",
+        "bloques": [
+          { "titulo": "Cómo funciona", "cuerpo": "El mismo lenguaje que usás en el frontend ahora atiende peticiones, lee bases de datos y devuelve respuestas desde un servidor." },
+          { "titulo": "Un ejemplo", "cuerpo": "Con pocas líneas levantás un servidor que responde 'Hola' cuando alguien visita una dirección. Ese es el ladrillo de cualquier API." },
+          { "titulo": "Por qué importa", "cuerpo": "El BackEnd de FWD corre sobre Node. Saberlo te permite trabajar en ambos lados del proyecto con un solo lenguaje." }
+        ]
+      },
+      "apis": {
+        "intro": "Una API REST es el idioma con el que el frontend y el backend se hablan: uno pide, el otro responde.",
+        "bloques": [
+          { "titulo": "Cómo funciona", "cuerpo": "El frontend hace una petición a una dirección (`GET /proyectos`) y el backend devuelve datos, normalmente en formato JSON." },
+          { "titulo": "Un ejemplo", "cuerpo": "`GET /proyectos` trae la lista de proyectos; `POST /proyectos` crea uno nuevo. Cada verbo (GET, POST, PUT, DELETE) es una intención distinta." },
+          { "titulo": "Por qué importa", "cuerpo": "Es exactamente cómo el FrontEnd y el BackEnd de FWD se comunican. Entender REST es entender cómo fluyen los datos en la app." }
+        ]
+      },
+      "supabase": {
+        "intro": "Supabase es la base de datos y el sistema de login que usa FWD: Postgres con superpoderes y listo para usar.",
+        "bloques": [
+          { "titulo": "Cómo funciona", "cuerpo": "Te da una base de datos Postgres, autenticación de usuarios y almacenamiento de archivos, todo accesible desde tu código." },
+          { "titulo": "Un ejemplo", "cuerpo": "Registrar un usuario o guardar un proyecto son llamadas directas a Supabase, que se encarga de la seguridad con reglas por fila (RLS)." },
+          { "titulo": "Por qué importa", "cuerpo": "Es la capa de datos de FWD Talent. Todo el progreso, los perfiles y los proyectos viven ahí." }
+        ]
+      },
+      "postgres": {
+        "intro": "PostgreSQL es una base de datos relacional: guarda la información en tablas ordenadas y relacionadas entre sí.",
+        "bloques": [
+          { "titulo": "Cómo funciona", "cuerpo": "Organizás los datos en tablas con columnas y filas. Las tablas se relacionan: un proyecto pertenece a una empresa, una postulación a un junior." },
+          { "titulo": "Un ejemplo", "cuerpo": "Una tabla `proyectos` y una tabla `empresas` se conectan por un id, así cada proyecto sabe de qué empresa es sin duplicar datos." },
+          { "titulo": "Por qué importa", "cuerpo": "Es el motor detrás de Supabase y de casi todo backend serio. Modelar bien los datos evita problemas que después cuestan caro." }
+        ]
+      },
+      "sql": {
+        "intro": "SQL es el lenguaje para preguntarle cosas a una base de datos y obtener justo los datos que necesitás.",
+        "bloques": [
+          { "titulo": "Cómo funciona", "cuerpo": "Escribís consultas que describen qué querés: filtrar, ordenar, contar o cruzar tablas. La base te devuelve el resultado." },
+          { "titulo": "Un ejemplo", "cuerpo": "`SELECT nombre FROM proyectos WHERE estado = 'publicado'` trae solo los nombres de los proyectos publicados." },
+          { "titulo": "Por qué importa", "cuerpo": "Cualquier app que guarde datos termina necesitando SQL. Es una habilidad que sirve igual en frontend, backend y análisis de datos." }
+        ]
+      },
+      "python": {
+        "intro": "Python es un lenguaje legible y versátil, favorito para datos e inteligencia artificial.",
+        "bloques": [
+          { "titulo": "Cómo funciona", "cuerpo": "Su sintaxis es cercana al inglés, así que se lee casi como una receta. Eso lo hace ideal para prototipar rápido y para analizar información." },
+          { "titulo": "Un ejemplo", "cuerpo": "`for proyecto in proyectos: print(proyecto)` recorre una lista y muestra cada elemento. Simple y directo." },
+          { "titulo": "Por qué importa", "cuerpo": "Es la puerta de entrada al mundo de datos e IA. Con Python analizás datasets y entrenás modelos sin pelearte con el lenguaje." }
+        ]
+      },
+      "ia_fundamentos": {
+        "intro": "Los fundamentos de IA explican cómo aprenden los modelos: en vez de programar reglas, les mostrás ejemplos y encuentran patrones.",
+        "bloques": [
+          { "titulo": "Cómo funciona", "cuerpo": "Un modelo de Machine Learning se entrena con muchos datos etiquetados y, a partir de ahí, hace predicciones sobre datos nuevos." },
+          { "titulo": "Un ejemplo", "cuerpo": "Mostrarle miles de correos marcados como 'spam' o 'no spam' hasta que aprenda a clasificar uno que nunca vio." },
+          { "titulo": "Por qué importa", "cuerpo": "Entender qué puede y qué no puede hacer un modelo te permite integrar IA en tus productos con criterio, sin magia ni miedo." }
+        ]
+      },
+      "ia_prompting": {
+        "intro": "El prompting profesional es el arte de pedirle bien a una IA para obtener resultados útiles y confiables.",
+        "bloques": [
+          { "titulo": "Cómo funciona", "cuerpo": "Un buen prompt da contexto, dice el rol, el formato de salida y ejemplos. Cuanto más claro sos, mejor responde el modelo." },
+          { "titulo": "Un ejemplo", "cuerpo": "En vez de 'escribí sobre React', pedí: 'Explicá React a un junior en 3 viñetas, con un ejemplo de código'. El resultado cambia por completo." },
+          { "titulo": "Por qué importa", "cuerpo": "Es la habilidad que multiplica a todas las demás: te permite usar la IA como copiloto en cualquier tarea, de código a diseño." }
+        ]
+      }
+    }
   },
-    "marketplace_page": {
+  "empresas_directorio": {
+    "title": "Empresas con proyectos",
+    "subtitle": "Conocé a las empresas y emprendedores que están publicando proyectos.",
+    "empty": "Todavía no hay empresas con proyectos publicados.",
+    "sin_nombre": "Empresa",
+    "tipo": {
+      "empresa": "Empresa",
+      "emprendedor": "Emprendedor"
+    },
+    "projects_count": "{count, plural, =0 {Sin proyectos} one {# proyecto} other {# proyectos}}",
+    "view_profile": "Ver perfil"
+  },
+  "marketplace_page": {
     "eyebrow": "MARKETPLACE",
     "title": "Proyectos disponibles",
+    "hero_title": "Marketplace",
+    "hero_subtitle": "Explorá proyectos reales alineados con tus habilidades y encontrá oportunidades para desarrollar experiencia profesional.",
+    "hero_journey_label": "El Desafío",
+    "hero_journey_cta": "Encuentra tu primer proyecto real.",
+    "hero_journey_cta_achieved": "Ya aceptaste el desafío.",
     "search_label": "Buscar por nombre o tecnología",
-    "search_placeholder": "Ej: React, Figma, Backend...",
+    "search_placeholder": "Buscar proyectos, habilidades o empresas...",
     "specialty_label": "Especialidad",
     "specialty_all": "Todas las áreas",
     "active_filters": "FILTROS ACTIVOS:",
     "clear_all": "Limpiar todo",
+    "filter_area": "Área",
+    "filter_duration": "Duración",
+    "filter_budget": "Pago",
+    "filter_skills": "Habilidades",
+    "filter_ai_projects": "Proyectos con IA",
+    "filter_sort": "Ordenar",
+    "business_area_label": "ÁREA DE NEGOCIO",
+    "compensation_label": "COMPENSACIÓN",
+    "ai_usage_label": "USO DE IA",
     "budget": "PRESUPUESTO",
+    "budget_low": "Hasta $500",
+    "budget_mid": "$500 – $2.000",
+    "budget_high": "Más de $2.000",
     "duration": "DURACIÓN",
     "experience": "EXPERIENCIA",
     "hourly_rate": "TARIFA HORA",
     "view_project": "Ver proyecto",
+    "save_project": "Guardar proyecto",
+    "saved_project": "Quitar de guardados",
+    "filter_all": "Todas",
+    "sort_recent_desc": "Más recientes",
+    "sort_duration_asc": "Menor duración",
+    "duration_short": "Corto (5-7 días)",
+    "duration_medium": "Medio (8-11 días)",
+    "duration_long": "Amplio (12-15 días)",
+    "results_count": "{count, plural, =0 {Sin proyectos} one {# proyecto} other {# proyectos}}",
+    "no_results_title": "Sin resultados",
+    "no_results_body": "Probá ajustar la búsqueda o los filtros para ver más proyectos.",
+    "clear_filters": "Limpiar filtros",
+    "close": "Cerrar",
+    "pagination_prev": "Anterior",
+    "pagination_next": "Siguiente",
+    "pagination_page": "Página {page}",
     "filter_remote": "Remoto",
     "filter_senior": "Senior",
-    "match_suffix": "match",
+    "match_suffix": "MATCH",
     "badges": {
       "urgent": "URGENTE",
       "full_time": "FULL-TIME",
       "project": "PROYECTO",
       "part_time": "PART-TIME"
-    }
+    },
+    "badge_expired": "Plazo vencido",
+    "badge_applied": "Ya postulaste",
+    "badge_new": "Nuevo",
+    "badge_ia": "IA",
+    "weeks_unit": "sem",
+    "match_label": "Match",
+    "view_my_offer": "Ver mi propuesta"
   },
   "bienvenida": {
+    "journey_stage_preparacion": "La Preparación",
+    "journey_stage_desafio": "El Desafío",
+    "journey_stage_transformacion": "La Transformación",
     "hero": {
-      "welcome": "¡BIENVENIDO A FWD TALENT!",
-      "greeting": "Buenos días",
+      "welcome": "¡BIENVENIDO A FWD MARKETPLACE!",
+      "greeting_morning": "Buenos días",
+      "greeting_afternoon": "Buenas tardes",
+      "greeting_evening": "Buenas noches",
       "description": "Tu perfil ya está conectado con oportunidades reales.\nExplorá proyectos creados por empresas que buscan talento como el tuyo.",
       "btn_explore": "Explorar oportunidades",
       "btn_edit": "Editar mi perfil",
-      "stack_center": "Tu stack",
-      "stack_frontend": "Frontend",
-      "stack_backend": "Backend",
-      "stack_ux": "UX / UI",
-      "stack_mobile": "Mobile",
-      "stack_ai": "IA y Datos"
+      "stack_center": "Tu progreso",
+      "stack_frontend": "Perfil completado",
+      "stack_backend": "CV cargado",
+      "stack_ux": "Primer proyecto",
+      "stack_mobile": "Primera postulación",
+      "stack_ai": "Empresa interesada"
     },
     "stats": {
       "projects": "Proyectos compatibles",
       "match": "Match promedio",
-      "match_desc": "Excelente compatibilidad",
-      "companies": "Nuevas empresas",
-      "companies_desc": "Esta semana",
+      "match_desc": "Compatibilidad con tu perfil",
+      "streak": "Racha de días",
+      "streak_desc": "Días seguidos activo",
       "applications": "Postulaciones activas",
       "view_all": "Ver todos",
-      "view_applications": "Ver mis postulaciones"
+      "view_applications": "Ver mis postulaciones",
+      "view_companies": "Ver empresas"
     },
     "recommended": {
       "title": "Recomendados para vos",
@@ -696,10 +1243,15 @@
         "new": "NUEVO"
       },
       "weeks": "semanas",
-      "match": "Match alto"
+      "days": "días",
+      "match": "Match",
+      "view_project": "Ver proyecto",
+      "empty": "Completá tu perfil con habilidades para ver proyectos compatibles.",
+      "explore": "Explorar marketplace"
     },
     "progress": {
-      "title": "Tu progreso en FWD",
+      "title": "Mi viaje del Héroe",
+      "subtitle": "Cada insignia que alcanzas es un paso real en tu carrera. Completa los desafios y desbloquea el siguiente capitulo de tu historia profesional. Tu racha muestra cuantos dias seguidos te mantenés activo en la plataforma.",
       "step1_title": "Perfil completado",
       "step1_desc": "¡Excelente! Tu perfil está al 100%.",
       "step2_title": "Stack definido",
@@ -714,15 +1266,88 @@
       "card_desc": "Seguí explorando y construyendo tu futuro.",
       "btn_profile": "Ver mi perfil"
     },
+    "estrella": {
+      "eyebrow": "Mi progreso",
+      "aria_stage": "Tu constelación del viaje del héroe",
+      "center_title": "Tu Progreso",
+      "center_sub": "{done} de {total} insignias",
+      "lit_label": "Estrellas encendidas",
+      "status": {
+        "done": "Completado",
+        "progress": "En progreso",
+        "pending": "Pendiente"
+      },
+      "task_done_label": "Tarea completada",
+      "task_todo_label": "Tarea para completar",
+      "progress_label": "Progreso",
+      "lit_on": "Encendida el {date}",
+      "next_hint": "Tu próximo paso",
+      "next_links": {
+        "llamado": "/bienvenida",
+        "preparacion": "/perfil-estudiante",
+        "desafio": "/marketplace",
+        "transformacion": "/mapa-de-aprendizaje",
+        "reconocimiento": "/gestion"
+      },
+      "close": "Cerrar",
+      "activity_title": "Logros del viaje",
+      "activity_map_btn": "Ir al Mapa de aprendizaje",
+      "unlocked_on": "Desbloqueado el {date}",
+      "to_unlock": "Para desbloquear:",
+      "learning_pct": "{pct}% del Mapa de aprendizaje",
+      "racha_days": "{count, plural, =0 {días sin actividad} one {día seguido} other {días seguidos}}",
+      "items": {
+        "llamado": {
+          "name": "El Llamado",
+          "desc": "Escuchaste el llamado y diste el primer paso en tu camino profesional.",
+          "task": "Completá tu perfil y definí tu especialidad.",
+          "date": "12 mar 2026"
+        },
+        "preparacion": {
+          "name": "La Preparación",
+          "desc": "Afilaste tus habilidades y armaste las bases de tu oficio.",
+          "task": "Subí tu CV y agregá tu stack de tecnologías.",
+          "date": "2 abr 2026"
+        },
+        "desafio": {
+          "name": "El Desafío",
+          "desc": "Te enfrentás a tu primer gran reto: mostrar al mundo lo que sabés hacer.",
+          "task": "Enviá tu primera postulación y superá tu primera entrevista.",
+          "date": ""
+        },
+        "transformacion": {
+          "name": "La Transformación",
+          "desc": "Cada proyecto te transforma: dejás de ser aprendiz para volverte profesional.",
+          "task": "Completá tu primer proyecto real y sumá una reseña de la empresa.",
+          "date": ""
+        },
+        "reconocimiento": {
+          "name": "El Reconocimiento",
+          "desc": "El mundo reconoce tu valor y se abren oportunidades a tu medida.",
+          "task": "Conseguí tu primera oportunidad destacada y subí de nivel.",
+          "date": ""
+        }
+      }
+    },
+    "llamado_toast": {
+      "title": "Primera insignia desbloqueada",
+      "desc": "Bienvenido al Viaje del Heroe. Creaste tu cuenta y tu aventura ya comenzo.",
+      "dismiss": "Cerrar"
+    },
     "companies": {
       "title": "Empresas interesadas",
       "view_all": "Ver todas",
       "active": "ACTIVA",
-      "btn_all": "Ver todas las empresas"
+      "btn_all": "Ver todas las empresas",
+      "empty": "Todavía ninguna empresa te invitó a un proyecto. Postulate para que te conozcan.",
+      "invited_to": "Te invitó a:",
+      "una_empresa": "Una empresa"
     },
     "activity": {
       "title": "Actividad reciente",
-      "view_all": "Ver toda la actividad"
+      "view_all": "Ver toda la actividad",
+      "empty": "Todavia no hay actividad. Explora el marketplace para empezar.",
+      "unread": "No leida"
     },
     "modality": {
       "remote": "Remoto",
@@ -745,13 +1370,1964 @@
     "modality_hybrid": "Híbrido",
     "showing_count": "Mostrando {count} candidatos automáticos para este perfil",
     "sort_best": "Mayor match",
+    "sort_worst": "Menor match",
+    "availability_all": "Todas",
+    "modality_all": "Todas",
     "invite_btn": "Invitar a postularse",
     "invited_btn": "Invitado",
     "view_profile": "Ver perfil",
     "compare": "Comparar",
     "load_more": "Cargar más matches",
+    "empty_no_candidates_title": "No hay candidatos recomendados",
+    "empty_no_candidates_desc": "Ajustá los filtros o reducí el nivel de match mínimo.",
     "toast_invited": "Se ha invitado a {name} a postularse al proyecto.",
     "toast_cleared": "Se han limpiado los filtros de búsqueda.",
-    "toast_profile_edit": "Funcionalidad de edición de perfil en desarrollo (Fase 3)."
+    "toast_profile_edit": "Funcionalidad de edición de perfil en desarrollo (Fase 3).",
+    "invite_modal_title": "Invitar a proyecto",
+    "invite_modal_desc": "Elegí a qué proyecto querés invitar a {name}.",
+    "invite_modal_cancel": "Cancelar",
+    "invite_modal_confirm": "Invitar",
+    "invite_modal_no_projects": "No tenés proyectos activos para invitar."
+  },
+  "prototipo_preview": {
+    "button": "Vista previa",
+    "modal_title": "Vista previa del prototipo",
+    "open_in_new_tab": "Abrir en pestaña nueva",
+    "close": "Cerrar",
+    "iframe_error": "No se pudo mostrar la vista previa embebida. Abrí el prototipo en una pestaña nueva."
+  },
+  "matches_panel": {
+    "title": "Juniors compatibles",
+    "disabled": "El matching está desactivado por el administrador.",
+    "filters_title": "Filtros",
+    "clear": "Limpiar",
+    "min_match": "Nivel de match",
+    "only_available": "Solo disponibles",
+    "results_count": "{count, plural, one {# candidato} other {# candidatos}}",
+    "empty": "Ningún candidato coincide con estos filtros todavía.",
+    "verified": "Verificado",
+    "score_label": "match",
+    "available": "Disponible",
+    "busy": "Ocupado",
+    "view_profile": "Ver perfil",
+    "invite": "Invitar",
+    "invited": "Invitado",
+    "already_applied": "Ya postuló",
+    "not_receiving": "Este proyecto ya no recibe propuestas. Los candidatos se muestran solo como referencia."
+  },
+  "talento": {
+    "view_profile": "Ver perfil",
+    "title": "Buscar talento",
+    "subtitle": "Encontrá estudiantes verificados de FWD para tus proyectos.",
+    "filters_title": "Filtros",
+    "clear_btn": "Limpiar",
+    "search_placeholder": "Buscar por nombre...",
+    "specialty_label": "Especialidad",
+    "modality_label": "Modalidad",
+    "skill_label": "Tecnología",
+    "skill_all": "Todas",
+    "only_available": "Solo disponibles",
+    "available_badge": "Disponible",
+    "busy_badge": "Ocupado",
+    "verified": "Verificado",
+    "empty": "No hay estudiantes que coincidan con los filtros.",
+    "results_count": "{count, plural, =0 {Sin resultados} one {# estudiante} other {# estudiantes}}",
+    "specialty": { "frontend": "Frontend", "backend": "Backend", "fullstack": "Fullstack", "ia": "IA & Data" },
+    "modality": { "remote": "Remoto", "hybrid": "Híbrido", "onsite": "Presencial" }
+  },
+  "terms": {
+    "title": "Términos y Condiciones",
+    "back": "Volver",
+    "download": "Descargar en PDF",
+    "sections": [
+      { "title": "1. Introducción y Aceptación", "paragraphs": ["Bienvenido al Marketplace de Proyectos Freelance de FWD Talent, una iniciativa de la Fundación Forward Costa Rica. Este documento constituye un acuerdo legalmente vinculante entre usted (el \"Usuario\") y la Fundación Forward Costa Rica (\"la Fundación\"). Al utilizar esta plataforma, usted acepta en su totalidad estos Términos y Condiciones."] },
+      { "title": "2. Naturaleza del Servicio", "paragraphs": ["Nuestra plataforma funciona exclusivamente como un espacio de intermediación tecnológica. Su propósito es conectar a egresados de la Fundación (\"Juniors FWD\") con empresas o clientes (\"Empresas\") que buscan talento para proyectos de corta duración."] },
+      { "title": "3. Registro y Elegibilidad", "paragraphs": ["Para registrarse como Junior, es un requisito estricto ser egresado certificado de los programas de formación de la Fundación Forward Costa Rica. Las Empresas pueden registrarse tras un proceso de validación comercial. El uso de la plataforma está restringido a mayores de edad."] },
+      { "title": "4. Cuentas de Usuario y Seguridad", "paragraphs": ["El Usuario es el único responsable de salvaguardar la confidencialidad de sus credenciales. Queda estrictamente prohibido compartir cuentas, transferirlas o crear perfiles falsos. Toda actividad realizada desde una cuenta se considerará responsabilidad de su titular."] },
+      { "title": "5. Rol de los Juniors FWD", "paragraphs": ["Los Juniors utilizan la plataforma para acceder a sus primeras oportunidades profesionales remuneradas o pro-bono (según se especifique en cada proyecto), construir experiencia y ampliar su portafolio. Deben actuar siempre con profesionalismo, honestidad y diligencia."] },
+      { "title": "6. Rol de las Empresas", "paragraphs": ["Las Empresas acceden a talento emergente a costos competitivos. Se comprometen a brindar un entorno de respeto, comunicación clara y retroalimentación constructiva, reconociendo que están trabajando con perfiles en etapa formativa o junior."] },
+      { "title": "7. Reglas de Publicación de Proyectos", "paragraphs": ["Todo proyecto debe tener requerimientos claros, plazos definidos y expectativas realistas. No se permitirá la publicación de proyectos ilegales, ofensivos, discriminatorios, o que impliquen el desarrollo de software malicioso."] },
+      { "title": "8. Reglas de Postulación", "paragraphs": ["Los Juniors deben postularse únicamente a proyectos para los cuales posean las habilidades requeridas y la disponibilidad de tiempo necesaria. El abandono injustificado de un proyecto impactará negativamente su reputación en la plataforma."] },
+      { "title": "9. Prohibición de Inteligencia Artificial en Postulaciones", "note": "Toda comunicación y carta de presentación debe ser de autoría humana. El uso exclusivo de Inteligencia Artificial (ChatGPT, Claude, etc.) para generar mensajes automatizados está prohibido. Valoramos la autenticidad sobre la perfección sintáctica generada por máquinas." },
+      { "title": "10. Proceso de Selección y Adjudicación", "paragraphs": ["La Empresa es la única responsable de evaluar y seleccionar al candidato idóneo. La Fundación ofrece herramientas de \"matching\", pero no garantiza la adjudicación, ni obliga a la Empresa a seleccionar a un Junior específico."] },
+      { "title": "11. Desarrollo y Ejecución de Proyectos", "paragraphs": ["Una vez iniciado el proyecto, ambas partes acuerdan trabajar bajo metodologías ágiles o los estándares pactados. La Fundación no supervisa ni audita el código generado por los Juniors ni las directrices de las Empresas."] },
+      { "title": "12. Comunicación", "paragraphs": ["Se insta a los Usuarios a mantener la comunicación preliminar dentro de la plataforma por seguridad y transparencia. La Fundación se reserva el derecho de auditar las comunicaciones dentro del ecosistema en caso de disputas reportadas."] },
+      { "title": "13. Pagos y Compensaciones", "paragraphs": ["La plataforma no actúa como procesador de pagos. Todo acuerdo económico se negocia, factura y liquida externamente entre la Empresa y el Junior. La Fundación no cobra comisiones transaccionales por la adjudicación de proyectos."] },
+      { "title": "14. Relación Laboral", "paragraphs": ["En ningún momento se establece una relación laboral (empleador-empleado) entre la Fundación y el Junior, ni inherentemente entre la Empresa y el Junior (a menos que firmen un contrato laboral formal fuera de la plataforma). La naturaleza predeterminada de los proyectos es freelance o servicios profesionales independientes."] },
+      { "title": "15. Propiedad Intelectual de los Entregables", "paragraphs": ["Como norma general, una vez liquidado el pago acordado, los derechos patrimoniales sobre el código y el producto desarrollado se transfieren a la Empresa. Los derechos morales del autor son inalienables según la ley aplicable."] },
+      { "title": "16. Derechos de Portafolio", "paragraphs": ["Salvo prohibición explícita vía NDA (Acuerdo de Confidencialidad), los Juniors conservan el derecho de mencionar el proyecto, describir la arquitectura y mostrar capturas de pantalla de la interfaz pública en sus portafolios profesionales con fines de promoción laboral."] },
+      { "title": "17. Confidencialidad y NDAs", "paragraphs": ["Las Empresas pueden requerir la firma de un Acuerdo de Confidencialidad (NDA) antes de compartir detalles sensibles. Es responsabilidad del Junior leer, comprender y acatar las restricciones de cualquier contrato legal firmado externamente."] },
+      { "title": "18. Comportamiento y Código de Conducta", "paragraphs": ["Tolerancia cero ante acoso, discriminación, extorsión, lenguaje abusivo o prácticas fraudulentas. Cualquier violación al código de conducta resultará en la expulsión inmediata del infractor del ecosistema de FWD Talent."] },
+      { "title": "19. Responsabilidad y Limitaciones (Disclaimer)", "paragraphs": ["La Fundación provee la plataforma \"tal cual\" (as is) sin garantías implícitas. No seremos responsables por daños indirectos, lucro cesante, pérdida de datos o interrupciones de negocio derivados del uso de la plataforma o del resultado de los proyectos freelance."] },
+      { "title": "20. Privacidad y Tratamiento de Datos", "paragraphs": ["Toda recolección y tratamiento de datos personales se rige por nuestra Política de Privacidad, alineada a las regulaciones nacionales pertinentes. La información se utiliza exclusivamente para fines de \"matching\" y operación de la plataforma."] },
+      { "title": "21. Resolución de Disputas", "paragraphs": ["Las diferencias entre Empresa y Junior deben resolverse de mutuo acuerdo. La Fundación no ofrece servicios de mediación legal o arbitraje, y se exime de participar en cualquier litigio derivado de la ejecución de los proyectos."] },
+      { "title": "22. Modificaciones a los Términos", "paragraphs": ["Nos reservamos el derecho de modificar estos Términos en cualquier momento. Cualquier actualización será notificada a través de la plataforma. Su uso continuado implica la aceptación de los nuevos términos."] }
+    ]
+  },
+  "privacy_policy": {
+    "title": "Políticas de Privacidad",
+    "back": "Volver",
+    "download": "Descargar en PDF",
+    "sections": [
+      {
+        "title": "1. Información General y Responsable",
+        "paragraphs": ["En la Fundación Forward Costa Rica y el ecosistema FWD Talent, valoramos y respetamos tu privacidad. Esta Política de Privacidad describe cómo recopilamos, utilizamos, almacenamos, compartimos y protegemos tu información personal cuando utilizas nuestro Marketplace de Proyectos Freelance. El responsable del tratamiento de tus datos es la Fundación Forward Costa Rica."]
+      },
+      {
+        "title": "2. Datos que Recopilamos",
+        "paragraphs": ["Recopilamos información para proporcionar y mejorar nuestros servicios. Esto incluye:"],
+        "items": [
+          "Datos de Registro: Nombre, correo electrónico, contraseña (encriptada) y rol (Junior o Empresa).",
+          "Información Profesional (Juniors FWD): Habilidades técnicas, enlaces a portafolios (GitHub, LinkedIn, Behance), historial educativo en la Fundación y experiencia.",
+          "Información Comercial (Empresas): Nombre de la empresa, descripción, datos de contacto comercial y detalles de los proyectos publicados.",
+          "Datos de Uso: Información sobre cómo interactúas con la plataforma, registros de acceso y postulaciones."
+        ]
+      },
+      {
+        "title": "3. Uso de la Información",
+        "paragraphs": ["Utilizamos tus datos personales exclusivamente para:"],
+        "items": [
+          "Facilitar la creación y gestión de tu cuenta en la plataforma.",
+          "Habilitar la herramienta de \"matching\", conectando perfiles de Juniors FWD con los requerimientos técnicos de los proyectos publicados por las Empresas.",
+          "Permitir la comunicación inicial y las postulaciones a proyectos.",
+          "Enviar notificaciones importantes sobre el estado de tus proyectos, actualizaciones de la plataforma o cambios en nuestras políticas.",
+          "Mejorar el rendimiento, la seguridad y la experiencia de usuario del marketplace."
+        ]
+      },
+      {
+        "title": "4. Compartir y Divulgación de Datos",
+        "paragraphs": ["La premisa principal del marketplace es conectar talento con oportunidades. Por lo tanto:"],
+        "items": [
+          "Para Juniors FWD: Al postularte a un proyecto o hacer tu perfil público, las Empresas registradas podrán ver tu nombre, habilidades, historial de proyectos y portafolio.",
+          "Para Empresas: La información general de tu empresa y los detalles de los proyectos publicados serán visibles para los Juniors registrados."
+        ],
+        "note": "Compromiso: La Fundación Forward Costa Rica no vende, alquila ni comercializa tu información personal con terceros ajenos al ecosistema FWD Talent bajo ninguna circunstancia."
+      },
+      {
+        "title": "5. Retención de Datos",
+        "paragraphs": ["Conservaremos tu información personal mientras tu cuenta permanezca activa o según sea necesario para proporcionarte los servicios de la plataforma. Si decides eliminar tu cuenta, tus datos personales serán eliminados o anonimizados de nuestros sistemas, salvo aquellos que debamos conservar por obligaciones legales o para la resolución de disputas."]
+      },
+      {
+        "title": "6. Seguridad de la Información",
+        "paragraphs": ["Implementamos medidas de seguridad técnicas y organizativas para proteger tu información contra acceso no autorizado, pérdida o alteración. Esto incluye el uso de encriptación para contraseñas y comunicaciones seguras. Sin embargo, ningún sistema en internet es 100% seguro, por lo que te instamos a utilizar contraseñas fuertes y mantener tus credenciales confidenciales."]
+      },
+      {
+        "title": "7. Tus Derechos",
+        "paragraphs": ["Tienes el derecho de acceder, rectificar, actualizar o solicitar la eliminación de tu información personal en cualquier momento. Puedes gestionar la mayoría de tus datos directamente desde la sección \"Perfil\" en la plataforma. Si deseas ejercer algún derecho adicional o solicitar la eliminación completa de tu cuenta, puedes contactarnos."]
+      },
+      {
+        "title": "8. Cookies y Tecnologías Similares",
+        "paragraphs": ["Utilizamos cookies esenciales para mantener tu sesión activa y garantizar la seguridad de tu navegación. También podemos utilizar cookies analíticas de forma anonimizada para entender cómo se utiliza la plataforma y mejorar nuestros servicios. Puedes configurar tu navegador para rechazar cookies, aunque esto podría afectar el funcionamiento del sitio."]
+      },
+      {
+        "title": "9. Servicios de Terceros e IA",
+        "paragraphs": ["Para el funcionamiento de la plataforma y el análisis de compatibilidad (matching), utilizamos APIs de terceros (como servicios de IA para procesar coincidencias de habilidades). Los datos enviados a estos servicios se limitan a la información estrictamente necesaria y se procesan bajo acuerdos de confidencialidad y privacidad estrictos."]
+      },
+      {
+        "title": "10. Cambios a esta Política",
+        "paragraphs": ["Nos reservamos el derecho de actualizar esta Política de Privacidad periódicamente para reflejar cambios en nuestras prácticas o por requerimientos legales. Te notificaremos sobre actualizaciones significativas mediante un aviso en la plataforma o por correo electrónico."]
+      },
+      {
+        "title": "11. Contacto",
+        "paragraphs": ["Si tienes dudas, consultas o inquietudes relacionadas con el manejo de tus datos personales o esta Política de Privacidad, no dudes en ponerte en contacto con el equipo de soporte técnico de la Fundación Forward Costa Rica."]
+      }
+    ]
+  },
+  "mi_empresa": {
+    "actions": {
+      "save": "Guardar",
+      "cancel": "Cancelar",
+      "edit_section": "Editar sección"
+    },
+    "public": {
+      "close": "Cerrar",
+      "participate": "Participar",
+      "days": "{count} días",
+      "uses_ai": "Usa IA",
+      "offers": "{count} postulaciones",
+      "description": "Descripción",
+      "required_tech": "Tecnologías requeridas",
+      "projects_tab": "Proyectos",
+      "no_projects": "Este perfil aún no tiene proyectos publicados.",
+      "no_sectors": "Sin áreas especificadas."
+    },
+    "badge": {
+      "empresa": "Empresa",
+      "emprendedor": "Emprendedor"
+    },
+    "sections": {
+      "general": "Información General",
+      "culture": "Identidad y Cultura",
+      "interests": "Intereses de Contratación",
+      "needs": "Necesidades Actuales",
+      "modalities": "Modalidades de Colaboración",
+      "schedules": "Horarios de Trabajo",
+      "business_areas": "Áreas de Negocio",
+      "matching": "Pesos del Algoritmo Matching",
+      "contacts": "Contactos de Reclutamiento",
+      "stage": "Etapa del Proyecto",
+      "tech_support": "Apoyo Técnico Requerido",
+      "budget": "Presupuesto Estimado",
+      "project_description": "Acerca del Proyecto"
+    },
+    "fields": {
+      "company_name": "Nombre de la empresa",
+      "project_name": "Nombre del proyecto",
+      "cedula": "Cédula",
+      "project_description_placeholder": "Describí tu proyecto, el problema que resuelve y tu visión a largo plazo...",
+      "employees": "Empleados",
+      "employees_unit": "personas",
+      "country": "País",
+      "country_value": "Costa Rica",
+      "provincia": "Provincia",
+      "canton": "Cantón",
+      "comercial_name": "Nombre comercial",
+      "description": "Descripción",
+      "website": "Sitio web",
+      "website_error": "La URL debe comenzar con https:// o http://",
+      "location": "Ubicación",
+      "sector": "Sector",
+      "mission": "Misión",
+      "vision": "Visión",
+      "values": "Valores",
+      "organization": "Cultura organizacional"
+    },
+    "sector_labels": {
+      "tech": "Tecnología e Innovación",
+      "fintech": "Fintech",
+      "health": "Salud y Bienestar",
+      "logistics": "Logística y Operaciones",
+      "education": "Educación",
+      "energy": "Energía y Sostenibilidad",
+      "retail": "Retail y Comercio",
+      "manufacturing": "Manufactura e Industria",
+      "consulting": "Consultoría y Servicios",
+      "other": "Otro"
+    },
+    "hero": {
+      "edit_profile": "Editar perfil",
+      "save": "Guardar cambios",
+      "saving": "Guardando...",
+      "cancel": "Cancelar",
+      "save_success": "Cambios guardados correctamente.",
+      "save_error": "Ocurrió un error al guardar. Intentá de nuevo.",
+      "view_projects": "Ver proyectos",
+      "editing_hint": "Modo edición activo"
+    },
+    "logo": {
+      "alt": "Logo de la empresa",
+      "change": "Cambiar logo",
+      "delete": "Eliminar logo",
+      "invalid_type": "El archivo debe ser una imagen.",
+      "too_large": "La imagen supera el máximo de 5 MB.",
+      "upload_error": "No se pudo subir el logo. Intentá de nuevo.",
+      "section_title": "Logo de la empresa",
+      "upload_hint": "Subí o cambiá el logo de tu empresa. Formatos aceptados: JPG, PNG, WebP. Máximo 5 MB."
+    },
+    "contacts": {
+      "add_btn": "Reclutador",
+      "add_title": "Agregar Reclutador",
+      "edit_title": "Editar Reclutador",
+      "subtitle": "Completá los datos de contacto del encargado de reclutamiento.",
+      "name_label": "Nombre Completo",
+      "role_label": "Rol / Puesto",
+      "email_label": "Correo Electrónico",
+      "delete_btn": "Eliminar",
+      "cancel_btn": "Cancelar",
+      "save_btn": "Guardar"
+    },
+    "interests": {
+      "add_placeholder": "Añadir stack..."
+    },
+    "culture": {
+      "add_value_placeholder": "Nuevo valor...",
+      "add_value": "Agregar valor"
+    },
+    "validation": {
+      "url_invalid": "La URL debe comenzar con https:// o http://",
+      "max_255": "Máximo 255 caracteres",
+      "max_400": "Máximo 400 caracteres",
+      "max_1000": "Máximo 1000 caracteres",
+      "email_invalid": "Ingresá un correo electrónico válido",
+      "field_required": "Este campo es requerido"
+    },
+    "placeholders": {
+      "company_name": "Ej. Acme Technologies S.A.",
+      "description": "Describí el enfoque, propósito y cultura de tu empresa...",
+      "sector": "Ej. Tecnología, Fintech...",
+      "mission": "Describí la razón de ser de tu empresa y el impacto que buscás generar...",
+      "vision": "¿Cómo imaginás tu empresa en los próximos 5 años?",
+      "culture": "Describí el ambiente, los valores y las formas de trabajo que definen tu equipo...",
+      "values_example_1": "Innovación",
+      "values_example_2": "Colaboración",
+      "values_example_3": "Excelencia",
+      "values_hint": "Agregá valores que representen a tu empresa",
+      "contact_example_name": "Ana Ramírez",
+      "contact_example_role": "Reclutadora de Talento",
+      "contact_example_email": "ana@empresa.com",
+      "contact_hint": "Agregá los contactos encargados del reclutamiento",
+      "loading_areas": "Cargando áreas...",
+      "website_emprendedor": "https://tuproyecto.com",
+      "website_empresa": "https://tuempresa.com"
+    },
+    "modalities": {
+      "remote": "Remoto",
+      "onsite": "Presencial",
+      "hybrid": "Híbrido",
+      "nomad": "Nómada"
+    },
+    "matching_weights": {
+      "skills": "Habilidades técnicas",
+      "experience": "Experiencia",
+      "cultural": "Afinidad cultural",
+      "availability": "Disponibilidad"
+    },
+    "schedules": {
+      "flexible": "Horario Flexible",
+      "fixed": "Horario Fijo",
+      "timezone": "Zona horaria (GMT-6)"
+    }
+  },
+  "done_page": {
+    "eyebrow": "Solicitud recibida",
+    "title": "Tu cuenta está en revisión",
+    "description": "El equipo de FWD revisará tu cuenta y te notificará por correo cuando esté aprobada. Esto suele tardar entre 24 y 48 horas.",
+    "cta": "Volver al inicio"
+  },
+  "admin": {
+    "title": "Panel de Administración",
+    "subtitle": "Gestión del Marketplace FWD",
+    "stats": {
+      "total_students": "Total Estudiantes",
+      "active_companies": "Empresas Aprobadas",
+      "active_projects": "Proyectos Activos",
+      "pending_approvals": "Aprobaciones Pendientes"
+    },
+    "tabs": {
+      "applications": "Solicitudes Egresados",
+      "users": "Usuarios",
+      "projects": "Proyectos",
+      "companies": "Empresas",
+      "talent": "Talento",
+      "reports": "Reportes",
+      "config": "Configuración"
+    },
+    "applications": {
+      "title": "Solicitudes de ingreso de egresados",
+      "empty": "No hay solicitudes pendientes de aprobación.",
+      "name": "Egresado",
+      "specialization": "Especialización",
+      "date": "Fecha Solicitud",
+      "status": "Estado",
+      "actions": "Acciones",
+      "approve": "Aprobar",
+      "reject": "Rechazar",
+      "approved": "Aprobada",
+      "rejected": "Rechazada",
+      "pending": "Pendiente"
+    },
+    "users": {
+      "title": "Gestión de Usuarios",
+      "search_placeholder": "Buscar por nombre o correo...",
+      "filter_role": "Todos los roles",
+      "role_student": "Estudiante",
+      "role_company": "Empresa",
+      "role_admin": "Admin",
+      "status_active": "Activo",
+      "status_suspended": "Suspendido",
+      "actions": "Acciones",
+      "change_role": "Cambiar Rol",
+      "suspend": "Suspender",
+      "activate": "Activar"
+    },
+    "projects": {
+      "title": "Gestión de Proyectos",
+      "company": "Empresa",
+      "budget": "Presupuesto",
+      "col_project": "Proyecto",
+      "col_applications": "Postulaciones",
+      "search_placeholder": "Buscar por nombre o empresa...",
+      "filter_status": "Todos los estados",
+      "status": "Estado",
+      "status_active": "Activo",
+      "status_paused": "Pausado",
+      "status_moderation": "Pendiente Moderación",
+      "status_closed": "Cerrado",
+      "approve": "Aprobar",
+      "pause": "Pausar",
+      "reactivate": "Reactivar",
+      "delete": "Eliminar",
+      "delete_confirm_title": "¿Eliminar proyecto?",
+      "delete_confirm_desc": "Esta acción no se puede deshacer. El proyecto y sus postulaciones serán eliminados.",
+      "delete_cancel": "Cancelar",
+      "empty": "No hay proyectos registrados."
+    },
+    "companies": {
+      "title": "Gestión de Empresas",
+      "sector": "Sector",
+      "status": "Estado",
+      "status_approved": "Aprobada",
+      "status_pending": "Pendiente Aprobación",
+      "status_rejected": "Rechazada",
+      "approve": "Aprobar",
+      "reject": "Rechazar",
+      "suspend": "Suspender"
+    },
+    "talent": {
+      "title": "Gestión de Talento",
+      "search_placeholder": "Buscar por nombre, correo o especialización...",
+      "filter_specialty": "Todas las especializaciones",
+      "filter_status": "Todos los estados",
+      "col_talent": "Talento",
+      "col_specialty": "Especialización",
+      "col_applications": "Postulaciones",
+      "col_status": "Estado",
+      "col_actions": "Acciones",
+      "status_active": "Activo",
+      "status_suspended": "Suspendido",
+      "actions_suspend": "Suspender",
+      "actions_activate": "Activar",
+      "empty": "No hay egresados registrados aún."
+    },
+    "reports": {
+      "title": "Reportes y Analítica",
+      "subtitle": "Métricas del ciclo actual",
+      "kpi_new_projects": "Proyectos este mes",
+      "kpi_total_applications": "Postulaciones totales",
+      "kpi_acceptance_rate": "Tasa de aceptación",
+      "kpi_active_talents": "Talentos activos",
+      "recent_activity": "Actividad Reciente",
+      "activity_empty": "No hay actividad reciente.",
+      "activity_col_event": "Evento",
+      "activity_col_actor": "Actor",
+      "activity_col_date": "Fecha",
+      "breakdown_projects": "Proyectos por estado",
+      "breakdown_applications": "Postulaciones por estado",
+      "export_btn": "Exportar reporte",
+      "export_success": "Reporte generado correctamente."
+    },
+    "config": {
+      "title": "Configuración del Sistema",
+      "save_btn": "Guardar cambios",
+      "save_success": "Configuración guardada correctamente.",
+      "section_platform": "Plataforma",
+      "platform_name_label": "Nombre de la plataforma",
+      "platform_name_placeholder": "FWD Marketplace",
+      "platform_email_label": "Correo de soporte",
+      "platform_email_placeholder": "soporte@fwdcostarica.com",
+      "platform_slogan_label": "Eslogan",
+      "platform_slogan_placeholder": "Talento que avanza.",
+      "section_notifications": "Notificaciones",
+      "notif_new_request": "Notificar en nuevas solicitudes de ingreso",
+      "notif_company_approved": "Notificar cuando se apruebe una empresa",
+      "notif_project_moderation": "Notificar cuando un proyecto entre en moderación",
+      "section_moderation": "Moderación",
+      "mod_min_match_label": "Porcentaje mínimo de match (%)",
+      "mod_max_days_label": "Días máximos para moderar un proyecto",
+      "validation_name_required": "El nombre es obligatorio.",
+      "validation_email_invalid": "Correo electrónico inválido.",
+      "validation_slogan_max": "Máximo 60 caracteres.",
+      "validation_min_match_range": "Debe estar entre 0 y 100.",
+      "validation_max_days_min": "Debe ser mayor a 0."
+    }
+  },
+  "ranking": {
+    "title": "Ranking de juniors",
+    "subtitle": "Los mejores talentos ordenados por reputación acumulada en proyectos completados.",
+    "filter_label": "Filtrar por especialidad",
+    "filter_all": "Todos",
+    "filter_frontend": "Frontend",
+    "filter_backend": "Backend",
+    "filter_fullstack": "Fullstack",
+    "filter_ia": "IA",
+    "specialty_frontend": "Frontend",
+    "specialty_backend": "Backend",
+    "specialty_fullstack": "Fullstack",
+    "specialty_ia": "IA",
+    "projects_count": "{count} proyectos",
+    "availability_immediate": "Disponible ya",
+    "availability_two_weeks": "En 2 semanas",
+    "availability_one_month": "En 1 mes",
+    "mock_disclaimer": "Datos en modo demo. El ranking real se actualiza con proyectos completados.",
+    "loading": "Cargando ranking..."
+  },
+  "preferencias_notificaciones": {
+    "title": "Preferencias de notificaciones",
+    "subtitle": "Elegí qué tipos de alertas querés recibir. Podés cambiarlas en cualquier momento.",
+    "group_activity": "Actividad de mis postulaciones",
+    "group_projects": "Proyectos disponibles",
+    "group_messages": "Mensajería",
+    "group_applications": "Postulaciones recibidas",
+    "group_deliverables": "Entregables",
+    "pref_offer_accepted_label": "Propuesta adjudicada",
+    "pref_offer_accepted_desc": "Cuando una empresa te selecciona para un proyecto.",
+    "pref_offer_reviewed_label": "Propuesta en revisión",
+    "pref_offer_reviewed_desc": "Cuando una empresa está evaluando tu carta.",
+    "pref_new_project_label": "Nuevos proyectos",
+    "pref_new_project_desc": "Proyectos que encajan con tus habilidades y disponibilidad.",
+    "pref_deadline_reminder_label": "Recordatorio de plazo",
+    "pref_deadline_reminder_desc": "Aviso cuando queden 48 h para la fecha de cierre.",
+    "pref_new_message_label": "Mensaje nuevo",
+    "pref_new_message_desc": "Cuando una empresa te envía un mensaje.",
+    "pref_entregable_sent_label": "Entregable recibido",
+    "pref_entregable_sent_desc": "Cuando un junior sube un nuevo entregable.",
+    "pref_new_offer_label": "Nueva postulación",
+    "pref_new_offer_desc": "Cuando un junior se postula a uno de tus proyectos.",
+    "save_btn": "Guardar preferencias",
+    "saving": "Guardando...",
+    "saved_confirmation": "Preferencias guardadas",
+    "save_hint": "Los cambios no se guardan hasta que hagas clic en el botón.",
+    "mock_disclaimer": "Preferencias en modo demo. Se conectan con el backend en Fase 2.0."
+  },
+  "mensajes": {
+    "title": "Mensajes",
+    "subtitle": "Conversaciones con las empresas de los proyectos en los que participás.",
+    "threads_label": "Conversaciones",
+    "empty_title": "Sin conversaciones activas",
+    "empty_desc": "Cuando una empresa te adjudique un proyecto, la conversación aparecerá aquí.",
+    "select_prompt": "Seleccioná una conversación",
+    "select_desc": "Elegí un hilo de la lista para ver los mensajes.",
+    "back": "Volver",
+    "compose_placeholder": "Escribí tu mensaje... (Enter para enviar)",
+    "send_btn": "Enviar mensaje",
+    "mock_badge": "Modo demo",
+    "mock_disclaimer": "Mensajería en modo demo. Se conecta con el backend en Fase 2.0.",
+    "no_messages": "Aún no hay mensajes en esta conversación.",
+    "unnamed_project": "Proyecto sin título",
+    "empty_desc_open": "Podés iniciar una conversación con cualquier proyecto publicado.",
+    "solo_chat_badge": "Solo chat"
+  },
+  "notification_panel": {
+    "aria_open": "Notificaciones",
+    "aria_close": "Cerrar",
+    "aria_unread": "No leída",
+    "title": "Notificaciones",
+    "unread_count": "{count} nuevas",
+    "mark_all_read": "Marcar todo leído",
+    "empty": "Sin notificaciones",
+    "view_all": "Ver toda la actividad",
+    "preferences": "Preferencias"
+  },
+  "cosmos_profesional": {
+    "screen_label": "Diagrama del proceso en FWD",
+    "eyebrow": "Cómo funciona",
+    "title": "De la idea a la realidad",
+    "description": "Dos roles, un mismo camino: de la idea al proyecto real en FWD Talent.",
+    "col_egresado": "Egresado FWD",
+    "col_empresa": "Empresa",
+    "cta_question": "¿Listo para tu primer proyecto real?",
+    "cta_junior": "Unirme como egresado",
+    "cta_empresa": "Publicar un proyecto",
+    "stars": {
+      "0": {
+        "title": "Crea tu cuenta",
+        "desc": "Registrate como egresado FWD, completá tu perfil y empezá a explorar los proyectos disponibles."
+      },
+      "1": {
+        "title": "Crea tu cuenta",
+        "desc": "Registrate como empresa, describí tu organización y el tipo de talento que necesitás."
+      },
+      "2": {
+        "title": "Publica el proyecto",
+        "desc": "Definí el alcance, el stack requerido y el presupuesto. El equipo de FWD revisa y activa el proyecto."
+      },
+      "3": {
+        "title": "Envía tu propuesta",
+        "desc": "Elegí el proyecto que mejor encaja con tus habilidades y escribí tu carta de presentación."
+      },
+      "4": {
+        "title": "Recibe propuestas",
+        "desc": "Revisá las postulaciones, pedí ajustes si hace falta y elegí al egresado ideal para tu proyecto."
+      },
+      "5": {
+        "title": "Mejora tu propuesta",
+        "desc": "Si la empresa pide cambios, refiná tu propuesta y demostrá tu capacidad de iteración."
+      },
+      "6": {
+        "title": "Proyecto adjudicado",
+        "desc": "El proyecto se adjudica: el egresado gana experiencia real y la empresa recibe el trabajo terminado."
+      }
+    }
+  },
+  "marketplace_preview": {
+    "eyebrow": "Proyectos disponibles ahora",
+    "title": "Proyectos reales. No simulaciones",
+    "description": "Empresas publican proyectos concretos con stack definido, presupuesto claro y alcance real. Vos elegís el que encaja con tus habilidades, enviás tu propuesta y construís tu primer portafolio profesional.",
+    "cta_hint": "¿Pero cuál es el proceso?",
+    "cta": "Conocer la dinámica",
+    "remote": "Remoto",
+    "weeks": "sem",
+    "new_badge": "Nuevo",
+    "projects": {
+      "0": {
+        "title": "Landing page para startup de bienestar",
+        "company": "BioTech CR",
+        "stack": "React · Tailwind · Framer Motion",
+        "duration": "3",
+        "budget": "$250 – $400",
+        "desc": "Diseñar e implementar una landing page responsive con hero animado y formulario de captura de leads."
+      },
+      "1": {
+        "title": "API REST para app de delivery",
+        "company": "FoodRush",
+        "stack": "Node.js · Express · Supabase",
+        "duration": "4",
+        "budget": "$300 – $500",
+        "desc": "Construir endpoints de pedidos, usuarios y notificaciones para el MVP de una app de entrega a domicilio."
+      },
+      "2": {
+        "title": "Dashboard de métricas de ventas",
+        "company": "DataLab",
+        "stack": "Next.js · TypeScript · Chart.js",
+        "duration": "5",
+        "budget": "$400 – $650",
+        "desc": "Panel de control con gráficas de ventas diarias, usuarios activos y tasa de conversión en tiempo real."
+      }
+    }
+  },
+  "diferenciadores": {
+    "eyebrow": "¿Por qué FWD Talent?",
+    "title": "No somos Upwork",
+    "description": "Construimos un espacio para que el talento junior de Costa Rica demuestre lo que vale. Cada detalle del proceso está pensado para que ambas partes ganen.",
+    "items": {
+      "0": {
+        "title": "Proyectos validados",
+        "desc": "Cada publicación pasa por revisión del equipo FWD antes de aparecer en el marketplace. Sin ruido, solo oportunidades reales."
+      },
+      "1": {
+        "title": "Talento verificado",
+        "desc": "Solo egresados del programa FWD con habilidades comprobadas y portafolio real. Cero perfiles vacíos."
+      },
+      "2": {
+        "title": "Proceso guiado",
+        "desc": "Acompañamiento en cada etapa: desde la postulación hasta la entrega final. Nunca navegás solo."
+      },
+      "3": {
+        "title": "Contacto directo",
+        "desc": "Sin intermediarios entre egresado y empresa. Contacto directo desde el primer proyecto."
+      }
+    }
+  },
+  "faq": {
+    "eyebrow": "Preguntas frecuentes",
+    "title": "Todo lo que querés saber",
+    "items": {
+      "0": {
+        "q": "¿Necesito experiencia laboral para postular?",
+        "a": "No. FWD Talent está diseñado para egresados sin experiencia formal. Lo que importa es lo que aprendiste en el programa y lo que podés demostrar con tu portafolio."
+      },
+      "1": {
+        "q": "¿Cómo me paga la empresa?",
+        "a": "El pago se coordina directamente entre vos y la empresa. FWD facilita el contacto y el proceso, pero actualmente no procesa pagos. Podés acordar transferencia bancaria, PayPal u otros métodos con cada empresa."
+      },
+      "2": {
+        "q": "¿Puedo postular a varios proyectos al mismo tiempo?",
+        "a": "Podés explorar todos los proyectos que quieras, aunque solo podés tener una postulación activa a la vez. Te recomendamos personalizar tu carta de presentación para aumentar tus posibilidades."
+      },
+      "3": {
+        "q": "¿Cuánto cuesta publicar un proyecto como empresa?",
+        "a": "El acceso está disponible de forma gratuita durante la fase beta. Próximamente habrá planes según el volumen de publicaciones."
+      },
+      "4": {
+        "q": "¿Cómo sé que el egresado tiene las habilidades que necesito?",
+        "a": "Cada perfil muestra los proyectos completados en FWD, el stack dominado y la evaluación del programa. Podés revisar el portafolio antes de adjudicar el proyecto."
+      },
+      "5": {
+        "q": "¿Cuánto tarda en revisarse mi publicación?",
+        "a": "El equipo de FWD revisa cada publicación en un máximo de 48 horas hábiles. Recibís una notificación cuando el proyecto esté activo en el marketplace."
+      },
+      "6": {
+        "q": "¿Qué pasa si no estoy satisfecho con el trabajo entregado?",
+        "a": "El proceso incluye una ronda de revisión antes del cierre. Podés solicitar correcciones a través de la plataforma. El equipo FWD puede mediar si es necesario."
+      },
+      "7": {
+        "q": "¿En qué países está disponible FWD Talent?",
+        "a": "Por ahora operamos en Costa Rica. La expansión a otros países de Centroamérica y LATAM está en el roadmap para el segundo semestre."
+      }
+    }
+  },
+  "proceso_page": {
+    "back": "Volver al marketplace",
+    "tab_info": "Info",
+    "tab_chat": "Asistente",
+    "tab_proceso": "Proceso",
+    "chat_ia_mode": "IA",
+    "chat_directo_mode": "Empresario",
+    "chat_directo_soon": "Podrás escribir directamente al empresario una vez que tu propuesta sea adjudicada.",
+    "chat_placeholder": "Preguntá sobre el proyecto...",
+    "chat_suggested": "Preguntas frecuentes",
+    "chat_welcome": "Hola. Soy el asistente de FWD y puedo responder preguntas sobre este proyecto o guiarte en el proceso de postulación.",
+    "form_title": "Crear postulación",
+    "form_subtitle": "Contanos por qué sos la persona indicada para este proyecto.",
+    "form_title_nueva_version": "Enviar nueva versión",
+    "form_subtitle_nueva_version": "La empresa solicitó cambios. Revisá los comentarios y enviá una propuesta actualizada.",
+    "already_applied_title": "Ya enviaste tu propuesta",
+    "already_applied_desc": "Podés ver el estado de tu proceso en la pestaña Proceso.",
+    "already_applied_cta": "Ver mi proceso",
+    "proceso_empty_title": "Aún no has postulado",
+    "proceso_empty_desc": "Completá el formulario de la derecha para enviar tu propuesta y comenzar el proceso.",
+    "proceso_step_enviada": "Propuesta enviada",
+    "proceso_step_revision": "En revisión",
+    "proceso_step_decision": "Decisión final",
+    "proceso_revision_chat": "Observaciones de la empresa",
+    "proceso_revision_placeholder": "Mensaje al empresario...",
+    "proceso_revision_empty": "La empresa dejará comentarios aquí al revisar tu propuesta.",
+    "proceso_observacion_empresa": "Comentario de revisión",
+    "proceso_title": "Tu proceso",
+    "proceso_proposal_number": "Propuesta",
+    "begin_proceso": "Iniciar proceso",
+    "begin_proceso_applied": "Ver mi proceso",
+    "empresa_proposals_title": "Propuestas recibidas",
+    "empresa_proposals_empty": "Todavía no hay propuestas para este proyecto.",
+    "empresa_filter_all": "Todas",
+    "empresa_move_to_review": "Enviar a revisión",
+    "empresa_adjudicate": "Adjudicar",
+    "empresa_reject": "Rechazar",
+    "empresa_view_entregables": "Ver entregables",
+    "empresa_entregable_approve": "Aprobar",
+    "empresa_entregable_changes": "Solicitar cambios",
+    "empresa_revision_title": "Chat de revisión",
+    "empresa_revision_input": "Escribí un comentario de revisión..."
+  },
+  "project_chat": {
+    "label_junior": "Junior",
+    "label_empresa": "Empresa",
+    "empty": "Aún no hay mensajes. Iniciá la conversación.",
+    "send_error": "No se pudo enviar el mensaje. Probá de nuevo.",
+    "placeholder": "Escribí un mensaje... (Enter para enviar)",
+    "send": "Enviar mensaje",
+    "hint": "Enter para enviar · Shift+Enter para nueva línea",
+    "seleccionar_junior": "Conversaciones",
+    "sin_conversaciones": "Sin conversaciones aún",
+    "no_leidos": "{count, plural, one {# mensaje sin leer} other {# mensajes sin leer}}",
+    "cargando": "Cargando conversación"
+  },
+  "prototipo_preview": {
+    "preview_btn": "Vista previa",
+    "open_btn": "Abrir",
+    "modal_title": "Vista previa",
+    "open_new_tab": "Abrir en pestaña nueva",
+    "close": "Cerrar",
+    "iframe_error": "No se pudo mostrar la vista previa aquí (el sitio puede bloquear la incrustación). Abrila en una pestaña nueva.",
+    "sin_url": "Sin enlace de prototipo"
+  },
+  "gestion_page": {
+    "compensation_updated": "Compensación actualizada el {date}",
+    "paused_no_price_notice": "Este proyecto está pausado y oculto del marketplace porque no tiene compensación. Agregá una para reactivarlo y publicarlo.",
+    "paused_no_price_cta": "Agregar compensación",
+    "proceso_revision_empty": "La empresa dejará comentarios aquí al revisar tu propuesta.",
+    "title": "Gestión de proyectos",
+    "subtitle_junior": "Seguí el estado de tus postulaciones activas",
+    "subtitle_empresa": "Administrá tus proyectos y postulaciones recibidas",
+    "empty_junior": "No tenés postulaciones activas todavía",
+    "empty_empresa": "No tenés proyectos publicados todavía",
+    "ver_proceso": "Ver proceso",
+    "section_junior": "Mis postulaciones",
+    "section_empresa": "Mis proyectos",
+    "applied_on": "Postulado el",
+    "published_on": "Publicado el",
+    "proposals_count": "{count} propuestas",
+    "all_projects": "Todos los proyectos",
+    "select_project_prompt": "Seleccioná un proyecto para comenzar",
+    "welcome_desc_empresa": "Seleccioná un proyecto de la lista para ver las propuestas recibidas y gestionar el proceso.",
+    "welcome_desc_empresa_empty": "Publicá tu primer proyecto y empezá a recibir propuestas de juniors.",
+    "welcome_cta_empresa": "Nuevo proyecto",
+    "welcome_state_published": "Publicado",
+    "analytics_projects": "Proyectos",
+    "analytics_proposals": "Propuestas recibidas",
+    "analytics_active": "Proyectos activos",
+    "analytics_por_revisar": "Por revisar",
+    "por_revisar_badge": "{count} por revisar",
+    "state_borrador": "Borrador",
+    "state_en_evaluacion": "En evaluación",
+    "state_adjudicado": "Adjudicado",
+    "state_en_desarrollo": "En desarrollo",
+    "state_cerrado": "Cerrado",
+    "state_cancelado": "Cancelado",
+    "ai_idea_placeholder": "Ej: Necesito una app web para gestionar turnos de una clínica pequeña...",
+    "ai_reply_placeholder": "Respondé al asistente...",
+    "form_titulo_placeholder": "Nombre del proyecto",
+    "form_descripcion_placeholder": "Describí el proyecto, objetivos y entregables esperados",
+    "form_condiciones_placeholder": "Opcional: aclaraciones, expectativas y dudas comunes del proyecto. El asistente del proyecto las usa para responderle a los juniors.",
+    "form_compensacion_placeholder": "Ej: 500",
+    "form_otros_placeholder": "Otra tecnología no listada...",
+    "aria_proyectos": "Proyectos",
+    "aria_nuevo_proyecto": "Nuevo proyecto",
+    "aria_eliminar_proyecto": "Eliminar proyecto",
+    "aria_secciones_proyecto": "Secciones del proyecto",
+    "aria_cargando_proyecto": "Cargando proyecto",
+    "aria_editar_proyecto": "Editar proyecto",
+    "aria_enviar": "Enviar",
+    "aria_cancelar": "Cancelar",
+    "unsaved_title": "Cambios sin guardar",
+    "unsaved_body": "Si salís ahora, los cambios del formulario se van a perder. ¿Seguro que querés continuar?",
+    "unsaved_keep_editing": "Seguir editando",
+    "unsaved_leave": "Salir sin guardar",
+    "delete_aria": "Confirmar eliminación",
+    "delete_title": "Eliminar proyecto",
+    "delete_body": "¿Seguro que querés eliminar <strong>{titulo}</strong>? Esta acción no se puede deshacer.",
+    "delete_cancel": "Cancelar",
+    "delete_deleting": "Eliminando...",
+    "delete_confirm": "Eliminar",
+    "analytics_closed": "{count} cerrados",
+    "analytics_projects_list": "Todos los proyectos",
+    "junior_dash_total": "Postulaciones",
+    "junior_dash_pending": "En revisión",
+    "junior_dash_changes": "Con cambios",
+    "junior_dash_won": "Adjudicadas",
+    "junior_dash_list": "Mis postulaciones",
+    "junior_dash_explore": "Buscar más proyectos",
+    "junior_recent_activity": "Actividad reciente",
+    "junior_dash_today": "Hoy",
+    "junior_dash_cal_activity": "Actividad",
+    "junior_dash_active_label": "activos",
+    "junior_dash_more": "más",
+    "junior_dash_page": "Página {current} de {total}",
+    "junior_dash_prev_page": "Página anterior",
+    "junior_dash_next_page": "Página siguiente",
+    "junior_activity_enviada": "Enviaste una propuesta",
+    "junior_activity_en_revision": "La empresa está revisando tu propuesta",
+    "junior_activity_solicitar_cambios": "La empresa solicitó cambios",
+    "junior_activity_adjudicada": "Tu propuesta fue adjudicada",
+    "junior_activity_no_seleccionada": "No fuiste seleccionado",
+    "junior_activity_calificado": "Proyecto calificado",
+    "junior_cal_hint": "Tocá un proyecto para ver su ciclo",
+    "junior_cal_applied": "Inicio",
+    "junior_cal_end": "Cierre",
+    "junior_cal_adjudicated": "Adjudicado",
+    "procesos_title": "Mis procesos",
+    "procesos_count": "proyectos activos",
+    "procesos_timeline": "Seguimiento",
+    "procesos_in_progress": "En curso",
+    "procesos_open": "Entrar al proyecto",
+    "procesos_ver_calificacion": "Ver calificación",
+    "project_skills": "Tecnologías",
+    "project_requirements": "Condiciones y preguntas frecuentes",
+    "proceso_duracion": "{days} días",
+    "proceso_doc_hint": "Adjuntá un enlace o subí un PDF — al menos uno es obligatorio.",
+    "welcome_desc_junior": "Seleccioná un proyecto de la lista para ver el estado de tu postulación y seguir el proceso.",
+    "welcome_desc_junior_empty": "Explorá el marketplace, encontrá un proyecto que te interese y enviá tu propuesta.",
+    "welcome_cta_junior": "Explorar marketplace",
+    "section_info": "Información",
+    "section_chat": "Chat",
+    "abrir_chat": "Abrir chat",
+    "mensajes_asistentes": "Chat con asistentes de empresas",
+    "mensajes_directos": "Chats directos con empresas",
+    "mensajes_asistente_nombre": "Asistente de {empresa}",
+    "mensajes_sin_asistentes": "No tenés proyectos activos.",
+    "mensajes_sin_directos": "Todavía no hay chats directos. Cuando el asistente no pueda ayudarte, podrás escribirle a la empresa.",
+    "mensajes_vacio_titulo": "Tus mensajes",
+    "mensajes_vacio_desc": "Seleccioná un chat de la lista para ver la conversación.",
+    "mensajes_empresa_titulo": "Conversaciones",
+    "mensajes_empresa_vacio": "Todavía no hay conversaciones. Aparecerán cuando un junior te escriba.",
+    "mensajes_empresa_n_juniors": "{count, plural, one {# junior} other {# juniors}}",
+    "mensajes_empresa_vacio_titulo": "Elegí una conversación",
+    "mensajes_empresa_vacio_desc": "Seleccioná un proyecto de la izquierda para ver y responder los mensajes de los juniors.",
+    "aria_nav_principal": "Navegación principal",
+    "aria_dashboard": "Dashboard",
+    "aria_procesos": "Procesos",
+    "aria_mensajes": "Mensajes",
+    "aria_guardados": "Guardados",
+    "guardados_title": "Proyectos guardados",
+    "guardados_count": "proyectos guardados",
+    "guardados_empty": "Todavía no guardaste ningún proyecto",
+    "guardados_expired": "Cerrado",
+    "guardados_view": "Ver",
+    "guardados_remove": "Quitar de guardados",
+    "section_proceso": "Proceso",
+    "section_matches": "Matches",
+    "action_pause_btn": "Pausar proyecto",
+    "action_cancel_btn": "Cancelar proyecto",
+    "pause_dialog_title": "Pausar proyecto",
+    "pause_dialog_body": "El proyecto dejará de aparecer en el marketplace. El plazo queda congelado hasta que lo retomes.",
+    "pause_dialog_confirm": "Pausar",
+    "pause_dialog_back": "Volver",
+    "cancel_step1_title": "¿Pausar en lugar de cancelar?",
+    "cancel_step1_body": "Pausar oculta el proyecto temporalmente sin notificar a nadie. Cancelar es definitivo y notifica a todos los participantes.",
+    "cancel_step1_pause": "Pausar temporalmente",
+    "cancel_step1_cancel": "Cancelar definitivamente",
+    "cancel_step1_back": "Volver",
+    "cancel_step2_title": "Esta acción es irreversible",
+    "cancel_step2_body": "¿Seguro que querés cancelar el proyecto? Se notificará a todos los juniors que participaron.",
+    "cancel_step2_confirm": "Sí, cancelar proyecto",
+    "cancel_step2_back": "Volver",
+    "state_pausado": "Pausado",
+    "action_resume_btn": "Reactivar proyecto",
+    "resume_dialog_title": "Reactivar proyecto",
+    "resume_dialog_body": "El proyecto volverá a aparecer en el marketplace en estado de recepción de postulantes.",
+    "resume_dialog_confirm": "Reactivar",
+    "resume_dialog_back": "Volver",
+    "action_finalize_btn": "Finalizar proyecto",
+    "finalize_dialog_title": "Finalizar proyecto",
+    "finalize_dialog_body": "Se cierra el proyecto y se libera al junior adjudicado (podrá postular a otros proyectos). Después podés dejarle una calificación. Esta acción no se puede deshacer.",
+    "finalize_dialog_confirm": "Finalizar",
+    "finalize_dialog_back": "Volver",
+    "action_reopen_btn": "Reabrir (liberar adjudicación)",
+    "reopen_dialog_title": "Reabrir el proyecto",
+    "reopen_dialog_body": "Se deshace la adjudicación: el proyecto vuelve a recibir postulaciones y todas las propuestas vuelven a evaluación. Útil si el junior adjudicado abandonó. Se notifica a los juniors afectados.",
+    "reopen_dialog_confirm": "Reabrir proyecto",
+    "reopen_dialog_back": "Volver",
+    "state_en_recepcion": "En recepción",
+    "description_label": "Descripción",
+    "skills_label": "Tecnologías requeridas",
+    "days": "días",
+    "chat_coming_soon_title": "Chat directo",
+    "chat_coming_soon_desc_junior": "Podrás escribir directamente al empresario una vez que tu propuesta sea adjudicada.",
+    "chat_coming_soon_desc_empresa": "Podrás chatear con el junior adjudicado una vez que el proyecto esté en desarrollo.",
+    "proceso_state_label": "Estado actual",
+    "proceso_tracker_label": "Seguimiento del proceso",
+    "proceso_tu_propuesta": "Tu propuesta",
+    "proceso_entregables_label": "Entregables",
+    "proceso_entregables_empty": "Aún no hay entregables enviados para este proyecto.",
+    "proceso_no_offer": "No tenés una propuesta activa para este proyecto.",
+    "empresa_proposals_label": "Propuestas recibidas",
+    "empresa_proposals_empty": "Aún no hay propuestas para este proyecto.",
+    "proceso_propuestas_label": "Propuestas",
+    "proceso_propuesta_n": "Propuesta {n}",
+    "proceso_propuesta_placeholder": "Se habilita cuando la empresa solicite cambios.",
+    "proceso_documentacion_label": "Prototipo / Documentación",
+    "proceso_observaciones_label": "Observaciones y revisión",
+    "proceso_observaciones_empty": "Aún no hay observaciones de la empresa.",
+    "proceso_comentario_label": "Comentarios de revisión",
+    "proceso_comentario_placeholder": "Escribí tus comentarios aquí...",
+    "proceso_version_singular": "versión",
+    "proceso_version_plural": "versiones",
+    "proceso_accion_revision": "Marcar en revisión",
+    "proceso_accion_adjudicar": "Adjudicar",
+    "proceso_accion_cambios": "Solicitar cambios",
+    "proceso_accion_rechazar": "No seleccionar",
+    "proceso_badge_pendiente": "Pendiente",
+    "proceso_badge_esperando": "Esperando revisión",
+    "proceso_badge_enviada": "Enviada",
+    "proceso_badge_revision": "En revisión",
+    "proceso_badge_cambios": "Cambios solicitados",
+    "proceso_badge_aceptada": "Aceptada",
+    "proceso_badge_nosel": "No seleccionada",
+    "proceso_badge_adjudicada": "Adjudicada",
+    "proceso_crear_propuesta": "Crear propuesta",
+    "proceso_busy_message": "Ya tenés un proyecto activo. No podés postular a otro hasta que ese proyecto se cierre.",
+    "proceso_desc_placeholder": "Describí tu enfoque, experiencia relevante y cómo vas a encarar el proyecto...",
+    "proceso_doc_label": "Prototipo / Documentación",
+    "proceso_link_placeholder": "https://mi-prototipo.vercel.app",
+    "proceso_subir_archivo": "Subir archivo",
+    "proceso_recursos_titulo": "Recursos del proyecto",
+    "proceso_recursos_subtitulo": "Estos datos se usan para generar la previsualización del proyecto.",
+    "proceso_recursos_nombre": "Tu nombre",
+    "proceso_recursos_proyecto": "Nombre del proyecto",
+    "proceso_recursos_repo": "Repositorio GitHub",
+    "proceso_subir_propuesta": "Subir propuesta",
+    "proceso_negociar_pago": "Negociar pago",
+    "proceso_menu_postulacion": "Abrir postulación",
+    "calc_titulo": "Cotizá tu propuesta",
+    "calc_subtitulo": "Estimá cuánto cobrar por este proyecto. El monto se adjunta a tu propuesta como contraoferta; el pago se coordina por fuera de la plataforma.",
+    "calc_alcance_label": "Alcance del proyecto",
+    "calc_modo_horas": "Por horas",
+    "calc_modo_semanas": "Por semanas",
+    "calc_horas_label": "Horas estimadas",
+    "calc_semanas_label": "Semanas",
+    "calc_horas_semana_label": "Horas por semana",
+    "calc_complejidad_label": "Complejidad",
+    "calc_complejidad_baja": "Baja",
+    "calc_complejidad_media": "Media",
+    "calc_complejidad_alta": "Alta",
+    "calc_stack_label": "Stack tecnológico",
+    "calc_stack_seleccionadas": "({count} seleccionadas)",
+    "calc_ia_ayuda": "Completar con IA",
+    "calc_ia_descripcion_label": "Describí el proyecto y la IA llena el formulario",
+    "calc_ia_descripcion_placeholder": "Ej: una tienda en línea con carrito, pagos, inventario y panel de administración; hecha con React y Node.js.",
+    "calc_ia_generar": "Generar cotización",
+    "calc_ia_generando": "Generando...",
+    "calc_ia_min": "Contanos un poco más del proyecto (al menos 10 caracteres).",
+    "calc_ia_nota": "Sugerencia de la IA:",
+    "calc_funcionalidades_label": "Funcionalidades del proyecto",
+    "calc_funcionalidades_vacio": "Agregá cada funcionalidad y elegí su complejidad para estimar el esfuerzo.",
+    "calc_funcionalidad_agregar": "Agregar funcionalidad",
+    "calc_funcionalidad_nombre_placeholder": "Funcionalidad {numero} (opcional)",
+    "calc_funcionalidad_cantidad_label": "Cantidad de la funcionalidad {numero}",
+    "calc_funcionalidad_complejidad_label": "Complejidad de la funcionalidad {numero}",
+    "calc_funcionalidad_quitar": "Quitar funcionalidad",
+    "calc_tamano_muy_pequena": "Muy pequeña",
+    "calc_tamano_pequena": "Pequeña",
+    "calc_tamano_media": "Media",
+    "calc_tamano_grande": "Grande",
+    "calc_tarifa_label": "Tarifa por hora",
+    "calc_tarifa_hint": "Rango de referencia junior: {min}–{max}/h.",
+    "calc_moneda_label": "Moneda de la tarifa",
+    "calc_moneda_usd": "USD",
+    "calc_moneda_crc": "CRC",
+    "calc_modalidad_label": "Modalidad",
+    "calc_modalidad_remoto": "Remoto",
+    "calc_modalidad_hibrido": "Híbrido",
+    "calc_modalidad_presencial": "Presencial",
+    "calc_iva_label": "Incluir IVA (13%)",
+    "calc_desglose_titulo": "Desglose",
+    "calc_desglose_detalle_titulo": "Detalle por apartado",
+    "calc_desglose_alcance": "Alcance (horas base)",
+    "calc_desglose_funcionalidades": "Funcionalidades",
+    "calc_desglose_ajuste_complejidad": "Ajuste por complejidad ({factor}×)",
+    "calc_desglose_ajuste_modalidad": "Ajuste por modalidad ({factor}×)",
+    "calc_usar_monto": "Usar en la propuesta",
+    "calc_desglose_horas": "Horas ajustadas",
+    "calc_desglose_subtotal": "Subtotal",
+    "calc_desglose_stack": "Premium por stack",
+    "calc_desglose_neto": "Neto",
+    "calc_desglose_iva": "IVA (13%)",
+    "calc_total_label": "Total a cotizar",
+    "calc_acotado_aviso": "El monto se ajustó al rango permitido ({min}–{max}).",
+    "calc_invalida": "Completá el alcance y la tarifa para ver una cotización.",
+    "calc_aplicar": "Sacar monto",
+    "calc_cancelar": "Cancelar",
+    "calc_monto_actual": "Contraoferta actual",
+    "calc_sin_monto": "Sin contraoferta",
+    "calc_quitar": "Quitar contraoferta",
+    "calc_guardar_pdf": "Guardar como PDF",
+    "calc_pdf_titulo": "Cotización de la propuesta",
+    "calc_pdf_fecha": "Generado el {fecha}",
+    "calc_pdf_parametros": "Parámetros",
+    "calc_pdf_alcance_horas": "{horas} h",
+    "calc_pdf_alcance_semanas": "{semanas} sem × {horas} h/sem",
+    "calc_pdf_si": "Sí",
+    "calc_pdf_no": "No",
+    "calc_pdf_funcionalidad_sin_nombre": "Funcionalidad {numero}",
+    "proceso_sin_enlace": "Sin enlace proporcionado",
+    "proceso_error_enlace_https": "El enlace debe comenzar con https:// (ej: https://mi-demo.vercel.app)",
+    "proceso_error_adjunto_requerido": "Tenés que adjuntar un enlace de documentación o subir un archivo PDF antes de enviar.",
+    "proceso_previsualizacion_label": "Previsualización",
+    "proceso_preview_sin_nombre": "Sin nombre",
+    "proceso_preview_sin_categoria": "Sin categoría",
+    "proceso_placeholder_revision": "Se habilita cuando la empresa solicite cambios.",
+    "proceso_placeholder_nuevo": "Disponible si la empresa solicita cambios.",
+    "proceso_placeholder_cambios": "Versión siguiente, si se requiere otra revisión.",
+    "proceso_cerrado": "Proceso cerrado — tu propuesta fue aceptada.",
+    "proceso_demo_titulo": "Vista de demostración · rol empresa",
+    "proceso_demo_desc": "Simula las acciones del rol que recibe las propuestas para avanzar el flujo.",
+    "proceso_demo_aceptar": "Aceptar propuesta",
+    "proceso_demo_reiniciar": "Reiniciar",
+    "proceso_propuestas_estudiante": "Propuestas del estudiante",
+    "proceso_estado_version": "Estado de esta versión",
+    "proceso_comentarios_empresa_placeholder": "Escribí comentarios de revisión...",
+    "proceso_comentarios_revision_label": "Comentarios de revisión",
+    "proceso_cambios_guardados": "Cambios guardados",
+    "proceso_btn_enviar": "Confirmar",
+    "proceso_switch_revision_label": "Estoy revisando esta propuesta",
+    "proceso_switch_revision_activar": "Marcar como en revision",
+    "proceso_switch_revision_activo": "En revision",
+    "proceso_ver_prototipo": "Prototipo",
+    "proceso_observacion_enviada": "Observación enviada",
+    "proceso_calificar_titulo": "Calificar este proyecto",
+    "proceso_calificar_placeholder": "¿Cómo fue la experiencia trabajando con este junior?",
+    "proceso_calificar_btn": "Enviar calificación",
+    "proceso_calificar_enviando": "Enviando...",
+    "proceso_calificacion_enviada": "Calificación enviada",
+    "entregables_review_cargando": "Cargando entregables...",
+    "entregables_review_ver": "Ver entregable",
+    "entregables_review_aprobar": "Aprobar",
+    "entregables_review_solicitar_cambios": "Solicitar cambios",
+    "entregables_review_enviar_cambios": "Enviar solicitud",
+    "entregables_review_cancelar": "Cancelar",
+    "entregables_review_cambios_placeholder": "Explicá qué ajustes necesita el entregable...",
+    "entregable_tipo_parcial": "Entrega parcial",
+    "entregable_tipo_final": "Entrega final",
+    "entregable_state_enviado": "Enviado",
+    "entregable_state_aprobado": "Aprobado",
+    "entregable_state_cambios_solicitados": "Cambios solicitados",
+    "proceso_calificacion_empresa": "Calificación de la empresa",
+    "proceso_editar": "Editar",
+    "proceso_retirar": "Retirar propuesta",
+    "proceso_retirando": "Retirando...",
+    "proceso_retirar_confirmar": "¿Seguro que queres retirar?",
+    "proceso_retirar_si": "Si, retirar",
+    "proceso_cancelar": "Cancelar",
+    "junior_nueva_postulacion": "Nueva postulación",
+    "junior_solo_chat": "Chat abierto",
+    "chat_label_empresa": "Empresa",
+    "chat_label_junior": "Junior",
+    "chat_empty": "Aún no hay mensajes. Iniciá la conversación.",
+    "chat_send_error": "No se pudo enviar el mensaje. Probá de nuevo.",
+    "seguimiento_correo_btn": "Escribir al junior por correo",
+    "seguimiento_correo_subject": "Seguimiento del proyecto «{titulo}»",
+    "chat_loading": "Cargando chat",
+    "project_load_failed": "No se pudo cargar el proyecto.",
+    "back_to_projects": "Volver a mis proyectos",
+    "conditions_faq_label": "Condiciones y preguntas frecuentes",
+    "chat_placeholder": "Escribí un mensaje... (Enter para enviar)",
+    "chat_send": "Enviar mensaje",
+    "chat_hint": "Enter para enviar · Shift+Enter para nueva línea",
+    "chat_seleccionar_junior": "Conversaciones",
+    "chat_sin_conversaciones": "Sin conversaciones aún",
+    "sidebar_chats_label": "Chats",
+    "chat_n_chats": "{count, plural, one {# chat} other {# chats}}",
+    "chat_no_leidos": "{count, plural, one {# mensaje sin leer} other {# mensajes sin leer}}",
+    "chat_overview_empty": "Aún no hay mensajes en este proyecto",
+    "ai_titulo": "Asistente de IA",
+    "ai_idea_label": "Contanos la idea de tu proyecto",
+    "ai_completar_btn": "Completar formulario con IA",
+    "ai_intro_hint": "La IA hará algunas preguntas para entender mejor tu proyecto antes de completar el formulario.",
+    "ai_escribiendo": "Escribiendo...",
+    "ai_error_generico": "Ocurrió un error. Intentá de nuevo.",
+    "ai_formulario_completado": "Formulario completado. Revisá y ajustá lo que necesites.",
+    "ai_referencias_diseno": "Referencias de diseño sugeridas",
+    "ai_preguntas_pendientes": "Preguntas que podés definir después",
+    "ai_generando": "Generando...",
+    "ai_generar_propuesta": "Generar propuesta",
+    "ai_reiniciar": "Reiniciar asistente",
+    "ai_continuar_manual": "Continuar manualmente",
+    "form_mode_crear": "Nuevo proyecto",
+    "form_mode_editar": "Editar proyecto",
+    "form_o_manual": "o completá manualmente",
+    "form_label_titulo": "Título",
+    "form_condiciones_hint": "No incluyas el método de pago entre la empresa y el estudiante (no aplica en esta etapa).",
+    "form_label_area": "Área de negocio",
+    "form_area_placeholder": "Seleccioná un área",
+    "form_label_plazo": "Plazo (5–15 días)",
+    "form_label_compensacion": "Compensación (USD)",
+    "form_sugiriendo": "Sugiriendo...",
+    "form_sugerir_precio": "Sugerir precio",
+    "form_sugerir_stack": "Sugerir stack",
+    "form_compensacion_hint": "Monto total que pagarás al junior por el proyecto (entre ${min} y ${max}). Obligatorio para publicar. El pago se coordina por fuera de la plataforma.",
+    "form_compensacion_rango": "El monto debe estar entre ${min} y ${max} USD.",
+    "form_agregar": "Agregar",
+    "form_quitar_tech": "Quitar {tech}",
+    "form_usa_ia": "Usa inteligencia artificial",
+    "form_publicar": "Publicar inmediatamente",
+    "form_guardando": "Guardando...",
+    "form_crear": "Crear proyecto",
+    "form_guardar_cambios": "Guardar cambios",
+    "form_error_titulo": "El título es obligatorio",
+    "form_error_descripcion": "La descripción es obligatoria",
+    "form_error_area": "Seleccioná un área de negocio",
+    "form_error_plazo": "El plazo debe ser entre 5 y 15 días",
+    "form_error_compensacion_rango": "La compensación debe ser un monto entero entre ${min} y ${max} USD",
+    "form_error_compensacion_publicar": "La compensación es obligatoria para publicar el proyecto"
+  },
+  "gestion_usuarios": {
+    "eyebrow": "Administración",
+    "title": "Gestión de usuarios",
+    "description": "Administrá todas las cuentas de la plataforma: creá, editá, suspendé o eliminá usuarios desde un solo lugar.",
+    "create_user": "Crear usuario",
+    "stats": {
+      "total": "Usuarios totales",
+      "active": "Activos",
+      "suspended": "Suspendidos",
+      "pending": "Pendientes"
+    },
+    "filters": {
+      "title": "Filtros",
+      "search_placeholder": "Buscar por nombre o correo...",
+      "role_all": "Rol: Todos",
+      "status_all": "Estado: Todos"
+    },
+    "roles": {
+      "student": "Junior",
+      "company": "Empresa",
+      "admin": "Administrador"
+    },
+    "statuses": {
+      "activa": "Activa",
+      "pendiente": "Pendiente",
+      "suspendida": "Suspendida",
+      "rechazada": "Rechazada"
+    },
+    "table": {
+      "user": "Usuario",
+      "role": "Rol",
+      "status": "Estado",
+      "joined": "Registro",
+      "actions": "Acciones",
+      "empty": "No hay usuarios para los filtros aplicados."
+    },
+    "row_actions": {
+      "view": "Ver",
+      "edit": "Editar",
+      "suspend": "Suspender",
+      "reactivate": "Reactivar",
+      "delete": "Eliminar"
+    },
+    "pagination_summary": "Mostrando {start}-{end} de {total} usuarios",
+    "detail_modal": {
+      "title": "Información del usuario",
+      "subtitle": "Detalle de la cuenta",
+      "close": "Cerrar",
+      "loading": "Cargando información...",
+      "field_email": "Correo",
+      "field_role": "Rol",
+      "field_status": "Estado",
+      "field_joined": "Fecha de registro",
+      "field_cedula": "Cédula",
+      "section_profile": "Perfil",
+      "no_profile": "Este usuario todavía no completó su onboarding.",
+      "student_especialidad": "Especialidad",
+      "student_titulo": "Título FWD",
+      "student_disponibilidad": "Disponibilidad",
+      "student_reputacion": "Reputación",
+      "student_verificacion": "Verificación",
+      "student_skills": "Habilidades",
+      "student_bio": "Descripción",
+      "student_github": "GitHub",
+      "student_linkedin": "LinkedIn",
+      "student_portfolio": "Portafolio",
+      "company_tipo": "Tipo",
+      "company_nombre": "Nombre comercial",
+      "company_sector": "Sector",
+      "company_etapa": "Etapa",
+      "company_sitio": "Sitio web",
+      "company_bio": "Descripción"
+    },
+    "form_modal": {
+      "create_title": "Crear nuevo usuario",
+      "edit_title": "Editar usuario",
+      "create_subtitle": "Solo se crea la cuenta y el rol. El usuario completa su perfil en el onboarding.",
+      "edit_subtitle": "Actualizá la información de la cuenta seleccionada.",
+      "field_name": "Nombre",
+      "field_name_placeholder": "Ej. Ana",
+      "field_lastname": "Primer apellido",
+      "field_lastname_placeholder": "Ej. Rodríguez",
+      "field_email": "Correo",
+      "field_email_placeholder": "nombre@correo.com",
+      "field_password": "Contraseña temporal",
+      "field_password_placeholder": "Mínimo 8 caracteres",
+      "field_role": "Rol",
+      "field_status": "Estado",
+      "cancel": "Cancelar",
+      "save": "Guardar cambios",
+      "create": "Crear usuario",
+      "creating": "Creando...",
+      "saving": "Guardando...",
+      "errors": {
+        "name_required": "El nombre es obligatorio",
+        "email_invalid": "El correo no es válido",
+        "password_min": "La contraseña debe tener al menos 8 caracteres"
+      }
+    },
+    "confirm_suspend": {
+      "title": "Suspender cuenta",
+      "message": "¿Seguro que querés suspender esta cuenta? El usuario no podrá ingresar hasta que la reactivés.",
+      "confirm": "Suspender",
+      "cancel": "Cancelar",
+      "working": "Suspendiendo..."
+    },
+    "confirm_delete": {
+      "title": "Eliminar usuario",
+      "message": "Esta acción elimina la cuenta y todo su perfil de forma permanente. No se puede deshacer.",
+      "confirm": "Eliminar",
+      "cancel": "Cancelar",
+      "working": "Eliminando..."
+    },
+    "messages": {
+      "created": "Usuario creado",
+      "updated": "Usuario actualizado",
+      "deleted": "Usuario eliminado",
+      "suspended": "Cuenta suspendida",
+      "reactivated": "Cuenta reactivada",
+      "error": "No se pudo completar la acción"
+    }
+  },
+  "admin_dashboard": {
+    "title": "Dashboard",
+    "subtitle": "Resumen operativo del ecosistema FWD Talent con datos en vivo.",
+    "states": {
+      "borrador": "Borrador",
+      "en_recepcion": "En recepción",
+      "en_evaluacion": "En evaluación",
+      "adjudicado": "Adjudicado",
+      "en_desarrollo": "En desarrollo",
+      "cerrado": "Cerrado",
+      "cancelado": "Cancelado"
+    },
+    "stats": {
+      "companies_label": "Empresas",
+      "companies_caption": "Pendientes de aprobación",
+      "talent_label": "Talento",
+      "talent_caption": "Pendientes de verificación",
+      "projects_label": "Proyectos",
+      "projects_caption": "Total en el sistema",
+      "active_label": "Activos",
+      "active_caption": "En ejecución",
+      "requests_label": "Solicitudes",
+      "requests_caption": "Pendientes de revisión",
+      "cancelled_label": "Cancelados",
+      "cancelled_caption": "Proyectos cancelados"
+    },
+    "admissions": {
+      "title": "Solicitudes de admisión",
+      "search_placeholder": "Buscar...",
+      "view_all": "Ver todas",
+      "th_candidate": "Candidato",
+      "th_type": "Tipo",
+      "th_date": "Fecha",
+      "th_status": "Estado",
+      "th_action": "Acción",
+      "empty": "No hay solicitudes pendientes.",
+      "type_company": "Empresa",
+      "type_student": "Talento",
+      "type_account": "Cuenta",
+      "pending": "Pendiente",
+      "approve_aria": "Aprobar solicitud"
+    },
+    "moderation": {
+      "title": "Moderación de proyectos",
+      "active_count": "{count} activos",
+      "th_project": "Proyecto",
+      "th_company": "Empresa",
+      "th_status": "Estado",
+      "th_actions": "Acciones",
+      "empty": "No hay proyectos por moderar.",
+      "cancel": "Cancelar",
+      "hide": "Ocultar"
+    },
+    "modules": {
+      "talento_title": "Talento",
+      "talento_desc": "Gestión de perfiles y habilidades",
+      "empresas_title": "Empresas",
+      "empresas_desc": "Partners corporativos y contratos",
+      "proyectos_title": "Proyectos",
+      "proyectos_desc": "Hitos, pagos y moderación",
+      "solicitudes_title": "Solicitudes",
+      "solicitudes_desc": "Admisiones y verificaciones",
+      "reportes_title": "Reportes",
+      "reportes_desc": "Estadísticas avanzadas y KPIs",
+      "config_title": "Configuración",
+      "config_desc": "Parámetros globales del sistema",
+      "view_module": "Ver módulo"
+    },
+    "summary": {
+      "title": "Resumen",
+      "pending_requests": "Solicitudes pendientes",
+      "total_projects": "Proyectos totales",
+      "to_moderate": "Por moderar",
+      "pending_companies": "Empresas pendientes",
+      "pending_talent": "Talento pendiente"
+    },
+    "quick": {
+      "title": "Accesos rápidos",
+      "review_requests": "Revisar solicitudes",
+      "moderate_projects": "Moderar proyectos",
+      "view_reports": "Ver reportes"
+    },
+    "messages": {
+      "approve_error": "No se pudo aprobar",
+      "approved": "Solicitud aprobada",
+      "cancel_error": "No se pudo cancelar",
+      "cancelled": "Proyecto cancelado",
+      "hidden": "Proyecto ocultado"
+    }
+  },
+  "admin_egresados": {
+    "eyebrow": "Administración",
+    "title": "Egresados",
+    "description": "Gestión y seguimiento de los egresados FWD: verificá, editá o eliminá cuentas de estudiantes.",
+    "create_student": "Crear estudiante",
+    "stats": {
+      "total": "Egresados totales",
+      "verified": "Verificados",
+      "pending": "Pendientes de verificar",
+      "avg_reputation": "Reputación promedio"
+    },
+    "distribution": {
+      "title": "Distribución por verificación",
+      "verificado": "Verificados",
+      "pendiente": "Pendientes",
+      "rechazado": "Rechazados"
+    },
+    "filters": {
+      "search_placeholder": "Buscar por nombre o correo...",
+      "status_all": "Estado: Todos",
+      "specialty_all": "Especialización: Todas",
+      "skill_all": "Fortaleza: Todas",
+      "modality_all": "Modalidad: Todas",
+      "only_pending": "Solo pendientes de verificar",
+      "clear": "Limpiar"
+    },
+    "verification": {
+      "verificado": "Verificado",
+      "pendiente": "Pendiente",
+      "rechazado": "Rechazado"
+    },
+    "table": {
+      "profile": "Perfil",
+      "titulo": "Título FWD",
+      "specialty": "Especialización",
+      "strengths": "Fortalezas",
+      "modality": "Modalidad",
+      "availability": "Disponibilidad",
+      "status": "Estado",
+      "actions": "Acciones",
+      "empty": "No se encontraron egresados con los filtros aplicados.",
+      "summary": "Mostrando {shown} de {total} egresados",
+      "no_skills": "Sin habilidades"
+    },
+    "row_actions": {
+      "view": "Ver",
+      "edit": "Editar",
+      "verify": "Verificar",
+      "reject": "Rechazar",
+      "delete": "Eliminar"
+    },
+    "detail_modal": {
+      "title": "Información del egresado",
+      "subtitle": "Detalle del estudiante",
+      "close": "Cerrar",
+      "loading": "Cargando información...",
+      "field_email": "Correo",
+      "field_status": "Estado de cuenta",
+      "field_joined": "Fecha de registro",
+      "field_cedula": "Cédula",
+      "field_verification": "Verificación",
+      "field_especialidad": "Especialización",
+      "field_titulo": "Título FWD",
+      "field_disponibilidad": "Disponibilidad",
+      "field_modalidad": "Modalidad preferida",
+      "field_reputacion": "Reputación",
+      "field_skills": "Habilidades",
+      "field_bio": "Descripción",
+      "field_github": "GitHub",
+      "field_linkedin": "LinkedIn",
+      "field_portfolio": "Portafolio",
+      "no_profile": "Este egresado todavía no completó su onboarding."
+    },
+    "form_modal": {
+      "create_title": "Crear nuevo estudiante",
+      "edit_title": "Editar estudiante",
+      "create_subtitle": "Solo se crea la cuenta con rol de estudiante. El egresado completa su perfil en el onboarding.",
+      "edit_subtitle": "Actualizá los datos de la cuenta. El perfil académico lo gestiona el propio estudiante.",
+      "field_name": "Nombre",
+      "field_name_placeholder": "Ej. Ana",
+      "field_lastname": "Primer apellido",
+      "field_lastname_placeholder": "Ej. Rodríguez",
+      "field_email": "Correo",
+      "field_email_placeholder": "nombre@correo.com",
+      "field_password": "Contraseña temporal",
+      "field_password_placeholder": "Mínimo 8 caracteres",
+      "cancel": "Cancelar",
+      "create": "Crear estudiante",
+      "save": "Guardar cambios",
+      "creating": "Creando...",
+      "saving": "Guardando...",
+      "errors": {
+        "name_required": "El nombre es obligatorio",
+        "email_invalid": "El correo no es válido",
+        "password_min": "La contraseña debe tener al menos 8 caracteres"
+      }
+    },
+    "confirm_delete": {
+      "title": "Eliminar estudiante",
+      "message": "Esta acción elimina la cuenta del egresado y todo su perfil de forma permanente. No se puede deshacer.",
+      "confirm": "Eliminar",
+      "cancel": "Cancelar",
+      "working": "Eliminando..."
+    },
+    "messages": {
+      "created": "Estudiante creado",
+      "updated": "Estudiante actualizado",
+      "deleted": "Estudiante eliminado",
+      "verified": "Egresado verificado",
+      "rejected": "Verificación rechazada",
+      "error": "No se pudo completar la acción"
+    }
+  },
+  "admin_empresas": {
+    "eyebrow": "Administración",
+    "title": "Empresas",
+    "description": "Gestión de empresas y emprendedores: creá, editá, eliminá o consultá su información.",
+    "create_company": "Crear empresa",
+    "stats": {
+      "total": "Empresas totales",
+      "empresa": "Empresas",
+      "emprendedor": "Emprendedores",
+      "active": "Cuentas activas"
+    },
+    "types": {
+      "empresa": "Empresa",
+      "emprendedor": "Emprendedor"
+    },
+    "account_states": {
+      "activa": "Activa",
+      "pendiente": "Pendiente",
+      "suspendida": "Suspendida",
+      "rechazada": "Rechazada"
+    },
+    "filters": {
+      "title": "Filtros",
+      "search_placeholder": "Buscar por nombre, contacto o correo...",
+      "type_all": "Tipo: Todos",
+      "sector_all": "Sector: Todos",
+      "stage_all": "Etapa: Todas",
+      "status_all": "Estado: Todos",
+      "clear": "Limpiar"
+    },
+    "table": {
+      "company": "Empresa",
+      "type": "Tipo",
+      "sector": "Sector",
+      "stage": "Etapa",
+      "status": "Estado",
+      "actions": "Acciones",
+      "empty": "No se encontraron empresas con los filtros aplicados.",
+      "summary": "Mostrando {shown} de {total} empresas",
+      "no_name": "Sin nombre comercial"
+    },
+    "row_actions": {
+      "view": "Ver",
+      "edit": "Editar",
+      "delete": "Eliminar"
+    },
+    "detail_modal": {
+      "title": "Información de la empresa",
+      "subtitle": "Detalle del perfil",
+      "close": "Cerrar",
+      "field_type": "Tipo",
+      "field_sector": "Sector",
+      "field_stage": "Etapa",
+      "field_employees": "Empleados",
+      "field_website": "Sitio web",
+      "field_address": "Dirección",
+      "field_modality": "Modalidades",
+      "field_budget": "Presupuesto",
+      "field_description": "Descripción",
+      "section_account": "Cuenta de contacto",
+      "field_contact": "Contacto",
+      "field_email": "Correo",
+      "field_account_status": "Estado de cuenta",
+      "field_joined": "Fecha de registro"
+    },
+    "form_modal": {
+      "create_title": "Crear nueva empresa",
+      "edit_title": "Editar empresa",
+      "create_subtitle": "Se crea la cuenta de la empresa y un perfil mínimo. El resto lo completa la empresa en el onboarding.",
+      "edit_subtitle": "Actualizá los datos del perfil de la empresa.",
+      "field_contact_name": "Nombre de contacto",
+      "field_contact_name_placeholder": "Ej. Ana Rodríguez",
+      "field_email": "Correo",
+      "field_email_placeholder": "empresa@correo.com",
+      "field_password": "Contraseña temporal",
+      "field_password_placeholder": "Mínimo 8 caracteres",
+      "field_type": "Tipo",
+      "field_commercial_name": "Nombre comercial",
+      "field_commercial_name_placeholder": "Ej. Estudio Norte",
+      "field_sector": "Sector",
+      "field_sector_placeholder": "Ej. Tecnología",
+      "field_stage": "Etapa",
+      "field_stage_placeholder": "Ej. Crecimiento",
+      "field_employees": "Cantidad de empleados",
+      "field_employees_placeholder": "Ej. 11-50",
+      "field_website": "Sitio web",
+      "field_website_placeholder": "https://...",
+      "field_address": "Dirección",
+      "field_address_placeholder": "Ciudad, país",
+      "field_description": "Descripción",
+      "field_description_placeholder": "Breve descripción de la empresa",
+      "cancel": "Cancelar",
+      "create": "Crear empresa",
+      "save": "Guardar cambios",
+      "creating": "Creando...",
+      "saving": "Guardando...",
+      "errors": {
+        "name_required": "El nombre de contacto es obligatorio",
+        "commercial_required": "El nombre comercial es obligatorio",
+        "email_invalid": "El correo no es válido",
+        "password_min": "La contraseña debe tener al menos 8 caracteres"
+      }
+    },
+    "confirm_delete": {
+      "title": "Eliminar empresa",
+      "message": "Esta acción elimina la cuenta de la empresa y todo su perfil de forma permanente. No se puede deshacer.",
+      "confirm": "Eliminar",
+      "cancel": "Cancelar",
+      "working": "Eliminando..."
+    },
+    "messages": {
+      "created": "Empresa creada",
+      "updated": "Empresa actualizada",
+      "deleted": "Empresa eliminada",
+      "error": "No se pudo completar la acción"
+    }
+  },
+  "admin_solicitudes": {
+    "eyebrow": "Administración",
+    "title": "Solicitudes",
+    "description": "Revisá y gestioná las solicitudes de admisión pendientes del ecosistema FWD Talent.",
+    "stats": {
+      "total": "Todas",
+      "total_badge": "Global",
+      "empresas": "Empresas",
+      "empresas_badge": "B2B",
+      "talentos": "Talentos",
+      "talentos_badge": "B2C",
+      "proyectos": "Proyectos",
+      "proyectos_badge": "Activos",
+      "reportes": "Reportes",
+      "reportes_badge": "Críticos"
+    },
+    "types": {
+      "Empresa": "Empresa",
+      "Emprendedor": "Emprendedor",
+      "Talento": "Talento",
+      "Otro": "Otro"
+    },
+    "filters": {
+      "search_placeholder": "Buscar por nombre, correo o ID...",
+      "type_aria": "Tipo",
+      "date_aria": "Fecha",
+      "type_all": "Tipo: Todos",
+      "date_all": "Fecha: Todos",
+      "date_today": "Hoy",
+      "date_week": "Esta semana",
+      "date_month": "Este mes",
+      "clear": "Limpiar filtros"
+    },
+    "type_meta": {
+      "Empresa": { "title": "Nueva empresa registrada", "origin": "Portal Empresas" },
+      "Emprendedor": { "title": "Nuevo emprendedor registrado", "origin": "Portal Emprendedores" },
+      "Talento": { "title": "Solicitud de verificación", "origin": "Registro Talento" },
+      "Otro": { "title": "Solicitud de cuenta", "origin": "Registro" }
+    },
+    "list": {
+      "empty": "No hay solicitudes pendientes con los filtros aplicados.",
+      "pending": "Pendiente",
+      "id": "ID:",
+      "origin": "Origen:",
+      "summary": "Mostrando <strong>{start} a {end}</strong> de <strong>{total}</strong> solicitudes"
+    },
+    "actions": {
+      "view": "Ver detalle",
+      "approve": "Aprobar",
+      "reject": "Rechazar",
+      "suspend": "Suspender",
+      "close": "Cerrar"
+    },
+    "messages": {
+      "approved": "Solicitud aprobada",
+      "rejected": "Solicitud rechazada",
+      "suspended": "Cuenta suspendida",
+      "error": "No se pudo completar la acción"
+    },
+    "modal": {
+      "fallback_title": "Detalle de la solicitud",
+      "subtitle": "Información completa del solicitante",
+      "loading": "Cargando perfil del solicitante...",
+      "no_profile": "Este usuario no tiene un perfil adicional asociado.",
+      "section_account": "Cuenta",
+      "section_talent": "Perfil de talento",
+      "section_company": "Perfil de empresa"
+    },
+    "fields": {
+      "full_name": "Nombre completo",
+      "email": "Correo",
+      "cedula": "Cedula",
+      "role": "Rol",
+      "account_status": "Estado de cuenta",
+      "registered": "Fecha de registro",
+      "id": "ID",
+      "specialty": "Especialidad",
+      "availability": "Disponibilidad",
+      "preferred_modality": "Modalidad preferida",
+      "titulo_fwd": "Titulo FWD",
+      "verification": "Verificacion",
+      "reputation": "Reputacion",
+      "description": "Descripcion",
+      "skills": "Skills",
+      "commercial_name": "Nombre comercial",
+      "type": "Tipo",
+      "cedula_juridica": "Cedula juridica",
+      "sector": "Sector",
+      "stage": "Etapa",
+      "employees": "Cantidad de empleados",
+      "modalities": "Modalidades",
+      "schedule": "Horario",
+      "budget": "Presupuesto",
+      "address": "Direccion",
+      "project_types": "Tipos de proyecto",
+      "tech_support": "Apoyo tecnico necesario",
+      "mission": "Mision",
+      "vision": "Vision",
+      "culture": "Cultura",
+      "values": "Valores",
+      "contacts": "Contactos"
+    },
+    "links": {
+      "portfolio": "Portafolio",
+      "website": "Sitio web"
+    },
+    "enum_role": {
+      "student": "Talento",
+      "company": "Empresa",
+      "admin": "Administrador"
+    },
+    "enum_especialidad": {
+      "frontend": "Frontend",
+      "backend": "Backend",
+      "fullstack": "Fullstack",
+      "ia": "IA"
+    },
+    "enum_disponibilidad": {
+      "immediate": "Inmediata",
+      "two_weeks": "En dos semanas",
+      "one_month": "En un mes",
+      "unavailable": "No disponible"
+    },
+    "enum_verificacion": {
+      "pendiente": "Pendiente",
+      "verificado": "Verificado",
+      "rechazado": "Rechazado"
+    },
+    "enum_etapa": {
+      "idea": "Idea",
+      "mvp": "MVP",
+      "validating": "Validando",
+      "scaling": "Escalando"
+    },
+    "enum_presupuesto": {
+      "under_500": "Menos de $500",
+      "range_500_1000": "$500 a $1.000",
+      "range_1000_2500": "$1.000 a $2.500",
+      "flexible": "Flexible"
+    },
+    "enum_horario": {
+      "flexible": "Flexible",
+      "fixed": "Fijo"
+    }
+  },
+  "admin_reportes": {
+    "eyebrow": "Analítica",
+    "title": "Reportes",
+    "description": "Panorama del ecosistema FWD Talent calculado en vivo a partir de usuarios, egresados, empresas y proyectos registrados.",
+    "export_csv": "Exportar CSV",
+    "export_pdf": "Exportar PDF",
+    "empty": "Sin datos suficientes.",
+    "kpi": {
+      "usuarios": "Usuarios",
+      "egresados": "Egresados",
+      "empresas": "Empresas",
+      "proyectos": "Proyectos",
+      "activos": "Activos",
+      "pendientes": "Pendientes",
+      "verificados": "Verificados",
+      "finalizados": "Finalizados"
+    },
+    "charts": {
+      "projects_by_state_title": "Proyectos por estado",
+      "projects_by_state_subtitle": "Distribución del total de proyectos según su etapa.",
+      "top_companies_title": "Top empresas por proyectos",
+      "top_companies_subtitle": "Las empresas con más proyectos publicados.",
+      "users_by_role_title": "Usuarios por rol",
+      "users_by_role_subtitle": "Cómo se reparten las cuentas entre juniors, empresas y admins.",
+      "companies_by_type_title": "Empresas por tipo",
+      "companies_by_type_subtitle": "Empresas consolidadas frente a emprendedores."
+    },
+    "enum_state": {
+      "borrador": "Borrador",
+      "en_recepcion": "En recepción",
+      "en_evaluacion": "En evaluación",
+      "adjudicado": "Adjudicado",
+      "en_desarrollo": "En desarrollo",
+      "cerrado": "Cerrado",
+      "cancelado": "Cancelado",
+      "pausado": "Pausado"
+    },
+    "enum_role": {
+      "student": "Juniors",
+      "company": "Empresas",
+      "admin": "Admins"
+    },
+    "enum_account": {
+      "activa": "Activas",
+      "pendiente": "Pendientes",
+      "suspendida": "Suspendidas",
+      "rechazada": "Rechazadas"
+    },
+    "enum_verification": {
+      "verificado": "Verificados",
+      "pendiente": "Pendientes",
+      "rechazado": "Rechazados"
+    },
+    "enum_type": {
+      "empresa": "Empresas",
+      "emprendedor": "Emprendedores"
+    },
+    "csv": {
+      "report_title": "Reporte FWD Talent",
+      "header_metric": "Métrica",
+      "header_value": "Valor",
+      "header_total": "Total",
+      "block_projects_by_state": "Proyectos por estado",
+      "block_top_companies": "Top empresas por proyectos",
+      "block_users_by_role": "Usuarios por rol",
+      "block_accounts": "Estado de cuentas",
+      "block_verification": "Verificación de egresados",
+      "block_companies_by_type": "Empresas por tipo",
+      "filename": "reporte-fwd"
+    }
+  },
+  "admin_proyectos": {
+    "view": "Ver",
+    "detail": {
+      "title": "Detalle del proyecto",
+      "subtitle": "Información completa del proyecto",
+      "loading": "Cargando proyecto...",
+      "close": "Cerrar",
+      "company": "Empresa",
+      "type": "Tipo",
+      "area": "Área de negocio",
+      "description": "Descripción",
+      "deadline": "Plazo",
+      "deadline_days": "{days, plural, one {# día} other {# días}}",
+      "uses_ai": "Usa IA",
+      "yes": "Sí",
+      "no": "No",
+      "extra_tech": "Tecnologías extra",
+      "skills": "Habilidades / Stack",
+      "state": "Estado",
+      "published": "Publicación",
+      "closing": "Cierre",
+      "id": "ID",
+      "none": "—",
+      "unpublished": "Sin publicar",
+      "no_description": "Sin descripción."
+    }
+  },
+  "admin_config": {
+    "eyebrow": "Administración",
+    "title": "Configuración",
+    "description": "Gestioná los parámetros generales del ecosistema FWD Talent y personalizá tu experiencia.",
+    "appearance": {
+      "title": "Apariencia y preferencias",
+      "dark_mode": "Modo oscuro",
+      "dark_mode_desc": "Alterná entre tema claro y oscuro. La preferencia se guarda en este navegador.",
+      "language": "Idioma",
+      "language_desc": "Elegí el idioma de la interfaz.",
+      "spanish": "Español",
+      "english": "English"
+    },
+    "marketplace": {
+      "title": "Marketplace",
+      "registros_label": "Permitir registros",
+      "registros_desc": "Habilita la creación de nuevas cuentas de talento.",
+      "empresas_label": "Permitir empresas",
+      "empresas_desc": "Permite el onboarding de perfiles corporativos.",
+      "postulaciones_label": "Permitir postulaciones",
+      "postulaciones_desc": "Habilita el botón de aplicar en proyectos activos.",
+      "matching_label": "Activar matching",
+      "matching_desc": "Algoritmo automático de sugerencia de talento."
+    },
+    "roles": {
+      "title": "Roles y permisos",
+      "create": "Crear rol",
+      "th_role": "Rol",
+      "th_description": "Descripción",
+      "th_users": "Usuarios",
+      "th_actions": "Acciones",
+      "empty": "No hay roles definidos. Creá uno con “Crear rol”.",
+      "users_count": "{count, plural, one {# usuario} other {# usuarios}}",
+      "edit_aria": "Editar rol",
+      "delete_aria": "Eliminar rol",
+      "modal_create_title": "Crear rol",
+      "modal_edit_title": "Editar rol",
+      "field_name": "Nombre del rol",
+      "field_description": "Descripción",
+      "field_users": "Usuarios",
+      "cancel": "Cancelar",
+      "submit_create": "Crear rol",
+      "submit_edit": "Guardar rol"
+    },
+    "save": "Guardar cambios",
+    "saved": "Cambios guardados"
+  },
+  "project_preview_modal": {
+    "close": "Cerrar",
+    "days": "días",
+    "uses_ia": "Con IA",
+    "company_type_empresa": "Empresa",
+    "company_type_emprendedor": "Emprendedor",
+    "view_company_profile": "Ver perfil",
+    "go_to_gestion": "Ir a gestión"
+  },
+  "public_empresa_profile": {
+    "not_found": "Perfil de empresa no encontrado.",
+    "back_to_marketplace": "Volver al marketplace",
+    "type_empresa": "Empresa",
+    "type_emprendedor": "Emprendedor",
+    "etapa_idea": "Idea",
+    "etapa_mvp": "MVP",
+    "etapa_validating": "En validación",
+    "etapa_scaling": "En crecimiento",
+    "no_name": "Empresa",
+    "website": "Sitio web",
+    "about": "Sobre nosotros",
+    "sectors": "Sectores",
+    "mission_vision": "Misión y visión",
+    "mission": "MISIÓN",
+    "vision": "VISIÓN",
+    "culture": "Cultura",
+    "modalities": "Modalidades",
+    "schedule": "Horario"
+  },
+  "public_junior_profile": {
+    "not_found": "Perfil de junior no encontrado.",
+    "back": "Volver",
+    "about": "Sobre mí",
+    "skills": "Habilidades técnicas",
+    "knowledge": "Conocimientos adicionales",
+    "availability": "Disponibilidad",
+    "availability_label": "DISPONIBILIDAD",
+    "modality_label": "MODALIDAD",
+    "portfolio_link": "Portafolio",
+    "portfolio": "Portafolio de proyectos",
+    "especialidad_frontend": "Frontend",
+    "especialidad_backend": "Backend",
+    "especialidad_fullstack": "Fullstack",
+    "especialidad_ia": "IA",
+    "disponibilidad_immediate": "Disponible ahora",
+    "disponibilidad_two_weeks": "Disponible en 2 semanas",
+    "disponibilidad_one_month": "Disponible en 1 mes",
+    "disponibilidad_unavailable": "No disponible"
+  },
+  "project_chatbot": {
+    "title": "Asistente del proyecto",
+    "subtitle": "Resolvé tus dudas antes de postular",
+    "header_hint": "Responde según este proyecto",
+    "close": "Cerrar",
+    "empty_title": "¿Tenés dudas sobre el proyecto?",
+    "empty_hint": "Por ejemplo: ¿qué tecnologías necesito?, ¿es web o app?, ¿qué incluye el alcance?",
+    "thinking": "Pensando…",
+    "input_placeholder": "Escribí tu pregunta…",
+    "send": "Enviar",
+    "talk_to_company": "Hablar con la empresa",
+    "escalate_title": "Escribile a la empresa",
+    "escalate_desc": "La empresa lo verá y te responderá en el chat del proyecto.",
+    "escalate_placeholder": "Escribí tu mensaje para la empresa…",
+    "escalate_send": "Enviar a la empresa",
+    "escalate_sending": "Enviando…",
+    "escalate_sent_title": "Mensaje enviado",
+    "escalate_sent_desc": "La empresa lo verá en el chat del proyecto y te responderá ahí.",
+    "go_to_chat": "Ir al chat",
+    "cancel": "Cancelar",
+    "error_generic": "Algo salió mal. Probá de nuevo.",
+    "escalate_default_draft": "Hola, tengo una consulta sobre el proyecto «{titulo}»: "
+  },
+  "mejorar_mensaje": {
+    "button": "Mejorar con IA",
+    "loading": "Mejorando…",
+    "undo": "Deshacer",
+    "error": "No se pudo mejorar. Probá de nuevo."
+  },
+  "reportar_mensaje": {
+    "button": "Reportar mensaje",
+    "title": "Reportar mensaje",
+    "subtitle": "El equipo de moderación revisará este mensaje.",
+    "close": "Cerrar",
+    "motivo_label": "Motivo",
+    "motivo_falta_respeto": "Falta de respeto",
+    "motivo_spam": "Spam",
+    "motivo_contenido_inapropiado": "Contenido inapropiado",
+    "motivo_fuera_de_lugar": "Fuera de lugar",
+    "motivo_otro": "Otro",
+    "detalle_label": "Detalle (opcional)",
+    "detalle_placeholder": "Contanos qué pasó…",
+    "submit": "Enviar reporte",
+    "sending": "Enviando…",
+    "cancel": "Cancelar",
+    "sent_title": "Reporte enviado",
+    "sent_desc": "Gracias. El equipo de moderación lo revisará.",
+    "error": "No se pudo enviar el reporte. Probá de nuevo."
   }
 }

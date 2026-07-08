@@ -1,4 +1,28 @@
 export type StarState = "done" | "available" | "locked";
+
+export interface Resource {
+  title: string;
+  url: string;
+  kind: "web" | "video";
+  description?: string;
+  channel?: string;
+}
+
+export interface QuizOption {
+  label: string;
+  correct: boolean;
+}
+
+export interface QuizQuestion {
+  prompt: string;
+  options: QuizOption[];
+  explanation?: string;
+}
+
+export interface StarQuiz {
+  rounds: [QuizQuestion[], QuizQuestion[], QuizQuestion[]];
+  minToPass: number;
+}
 export type StarShape = "sixpoint" | "dot" | "diamond";
 export type PathStyle = "auto" | "solid" | "dashed" | "dotted" | "none";
 export type StateStyle = "multicolor" | "mono";

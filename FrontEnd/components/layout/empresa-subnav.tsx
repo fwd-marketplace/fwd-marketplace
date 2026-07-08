@@ -1,62 +1,58 @@
 "use client";
 
+import type React from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useLocale, useTranslations } from "next-intl";
-import { ChevronLeft } from "lucide-react";
 import { cn } from "@/lib/utils";
 
+// "Mis proyectos" (/gestion) se quitó: ya está como "Gestión" en la barra superior. "Matches"
+// aquí es el directorio GLOBAL de talento (distinto al "Matches" por-proyecto de gestión).
 const NAV_HREFS = [
-  { key: "mis_proyectos", href: "/dashboard" },
-  { key: "matches", href: "/matches", badge: { count: 18, variant: "warning" } },
-  { key: "postulaciones", href: "/postulaciones", badge: { count: 48, variant: "primary" } },
   { key: "mi_empresa", href: "/perfil-empresa" },
+  { key: "matches", href: "/matches" },
 ] as const;
 
-export function EmpresaSubnav() {
+export function EmpresaSubnav({
+  tipo,
+  actionSlot,
+}: {
+  tipo?: "empresa" | "emprendedor" | undefined;
+  actionSlot?: React.ReactNode;
+}) {
   const pathname = usePathname();
   const locale = useLocale();
   const t = useTranslations("empresa_subnav");
 
   return (
-    <nav className="sticky top-14 z-40 border-b border-border bg-surface/80 backdrop-blur-sm">
-      <div className="mx-auto flex h-10 max-w-7xl items-center gap-1 overflow-x-auto px-4 md:px-6">
-        {!pathname.endsWith("/perfil-empresa") && (
-          <Link
-            href={`/${locale}/perfil-empresa`}
-            className="group flex shrink-0 items-center gap-1 rounded-full border border-border/60 bg-surface-sunken px-2.5 py-1 font-body text-xs font-bold text-ink-muted transition-colors duration-[var(--duration-fast)] ease-[var(--ease-out)] hover:border-primary/20 hover:bg-primary/5 hover:text-primary mr-2"
-          >
-            <ChevronLeft className="size-3.5 text-primary transition-transform duration-[var(--duration-fast)] group-hover:-translate-x-0.5" />
-            <span>{t("back")}</span>
-          </Link>
-        )}
+    <nav
+      role="tablist"
+      className="border-b border-border bg-surface"
+    >
+      <div className="mx-auto flex max-w-7xl items-end gap-6 overflow-x-auto px-4 pb-px md:gap-8 md:px-6">
         {NAV_HREFS.map((item) => {
           const isActive = pathname.includes(item.href);
+          // El emprendedor ve "Mi emprendimiento" en vez de "Mi empresa".
+          const labelKey =
+            item.key === "mi_empresa" && tipo === "emprendedor" ? "mi_emprendimiento" : item.key;
           return (
             <Link
               key={item.href}
+              role="tab"
+              aria-selected={isActive}
               href={`/${locale}${item.href}`}
               className={cn(
-                "flex shrink-0 items-center gap-1.5 rounded-full px-3 py-1 font-body text-sm font-medium transition-colors duration-[var(--duration-fast)] ease-[var(--ease-out)]",
+                "flex shrink-0 items-center gap-2 border-b-2 py-4 px-1 text-sm font-medium transition-all duration-[var(--duration-fast)] ease-[var(--ease-out)]",
                 isActive
-                  ? "bg-primary/10 text-primary"
-                  : "text-ink-muted hover:bg-surface-sunken hover:text-ink"
+                  ? "border-primary font-semibold text-ink-strong"
+                  : "border-transparent text-ink-muted hover:text-ink"
               )}
             >
-              <span>{t(item.key)}</span>
-              {"badge" in item && item.badge && (
-                <span
-                  className={cn(
-                    "flex h-4 min-w-4 items-center justify-center rounded-full px-1 text-[10px] font-bold leading-none text-white",
-                    item.badge.variant === "warning" ? "bg-warning" : "bg-primary"
-                  )}
-                >
-                  {item.badge.count}
-                </span>
-              )}
+              <span>{t(labelKey)}</span>
             </Link>
           );
         })}
+        {actionSlot && <div className="ml-auto shrink-0 self-center pl-2">{actionSlot}</div>}
       </div>
     </nav>
   );

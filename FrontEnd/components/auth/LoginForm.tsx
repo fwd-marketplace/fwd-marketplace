@@ -1,12 +1,16 @@
 "use client";
 
-import { useState, useTransition } from "react";
+import React, { useState, useTransition } from "react";
 import { useParams, useRouter } from "next/navigation";
 import Link from "next/link";
 import { useTranslations } from "next-intl";
-import { Eye, EyeOff } from "lucide-react";
+import { useApiErrorText } from "@/lib/i18n/api-error";
+import { ArrowLeft, Eye, EyeOff } from "lucide-react";
 import { FwdGeoBackdrop } from "@/components/ui/fwd-geo-backdrop";
-import { loginUser } from "@/lib/actions/auth";
+import { PublicNavControls } from "@/components/layout/public-nav-controls";
+import { CosmicBackdrop } from "@/components/ui/cosmic-backdrop";
+import { AuthFooterLinks } from "@/components/auth/AuthFooterLinks";
+import { loginUser, startOAuth, verifyLoginOtp } from "@/lib/actions/auth";
 
 function GoogleIcon() {
   return (
@@ -39,8 +43,13 @@ function GitHubIcon() {
   );
 }
 
-export function LoginForm() {
+interface LoginFormProps {
+  badge?: React.ReactNode;
+}
+
+export function LoginForm({ badge }: LoginFormProps) {
   const t = useTranslations("login");
+  const errorText = useApiErrorText();
   const params = useParams();
   const router = useRouter();
   const locale = params.locale as string;
@@ -52,10 +61,51 @@ export function LoginForm() {
   const [pendingMessage, setPendingMessage] = useState<string | null>(null);
   const [isPending, startTransition] = useTransition();
 
+  // Paso de 2FA: tras validar la contraseña, se pide el código enviado por email.
+  const [step, setStep] = useState<"credentials" | "code">("credentials");
+  const [ticket, setTicket] = useState("");
+  const [code, setCode] = useState("");
+
   function togglePasswordVisibility() {
     setIsPasswordVisible((prev) => !prev);
   }
 
+  /** Enruta según rol/estado tras un login completo (post-2FA). */
+  function routeByResult(role: string, estadoCuenta: string) {
+    if (estadoCuenta === "no_profile") {
+      router.push(`/${locale}/register/role`);
+    } else if (estadoCuenta === "pendiente") {
+      router.push(`/${locale}/done`);
+    } else if (estadoCuenta === "activa") {
+      if (role === "admin") {
+        router.push(`/${locale}/admin/dashboard`);
+      } else if (role === "company" || role === "empresa" || role === "emprendedor") {
+        router.push(`/${locale}/perfil-empresa`);
+      } else if (role === "student" || role === "junior") {
+        router.push(`/${locale}/bienvenida`);
+      } else {
+        router.push(`/${locale}/marketplace`);
+      }
+    } else {
+      setError(t("account_suspended"));
+    }
+  }
+
+  function handleOAuth(provider: "google" | "github") {
+    setError(null);
+    setPendingMessage(null);
+    startTransition(async () => {
+      const result = await startOAuth(provider, locale);
+      if (!result.ok) {
+        setError(errorText(result.error));
+        return;
+      }
+      // Redirige el navegador al provider; el flujo vuelve por /auth/callback.
+      window.location.href = result.data.url;
+    });
+  }
+
+  // Paso 1: valida la contraseña; el BackEnd manda el código y pasamos al paso del código.
   function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
     setError(null);
@@ -63,34 +113,56 @@ export function LoginForm() {
     startTransition(async () => {
       const result = await loginUser({ email, password });
       if (!result.ok) {
-        setError(result.error);
+        setError(errorText(result.error));
         return;
       }
-      const { role, estado_cuenta } = result.data;
-      if (estado_cuenta === "no_profile") {
-        router.push(`/${locale}/register/role`);
-      } else if (estado_cuenta === "pendiente") {
-        setPendingMessage(t("pending_approval"));
-      } else if (estado_cuenta === "activa") {
-        if (role === "admin") {
-          router.push(`/${locale}/admin`);
-        } else if (role === "empresa" || role === "emprendedor") {
-          router.push(`/${locale}/empresa/dashboard`);
-        } else {
-          router.push(`/${locale}/marketplace`);
-        }
-      } else {
-        setError(t("account_suspended"));
-      }
+      setTicket(result.data.ticket);
+      setCode("");
+      setStep("code");
+      setPendingMessage(t("mfa_sent"));
     });
   }
 
-  return (
-    <div className="bg-secondary">
-      <FwdGeoBackdrop />
+  // Paso 2: confirma el código de 2FA y, si es correcto, enruta.
+  function handleVerify(e: React.FormEvent) {
+    e.preventDefault();
+    setError(null);
+    startTransition(async () => {
+      const result = await verifyLoginOtp({ ticket, code });
+      if (!result.ok) {
+        setError(errorText(result.error));
+        return;
+      }
+      routeByResult(result.data.role, result.data.estado_cuenta);
+    });
+  }
 
-      <div className="relative flex min-h-[100dvh] flex-col items-center justify-center px-4 py-10">
-        <div className="w-full max-w-md rounded-[2rem] bg-surface px-6 py-8 shadow-elevated sm:px-10 sm:py-12">
+  function handleBackToCredentials() {
+    setStep("credentials");
+    setError(null);
+    setPendingMessage(null);
+    setCode("");
+  }
+
+  return (
+    <div className="bg-secondary relative overflow-hidden min-h-screen w-full">
+      <FwdGeoBackdrop />
+      <CosmicBackdrop />
+
+      <div className="absolute left-6 top-6 z-10 flex items-center gap-2">
+        <Link
+          href={`/${locale}/home`}
+          className="inline-flex items-center gap-2 rounded-full bg-white/10 px-4 py-2 font-body text-sm font-medium text-white/75 backdrop-blur-sm transition-colors duration-[var(--duration-fast)] ease-[var(--ease-out)] hover:bg-white/15 hover:text-white"
+        >
+          <ArrowLeft size={14} aria-hidden="true" />
+          {t("back_home")}
+        </Link>
+        <PublicNavControls tone="onDark" />
+      </div>
+
+      <div className="relative flex min-h-[100dvh] flex-col items-center justify-center px-6 py-16">
+        {badge && <div className="absolute top-6 right-6">{badge}</div>}
+        <div className="w-full max-w-xl rounded-[2rem] bg-surface px-8 py-10 shadow-elevated sm:px-14 sm:py-12">
           <p className="mb-3 text-center font-heading text-[0.65rem] font-bold uppercase tracking-[0.2em] text-ink-muted">
             {t("eyebrow")}
           </p>
@@ -104,10 +176,14 @@ export function LoginForm() {
             {t("description")}
           </p>
 
+          {step === "credentials" ? (
+          <>
           <div className="space-y-3">
             <button
               type="button"
-              className="flex w-full items-center justify-center gap-3 rounded-full border border-border-strong bg-surface px-6 py-3 font-body text-sm font-medium text-ink-strong transition-colors duration-[--duration-fast] hover:bg-surface-sunken"
+              onClick={() => handleOAuth("google")}
+              disabled={isPending}
+              className="flex w-full items-center justify-center gap-3 rounded-full border border-border-strong bg-surface px-6 py-3 font-body text-sm font-medium text-ink-strong transition-colors duration-[--duration-fast] hover:bg-surface-sunken disabled:opacity-60"
             >
               <GoogleIcon />
               {t("continue_google")}
@@ -115,7 +191,9 @@ export function LoginForm() {
 
             <button
               type="button"
-              className="flex w-full items-center justify-center gap-3 rounded-full bg-ink-strong px-6 py-3 font-body text-sm font-medium text-white transition-opacity duration-[--duration-fast] hover:opacity-90"
+              onClick={() => handleOAuth("github")}
+              disabled={isPending}
+              className="flex w-full items-center justify-center gap-3 rounded-full bg-ink-strong px-6 py-3 font-body text-sm font-medium text-surface transition-opacity duration-[--duration-fast] hover:opacity-90 disabled:opacity-60"
             >
               <GitHubIcon />
               {t("continue_github")}
@@ -150,9 +228,9 @@ export function LoginForm() {
                 <label htmlFor="login-password" className="font-body text-xs font-semibold text-ink-muted">
                   {t("password_label")}
                 </label>
-                <a href="#" className="font-body text-xs text-ink-subtle underline underline-offset-2 hover:text-ink-muted">
+                <Link href={`/${locale}/recuperar-contrasena`} className="font-body text-xs text-ink-subtle underline underline-offset-2 hover:text-ink-muted">
                   {t("forgot_password")}
-                </a>
+                </Link>
               </div>
               <div className="relative">
                 <input
@@ -208,17 +286,69 @@ export function LoginForm() {
             </a>
             .
           </p>
+          </>
+          ) : (
+          <form className="space-y-4" onSubmit={handleVerify}>
+            <p className="text-center font-body text-sm text-ink-muted">
+              {t("mfa_description")}
+            </p>
+
+            <div className="flex flex-col gap-1.5">
+              <label htmlFor="login-code" className="font-body text-xs font-semibold text-ink-muted">
+                {t("mfa_code_label")}
+              </label>
+              <input
+                id="login-code"
+                type="text"
+                inputMode="numeric"
+                autoComplete="one-time-code"
+                maxLength={6}
+                required
+                value={code}
+                onChange={(e) => setCode(e.target.value.replace(/\D/g, ""))}
+                placeholder={t("mfa_code_placeholder")}
+                className="w-full rounded-2xl bg-surface-sunken px-5 py-3.5 text-center font-body text-lg tracking-[0.4em] text-ink-strong placeholder:text-ink-subtle placeholder:tracking-normal outline-none focus:ring-2 focus:ring-primary/40"
+              />
+            </div>
+
+            {error && (
+              <p role="alert" className="font-body text-xs text-red-500">{error}</p>
+            )}
+            {pendingMessage && (
+              <p role="status" className="rounded-xl bg-accent/10 px-4 py-3 font-body text-xs text-ink-muted">
+                {pendingMessage}
+              </p>
+            )}
+
+            <button
+              type="submit"
+              disabled={isPending || code.length !== 6}
+              className="mt-1 flex w-full items-center justify-center rounded-full bg-primary px-6 py-3 font-body text-sm font-semibold text-white transition-opacity duration-[--duration-fast] hover:opacity-90 disabled:opacity-60"
+            >
+              {isPending ? t("submitting") : t("mfa_submit")}
+            </button>
+
+            <button
+              type="button"
+              onClick={handleBackToCredentials}
+              className="w-full text-center font-body text-xs text-ink-subtle underline underline-offset-2 hover:text-ink-muted"
+            >
+              {t("mfa_back")}
+            </button>
+          </form>
+          )}
         </div>
 
-        <p className="mt-6 text-center font-body text-sm text-secondary-foreground/70">
+        <p className="mt-5 text-center font-body text-sm text-white/60">
           {t("no_account")}{" "}
           <Link
             href={`/${locale}/register`}
-            className="font-semibold text-secondary-foreground underline underline-offset-2 hover:opacity-80"
+            className="font-semibold text-white/90 underline underline-offset-2 hover:text-white"
           >
             {t("register_link")}
           </Link>
         </p>
+        <AuthFooterLinks />
       </div>
     </div>
   );

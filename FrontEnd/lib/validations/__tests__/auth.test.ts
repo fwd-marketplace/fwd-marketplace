@@ -3,12 +3,53 @@ import {
   JuniorProfileSchema,
   EmpresaProfileSchema,
   EmprendedorProfileSchema,
+  ResetPasswordSchema,
+  NewPasswordSchema,
 } from "../auth";
+
+describe("ResetPasswordSchema (paso 1: solo email)", () => {
+  it("acepta un correo válido", () => {
+    expect(ResetPasswordSchema.safeParse({ email: "maria@ejemplo.com" }).success).toBe(true);
+  });
+
+  it("rechaza un correo inválido", () => {
+    expect(ResetPasswordSchema.safeParse({ email: "no-es-correo" }).success).toBe(false);
+  });
+
+  it("rechaza un correo vacío", () => {
+    expect(ResetPasswordSchema.safeParse({ email: "" }).success).toBe(false);
+  });
+});
+
+describe("NewPasswordSchema (paso 2: nueva contraseña)", () => {
+  const VALID = { password: "supersegura", confirmPassword: "supersegura" };
+
+  it("acepta una contraseña válida y confirmada", () => {
+    expect(NewPasswordSchema.safeParse(VALID).success).toBe(true);
+  });
+
+  it("rechaza una contraseña de menos de 8 caracteres", () => {
+    expect(
+      NewPasswordSchema.safeParse({ password: "1234", confirmPassword: "1234" }).success,
+    ).toBe(false);
+  });
+
+  it("rechaza cuando las contraseñas no coinciden", () => {
+    const result = NewPasswordSchema.safeParse({ ...VALID, confirmPassword: "otraDistinta" });
+    expect(result.success).toBe(false);
+    if (!result.success) {
+      expect(result.error.issues[0]?.path).toContain("confirmPassword");
+    }
+  });
+});
 
 /* ── JuniorProfileSchema ─────────────────────────────────── */
 describe("JuniorProfileSchema", () => {
   const VALID_JUNIOR = {
-    fullName: "María García",
+    nombre: "María",
+    apellido1: "García",
+    apellido2: "López",
+    cedula: "1-1234-5678",
     specialization: "frontend" as const,
     modalities: ["remote"] as const,
     availability: "immediate" as const,
@@ -34,9 +75,9 @@ describe("JuniorProfileSchema", () => {
     expect(result.success).toBe(true);
   });
 
-  it("rejects when fullName is too short", () => {
+  it("rejects when nombre is too short", () => {
     expect(
-      JuniorProfileSchema.safeParse({ ...VALID_JUNIOR, fullName: "A" }).success
+      JuniorProfileSchema.safeParse({ ...VALID_JUNIOR, nombre: "A" }).success
     ).toBe(false);
   });
 
@@ -59,8 +100,10 @@ describe("JuniorProfileSchema", () => {
   });
 
   it("rejects an invalid URL for githubUrl", () => {
+    // normalizedUrl antepone https:// a un dominio suelto, así que un valor con
+    // espacios sigue siendo inválido tras normalizarse.
     expect(
-      JuniorProfileSchema.safeParse({ ...VALID_JUNIOR, githubUrl: "not-a-url" }).success
+      JuniorProfileSchema.safeParse({ ...VALID_JUNIOR, githubUrl: "not a url" }).success
     ).toBe(false);
   });
 
@@ -79,6 +122,7 @@ describe("EmpresaProfileSchema", () => {
     description: "Empresa de software enfocada en soluciones logísticas.",
     websiteUrl: "https://techcr.com",
     cedulaJuridica: "3-101-123456",
+    direccion: "San José, Costa Rica",
     projectTypes: ["web"] as const,
     logoUrl: undefined,
   };
@@ -128,9 +172,11 @@ describe("EmpresaProfileSchema", () => {
     ).toBe(false);
   });
 
-  it("rejects an invalid websiteUrl", () => {
+  it("rejects an invalid logoUrl", () => {
+    // logoUrl exige una URL completa (z.string().url(), sin normalizar): un valor
+    // sin esquema como "not-a-url" debe rechazarse.
     expect(
-      EmpresaProfileSchema.safeParse({ ...VALID_EMPRESA, websiteUrl: "techcr.com" }).success
+      EmpresaProfileSchema.safeParse({ ...VALID_EMPRESA, logoUrl: "not-a-url" }).success
     ).toBe(false);
   });
 
@@ -145,6 +191,7 @@ describe("EmpresaProfileSchema", () => {
 describe("EmprendedorProfileSchema", () => {
   const VALID_EMPRENDEDOR = {
     projectName: "EcoLogik",
+    cedula: "1-2345-6789",
     stage: "mvp" as const,
     neededSupport: ["web", "backend"] as const,
     budget: "range_500_1000" as const,
@@ -166,6 +213,17 @@ describe("EmprendedorProfileSchema", () => {
   it("rejects when projectName is too short", () => {
     expect(
       EmprendedorProfileSchema.safeParse({ ...VALID_EMPRENDEDOR, projectName: "X" }).success
+    ).toBe(false);
+  });
+
+  it("rejects a missing cedula", () => {
+    const { cedula: _omit, ...sinCedula } = VALID_EMPRENDEDOR;
+    expect(EmprendedorProfileSchema.safeParse(sinCedula).success).toBe(false);
+  });
+
+  it("rejects a too-short cedula", () => {
+    expect(
+      EmprendedorProfileSchema.safeParse({ ...VALID_EMPRENDEDOR, cedula: "123" }).success
     ).toBe(false);
   });
 

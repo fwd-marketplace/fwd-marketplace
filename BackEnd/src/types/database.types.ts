@@ -14,6 +14,33 @@ export type Database = {
   }
   public: {
     Tables: {
+      app_settings: {
+        Row: {
+          allow_applications: boolean
+          allow_companies: boolean
+          allow_signups: boolean
+          enable_matching: boolean
+          id: number
+          updated_at: string
+        }
+        Insert: {
+          allow_applications?: boolean
+          allow_companies?: boolean
+          allow_signups?: boolean
+          enable_matching?: boolean
+          id?: number
+          updated_at?: string
+        }
+        Update: {
+          allow_applications?: boolean
+          allow_companies?: boolean
+          allow_signups?: boolean
+          enable_matching?: boolean
+          id?: number
+          updated_at?: string
+        }
+        Relationships: []
+      }
       ai_logs: {
         Row: {
           duracion_ms: number | null
@@ -48,6 +75,66 @@ export type Database = {
         Relationships: [
           {
             foreignKeyName: "ai_logs_id_usuario_fkey"
+            columns: ["id_usuario"]
+            isOneToOne: false
+            referencedRelation: "users"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      proyecto_guardado: {
+        Row: {
+          id_usuario: string
+          id_proyecto: string
+          fecha_guardado: string
+        }
+        Insert: {
+          id_usuario: string
+          id_proyecto: string
+          fecha_guardado?: string
+        }
+        Update: {
+          id_usuario?: string
+          id_proyecto?: string
+          fecha_guardado?: string
+        }
+        Relationships: []
+      }
+      ai_propuesta_ejemplo: {
+        Row: {
+          fecha: string
+          id: string
+          id_area_negocio: string | null
+          id_usuario: string
+          propuesta: Json
+          resumen_conversacion: string | null
+        }
+        Insert: {
+          fecha?: string
+          id?: string
+          id_area_negocio?: string | null
+          id_usuario: string
+          propuesta: Json
+          resumen_conversacion?: string | null
+        }
+        Update: {
+          fecha?: string
+          id?: string
+          id_area_negocio?: string | null
+          id_usuario?: string
+          propuesta?: Json
+          resumen_conversacion?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "ai_propuesta_ejemplo_id_area_negocio_fkey"
+            columns: ["id_area_negocio"]
+            isOneToOne: false
+            referencedRelation: "area_negocio"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "ai_propuesta_ejemplo_id_usuario_fkey"
             columns: ["id_usuario"]
             isOneToOne: false
             referencedRelation: "users"
@@ -121,48 +208,72 @@ export type Database = {
       empresario: {
         Row: {
           apoyo_tecnico_necesario: string | null
+          cantidad_empleados: string | null
           cedula_juridica: string | null
+          contactos: string | null
+          cultura: string | null
           descripcion: string | null
           direccion: string | null
           etapa: string | null
+          horario: string | null
           id: string
           id_usuario: string
+          mision: string | null
+          modalidades: string | null
           nombre_comercial: string | null
           presupuesto: string | null
           sector: string | null
           tipo: string
           tipos_proyecto: string | null
           url_sitio_web: string | null
+          valores: string | null
+          vision: string | null
         }
         Insert: {
           apoyo_tecnico_necesario?: string | null
+          cantidad_empleados?: string | null
           cedula_juridica?: string | null
+          contactos?: string | null
+          cultura?: string | null
           descripcion?: string | null
           direccion?: string | null
           etapa?: string | null
+          horario?: string | null
           id?: string
           id_usuario: string
+          mision?: string | null
+          modalidades?: string | null
           nombre_comercial?: string | null
           presupuesto?: string | null
           sector?: string | null
           tipo: string
           tipos_proyecto?: string | null
           url_sitio_web?: string | null
+          valores?: string | null
+          vision?: string | null
         }
         Update: {
           apoyo_tecnico_necesario?: string | null
+          cantidad_empleados?: string | null
           cedula_juridica?: string | null
+          contactos?: string | null
+          cultura?: string | null
           descripcion?: string | null
           direccion?: string | null
           etapa?: string | null
+          horario?: string | null
           id?: string
           id_usuario?: string
+          mision?: string | null
+          modalidades?: string | null
           nombre_comercial?: string | null
           presupuesto?: string | null
           sector?: string | null
           tipo?: string
           tipos_proyecto?: string | null
           url_sitio_web?: string | null
+          valores?: string | null
+          vision?: string | null
         }
         Relationships: [
           {
@@ -176,6 +287,7 @@ export type Database = {
       }
       entregable: {
         Row: {
+          comentario_revision: string | null
           fecha: string
           group_id: string
           id: string
@@ -183,9 +295,12 @@ export type Database = {
           id_proyecto: string
           id_usuario: string
           tipo: string
+          url: string | null
+          url_github: string | null
           version: number
         }
         Insert: {
+          comentario_revision?: string | null
           fecha?: string
           group_id: string
           id?: string
@@ -193,9 +308,12 @@ export type Database = {
           id_proyecto: string
           id_usuario: string
           tipo: string
+          url?: string | null
+          url_github?: string | null
           version?: number
         }
         Update: {
+          comentario_revision?: string | null
           fecha?: string
           group_id?: string
           id?: string
@@ -203,6 +321,8 @@ export type Database = {
           id_proyecto?: string
           id_usuario?: string
           tipo?: string
+          url?: string | null
+          url_github?: string | null
           version?: number
         }
         Relationships: [
@@ -300,6 +420,7 @@ export type Database = {
           modalidad_preferida: string | null
           reputacion: number | null
           titulo_fwd: string | null
+          url_avatar: string | null
           url_github: string | null
           url_linkedin: string | null
           url_portfolio: string | null
@@ -314,6 +435,7 @@ export type Database = {
           modalidad_preferida?: string | null
           reputacion?: number | null
           titulo_fwd?: string | null
+          url_avatar?: string | null
           url_github?: string | null
           url_linkedin?: string | null
           url_portfolio?: string | null
@@ -328,6 +450,7 @@ export type Database = {
           modalidad_preferida?: string | null
           reputacion?: number | null
           titulo_fwd?: string | null
+          url_avatar?: string | null
           url_github?: string
           url_linkedin?: string
           url_portfolio?: string | null
@@ -566,30 +689,39 @@ export type Database = {
       mensaje: {
         Row: {
           contenido: string
+          contenido_traducido: string | null
           es_publico: boolean
           fecha_envio: string
           id: string
           id_destinatario: string | null
           id_proyecto: string
           id_remitente: string
+          idioma_original: string
+          leida: boolean
         }
         Insert: {
           contenido: string
+          contenido_traducido?: string | null
           es_publico?: boolean
           fecha_envio?: string
           id?: string
           id_destinatario?: string | null
           id_proyecto: string
           id_remitente: string
+          idioma_original?: string
+          leida?: boolean
         }
         Update: {
           contenido?: string
+          contenido_traducido?: string | null
           es_publico?: boolean
           fecha_envio?: string
           id?: string
           id_destinatario?: string | null
           id_proyecto?: string
           id_remitente?: string
+          idioma_original?: string
+          leida?: boolean
         }
         Relationships: [
           {
@@ -615,10 +747,122 @@ export type Database = {
           },
         ]
       }
+      mensaje_reporte: {
+        Row: {
+          contenido_snapshot: string
+          detalle: string | null
+          estado: string
+          fecha: string
+          fecha_resolucion: string | null
+          id: string
+          id_admin: string | null
+          id_mensaje: string
+          id_proyecto: string | null
+          id_reportado: string | null
+          id_reportante: string
+          motivo: string
+        }
+        Insert: {
+          contenido_snapshot: string
+          detalle?: string | null
+          estado?: string
+          fecha?: string
+          fecha_resolucion?: string | null
+          id?: string
+          id_admin?: string | null
+          id_mensaje: string
+          id_proyecto?: string | null
+          id_reportado?: string | null
+          id_reportante: string
+          motivo: string
+        }
+        Update: {
+          contenido_snapshot?: string
+          detalle?: string | null
+          estado?: string
+          fecha?: string
+          fecha_resolucion?: string | null
+          id?: string
+          id_admin?: string | null
+          id_mensaje?: string
+          id_proyecto?: string | null
+          id_reportado?: string | null
+          id_reportante?: string
+          motivo?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "mensaje_reporte_id_admin_fkey"
+            columns: ["id_admin"]
+            isOneToOne: false
+            referencedRelation: "users"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "mensaje_reporte_id_mensaje_fkey"
+            columns: ["id_mensaje"]
+            isOneToOne: false
+            referencedRelation: "mensaje"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "mensaje_reporte_id_proyecto_fkey"
+            columns: ["id_proyecto"]
+            isOneToOne: false
+            referencedRelation: "proyecto"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "mensaje_reporte_id_reportado_fkey"
+            columns: ["id_reportado"]
+            isOneToOne: false
+            referencedRelation: "users"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "mensaje_reporte_id_reportante_fkey"
+            columns: ["id_reportante"]
+            isOneToOne: false
+            referencedRelation: "users"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      invitacion: {
+        Row: {
+          estado: string
+          fecha: string
+          id: string
+          id_empresa_usuario: string
+          id_proyecto: string
+          id_usuario: string
+          mensaje: string | null
+        }
+        Insert: {
+          estado?: string
+          fecha?: string
+          id?: string
+          id_empresa_usuario: string
+          id_proyecto: string
+          id_usuario: string
+          mensaje?: string | null
+        }
+        Update: {
+          estado?: string
+          fecha?: string
+          id?: string
+          id_empresa_usuario?: string
+          id_proyecto?: string
+          id_usuario?: string
+          mensaje?: string | null
+        }
+        Relationships: []
+      }
       notificacion: {
         Row: {
           fecha: string
           id: string
+          id_referencia: string | null
           id_usuario: string
           leida: boolean
           mensaje: string
@@ -627,6 +871,7 @@ export type Database = {
         Insert: {
           fecha?: string
           id?: string
+          id_referencia?: string | null
           id_usuario: string
           leida?: boolean
           mensaje: string
@@ -635,6 +880,7 @@ export type Database = {
         Update: {
           fecha?: string
           id?: string
+          id_referencia?: string | null
           id_usuario?: string
           leida?: boolean
           mensaje?: string
@@ -654,41 +900,59 @@ export type Database = {
         Row: {
           calificacion: number | null
           comentario_calificacion: string | null
+          comentario_revision: string | null
+          documentacion_tecnica: string | null
+          documentacion_url: string | null
           fecha_envio: string
           id: string
           id_estado: string
           id_proyecto: string
           id_usuario: string
+          moneda_propuesta: string
+          monto_propuesto: number | null
           propuesta: string
           prototipo_url: string | null
           replica_calificacion: string | null
           updated_at: string
+          url_repositorio: string | null
         }
         Insert: {
           calificacion?: number | null
           comentario_calificacion?: string | null
+          comentario_revision?: string | null
+          documentacion_tecnica?: string | null
+          documentacion_url?: string | null
           fecha_envio?: string
           id?: string
           id_estado: string
           id_proyecto: string
           id_usuario: string
+          moneda_propuesta?: string
+          monto_propuesto?: number | null
           propuesta: string
           prototipo_url?: string | null
           replica_calificacion?: string | null
           updated_at?: string
+          url_repositorio?: string | null
         }
         Update: {
           calificacion?: number | null
           comentario_calificacion?: string | null
+          comentario_revision?: string | null
+          documentacion_tecnica?: string | null
+          documentacion_url?: string | null
           fecha_envio?: string
           id?: string
           id_estado?: string
           id_proyecto?: string
           id_usuario?: string
+          moneda_propuesta?: string
+          monto_propuesto?: number | null
           propuesta?: string
           prototipo_url?: string | null
           replica_calificacion?: string | null
           updated_at?: string
+          url_repositorio?: string | null
         }
         Relationships: [
           {
@@ -790,6 +1054,9 @@ export type Database = {
       }
       proyecto: {
         Row: {
+          compensacion: number | null
+          compensacion_actualizada_en: string | null
+          condiciones: string
           descripcion: string
           fecha_cierre: string | null
           fecha_publicacion: string | null
@@ -797,11 +1064,18 @@ export type Database = {
           id_area_negocio: string
           id_empresario: string
           id_estado: string
+          idioma_original: string
+          moneda: string
           plazo_dias: number
+          tecnologias_extra: string[]
           titulo: string
+          traduccion: Json | null
           usa_ia: boolean
         }
         Insert: {
+          compensacion?: number | null
+          compensacion_actualizada_en?: string | null
+          condiciones?: string
           descripcion: string
           fecha_cierre?: string | null
           fecha_publicacion?: string | null
@@ -809,11 +1083,18 @@ export type Database = {
           id_area_negocio: string
           id_empresario: string
           id_estado: string
+          idioma_original?: string
+          moneda?: string
           plazo_dias: number
+          tecnologias_extra?: string[]
           titulo: string
+          traduccion?: Json | null
           usa_ia?: boolean
         }
         Update: {
+          compensacion?: number | null
+          compensacion_actualizada_en?: string | null
+          condiciones?: string
           descripcion?: string
           fecha_cierre?: string | null
           fecha_publicacion?: string | null
@@ -821,8 +1102,12 @@ export type Database = {
           id_area_negocio?: string
           id_empresario?: string
           id_estado?: string
+          idioma_original?: string
+          moneda?: string
           plazo_dias?: number
+          tecnologias_extra?: string[]
           titulo?: string
+          traduccion?: Json | null
           usa_ia?: boolean
         }
         Relationships: [
@@ -892,6 +1177,47 @@ export type Database = {
             columns: ["id_rol"]
             isOneToOne: false
             referencedRelation: "roles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      conocimiento: {
+        Row: {
+          categoria: string | null
+          id: string
+          nombre: string
+        }
+        Insert: {
+          categoria?: string | null
+          id?: string
+          nombre: string
+        }
+        Update: {
+          categoria?: string | null
+          id?: string
+          nombre?: string
+        }
+        Relationships: []
+      }
+      estudiante_conocimiento: {
+        Row: {
+          id_estudiante: string
+          nombre: string
+        }
+        Insert: {
+          id_estudiante: string
+          nombre: string
+        }
+        Update: {
+          id_estudiante?: string
+          nombre?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "estudiante_conocimiento_id_estudiante_fkey"
+            columns: ["id_estudiante"]
+            isOneToOne: false
+            referencedRelation: "estudiante"
             referencedColumns: ["id"]
           },
         ]
@@ -1000,12 +1326,176 @@ export type Database = {
           },
         ]
       }
+      viaje_progress: {
+        Row: {
+          created_at: string
+          mastery: number
+          star_id: string
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          mastery?: number
+          star_id: string
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          mastery?: number
+          star_id?: string
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
+      perfil_visita: {
+        Row: {
+          id: string
+          id_junior_usuario: string
+          id_empresa_usuario: string
+          fecha: string
+        }
+        Insert: {
+          id?: string
+          id_junior_usuario: string
+          id_empresa_usuario: string
+          fecha?: string
+        }
+        Update: {
+          id?: string
+          id_junior_usuario?: string
+          id_empresa_usuario?: string
+          fecha?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "perfil_visita_id_junior_usuario_fkey"
+            columns: ["id_junior_usuario"]
+            isOneToOne: false
+            referencedRelation: "users"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "perfil_visita_id_empresa_usuario_fkey"
+            columns: ["id_empresa_usuario"]
+            isOneToOne: false
+            referencedRelation: "users"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      oferta_revisada_log: {
+        Row: {
+          id_oferta: string
+          fecha: string
+        }
+        Insert: {
+          id_oferta: string
+          fecha?: string
+        }
+        Update: {
+          id_oferta?: string
+          fecha?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "oferta_revisada_log_id_oferta_fkey"
+            columns: ["id_oferta"]
+            isOneToOne: true
+            referencedRelation: "oferta"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
     }
     Views: {
       [_ in never]: never
     }
     Functions: {
-      [_ in never]: never
+      crear_notificacion: {
+        Args: {
+          p_id_usuario: string
+          p_tipo: string
+          p_mensaje: string
+        }
+        Returns: string | null
+      }
+      eliminar_proyecto: {
+        Args: {
+          p_id: string
+        }
+        Returns: undefined
+      }
+      sistema_crear_notificacion: {
+        Args: {
+          p_id_usuario: string
+          p_tipo: string
+          p_mensaje: string
+        }
+        Returns: undefined
+      }
+      crear_pending_login: {
+        Args: {
+          p_id_usuario: string
+          p_codigo_hash: string
+          p_refresh_token: string
+          p_ttl_segundos: number
+        }
+        Returns: string
+      }
+      consumir_pending_login: {
+        Args: {
+          p_ticket: string
+          p_codigo_hash: string
+        }
+        Returns: string | null
+      }
+      onboard_junior: {
+        Args: {
+          p_user_id: string
+          p_correo: string
+          p_nombre: string
+          p_apellido1: string
+          p_apellido2: string | null
+          p_cedula: string
+          p_especialidad: string
+          p_modalidad: string
+          p_disponibilidad: string
+          p_url_github: string | null
+          p_url_linkedin: string | null
+          p_url_portfolio: string | null
+          p_descripcion: string | null
+          p_tech_stack: string[]
+        }
+        Returns: undefined
+      }
+      onboard_empresa: {
+        Args: {
+          p_user_id: string
+          p_correo: string
+          p_nombre_comercial: string
+          p_sector: string
+          p_descripcion: string
+          p_cedula_juridica: string
+          p_direccion: string
+          p_tipos_proyecto: string
+        }
+        Returns: undefined
+      }
+      onboard_emprendedor: {
+        Args: {
+          p_user_id: string
+          p_correo: string
+          p_nombre_proyecto: string
+          p_etapa: string
+          p_apoyo_tecnico: string
+          p_presupuesto: string
+          p_descripcion: string | null
+        }
+        Returns: undefined
+      }
     }
     Enums: {
       [_ in never]: never
