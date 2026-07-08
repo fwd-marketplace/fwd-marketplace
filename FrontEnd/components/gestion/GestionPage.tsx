@@ -994,7 +994,7 @@ export function GestionPage({ role, userId, initialProjectId, initialSection: in
         )}
 
         {/* ── Content ── */}
-        <main className="flex-1 bg-canvas">
+        <main className="min-w-0 flex-1 bg-canvas">
         {isEmpresa && formMode !== null ? (
           <ProjectFormContent
             mode={formMode}
@@ -1461,21 +1461,21 @@ function WelcomePanel({
 
     return (
       <div className="bg-canvas">
-        <div className="px-10 pb-10">
+        <div className="px-4 pb-10 sm:px-6 lg:px-10">
 
           {/* ── Header row ─────────────────────────────────────────────────── */}
-          <div className="mb-10 flex items-start justify-between">
+          <div className="mb-10 flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
             <div>
               <p className="mb-1 font-body text-xs font-bold uppercase tracking-widest text-primary">
                 {t("section_junior")}
               </p>
-              <h1 className="font-heading text-4xl font-extrabold tracking-tight text-ink-strong">
+              <h1 className="font-heading text-3xl font-extrabold tracking-tight text-ink-strong sm:text-4xl">
                 {t("title")}<span className="text-primary" aria-hidden="true">.</span>
               </h1>
             </div>
             <a
               href={`/${locale}/marketplace`}
-              className="inline-flex items-center gap-2 rounded-full bg-primary px-5 py-2.5 font-body text-sm font-semibold text-white transition-colors duration-[var(--duration-fast)] hover:bg-secondary"
+              className="inline-flex items-center gap-2 self-start rounded-full bg-primary px-5 py-2.5 font-body text-sm font-semibold text-white transition-colors duration-[var(--duration-fast)] hover:bg-secondary"
             >
               <ExternalLink className="size-4" aria-hidden="true" />
               {t("junior_dash_explore")}
