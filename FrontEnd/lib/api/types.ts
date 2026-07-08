@@ -273,6 +273,9 @@ export type MyOffer = {
   url_repositorio?: string | null;
   documentacion_tecnica?: string | null;
   documentacion_url?: string | null;
+  /** Contraoferta del junior: monto total en USD que propone cobrar. Informativo. */
+  monto_propuesto?: number | null;
+  moneda_propuesta?: string | null;
   fecha_envio: string;
   comentario_revision?: string | null;
   calificacion?: number | null;
@@ -718,6 +721,8 @@ export type SubmitOfferInput = {
   url_repositorio?: string;
   documentacion_tecnica?: string;
   documentacion_url?: string;
+  /** Contraoferta opcional del junior (monto entero USD, 50–10000). */
+  monto_propuesto?: number | null;
 };
 
 export type ReviewOfferInput = {
@@ -731,6 +736,8 @@ export type EditOfferInput = {
   url_repositorio?: string | null;
   documentacion_tecnica?: string | null;
   documentacion_url?: string | null;
+  /** Contraoferta opcional del junior (monto entero USD, 50–10000). */
+  monto_propuesto?: number | null;
 };
 
 // Estados reales en la BD (seed de estado_entregable): el junior envía ('enviado'),
