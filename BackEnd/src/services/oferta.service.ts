@@ -96,7 +96,7 @@ export async function reabrirAdjudicacion(accessToken: string, userId: string, p
 
   const { data: proyecto, error: projError } = await client
     .from("proyecto")
-    .select("id, titulo, estado:estado_proyecto(nombre), empresa:empresario(id_usuario)")
+    .select("id, titulo, compensacion, estado:estado_proyecto(nombre), empresa:empresario(id_usuario)")
     .eq("id", projectId)
     .maybeSingle();
   if (projError) throw new ApiError(500, projError.message);
@@ -133,11 +133,14 @@ export async function reabrirAdjudicacion(accessToken: string, userId: string, p
     if (updOfertasError) throw new ApiError(400, updOfertasError.message);
   }
 
-  // Proyecto -> en_recepcion.
-  const recepcionId = await getEstadoProyectoId(client, "en_recepcion");
+  // Proyecto -> en_recepcion (vuelve al marketplace). Defensa: si por lo que sea no tiene precio,
+  // va a 'pausado' (oculto) en vez de al marketplace sin compensación; el aviso de "agregá precio"
+  // guía a la empresa a completarlo antes de reactivarlo.
+  const destino = proyecto.compensacion == null ? "pausado" : "en_recepcion";
+  const destinoId = await getEstadoProyectoId(client, destino);
   const { data: updated, error: updError } = await client
     .from("proyecto")
-    .update({ id_estado: recepcionId })
+    .update({ id_estado: destinoId })
     .eq("id", projectId)
     .select("id, estado:estado_proyecto(nombre)")
     .single();
