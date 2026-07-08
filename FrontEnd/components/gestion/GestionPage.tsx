@@ -1043,7 +1043,7 @@ export function GestionPage({ role, userId, initialProjectId, initialSection: in
               t={t}
               locale={locale}
               onCreateProject={() => setFormMode("create")}
-              onSelectProject={(id) => handleSelect(id, isEmpresa ? "info" : "proceso")}
+              onSelectProject={(id, section) => handleSelect(id, section ?? (isEmpresa ? "info" : "proceso"))}
               onDeleteProject={isEmpresa ? setDeleteTarget : undefined}
             />
           )
@@ -1214,7 +1214,7 @@ function WelcomePanel({
   t: T;
   locale: string;
   onCreateProject: () => void;
-  onSelectProject: (id: string) => void;
+  onSelectProject: (id: string, section?: Section) => void;
   onDeleteProject?: ((id: string) => void) | undefined;
 }) {
   const [offerPage, setOfferPage] = useState(0);
@@ -1296,46 +1296,52 @@ function WelcomePanel({
               {t("welcome_cta_empresa")}
             </button>
           </div>
-          {projects.map((p) => (
-            <div
-              key={p.id}
-              className="group flex w-full items-center gap-4 rounded-xl border border-border bg-surface p-4 shadow-[var(--shadow-soft)] transition-all duration-[var(--duration-fast)] hover:border-primary/30 hover:shadow-[var(--shadow-elevated)]"
-            >
-              <button
-                type="button"
-                onClick={() => onSelectProject(p.id)}
-                className="flex min-w-0 flex-1 items-center gap-4 text-left"
+          {projects.map((p) => {
+            // La empresa entra directo a "Proceso" (propuestas) si el proyecto tiene propuestas;
+            // si no (o es borrador), a "Info". Toda la tarjeta es clickeable.
+            const tieneProps = (p.n_por_revisar ?? 0) > 0 || (p.n_ofertas ?? 0) > 0;
+            const targetSection: Section = tieneProps ? "proceso" : "info";
+            return (
+              <div
+                key={p.id}
+                className="group flex w-full items-center gap-4 rounded-xl border border-border bg-surface p-4 shadow-[var(--shadow-soft)] transition-all duration-[var(--duration-fast)] hover:border-primary/30 hover:shadow-[var(--shadow-elevated)]"
               >
-                <div className="min-w-0 flex-1">
-                  <p className="truncate font-heading text-sm font-bold text-ink-strong group-hover:text-primary">
-                    {p.titulo}
-                  </p>
-                  <p className="mt-0.5 font-body text-xs text-ink-muted">
-                    {p.area?.nombre ?? "—"} · {p.n_ofertas ?? 0} {t("proposals_count", { count: p.n_ofertas ?? 0 }).replace(/^\d+ /, "")}
-                  </p>
-                </div>
-              </button>
-              {(p.n_por_revisar ?? 0) > 0 && (
-                <span className="shrink-0 rounded-full bg-warning/10 px-2.5 py-1 font-body text-[10px] font-bold text-warning">
-                  {t("por_revisar_badge", { count: p.n_por_revisar ?? 0 })}
-                </span>
-              )}
-              <span className={cn("shrink-0 rounded-full px-2.5 py-1 font-body text-[10px] font-bold", estadoColor[p.estado.nombre] ?? estadoColor.en_recepcion)}>
-                {p.estado.nombre === "en_recepcion" ? t("welcome_state_published") : t(`state_${p.estado.nombre}`)}
-              </span>
-              {p.estado.nombre === "borrador" && onDeleteProject && (
                 <button
                   type="button"
-                  onClick={() => onDeleteProject(p.id)}
-                  aria-label={t("aria_eliminar_proyecto")}
-                  className="flex size-7 shrink-0 items-center justify-center rounded-full text-ink-muted/50 opacity-0 transition-all hover:bg-magenta/10 hover:text-magenta focus-visible:opacity-100 group-hover:opacity-100"
+                  onClick={() => onSelectProject(p.id, targetSection)}
+                  className="flex min-w-0 flex-1 items-center gap-4 text-left"
                 >
-                  <Trash2 className="size-3.5" aria-hidden="true" />
+                  <div className="min-w-0 flex-1">
+                    <p className="truncate font-heading text-sm font-bold text-ink-strong group-hover:text-primary">
+                      {p.titulo}
+                    </p>
+                    <p className="mt-0.5 font-body text-xs text-ink-muted">
+                      {p.area?.nombre ?? "—"} · {p.n_ofertas ?? 0} {t("proposals_count", { count: p.n_ofertas ?? 0 }).replace(/^\d+ /, "")}
+                    </p>
+                  </div>
+                  {(p.n_por_revisar ?? 0) > 0 && (
+                    <span className="shrink-0 rounded-full bg-warning/10 px-2.5 py-1 font-body text-[10px] font-bold text-warning">
+                      {t("por_revisar_badge", { count: p.n_por_revisar ?? 0 })}
+                    </span>
+                  )}
+                  <span className={cn("shrink-0 rounded-full px-2.5 py-1 font-body text-[10px] font-bold", estadoColor[p.estado.nombre] ?? estadoColor.en_recepcion)}>
+                    {p.estado.nombre === "en_recepcion" ? t("welcome_state_published") : t(`state_${p.estado.nombre}`)}
+                  </span>
+                  <ChevronRight className="size-4 shrink-0 text-ink-muted/40 transition-colors group-hover:text-primary" aria-hidden="true" />
                 </button>
-              )}
-              <ChevronRight className="size-4 shrink-0 text-ink-muted/40 transition-colors group-hover:text-primary" aria-hidden="true" />
-            </div>
-          ))}
+                {p.estado.nombre === "borrador" && onDeleteProject && (
+                  <button
+                    type="button"
+                    onClick={() => onDeleteProject(p.id)}
+                    aria-label={t("aria_eliminar_proyecto")}
+                    className="flex size-7 shrink-0 items-center justify-center rounded-full text-ink-muted/50 opacity-0 transition-all hover:bg-magenta/10 hover:text-magenta focus-visible:opacity-100 group-hover:opacity-100"
+                  >
+                    <Trash2 className="size-3.5" aria-hidden="true" />
+                  </button>
+                )}
+              </div>
+            );
+          })}
           {cerrados > 0 && (
             <p className="pt-1 text-center font-body text-xs text-ink-muted">
               {t("analytics_closed", { count: cerrados })}
