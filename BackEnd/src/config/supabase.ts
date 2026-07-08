@@ -52,3 +52,33 @@ export function createEphemeralClient() {
     },
   });
 }
+
+/**
+ * Cliente con clave service_role: bypassa RLS para operaciones de sistema.
+ * Solo usar para acciones que el servidor ejecuta por su cuenta (no en nombre
+ * de un usuario), como cerrar automáticamente un proyecto al calificar.
+ */
+export function supabaseAdmin() {
+  return createClient<Database>(env.supabaseUrl, env.supabaseServiceKey || env.supabaseKey, {
+    auth: {
+      persistSession: false,
+      autoRefreshToken: false,
+    },
+  });
+}
+
+/**
+ * Cliente para iniciar OAuth (Google/GitHub) con flujo "implicit": Supabase
+ * redirige con la sesión en el fragment de la URL (#access_token=...), igual que
+ * la recuperación de contraseña. Se evita PKCE a propósito: su `code_verifier`
+ * no se puede preservar entre requests con clientes efímeros y stateless.
+ */
+export function createOAuthClient() {
+  return createClient<Database>(env.supabaseUrl, env.supabaseKey, {
+    auth: {
+      persistSession: false,
+      autoRefreshToken: false,
+      flowType: "implicit",
+    },
+  });
+}

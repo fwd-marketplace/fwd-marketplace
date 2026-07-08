@@ -1,5 +1,6 @@
-import { setRequestLocale } from "next-intl/server";
+import { setRequestLocale, getTranslations } from "next-intl/server";
 import { RegisterForm } from "@/components/auth/RegisterForm";
+import { HeroJourneyBadge } from "@/components/ui/HeroJourneyBadge";
 
 interface Props {
   params: Promise<{ locale: string }>;
@@ -8,5 +9,10 @@ interface Props {
 export default async function RegisterPage({ params }: Props) {
   const { locale } = await params;
   setRequestLocale(locale);
-  return <RegisterForm />;
+  const t = await getTranslations("hero_journey");
+  return (
+    <RegisterForm
+      badge={<HeroJourneyBadge stage="llamado" label={t("llamado_label")} cta={t("llamado_cta")} />}
+    />
+  );
 }

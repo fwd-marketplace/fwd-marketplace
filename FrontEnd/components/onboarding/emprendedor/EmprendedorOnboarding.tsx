@@ -1,21 +1,72 @@
 "use client";
 
-import { useState, useTransition } from "react";
+import { useState, useTransition, useEffect } from "react";
 import { useRouter, useParams } from "next/navigation";
 import { useTranslations } from "next-intl";
 import { ArrowRight } from "lucide-react";
 import { FwdGeoBackdrop } from "@/components/ui/fwd-geo-backdrop";
+import { CosmicBackdrop } from "@/components/ui/cosmic-backdrop";
 import { ProgressDots } from "@/components/onboarding/ProgressDots";
 import { saveStep, getOnboarding, clearOnboarding } from "@/lib/onboarding-storage";
 import { saveEmprendedorProfile } from "@/lib/actions/auth";
+import { useApiErrorText } from "@/lib/i18n/api-error";
 
 const TOTAL_STEPS = 5;
 const OPTIONAL_STEPS = new Set([5]);
 const DESC_MAX_CHARS = 400;
 
-function Step1({ onChange }: { onChange: (val: string) => void }) {
+export type Step1Value = { projectName: string; cedula: string };
+
+function Step1({
+  onChange,
+  showErrors = false,
+}: {
+  onChange: (val: Step1Value | null) => void;
+  showErrors?: boolean;
+}) {
   const t = useTranslations("register.emprendedor.step1");
   const [nameValue, setNameValue] = useState("");
+  const [cedulaValue, setCedulaValue] = useState("");
+  const [touchedName, setTouchedName] = useState(false);
+  const [touchedCedula, setTouchedCedula] = useState(false);
+
+  useEffect(() => {
+    const stored = getOnboarding("emprendedor").step1 as Step1Value | undefined;
+    if (stored) { setNameValue(stored.projectName ?? ""); setCedulaValue(stored.cedula ?? ""); }
+  }, []);
+
+  // Emite el valor solo si ambos campos son válidos; null bloquea el "Siguiente".
+  function emit(name: string, cedula: string) {
+    const projectName = name.trim();
+    const ced = cedula.trim();
+    const valid = projectName.length >= 2 && ced.length >= 5 && ced.length <= 20;
+    onChange(valid ? { projectName, cedula: ced } : null);
+  }
+
+  function nameError(): string | null {
+    if (!showErrors && !touchedName) return null;
+    const value = nameValue.trim();
+    if (!value) return t("error_required");
+    if (value.length < 2) return t("error_min_2");
+    return null;
+  }
+
+  function cedulaError(): string | null {
+    if (!showErrors && !touchedCedula) return null;
+    const value = cedulaValue.trim();
+    if (!value) return t("cedula_error_required");
+    if (value.length < 5) return t("cedula_error_min");
+    return null;
+  }
+
+  const errName = nameError();
+  const errCedula = cedulaError();
+
+  const fieldClass = (hasError: boolean) =>
+    [
+      "w-full rounded-2xl bg-surface-sunken px-5 py-4 font-body text-sm text-ink-strong placeholder:text-ink-subtle outline-none focus:ring-2",
+      hasError ? "ring-1 ring-red-400/60 focus:ring-red-400/60" : "focus:ring-primary/40",
+    ].join(" ");
 
   return (
     <div className="flex flex-col gap-6">
@@ -29,17 +80,51 @@ function Step1({ onChange }: { onChange: (val: string) => void }) {
         <p className="mt-2 font-body text-sm text-ink-muted">{t("description")}</p>
       </div>
 
-      <label htmlFor="emprendedor-name" className="sr-only">{t("label")}</label>
-      <input
-        id="emprendedor-name"
-        type="text"
-        value={nameValue}
-        onChange={(e) => { setNameValue(e.target.value); onChange(e.target.value); }}
-        placeholder={t("placeholder")}
-        autoFocus
-        className="w-full rounded-2xl bg-surface-sunken px-5 py-4 font-body text-sm text-ink-strong placeholder:text-ink-subtle outline-none focus:ring-2 focus:ring-primary/40"
-      />
-      <div className="h-2" />
+      <div className="flex flex-col gap-1">
+        <label htmlFor="emprendedor-name" className="mb-1 px-1 font-body text-xs font-semibold text-ink-strong">
+          {t("label")}
+        </label>
+        <input
+          id="emprendedor-name"
+          type="text"
+          value={nameValue}
+          onChange={(e) => { setNameValue(e.target.value); emit(e.target.value, cedulaValue); }}
+          onBlur={() => setTouchedName(true)}
+          placeholder={t("placeholder")}
+          autoFocus
+          aria-describedby={errName ? "emprendedor-name-error" : undefined}
+          aria-invalid={errName ? true : undefined}
+          className={fieldClass(Boolean(errName))}
+        />
+        {errName && (
+          <p id="emprendedor-name-error" role="alert" className="px-1 font-body text-xs text-red-500">
+            {errName}
+          </p>
+        )}
+      </div>
+
+      <div className="flex flex-col gap-1">
+        <label htmlFor="emprendedor-cedula" className="mb-1 px-1 font-body text-xs font-semibold text-ink-strong">
+          {t("cedula_label")}
+        </label>
+        <input
+          id="emprendedor-cedula"
+          type="text"
+          inputMode="numeric"
+          value={cedulaValue}
+          onChange={(e) => { setCedulaValue(e.target.value); emit(nameValue, e.target.value); }}
+          onBlur={() => setTouchedCedula(true)}
+          placeholder={t("cedula_placeholder")}
+          aria-describedby={errCedula ? "emprendedor-cedula-error" : undefined}
+          aria-invalid={errCedula ? true : undefined}
+          className={fieldClass(Boolean(errCedula))}
+        />
+        {errCedula && (
+          <p id="emprendedor-cedula-error" role="alert" className="px-1 font-body text-xs text-red-500">
+            {errCedula}
+          </p>
+        )}
+      </div>
     </div>
   );
 }
@@ -49,6 +134,11 @@ type StartupStage = "idea" | "mvp" | "validating" | "scaling";
 function Step2({ onChange }: { onChange: (val: StartupStage) => void }) {
   const t = useTranslations("register.emprendedor.step2");
   const [selectedStage, setSelectedStage] = useState<StartupStage | null>(null);
+
+  useEffect(() => {
+    const stored = getOnboarding("emprendedor").step2 as StartupStage | undefined;
+    if (stored) setSelectedStage(stored);
+  }, []);
 
   const STAGE_OPTIONS: { id: StartupStage; label: string; description: string }[] = [
     { id: "idea",       label: t("idea_label"),       description: t("idea_description") },
@@ -118,6 +208,11 @@ function Step3({ onChange }: { onChange: (val: TechSupport[]) => void }) {
   const t = useTranslations("register.emprendedor.step3");
   const [selectedSupport, setSelectedSupport] = useState<TechSupport[]>([]);
 
+  useEffect(() => {
+    const stored = getOnboarding("emprendedor").step3 as TechSupport[] | undefined;
+    if (stored && stored.length > 0) setSelectedSupport(stored);
+  }, []);
+
   const TECH_SUPPORT_LABELS: Record<TechSupport, string> = {
     web:        t("web"),
     mobile:     t("mobile"),
@@ -181,6 +276,11 @@ type BudgetRange = "under_500" | "range_500_1000" | "range_1000_2500" | "flexibl
 function Step4({ onChange }: { onChange: (val: BudgetRange) => void }) {
   const t = useTranslations("register.emprendedor.step4");
   const [selectedBudget, setSelectedBudget] = useState<BudgetRange | null>(null);
+
+  useEffect(() => {
+    const stored = getOnboarding("emprendedor").step4 as BudgetRange | undefined;
+    if (stored) setSelectedBudget(stored);
+  }, []);
 
   const BUDGET_LABELS: Record<BudgetRange, string> = {
     under_500:       t("under_500"),
@@ -248,6 +348,11 @@ function Step5({ onChange }: { onChange: (val: string) => void }) {
   const [descriptionValue, setDescriptionValue] = useState("");
   const remainingChars = DESC_MAX_CHARS - descriptionValue.length;
 
+  useEffect(() => {
+    const stored = getOnboarding("emprendedor").step5 as string | undefined;
+    if (stored) setDescriptionValue(stored);
+  }, []);
+
   return (
     <div className="flex flex-col gap-6">
       <div>
@@ -286,6 +391,7 @@ function Step5({ onChange }: { onChange: (val: string) => void }) {
 
 export function EmprendedorOnboarding() {
   const t = useTranslations("register");
+  const errorText = useApiErrorText();
   const params = useParams();
   const router = useRouter();
   const locale = params.locale as string;
@@ -293,10 +399,37 @@ export function EmprendedorOnboarding() {
 
   const [pendingValue, setPendingValue] = useState<unknown>(null);
   const [submitError, setSubmitError] = useState<string | null>(null);
+  const [showStepErrors, setShowStepErrors] = useState(false);
   const [isSubmitting, startTransition] = useTransition();
+
+  useEffect(() => {
+    // Rehidrata el gating desde sessionStorage: si el paso ya se completó antes,
+    // "Siguiente" sigue habilitado al navegar hacia atrás/adelante sin re-tipear.
+    const stored = getOnboarding("emprendedor");
+    setPendingValue(stored[`step${currentStep}`] ?? null);
+    setShowStepErrors(false);
+  }, [currentStep]);
+
+  function getStepValidationMessage(): string | null {
+    if (!showStepErrors || OPTIONAL_STEPS.has(currentStep) || pendingValue !== null) return null;
+    switch (currentStep) {
+      case 1: return t("nav.error_field_required");
+      case 2: return t("nav.error_select_one");
+      case 3: return t("nav.error_select_several");
+      case 4: return t("nav.error_select_one");
+      default: return null;
+    }
+  }
 
   function handleNext() {
     setSubmitError(null);
+
+    if (!OPTIONAL_STEPS.has(currentStep) && !pendingValue) {
+      setShowStepErrors(true);
+      return;
+    }
+
+    setShowStepErrors(false);
     saveStep("emprendedor", currentStep, pendingValue);
 
     if (currentStep < TOTAL_STEPS) {
@@ -305,8 +438,10 @@ export function EmprendedorOnboarding() {
     }
 
     const stored = getOnboarding("emprendedor");
+    const step1 = stored.step1 as Step1Value | undefined;
     const raw = {
-      projectName:   stored.step1 as string,
+      projectName:   step1?.projectName ?? "",
+      cedula:        step1?.cedula ?? "",
       stage:         stored.step2,
       neededSupport: stored.step3,
       budget:        stored.step4,
@@ -330,26 +465,27 @@ export function EmprendedorOnboarding() {
     }
   }
 
-  const canContinue = !isSubmitting && (OPTIONAL_STEPS.has(currentStep) || Boolean(pendingValue));
+  const stepValidationMessage = getStepValidationMessage();
+  const footerMessage = errorText(submitError) ?? stepValidationMessage;
 
   return (
     <div className="relative flex min-h-[100dvh] flex-col bg-secondary">
       <FwdGeoBackdrop />
+      <CosmicBackdrop />
 
-      <header className="relative flex items-center justify-between px-4 py-5 sm:px-8 sm:py-6">
-        <span className="font-heading text-base font-extrabold text-secondary-foreground">
-          {t("brand")}
-          <span className="text-highlight">{t("brand_suffix")}</span>
-        </span>
+      <header className="relative flex items-center justify-end px-6 py-6 sm:px-10 sm:py-7">
         <span className="font-body text-xs font-medium uppercase tracking-widest text-secondary-foreground/60">
           {t("nav.step_counter", { current: currentStep, total: TOTAL_STEPS })}
         </span>
       </header>
 
-      <div className="relative flex flex-1 items-center justify-center px-4">
-        <div className="w-full max-w-md rounded-[2rem] bg-surface px-6 py-8 shadow-elevated sm:px-10 sm:py-10">
+      <div className="relative flex flex-1 items-center justify-center px-6">
+        <div className="w-full max-w-xl rounded-[2rem] bg-surface px-6 py-8 shadow-elevated sm:px-12 sm:py-10">
           {currentStep === 1 && (
-            <Step1 onChange={(val) => setPendingValue(val.trim() || null)} />
+            <Step1
+              showErrors={showStepErrors}
+              onChange={(val) => setPendingValue(val)}
+            />
           )}
           {currentStep === 2 && (
             <Step2 onChange={(val) => setPendingValue(val)} />
@@ -364,10 +500,10 @@ export function EmprendedorOnboarding() {
         </div>
       </div>
 
-      <footer className="relative flex flex-col items-center gap-2 px-4 py-5 sm:px-8 sm:py-6">
-        {submitError && (
-          <p role="alert" className="w-full max-w-md text-center font-body text-xs text-red-500">
-            {submitError}
+      <footer className="relative flex flex-col items-center gap-2 px-6 py-6 sm:px-10 sm:py-7">
+        {footerMessage && (
+          <p role="alert" className="w-full max-w-xl text-center font-body text-xs text-red-500">
+            {footerMessage}
           </p>
         )}
         <div className="flex w-full items-center justify-between">
@@ -389,8 +525,8 @@ export function EmprendedorOnboarding() {
           <button
             type="button"
             onClick={handleNext}
-            disabled={!canContinue}
-            className="flex items-center gap-2 rounded-full bg-primary px-5 py-2.5 font-body text-sm font-semibold text-white transition-opacity duration-[--duration-fast] hover:opacity-90 disabled:cursor-not-allowed disabled:opacity-40 sm:px-6"
+            disabled={isSubmitting}
+            className="flex items-center gap-2 rounded-full bg-primary px-4 py-2.5 font-body text-sm font-semibold text-white transition-opacity duration-[--duration-fast] hover:opacity-90 disabled:cursor-not-allowed disabled:opacity-40 sm:px-6"
           >
             {isSubmitting ? t("nav.finishing") : currentStep === TOTAL_STEPS ? t("nav.finish") : t("nav.next")}
             {!isSubmitting && <ArrowRight size={15} strokeWidth={2.5} />}

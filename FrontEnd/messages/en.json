@@ -1,7 +1,40 @@
 {
+  "traduccion": {
+    "ver_traduccion": "View translation",
+    "ver_original": "View original"
+  },
+  "hero_journey": {
+    "llamado_label": "The Call",
+    "llamado_cta": "Take your first step toward your career.",
+    "llamado_cta_achieved": "You answered the call.",
+    "preparacion_label": "The Preparation",
+    "preparacion_cta": "Sharpen your tools before the challenge.",
+    "preparacion_cta_achieved": "You are ready for the next step.",
+    "desafio_label": "The Challenge",
+    "desafio_cta": "Find your first real project.",
+    "desafio_cta_achieved": "You accepted the challenge.",
+    "transformacion_label": "The Transformation",
+    "transformacion_cta": "Show the world what you can do.",
+    "transformacion_cta_achieved": "Your work speaks for you.",
+    "reconocimiento_label": "The Recognition",
+    "reconocimiento_cta": "Your effort speaks for itself.",
+    "reconocimiento_cta_achieved": "The community recognizes you."
+  },
   "site": {
     "name": "FWD Marketplace",
     "description": "Freelance project marketplace for junior graduates of Fundación Forward Costa Rica."
+  },
+  "site_footer": {
+    "brand_name": "FWD Marketplace",
+    "logo_alt": "Fundación Forward Costa Rica logo",
+    "description": "We connect junior talent who graduated from Fundación Forward with companies looking to build real projects.",
+    "links_title": "Resources",
+    "terms": "Terms of use",
+    "privacy": "Privacy policy",
+    "copyright": "© 2026 Fundación Forward Costa Rica",
+    "rights": "FWD Marketplace • All rights reserved",
+    "facebook": "Follow Fundación Forward on Facebook",
+    "linkedin": "Follow Fundación Forward on LinkedIn"
   },
   "nav": {
     "marketplace": "Marketplace",
@@ -18,10 +51,11 @@
     "cta_empresa": "I'm a company",
     "hero": {
       "eyebrow": "Fundación Forward Costa Rica",
+      "logo_alt": "Fundación Forward Costa Rica logo forming as a constellation",
       "title": "Your first freelance project",
       "description": "Connect with real companies, build your portfolio and start your professional career.",
-      "cta_projects": "View projects",
-      "cta_company": "I'm a company",
+      "cta_projects": "Join the community",
+      "cta_company": "Take a quick look",
       "card_eyebrow": "Featured project",
       "card_title": "Analytics Dashboard",
       "card_company": "TechFlow Systems",
@@ -39,13 +73,6 @@
       "description": "Join hundreds of talents already building their careers with real projects and companies that trust FWD.",
       "cta_projects": "View projects",
       "cta_register": "Create free account"
-    },
-    "featured_projects": {
-      "eyebrow": "Projects",
-      "title": "Available opportunities",
-      "badge_featured": "Featured",
-      "duration": "weeks",
-      "link_all": "See all"
     },
     "value_prop": {
       "talents_title": "For talents",
@@ -76,12 +103,20 @@
     "how_it_works": {
       "eyebrow": "How it works",
       "title": "In 3 simple steps",
+      "audience_juniors": "For students",
+      "audience_empresas": "For companies",
       "step1_title": "Create your profile",
       "step1_desc": "Complete your profile with your skills, tech stack and availability.",
       "step2_title": "Find projects",
       "step2_desc": "Explore real projects from companies looking for exactly your profile.",
       "step3_title": "Deliver and get paid",
-      "step3_desc": "Work on the project, deliver on time and receive your secure payment."
+      "step3_desc": "Work on the project, deliver on time and receive your secure payment.",
+      "empresa_step1_title": "Post your project",
+      "empresa_step1_desc": "Describe your project, the stack you need and your available budget.",
+      "empresa_step2_title": "Receive applications",
+      "empresa_step2_desc": "Students with the right profile will send you their cover letter and portfolio.",
+      "empresa_step3_title": "Hire and pay",
+      "empresa_step3_desc": "Pick the best candidate, receive the delivery and pay securely."
     }
   },
   "login": {
@@ -102,22 +137,106 @@
     "submitting": "Signing in...",
     "pending_approval": "Your account is pending approval. We'll notify you when it's activated.",
     "account_suspended": "Your account has been suspended or rejected. Please contact support.",
+    "mfa_sent": "We sent a 6-digit code to your email.",
+    "mfa_description": "Check your email and enter the 6-digit code to finish signing in.",
+    "mfa_code_label": "Verification code",
+    "mfa_code_placeholder": "000000",
+    "mfa_submit": "Verify and sign in",
+    "mfa_back": "Back",
     "terms_prefix": "By signing in you agree to the",
-    "terms_link": "Terms of Service",
+    "terms_link": "Terms and Conditions",
     "terms_connector": "and the",
     "privacy_link": "Privacy Policy",
     "no_account": "Don't have an account?",
-    "register_link": "Sign up here"
+    "register_link": "Create one",
+    "back_home": "Back to home"
+  },
+  "oauth_callback": {
+    "loading": "Completing sign in...",
+    "error_title": "We couldn't sign you in",
+    "error_no_session": "No session received from the provider. Please try signing in again.",
+    "error_suspended": "Your account is suspended or rejected.",
+    "back_to_login": "Back to sign in"
+  },
+  "auth_footer": {
+    "privacy": "Privacy Policy",
+    "terms": "Terms and Conditions",
+    "copyright": "© 2026 FWD Marketplace. Secure encrypted connection."
+  },
+  "reset_password": {
+    "brand": "FWD Marketplace",
+    "back_to_login": "Back to login",
+    "title": "Reset your password",
+    "description": "Enter your email and we'll send you a secure link to set a new password.",
+    "email_label": "Email address",
+    "email_placeholder": "name@example.com",
+    "password_label": "New password",
+    "password_placeholder": "Your new password",
+    "confirm_label": "Confirm new password",
+    "confirm_placeholder": "Repeat your new password",
+    "show_password": "Show password",
+    "hide_password": "Hide password",
+    "hint": "Password must be at least 8 characters.",
+    "submit": "Send recovery link",
+    "submitting": "Sending...",
+    "secure_connection": "Secure encrypted connection",
+    "success_title": "Check your email",
+    "success_message": "If an account exists for {email}, we sent you a secure link to confirm your new password.",
+    "error_email": "Enter a valid email address.",
+    "error_password_length": "Password must be at least 8 characters.",
+    "error_mismatch": "Passwords do not match.",
+    "error_generic": "We couldn't process your request. Please try again.",
+    "request_hint": "We'll send a secure link to your email.",
+    "new_title": "Set your new password",
+    "new_description": "Choose a new password for your account. It must be at least 8 characters.",
+    "new_submit": "Save password",
+    "new_success_title": "Password updated",
+    "new_success_message": "Your password was changed successfully. You can now log in with the new one.",
+    "invalid_link_title": "Invalid or expired link",
+    "invalid_link_message": "This recovery link is invalid or has expired. Request a new one to continue.",
+    "request_again": "Request a new link",
+    "go_to_login": "Go to login",
+    "footer_privacy": "Privacy Policy",
+    "footer_terms": "Terms of Service",
+    "footer_security": "Security Center",
+    "footer_copyright": "© 2026 FWD Marketplace. Secure encrypted connection."
+  },
+  "api_errors": {
+    "CONNECTION_ERROR": "Connection error. Check your internet and try again.",
+    "ONBOARDING_FORBIDDEN": "You can't complete registration for another account.",
+    "CEDULA_TAKEN": "An account with that ID already exists.",
+    "ALREADY_ONBOARDED": "This account has already completed registration.",
+    "ONBOARDING_FAILED": "We couldn't complete registration. Please try again.",
+    "SIGNUPS_DISABLED": "Talent registration is temporarily disabled.",
+    "COMPANIES_DISABLED": "Company registration is temporarily disabled.",
+    "EMPRENDEDORES_DISABLED": "Entrepreneur registration is temporarily disabled.",
+    "NOT_AUTHENTICATED": "Your session expired. Please sign in again.",
+    "NO_EMAIL": "The account has no email associated.",
+    "EMAIL_REQUIRED": "Email is required.",
+    "PASSWORD_REQUIRED": "Password is required.",
+    "PASSWORD_TOO_SHORT": "Password must be at least 8 characters.",
+    "VERIFICATION_TICKET_MISSING": "The verification ticket is missing.",
+    "CODE_INVALID_LENGTH": "The code must be 6 digits.",
+    "RESET_TOKEN_MISSING": "The recovery token is missing.",
+    "REFRESH_TOKEN_REQUIRED": "The session token is missing.",
+    "OAUTH_PROVIDER_UNSUPPORTED": "Unsupported sign-in provider.",
+    "INVALID_CREDENTIALS": "Incorrect email or password.",
+    "RESET_LINK_INVALID": "The recovery link is invalid or expired.",
+    "TOKEN_INVALID": "Your session expired. Please sign in again."
   },
   "register": {
     "brand": "FWD",
-    "brand_suffix": "Talent",
+    "brand_suffix": "Marketplace",
     "nav": {
       "step_counter": "Step {current} of {total}",
       "back": "Back",
       "next": "Continue",
       "finish": "Finish",
-      "finishing": "Saving..."
+      "finishing": "Saving...",
+      "error_step1": "Complete all fields to continue",
+      "error_select_one": "Select an option to continue",
+      "error_select_several": "Select at least one option to continue",
+      "error_field_required": "This field is required to continue"
     },
     "role": {
       "eyebrow": "Start here",
@@ -150,9 +269,12 @@
       "submitting": "Creating account...",
       "passwords_mismatch": "Passwords do not match",
       "terms_prefix": "By signing up you agree to the",
-      "terms_link": "Terms of Service",
+      "terms_link": "Terms and Conditions",
       "terms_connector": "and the",
       "privacy_link": "Privacy Policy",
+      "login_link": "Sign in",
+      "already_account": "Already have an account?",
+      "back_home": "Back to home",
       "amcham_badge": "Endorsed by AmCham Costa Rica"
     },
     "junior": {
@@ -160,7 +282,13 @@
         "eyebrow": "Request received",
         "title": "Your account is under review",
         "description": "The FWD team will review your profile and notify you by email once your account is approved. This usually takes 24 to 48 hours.",
-        "cta": "Back to home"
+        "cta": "Back to home",
+        "approved": {
+          "eyebrow": "Account approved",
+          "title": "Your account was approved as a junior",
+          "description": "We verified that you are an FWD graduate. For security, log in to enable two-step verification and access your account.",
+          "cta": "Log in"
+        }
       },
       "step1": {
         "eyebrow": "First things first",
@@ -169,11 +297,14 @@
         "label_nombre": "First name",
         "placeholder_nombre": "e.g. María",
         "label_apellido1": "First surname",
+        "error_required": "Required",
+        "error_min_2": "At least 2 characters",
+        "error_min_5": "At least 5 characters",
         "placeholder_apellido1": "e.g. García",
         "label_apellido2": "Second surname",
         "placeholder_apellido2": "e.g. López",
         "label_cedula": "ID number",
-        "placeholder_cedula": "e.g. 1-1234-5678"
+        "placeholder_cedula": "Your ID number (e.g. 1-1234-5678)"
       },
       "step2": {
         "eyebrow": "Your specialization",
@@ -227,7 +358,26 @@
         "linkedin_label": "LinkedIn",
         "linkedin_placeholder": "https://linkedin.com/in/your-username",
         "portfolio_label": "Portfolio",
-        "portfolio_placeholder": "https://your-site.com"
+        "portfolio_placeholder": "https://your-site.com",
+        "perfil_junior": {
+          "work": {
+            "add_modal_title": "Add new project",
+            "fields": {
+              "name": "Project name",
+              "url": "URL / Link",
+              "description": "Short description",
+              "techs": "Technologies (comma-separated)",
+              "techs_placeholder": "e.g. React, Node.js"
+            },
+            "create": "Create project",
+            "cancel": "Cancel",
+            "preview_btn": "Preview",
+            "errors": {
+              "name_required": "The project name is required.",
+              "url_required": "The project URL is required."
+            }
+          }
+        }
       },
       "step7": {
         "eyebrow": "Optional",
@@ -249,7 +399,9 @@
         "title": "What is your company's name?",
         "description": "This name will appear on your profile and on the projects you post.",
         "label": "Company name",
-        "placeholder": "e.g. Acme Technologies Inc."
+        "placeholder": "e.g. Acme Technologies Inc.",
+        "error_required": "Required",
+        "error_min_2": "At least 2 characters"
       },
       "step2": {
         "eyebrow": "Your sector",
@@ -272,7 +424,9 @@
         "title": "What does your company do?",
         "description": "A brief description to help talents get to know you.",
         "label": "Description",
-        "placeholder": "Describe your company's focus, purpose and culture..."
+        "placeholder": "Describe your company's focus, purpose and culture...",
+        "error_required": "Required",
+        "error_min_10": "At least 10 characters"
       },
       "step4": {
         "eyebrow": "Contact details",
@@ -281,7 +435,9 @@
         "direccion_label": "Address",
         "direccion_placeholder": "123 Main Street, San José",
         "cedula_label": "Legal ID",
-        "cedula_placeholder": "3-101-XXXXXX"
+        "cedula_placeholder": "3-101-XXXXXX",
+        "error_required": "Required",
+        "error_min_5": "At least 5 characters"
       },
       "step5": {
         "eyebrow": "Project types",
@@ -321,7 +477,13 @@
         "title": "What is your project called?",
         "description": "The name of your startup, product or idea you want to develop.",
         "label": "Project name",
-        "placeholder": "e.g. EcoTrack App"
+        "placeholder": "e.g. EcoTrack App",
+        "error_required": "Required",
+        "error_min_2": "At least 2 characters",
+        "cedula_label": "Your ID",
+        "cedula_placeholder": "e.g. 1-2345-6789",
+        "cedula_error_required": "Enter your ID",
+        "cedula_error_min": "Invalid ID"
       },
       "step2": {
         "eyebrow": "Project stage",
@@ -370,121 +532,136 @@
       }
     }
   },
-  "empresa_dashboard": {
-    "title": "Company dashboard",
-    "company_desc": "We connect emerging junior talent in Costa Rica with real tech projects. Forward is a foundation dedicated to boosting professional development in technology.",
-    "stats": {
-      "active_projects": "Active projects",
-      "applications": "Applications",
-      "reviewed": "Reviewed",
-      "pending_match": "Pending match"
-    },
-    "projects": {
-      "title": "Your projects",
-      "new_btn": "New",
-      "paused": "Paused",
-      "published_days": "Published {days} days ago",
-      "label_applied": "Applied"
-    },
-    "compatibility": {
-      "title": "Candidate compatibility",
-      "subtitle": "Select a project to filter",
-      "match_total": "Total match",
-      "tech_stack": "Tech stack",
-      "availability": "Availability",
-      "modality": "Modality",
-      "empty_state": "No recommended candidates for this project yet."
-    },
-    "applications": {
-      "title": "Who applied",
-      "empty_state": "No applications registered.",
-      "table": {
-        "junior": "Talent",
-        "project": "Project",
-        "match": "Match",
-        "status": "Status",
-        "actions": "Actions"
-      },
-      "status": {
-        "reviewed": "Reviewed",
-        "pending": "Pending",
-        "interview": "Interview",
-        "accepted": "Accepted",
-        "rejected": "Rejected"
-      },
-      "actions": {
-        "view": "View profile",
-        "accept": "Accept",
-        "reject": "Reject",
-        "completed": "Completed"
-      }
-    },
-    "new_project_modal": {
-      "title": "New project",
-      "name_label": "Project name",
-      "placeholder": "e.g. E-commerce Mobile Sync",
-      "status_label": "Initial status",
-      "active": "Active",
-      "paused": "Paused",
-      "cancel": "Cancel",
-      "submit": "Create project",
-      "success_message": "Project created successfully."
-    },
-    "notifications": {
-      "accepted": "{name} has been accepted to the project.",
-      "rejected": "{name} has been notified they were not selected."
-    }
-  },
-  "mis_proyectos": {
-    "published_on": "Published on {date}",
-    "modality_label": "Modality",
-    "level_label": "Level",
-    "budget_label": "Budget",
-    "edit_btn": "Edit Project",
-    "pause_btn": "Pause Project",
-    "reactivate_btn": "Reactivate Project",
-    "status_active": "ACTIVE",
-    "status_paused": "PAUSED",
-    "tabs": {
-      "project": "Project",
-      "mockups": "Mockups",
-      "applications": "Applications"
-    },
-    "objective_title": "Project Objective",
-    "scope_title": "Scope and Requirements",
-    "deliverables_title": "Expected Deliverables",
-    "stack_title": "TECH STACK",
-    "metrics_title": "PROGRESS METRICS",
-    "metrics_talent_match": "Talent Match",
-    "metrics_active_applicants": "Active Applicants",
-    "mockups_empty": "No mockups uploaded for this project yet.",
-    "applications_empty": "No applications registered yet.",
-    "edit_modal": {
-      "title": "Edit project",
-      "name_label": "Project name",
-      "modality_label": "Modality",
-      "budget_label": "Budget",
-      "cancel": "Cancel",
-      "save": "Save changes",
-      "success": "Project updated successfully."
-    },
-    "notifications": {
-      "paused": "Project has been paused.",
-      "reactivated": "Project has been reactivated."
-    }
+  "project_detail": {
+    "label_compensacion": "Compensation",
+    "label_duracion": "Duration",
+    "label_area": "Area",
+    "duracion_dias": "{n} days",
+    "back": "Back to marketplace",
+    "uses_ia": "Uses AI",
+    "compensation_updated": "Compensation updated on {date}",
+    "duration": "{days} days",
+    "posted_on": "Posted on",
+    "skills_required": "Required technologies",
+    "offer_title": "Apply to this project",
+    "offer_subtitle": "Tell us why you are the right person for this project.",
+    "offer_propuesta_label": "Your proposal",
+    "offer_propuesta_placeholder": "Describe your experience, your approach to this project, and why you are the right fit...",
+    "offer_propuesta_min": "At least 50 characters",
+    "offer_propuesta_required": "The proposal is required",
+    "offer_prototipo_label": "Deployed prototype URL (optional)",
+    "offer_prototipo_placeholder": "https://your-demo.netlify.app",
+    "offer_prototipo_invalid": "Please enter a valid URL",
+    "offer_repo_label": "Repository (optional)",
+    "offer_repo_placeholder": "https://github.com/user/project",
+    "offer_doc_url_label": "Documentation or file (optional)",
+    "offer_doc_url_placeholder": "https://drive.google.com/...",
+    "offer_doc_notes_label": "Technical notes (optional)",
+    "offer_doc_notes_placeholder": "Stack details, technical decisions, how to run the demo...",
+    "offer_url_invalid": "Please enter a valid URL",
+    "offer_submit": "Submit application",
+    "offer_submitting": "Sending...",
+    "offer_success": "Application sent. We will let you know when the company reviews your proposal.",
+    "offer_error_generic": "Could not send your application. Please try again.",
+    "owner_banner_title": "This is your project",
+    "owner_banner_desc": "Applications received are waiting for you in the company dashboard.",
+    "owner_banner_cta": "View applications",
+    "offer_expired": "This project is no longer accepting new offers. The submission deadline has passed.",
+    "offer_busy_title": "You already have an active project",
+    "offer_busy_message": "You can't apply to another project until your awarded one is closed. This way we spread opportunities across everyone.",
+    "offer_expired_chip": "Deadline passed",
+    "offer_already_sent": "You already submitted a proposal for this project. Review it in My Applications.",
+    "offer_documentacion_tecnica_label": "Additional technical documentation (optional)",
+    "offer_documentacion_tecnica_placeholder": "Describe your technical approach, tools you'd use, time estimates, architecture decisions...",
+    "offer_documentacion_url_label": "Link to documentation or PDF (optional)",
+    "offer_documentacion_url_placeholder": "https://docs.google.com/...",
+    "offer_documentacion_url_invalid": "Please enter a valid URL"
   },
   "app_header": {
     "notifications": "Notifications",
-    "user_menu": "User menu"
+    "user_menu": "User menu",
+    "logout": "Log out",
+    "nav_home": "Home",
+    "nav_marketplace": "Marketplace",
+    "nav_my_applications": "My applications",
+    "nav_mensajes": "Messages",
+    "nav_my_profile": "My profile",
+    "nav_my_projects": "My projects",
+    "nav_postulaciones": "Applications",
+    "nav_my_company": "My company",
+    "nav_terms": "Terms and conditions",
+    "nav_privacy": "Privacy",
+    "settings": "Settings",
+    "learning_map": "Learning map",
+    "brand_name": "FWD Marketplace",
+    "logo_alt": "FWD Marketplace logo",
+    "profile_link": "View profile",
+    "open_menu": "Open menu",
+    "nav_gestion": "Projects",
+    "language": "Language",
+    "lang_es": "Español",
+    "lang_en": "English",
+    "dark_mode": "Dark mode"
+  },
+  "mis_postulaciones": {
+    "title": "My applications",
+    "subtitle": "Here you can see all the projects you applied to.",
+    "empty_title": "You haven't applied to any project yet",
+    "empty_body": "Browse the marketplace and find a project that matches your skills.",
+    "empty_cta": "View projects",
+    "sent_on": "Sent on",
+    "proposal_label": "Your proposal",
+    "prototype_link": "View prototype",
+    "repo_link": "View repository",
+    "project_removed": "Project no longer available",
+    "state_enviada": "Submitted",
+    "state_en_revision": "Under review",
+    "state_adjudicada": "Awarded",
+    "state_no_seleccionada": "Not selected",
+    "entregable_label": "Deliverable",
+    "entregable_submit_cta": "Submit work",
+    "entregable_url_label": "Deliverable URL",
+    "entregable_url_placeholder": "https://github.com/your-username/your-project",
+    "entregable_send_btn": "Submit",
+    "entregable_sending": "Submitting...",
+    "entregable_cancel": "Cancel",
+    "entregable_view_link": "View deliverable",
+    "entregable_state_enviado": "Submitted",
+    "entregable_state_aprobado": "Approved",
+    "entregable_state_cambios_solicitados": "Changes requested",
+    "entregable_feedback_label": "Changes requested:",
+    "entregable_tipo_label": "Deliverable type",
+    "entregable_tipo_parcial": "Partial delivery",
+    "entregable_tipo_final": "Final delivery",
+    "entregable_new_version": "Upload new version",
+    "view_project_btn": "View project",
+    "withdraw_btn_aria": "Withdraw application",
+    "docs_label": "Technical documentation",
+    "docs_url_link": "View documentation",
+    "see_more": "See more",
+    "see_less": "See less",
+    "awarded_banner": "This project was awarded to you",
+    "go_to_messages": "Go to messages",
+    "expiring_soon_hours": "Deadline in {hours} h — don't forget your deliverable",
+    "expiring_soon_less_than_hour": "Deadline in less than 1 hour",
+    "withdraw_modal_title": "Withdraw application",
+    "withdraw_modal_desc": "Are you sure you want to withdraw your application for \"{titulo}\"? This action cannot be undone.",
+    "withdraw_modal_cancel": "Cancel",
+    "withdraw_modal_confirm": "Yes, withdraw",
+    "withdraw_modal_removing": "Withdrawing...",
+    "withdraw_btn": "Withdraw application",
+    "rating_from_company": "Company rating"
   },
   "empresa_subnav": {
     "back": "Back",
     "mis_proyectos": "My projects",
     "matches": "Matches",
     "postulaciones": "Applications",
-    "mi_empresa": "My company"
+    "mi_empresa": "My company",
+    "mi_emprendimiento": "My venture"
   },
   "perfil_junior": {
+    "show_suggestions": "Show suggestions",
     "tabs": {
       "nav_label": "Profile navigation",
       "perfil": "My profile",
@@ -495,18 +672,65 @@
     },
     "hero": {
       "edit_profile": "Edit profile",
-      "role_label": "Role",
+      "role_label": "Specialty",
       "program_label": "Program / Cohort",
+      "name_label": "First name",
+      "lastname1_label": "Last name",
+      "lastname2_label": "Second last name",
+      "modality_label": "Preferred work mode",
+      "name_required": "First name and last name are required.",
+      "unnamed": "Unnamed",
       "save": "Save",
-      "cancel": "Cancel"
+      "cancel": "Cancel",
+      "reputation_label": "accumulated reputation"
+    },
+    "calificaciones": {
+      "title": "Completed projects",
+      "subtitle": "Completed projects and the ratings you received from companies.",
+      "empty": "You have no company ratings yet.",
+      "comment_label": "Company comment",
+      "your_reply": "Your reply",
+      "reply_btn": "Reply to this rating",
+      "reply_placeholder": "Write your reply to this rating...",
+      "reply_send": "Send reply",
+      "reply_sending": "Sending...",
+      "reply_cancel": "Cancel"
+    },
+    "avatar": {
+      "alt": "Profile photo",
+      "change": "Change profile photo",
+      "delete": "Remove profile photo",
+      "invalid_type": "The file must be an image.",
+      "too_large": "The image exceeds the 5 MB limit."
+    },
+    "specialty_options": {
+      "placeholder": "Choose a specialty",
+      "frontend": "Frontend",
+      "backend": "Backend",
+      "fullstack": "Fullstack",
+      "ia": "Artificial Intelligence"
+    },
+    "availability_options": {
+      "placeholder": "Choose your availability",
+      "immediate": "Immediate",
+      "two_weeks": "In two weeks",
+      "one_month": "In a month",
+      "unavailable": "Unavailable"
+    },
+    "modality_options": {
+      "remote": "Remote",
+      "hybrid": "Hybrid",
+      "onsite": "On-site"
     },
     "personal": {
       "title": "Personal Information",
       "edit": "Edit",
-      "location_field": "Location",
+      "location_field": "Availability",
       "email_field": "Email Address",
+      "email_readonly": "Your email is managed from your account and can't be changed here.",
       "bio_field": "Professional bio",
-      "location_display": "Location",
+      "bio_empty": "You haven't added a bio yet.",
+      "location_display": "Availability",
       "email_display": "Contact",
       "bio_heading": "About Me",
       "save_changes": "Save changes",
@@ -515,36 +739,123 @@
     "stack": {
       "title": "My Tech Stack",
       "add": "Add",
-      "placeholder": "e.g. Node.js, GraphQL, PostgreSQL...",
+      "placeholder": "Search or type a technology...",
       "add_btn": "Add",
       "cancel_btn": "Cancel",
       "remove_skill": "Remove {skill}",
-      "empty": "No technologies added yet."
+      "empty": "No technologies added yet.",
+      "catalog_hint": "Catalog technologies are highlighted in blue. Custom ones in yellow.",
+      "catalog_label": "Catalog",
+      "add_custom": "Add new",
+      "legend_catalog": "From catalog",
+      "legend_custom": "Custom"
+    },
+    "knowledge": {
+      "title": "Additional knowledge",
+      "description": "Skills beyond the technical (accounting, HR, marketing...) that broaden your profile and improve your matches.",
+      "add": "Add",
+      "placeholder": "e.g. Accounting, Human Resources, Marketing...",
+      "add_btn": "Add",
+      "cancel_btn": "Cancel",
+      "remove": "Remove {name}",
+      "empty": "You haven't added any additional knowledge yet.",
+      "hint": "Pick from the suggestions or type your own: everything is saved and counts toward matching."
     },
     "links": {
       "title": "Talent Links",
       "github": "GitHub",
       "linkedin": "LinkedIn",
-      "portfolio": "Portfolio"
+      "portfolio": "Portfolio",
+      "edit": "Edit",
+      "save": "Save",
+      "cancel": "Cancel",
+      "empty": "You haven't added links yet.",
+      "github_placeholder": "https://github.com/your-username",
+      "linkedin_placeholder": "https://linkedin.com/in/your-username",
+      "portfolio_placeholder": "https://your-portfolio.com"
     },
     "activity": {
       "title": "Recent Activity",
       "view_all": "View full history",
+      "ver_notificaciones": "View all notifications",
+      "empty": "No activity recorded yet.",
       "just_now": "Just now",
       "updated_personal": "Updated personal contact information",
       "removed_skill": "Removed skill '{skill}' from their stack",
-      "added_skill": "Added skill '{skill}' to their stack"
+      "added_skill": "Added skill '{skill}' to their stack",
+      "removed_knowledge": "Removed knowledge '{name}' from their profile",
+      "added_knowledge": "Added knowledge '{name}' to their profile"
     },
     "applications_sidebar": {
       "title": "Applications",
-      "manage": "Manage applications"
+      "manage": "Manage applications",
+      "empty": "You haven't applied to any project yet."
+    },
+    "gamification": {
+      "streak_label": "Streak",
+      "badges_label": "Badges",
+      "journey_label": "Hero journey"
     },
     "work": {
-      "title": "My work",
+      "project_name_placeholder": "My awesome project",
+      "project_desc_placeholder": "Brief description of what this project does...",
+      "title": "My portfolio",
       "description": "Manage and showcase your most impactful developments. Visualize your finished products and add new pieces to your professional portfolio.",
       "badge_product": "Product",
       "add_title": "Add project",
-      "add_formats": "Supported formats: Link, Figma, GitHub"
+      "add_formats": "Supported formats: Link, Figma, GitHub",
+      "add_project": "Add project",
+      "my_projects": "My projects",
+      "my_projects_help": "Manage and showcase your most impactful developments.",
+      "preview_btn": "Preview",
+      "open_btn": "Open",
+      "edit_btn": "Edit",
+      "save_btn": "Save",
+      "preview_modal_title": "Preview",
+      "open_in_new_tab": "Open in new tab",
+      "close": "Close",
+      "iframe_error": "This site does not allow embedding. You can open it directly.",
+      "no_projects": "There are no projects in your portfolio yet.",
+      "show_more": "See {count} more",
+      "show_less": "See less",
+      "add_modal_title": "Add new project",
+      "edit_modal_title": "Edit project",
+      "fields": {
+        "name": "Project name",
+        "url": "Demo URL / Link",
+        "repo_url": "Repository URL (optional)",
+        "description": "Brief description",
+        "techs": "Technologies",
+        "techs_placeholder": "e.g. React, Tailwind, Next.js"
+      },
+      "create": "Create project",
+      "cancel": "Cancel",
+      "errors": {
+        "name_required": "Project name is required.",
+        "url_required": "Project URL is required."
+      },
+      "confirm_delete": {
+        "title": "Delete project",
+        "message": "Are you sure you want to delete this project?",
+        "cancel": "Cancel",
+        "confirm": "Delete"
+      },
+      "work": {
+        "add_modal_title": "Add new project",
+        "fields": {
+          "name": "Project name",
+          "url": "URL / Link",
+          "description": "Brief description",
+          "techs": "Technologies",
+          "techs_placeholder": "e.g. React, Tailwind, Next.js"
+        },
+        "create": "Create project",
+        "cancel": "Cancel",
+        "errors": {
+          "name_required": "Project name is required.",
+          "url_required": "Project URL is required."
+        }
+      }
     },
     "applications": {
       "title": "My applications",
@@ -562,16 +873,30 @@
       "stats": {
         "active": "Active Applications",
         "interviews": "Scheduled Interviews",
-        "compatibility": "Compatibility Index"
+        "compatibility": "Compatibility Index",
+        "in_progress": "Projects in progress",
+        "awarded": "Awarded projects"
       },
+      "go_to_marketplace": "Go to management",
+      "saved_title": "Saved projects",
+      "saved_empty": "You have no saved projects. Use the save button on the marketplace to add them here.",
+      "saved_expired": "Expired",
+      "saved_view": "View project",
+      "saved_remove": "Remove from saved",
       "opportunities_title": "Other opportunities for you",
       "opportunities_description": "Projects that might fit your professional journey.",
       "view_details": "View details",
       "explore_routes": "Explore new paths"
     },
     "notifications": {
-      "activity_title": "Recent Activity",
+      "activity_title": "Notifications",
       "mark_all_read": "Mark all as read",
+      "mark_read": "Mark as read",
+      "unread": "unread",
+      "empty": "You have no notifications at the moment.",
+      "page_info": "Showing {from}–{to} of {total}",
+      "prev": "Previous",
+      "next": "Next",
       "today": "Today",
       "yesterday": "Yesterday",
       "older_empty": "No older notifications."
@@ -597,12 +922,28 @@
       "terms": "Terms of Service",
       "privacy": "Privacy Policy",
       "support": "Support"
+    },
+    "two_point_zero": {
+      "title": "Coming soon",
+      "work": "2.0: Project portfolio",
+      "applications": "2.0: More opportunities for you",
+      "notifications": "2.0: Matching and activity notifications",
+      "suggested": "2.0: Algorithmic matching and recommendations"
     }
+  },
+  "junior_subnav": {
+    "back": "Back to marketplace",
+    "inicio": "Home",
+    "marketplace": "Marketplace",
+    "viaje": "Map",
+    "perfil": "My profile"
   },
   "viaje": {
     "title": "Your sky",
-    "eyebrow": "Learning journey",
+    "eyebrow": "Learning map",
     "back_label": "Back to profile",
+    "home_label": "Back to home",
+    "brand_name": "FWD Marketplace",
     "sky_lit": "{pct}% of the sky lit",
     "xp_label": "XP",
     "streak_label": "days",
@@ -623,7 +964,8 @@
     "panel_unlocked_eyebrow": "Lit",
     "panel_unlocked_prefix": "You lit it on",
     "panel_unlocked_joining": "by completing",
-    "panel_available_eyebrow": "How to light it",
+    "panel_available_eyebrow": "Ready to light",
+    "panel_available_quiz_required": "Pass the quiz to light this star.",
     "panel_locked_eyebrow": "How to unlock it",
     "panel_locked_via_prefix": "Waiting for you in",
     "panel_btn_light": "Light star",
@@ -631,55 +973,266 @@
     "panel_close": "Close",
     "celeb_eyebrow": "New skill",
     "celeb_sub_prefix": "You lit a star in",
-    "celeb_btn": "Keep exploring"
+    "celeb_btn": "Keep exploring",
+    "tab_info": "Info",
+    "tab_quiz": "Quiz",
+    "tab_info_content_eyebrow": "Explanatory content",
+    "tab_info_content_placeholder": "Coming soon: your learning assistant will fill this section with explanations, examples and context for this topic.",
+    "tab_info_resources_eyebrow": "Recommended resources",
+    "tab_info_videos_eyebrow": "Recommended videos",
+    "tab_quiz_locked_msg": "Unlock this star first to access the quiz.",
+    "tab_quiz_coming_soon": "Quiz coming soon.",
+    "tab_quiz_round": "Part {n} of 3",
+    "tab_quiz_submit": "Check answers",
+    "tab_quiz_retake": "Try again",
+    "tab_quiz_pass": "Well done. You earned a mastery point.",
+    "tab_quiz_fail": "Almost. Review the answers and try again.",
+    "tab_quiz_already_max": "Mastery complete. This star shines at its brightest.",
+    "tab_quiz_all_done_title": "Mastery complete",
+    "tab_quiz_all_done_body": "You completed all 3 parts of the quiz. This star shines at its brightest.",
+    "tab_quiz_hint_aria": "See hint",
+    "tab_quiz_hint_placeholder": "The learning assistant will provide a personalized hint here. Coming soon.",
+    "tab_quiz_stage_done_title": "Part {n} complete",
+    "tab_quiz_stage_done_body": "You earned a mastery point. {remaining} more to go.",
+    "tab_quiz_stage_last_body": "You earned the last mastery point. Closing...",
+    "tab_quiz_next_stage": "Go to part {n}",
+    "tab_quiz_continue": "Continue",
+    "contenido": {
+      "terminal": {
+        "intro": "The terminal is a window where you type text commands to your computer, with no menus or buttons.",
+        "bloques": [
+          { "titulo": "How it works", "cuerpo": "You type a command, press Enter, and the machine runs it instantly. Each command is a verb: `ls` lists, `cd` enters a folder, `mkdir` creates one." },
+          { "titulo": "An example", "cuerpo": "To create a folder and step into it: `mkdir my-project` then `cd my-project`. Two lines do what would take several clicks with a mouse." },
+          { "titulo": "Why it matters", "cuerpo": "Almost every dev tool (Git, Node, npm) lives in the terminal. Getting comfortable here makes you much faster and is the first step to everything else." }
+        ]
+      },
+      "git": {
+        "intro": "Git records the history of your code: every change is saved, so you can go back whenever you need to.",
+        "bloques": [
+          { "titulo": "How it works", "cuerpo": "You work and, when something works, you make a `commit`: a snapshot of your project at that moment with a message explaining what changed." },
+          { "titulo": "An example", "cuerpo": "If you break something today, you can return to yesterday's commit without losing a thing. With `branches` you try new ideas without touching the version that already works." },
+          { "titulo": "Why it matters", "cuerpo": "It's how teams work on the same project without stepping on each other. Without Git, real collaboration is impossible." }
+        ]
+      },
+      "htmlcss": {
+        "intro": "HTML lays the bricks of a page; CSS paints and arranges them. Together they're the foundation of everything you see on the web.",
+        "bloques": [
+          { "titulo": "How it works", "cuerpo": "HTML describes content with tags (`<h1>` for a heading, `<button>` for a button). CSS decides how it looks: color, size, position." },
+          { "titulo": "An example", "cuerpo": "`<button>Send</button>` creates the button; in CSS, `button { background: blue; border-radius: 8px; }` makes it blue with rounded corners." },
+          { "titulo": "Why it matters", "cuerpo": "No interface exists without HTML and CSS. React, Next.js and Tailwind build on top of this, so knowing it well saves you pain later." }
+        ]
+      },
+      "javascript": {
+        "intro": "JavaScript brings the web to life: it makes pages react to what the user does.",
+        "bloques": [
+          { "titulo": "How it works", "cuerpo": "With JS you respond to events (a click, a keypress), change the page on the fly, and fetch data from a server without reloading." },
+          { "titulo": "An example", "cuerpo": "A button that shows a message on click: `button.addEventListener('click', () => alert('Hi!'))`. HTML draws it, JS makes it respond." },
+          { "titulo": "Why it matters", "cuerpo": "It's the only language that runs natively in the browser and also on the server (Node.js). The entire FWD stack leans on it." }
+        ]
+      },
+      "react": {
+        "intro": "React is a library for building interfaces out of reusable pieces called components.",
+        "bloques": [
+          { "titulo": "How it works", "cuerpo": "You split the screen into components (a button, a card, a form) and React updates only what changes when the data changes." },
+          { "titulo": "An example", "cuerpo": "A `<Card title=\"React\" />` component you reuse as many times as you want, each with its own content, without repeating code." },
+          { "titulo": "Why it matters", "cuerpo": "It's the heart of the frontend at FWD Talent. Almost everything you build on the visual side goes through React." }
+        ]
+      },
+      "typescript": {
+        "intro": "TypeScript is JavaScript with a safety net: you add types so errors show up before they reach the user.",
+        "bloques": [
+          { "titulo": "How it works", "cuerpo": "You tell each variable what kind of data it holds (text, number, list). If you get it wrong, the editor warns you as you type." },
+          { "titulo": "An example", "cuerpo": "`function greet(name: string)` makes it clear it expects text. Pass it a number and TypeScript flags it before anything runs." },
+          { "titulo": "Why it matters", "cuerpo": "In growing projects, types are living documentation and prevent tricky bugs. The FWD repo is `strict`, so it's part of daily work." }
+        ]
+      },
+      "nextjs": {
+        "intro": "Next.js is the React framework FWD uses: it gives you routing, server rendering and deployment ready for production.",
+        "bloques": [
+          { "titulo": "How it works", "cuerpo": "Each file inside the routes folder becomes a page. You can render on the server so it loads fast and looks good to search engines." },
+          { "titulo": "An example", "cuerpo": "Creating `app/projects/page.tsx` automatically gives you the `/projects` route, with nothing else to configure." },
+          { "titulo": "Why it matters", "cuerpo": "It's the base FWD Talent runs on. Learning it brings you straight to how the real product is built." }
+        ]
+      },
+      "tailwind": {
+        "intro": "Tailwind lets you design by applying utility classes right in your HTML, without jumping to separate CSS files.",
+        "bloques": [
+          { "titulo": "How it works", "cuerpo": "Instead of writing CSS, you compose styles from small classes: `p-4` adds padding, `rounded-full` rounds corners, `bg-primary` sets the background." },
+          { "titulo": "An example", "cuerpo": "`<button class=\"px-4 py-2 rounded-full bg-primary\">` is a fully styled button, without opening a `.css` file." },
+          { "titulo": "Why it matters", "cuerpo": "It speeds up design a lot and keeps everything consistent with the design tokens. It's the styling standard in the FWD repo." }
+        ]
+      },
+      "nodejs": {
+        "intro": "Node.js lets you run JavaScript outside the browser, on the server side. It's your gateway to the backend.",
+        "bloques": [
+          { "titulo": "How it works", "cuerpo": "The same language you use on the frontend now handles requests, reads databases and returns responses from a server." },
+          { "titulo": "An example", "cuerpo": "With a few lines you spin up a server that replies 'Hello' when someone visits an address. That's the building block of any API." },
+          { "titulo": "Why it matters", "cuerpo": "FWD's BackEnd runs on Node. Knowing it lets you work on both sides of the project with a single language." }
+        ]
+      },
+      "apis": {
+        "intro": "A REST API is the language the frontend and backend speak: one asks, the other answers.",
+        "bloques": [
+          { "titulo": "How it works", "cuerpo": "The frontend makes a request to an address (`GET /projects`) and the backend returns data, usually as JSON." },
+          { "titulo": "An example", "cuerpo": "`GET /projects` fetches the project list; `POST /projects` creates a new one. Each verb (GET, POST, PUT, DELETE) is a different intent." },
+          { "titulo": "Why it matters", "cuerpo": "This is exactly how FWD's FrontEnd and BackEnd talk. Understanding REST is understanding how data flows through the app." }
+        ]
+      },
+      "supabase": {
+        "intro": "Supabase is the database and login system FWD uses: Postgres with superpowers, ready to go.",
+        "bloques": [
+          { "titulo": "How it works", "cuerpo": "It gives you a Postgres database, user authentication and file storage, all reachable from your code." },
+          { "titulo": "An example", "cuerpo": "Signing up a user or saving a project are direct calls to Supabase, which handles security with row-level rules (RLS)." },
+          { "titulo": "Why it matters", "cuerpo": "It's FWD Talent's data layer. All the progress, profiles and projects live there." }
+        ]
+      },
+      "postgres": {
+        "intro": "PostgreSQL is a relational database: it stores information in orderly tables that relate to each other.",
+        "bloques": [
+          { "titulo": "How it works", "cuerpo": "You organize data into tables with columns and rows. Tables relate: a project belongs to a company, an application to a junior." },
+          { "titulo": "An example", "cuerpo": "A `projects` table and a `companies` table connect through an id, so each project knows which company it belongs to without duplicating data." },
+          { "titulo": "Why it matters", "cuerpo": "It's the engine behind Supabase and almost every serious backend. Modeling data well avoids problems that get expensive later." }
+        ]
+      },
+      "sql": {
+        "intro": "SQL is the language for asking a database questions and getting back exactly the data you need.",
+        "bloques": [
+          { "titulo": "How it works", "cuerpo": "You write queries that describe what you want: filter, sort, count or join tables. The database returns the result." },
+          { "titulo": "An example", "cuerpo": "`SELECT name FROM projects WHERE status = 'published'` returns just the names of published projects." },
+          { "titulo": "Why it matters", "cuerpo": "Any app that stores data ends up needing SQL. It's a skill that pays off in frontend, backend and data analysis alike." }
+        ]
+      },
+      "python": {
+        "intro": "Python is a readable, versatile language, a favorite for data and artificial intelligence.",
+        "bloques": [
+          { "titulo": "How it works", "cuerpo": "Its syntax reads almost like English, which makes it great for quick prototyping and for analyzing information." },
+          { "titulo": "An example", "cuerpo": "`for project in projects: print(project)` walks a list and shows each item. Simple and direct." },
+          { "titulo": "Why it matters", "cuerpo": "It's the gateway to the world of data and AI. With Python you analyze datasets and train models without fighting the language." }
+        ]
+      },
+      "ia_fundamentos": {
+        "intro": "AI fundamentals explain how models learn: instead of coding rules, you show them examples and they find patterns.",
+        "bloques": [
+          { "titulo": "How it works", "cuerpo": "A Machine Learning model trains on lots of labeled data and, from there, makes predictions about new data." },
+          { "titulo": "An example", "cuerpo": "Showing it thousands of emails marked 'spam' or 'not spam' until it learns to classify one it has never seen." },
+          { "titulo": "Why it matters", "cuerpo": "Understanding what a model can and can't do lets you bring AI into your products with judgment, no magic and no fear." }
+        ]
+      },
+      "ia_prompting": {
+        "intro": "Professional prompting is the craft of asking an AI well to get useful, reliable results.",
+        "bloques": [
+          { "titulo": "How it works", "cuerpo": "A good prompt gives context, states the role, the output format and examples. The clearer you are, the better the model responds." },
+          { "titulo": "An example", "cuerpo": "Instead of 'write about React', ask: 'Explain React to a junior in 3 bullet points, with a code example'. The result changes completely." },
+          { "titulo": "Why it matters", "cuerpo": "It's the skill that multiplies all the others: it lets you use AI as a copilot in any task, from code to design." }
+        ]
+      }
+    }
+  },
+  "empresas_directorio": {
+    "title": "Companies with projects",
+    "subtitle": "Meet the companies and entrepreneurs currently posting projects.",
+    "empty": "There are no companies with published projects yet.",
+    "sin_nombre": "Company",
+    "tipo": {
+      "empresa": "Company",
+      "emprendedor": "Entrepreneur"
+    },
+    "projects_count": "{count, plural, =0 {No projects} one {# project} other {# projects}}",
+    "view_profile": "View profile"
   },
   "marketplace_page": {
     "eyebrow": "MARKETPLACE",
     "title": "Available projects",
+    "hero_title": "Marketplace",
+    "hero_subtitle": "Explore real projects aligned with your skills and find opportunities to build professional experience.",
+    "hero_journey_label": "The Challenge",
+    "hero_journey_cta": "Find your first real project.",
+    "hero_journey_cta_achieved": "You accepted the challenge.",
     "search_label": "Search by name or technology",
-    "search_placeholder": "e.g. React, Figma, Backend...",
+    "search_placeholder": "Search projects, skills or companies...",
     "specialty_label": "Specialty",
     "specialty_all": "All areas",
     "active_filters": "ACTIVE FILTERS:",
     "clear_all": "Clear all",
+    "filter_area": "Area",
+    "filter_duration": "Duration",
+    "filter_budget": "Pay",
+    "filter_skills": "Skills",
+    "filter_ai_projects": "AI Projects",
+    "filter_sort": "Sort",
+    "business_area_label": "BUSINESS AREA",
+    "compensation_label": "COMPENSATION",
+    "ai_usage_label": "AI USAGE",
     "budget": "BUDGET",
+    "budget_low": "Up to $500",
+    "budget_mid": "$500 – $2,000",
+    "budget_high": "Over $2,000",
     "duration": "DURATION",
     "experience": "EXPERIENCE",
     "hourly_rate": "HOURLY RATE",
     "view_project": "View project",
+    "save_project": "Save project",
+    "saved_project": "Remove from saved",
+    "filter_all": "All",
+    "sort_recent_desc": "Most recent",
+    "sort_duration_asc": "Shortest duration",
+    "duration_short": "Short (5-7 days)",
+    "duration_medium": "Medium (8-11 days)",
+    "duration_long": "Long (12-15 days)",
+    "results_count": "{count, plural, =0 {No projects} one {# project} other {# projects}}",
+    "no_results_title": "No results",
+    "no_results_body": "Try adjusting your search or filters to see more projects.",
+    "clear_filters": "Clear filters",
+    "close": "Close",
+    "pagination_prev": "Previous",
+    "pagination_next": "Next",
+    "pagination_page": "Page {page}",
     "filter_remote": "Remote",
     "filter_senior": "Senior",
-    "match_suffix": "match",
+    "match_suffix": "MATCH",
     "badges": {
       "urgent": "URGENT",
       "full_time": "FULL-TIME",
       "project": "PROJECT",
       "part_time": "PART-TIME"
-    }
+    },
+    "badge_expired": "Deadline passed",
+    "badge_applied": "Already applied",
+    "badge_new": "New",
+    "badge_ia": "AI",
+    "weeks_unit": "wk",
+    "match_label": "Match",
+    "view_my_offer": "View my offer"
   },
   "bienvenida": {
+    "journey_stage_preparacion": "The Preparation",
+    "journey_stage_desafio": "The Challenge",
+    "journey_stage_transformacion": "The Transformation",
     "hero": {
-      "welcome": "WELCOME TO FWD TALENT!",
-      "greeting": "Good morning",
+      "welcome": "WELCOME TO FWD MARKETPLACE!",
+      "greeting_morning": "Good morning",
+      "greeting_afternoon": "Good afternoon",
+      "greeting_evening": "Good evening",
       "description": "Your profile is already connected with real opportunities.\nExplore projects created by companies looking for talent like yours.",
       "btn_explore": "Explore opportunities",
       "btn_edit": "Edit my profile",
-      "stack_center": "Your stack",
-      "stack_frontend": "Frontend",
-      "stack_backend": "Backend",
-      "stack_ux": "UX / UI",
-      "stack_mobile": "Mobile",
-      "stack_ai": "AI & Data"
+      "stack_center": "Your progress",
+      "stack_frontend": "Profile completed",
+      "stack_backend": "CV uploaded",
+      "stack_ux": "First project",
+      "stack_mobile": "First application",
+      "stack_ai": "Interested company"
     },
     "stats": {
       "projects": "Compatible projects",
       "match": "Average match",
-      "match_desc": "Excellent compatibility",
-      "companies": "New companies",
-      "companies_desc": "This week",
+      "match_desc": "Compatibility with your profile",
+      "streak": "Day streak",
+      "streak_desc": "Consecutive active days",
       "applications": "Active applications",
       "view_all": "View all",
-      "view_applications": "View my applications"
+      "view_applications": "View my applications",
+      "view_companies": "View companies"
     },
     "recommended": {
       "title": "Recommended for you",
@@ -690,10 +1243,15 @@
         "new": "NEW"
       },
       "weeks": "weeks",
-      "match": "High match"
+      "days": "days",
+      "match": "Match",
+      "view_project": "View project",
+      "empty": "Complete your profile with skills to see compatible projects.",
+      "explore": "Explore marketplace"
     },
     "progress": {
-      "title": "Your progress at FWD",
+      "title": "My Hero's Journey",
+      "subtitle": "Every badge you earn is a real step in your career. Complete the challenges and unlock the next chapter of your professional story. Your streak shows how many consecutive days you stay active on the platform.",
       "step1_title": "Profile completed",
       "step1_desc": "Excellent! Your profile is at 100%.",
       "step2_title": "Stack defined",
@@ -708,20 +1266,2077 @@
       "card_desc": "Keep exploring and building your future.",
       "btn_profile": "View my profile"
     },
+    "estrella": {
+      "eyebrow": "My progress",
+      "aria_stage": "Your hero's journey constellation",
+      "center_title": "Your Progress",
+      "center_sub": "{done} of {total} badges",
+      "lit_label": "Stars lit",
+      "status": {
+        "done": "Completed",
+        "progress": "In progress",
+        "pending": "Pending"
+      },
+      "task_done_label": "Task completed",
+      "task_todo_label": "Task to complete",
+      "progress_label": "Progress",
+      "lit_on": "Lit on {date}",
+      "next_hint": "Your next step",
+      "next_links": {
+        "llamado": "/bienvenida",
+        "preparacion": "/perfil-estudiante",
+        "desafio": "/marketplace",
+        "transformacion": "/mapa-de-aprendizaje",
+        "reconocimiento": "/gestion"
+      },
+      "close": "Close",
+      "activity_title": "Journey achievements",
+      "activity_map_btn": "Go to Learning Map",
+      "unlocked_on": "Unlocked on {date}",
+      "to_unlock": "To unlock:",
+      "learning_pct": "{pct}% of the Learning Map",
+      "racha_days": "{count, plural, =0 {no recent activity} one {day in a row} other {days in a row}}",
+      "items": {
+        "llamado": {
+          "name": "The Call",
+          "desc": "You heard the call and took the first step on your professional path.",
+          "task": "Complete your profile and define your specialty.",
+          "date": "Mar 12, 2026"
+        },
+        "preparacion": {
+          "name": "The Preparation",
+          "desc": "You sharpened your skills and built the foundations of your craft.",
+          "task": "Upload your CV and add your tech stack.",
+          "date": "Apr 2, 2026"
+        },
+        "desafio": {
+          "name": "The Challenge",
+          "desc": "You face your first big test: showing the world what you can do.",
+          "task": "Send your first application and pass your first interview.",
+          "date": ""
+        },
+        "transformacion": {
+          "name": "The Transformation",
+          "desc": "Every project transforms you: you stop being an apprentice and become a professional.",
+          "task": "Complete your first real project and earn a company review.",
+          "date": ""
+        },
+        "reconocimiento": {
+          "name": "The Recognition",
+          "desc": "The world recognizes your value and tailored opportunities open up.",
+          "task": "Land your first standout opportunity and level up.",
+          "date": ""
+        }
+      }
+    },
+    "llamado_toast": {
+      "title": "First badge unlocked",
+      "desc": "Welcome to the Hero's Journey. You created your account and your adventure has already begun.",
+      "dismiss": "Dismiss"
+    },
     "companies": {
       "title": "Interested companies",
       "view_all": "View all",
       "active": "ACTIVE",
-      "btn_all": "View all companies"
+      "btn_all": "View all companies",
+      "empty": "No company has invited you to a project yet. Apply so they get to know you.",
+      "invited_to": "Invited you to:",
+      "una_empresa": "A company"
     },
     "activity": {
       "title": "Recent activity",
-      "view_all": "View all activity"
+      "view_all": "View all activity",
+      "empty": "No activity yet. Explore the marketplace to get started.",
+      "unread": "Unread"
     },
     "modality": {
       "remote": "Remote",
       "hybrid": "Hybrid",
       "onsite": "On-site"
     }
+  },
+  "matches_empresa": {
+    "viewing_matches": "Viewing matches for:",
+    "filters_title": "Filters",
+    "clear_btn": "Clear",
+    "specialty_label": "Specialty",
+    "match_level_label": "Match level",
+    "availability_label": "Availability",
+    "availability_immediate": "Immediate",
+    "availability_agreed": "To be agreed",
+    "modality_label": "Modality",
+    "modality_onsite": "On-site",
+    "modality_remote": "Remote",
+    "modality_hybrid": "Hybrid",
+    "showing_count": "Showing {count} automatic candidates for this profile",
+    "sort_best": "Highest match",
+    "sort_worst": "Lowest match",
+    "availability_all": "All",
+    "modality_all": "All",
+    "invite_btn": "Invite to apply",
+    "invited_btn": "Invited",
+    "view_profile": "View profile",
+    "compare": "Compare",
+    "load_more": "Load more matches",
+    "empty_no_candidates_title": "No recommended candidates",
+    "empty_no_candidates_desc": "Adjust the filters or lower the minimum match level.",
+    "toast_invited": "{name} has been invited to apply to the project.",
+    "toast_cleared": "Search filters have been cleared.",
+    "toast_profile_edit": "Profile editing feature in development (Phase 3).",
+    "invite_modal_title": "Invite to project",
+    "invite_modal_desc": "Choose which project you want to invite {name} to.",
+    "invite_modal_cancel": "Cancel",
+    "invite_modal_confirm": "Invite",
+    "invite_modal_no_projects": "You have no active projects to invite to."
+  },
+  "prototipo_preview": {
+    "button": "Preview",
+    "modal_title": "Prototype preview",
+    "open_in_new_tab": "Open in new tab",
+    "close": "Close",
+    "iframe_error": "The embedded preview could not be shown. Open the prototype in a new tab."
+  },
+  "matches_panel": {
+    "title": "Compatible juniors",
+    "disabled": "Matching is currently disabled by the administrator.",
+    "filters_title": "Filters",
+    "clear": "Clear",
+    "min_match": "Match level",
+    "only_available": "Available only",
+    "results_count": "{count, plural, one {# candidate} other {# candidates}}",
+    "empty": "No candidates match these filters yet.",
+    "verified": "Verified",
+    "score_label": "match",
+    "available": "Available",
+    "busy": "Busy",
+    "view_profile": "View profile",
+    "invite": "Invite",
+    "invited": "Invited",
+    "already_applied": "Applied",
+    "not_receiving": "This project is no longer receiving proposals. Candidates are shown for reference only."
+  },
+  "talento": {
+    "view_profile": "View profile",
+    "title": "Find talent",
+    "subtitle": "Discover verified FWD students for your projects.",
+    "filters_title": "Filters",
+    "clear_btn": "Clear",
+    "search_placeholder": "Search by name...",
+    "specialty_label": "Specialty",
+    "modality_label": "Work mode",
+    "skill_label": "Technology",
+    "skill_all": "All",
+    "only_available": "Available only",
+    "available_badge": "Available",
+    "busy_badge": "Busy",
+    "verified": "Verified",
+    "empty": "No students match the filters.",
+    "results_count": "{count, plural, =0 {No results} one {# student} other {# students}}",
+    "specialty": {
+      "frontend": "Frontend",
+      "backend": "Backend",
+      "fullstack": "Fullstack",
+      "ia": "AI & Data"
+    },
+    "modality": {
+      "remote": "Remote",
+      "hybrid": "Hybrid",
+      "onsite": "On-site"
+    }
+  },
+  "terms": {
+    "title": "Terms and Conditions",
+    "back": "Back",
+    "download": "Download as PDF",
+    "sections": [
+      { "title": "1. Introduction and Acceptance", "paragraphs": ["Welcome to the FWD Talent Freelance Projects Marketplace, an initiative of Fundación Forward Costa Rica. This document constitutes a legally binding agreement between you (the \"User\") and Fundación Forward Costa Rica (\"the Foundation\"). By using this platform, you fully accept these Terms and Conditions."] },
+      { "title": "2. Nature of the Service", "paragraphs": ["Our platform operates solely as a technological intermediation space. Its purpose is to connect graduates of the Foundation (\"FWD Juniors\") with companies or clients (\"Companies\") seeking talent for short-term projects."] },
+      { "title": "3. Registration and Eligibility", "paragraphs": ["To register as a Junior, it is a strict requirement to be a certified graduate of the training programs of Fundación Forward Costa Rica. Companies may register after a commercial validation process. Use of the platform is restricted to adults."] },
+      { "title": "4. User Accounts and Security", "paragraphs": ["The User is solely responsible for safeguarding the confidentiality of their credentials. Sharing accounts, transferring them, or creating fake profiles is strictly prohibited. All activity carried out from an account will be considered the responsibility of its holder."] },
+      { "title": "5. Role of FWD Juniors", "paragraphs": ["Juniors use the platform to access their first paid or pro-bono professional opportunities (as specified in each project), build experience, and expand their portfolio. They must always act with professionalism, honesty, and diligence."] },
+      { "title": "6. Role of Companies", "paragraphs": ["Companies gain access to emerging talent at competitive costs. They commit to providing an environment of respect, clear communication, and constructive feedback, acknowledging that they are working with profiles in a formative or junior stage."] },
+      { "title": "7. Project Publishing Rules", "paragraphs": ["Every project must have clear requirements, defined deadlines, and realistic expectations. The publication of illegal, offensive, or discriminatory projects, or those involving the development of malicious software, is not allowed."] },
+      { "title": "8. Application Rules", "paragraphs": ["Juniors must apply only to projects for which they have the required skills and the necessary time availability. Unjustified abandonment of a project will negatively impact their reputation on the platform."] },
+      { "title": "9. Prohibition of Artificial Intelligence in Applications", "note": "All communication and cover letters must be of human authorship. The exclusive use of Artificial Intelligence (ChatGPT, Claude, etc.) to generate automated messages is prohibited. We value authenticity over machine-generated syntactic perfection." },
+      { "title": "10. Selection and Awarding Process", "paragraphs": ["The Company is solely responsible for evaluating and selecting the right candidate. The Foundation offers \"matching\" tools, but does not guarantee an award, nor does it require the Company to select a specific Junior."] },
+      { "title": "11. Project Development and Execution", "paragraphs": ["Once the project has started, both parties agree to work under agile methodologies or the agreed-upon standards. The Foundation does not supervise or audit the code generated by Juniors or the guidelines of Companies."] },
+      { "title": "12. Communication", "paragraphs": ["Users are encouraged to keep preliminary communication within the platform for security and transparency. The Foundation reserves the right to audit communications within the ecosystem in the event of reported disputes."] },
+      { "title": "13. Payments and Compensation", "paragraphs": ["The platform does not act as a payment processor. Every economic agreement is negotiated, invoiced, and settled externally between the Company and the Junior. The Foundation does not charge transactional commissions for the awarding of projects."] },
+      { "title": "14. Employment Relationship", "paragraphs": ["At no point is an employment relationship (employer-employee) established between the Foundation and the Junior, nor inherently between the Company and the Junior (unless they sign a formal employment contract outside the platform). The default nature of projects is freelance or independent professional services."] },
+      { "title": "15. Intellectual Property of Deliverables", "paragraphs": ["As a general rule, once the agreed payment is settled, the economic rights over the code and the developed product are transferred to the Company. The author's moral rights are inalienable under applicable law."] },
+      { "title": "16. Portfolio Rights", "paragraphs": ["Unless explicitly prohibited via an NDA (Non-Disclosure Agreement), Juniors retain the right to mention the project, describe the architecture, and show screenshots of the public interface in their professional portfolios for the purpose of career promotion."] },
+      { "title": "17. Confidentiality and NDAs", "paragraphs": ["Companies may require the signing of a Non-Disclosure Agreement (NDA) before sharing sensitive details. It is the Junior's responsibility to read, understand, and comply with the restrictions of any legal contract signed externally."] },
+      { "title": "18. Conduct and Code of Conduct", "paragraphs": ["Zero tolerance for harassment, discrimination, extortion, abusive language, or fraudulent practices. Any violation of the code of conduct will result in the immediate expulsion of the offender from the FWD Talent ecosystem."] },
+      { "title": "19. Liability and Limitations (Disclaimer)", "paragraphs": ["The Foundation provides the platform \"as is\" without implied warranties. We will not be liable for indirect damages, loss of profits, loss of data, or business interruptions arising from the use of the platform or the outcome of freelance projects."] },
+      { "title": "20. Privacy and Data Processing", "paragraphs": ["All collection and processing of personal data is governed by our Privacy Policy, aligned with the relevant national regulations. Information is used exclusively for \"matching\" purposes and platform operation."] },
+      { "title": "21. Dispute Resolution", "paragraphs": ["Differences between a Company and a Junior must be resolved by mutual agreement. The Foundation does not offer legal mediation or arbitration services and is exempt from participating in any litigation arising from project execution."] },
+      { "title": "22. Changes to the Terms", "paragraphs": ["We reserve the right to modify these Terms at any time. Any update will be notified through the platform. Continued use implies acceptance of the new terms."] }
+    ]
+  },
+  "privacy_policy": {
+    "title": "Privacy Policy",
+    "back": "Back",
+    "download": "Download as PDF",
+    "sections": [
+      {
+        "title": "1. General Information and Data Controller",
+        "paragraphs": ["At Fundación Forward Costa Rica and the FWD Talent ecosystem, we value and respect your privacy. This Privacy Policy describes how we collect, use, store, share, and protect your personal information when you use our Freelance Projects Marketplace. The data controller is Fundación Forward Costa Rica."]
+      },
+      {
+        "title": "2. Data We Collect",
+        "paragraphs": ["We collect information to provide and improve our services. This includes:"],
+        "items": [
+          "Registration data: Name, email, password (encrypted), and role (Junior or Company).",
+          "Professional information (FWD Juniors): Technical skills, portfolio links (GitHub, LinkedIn, Behance), educational history at the Foundation, and experience.",
+          "Business information (Companies): Company name, description, business contact details, and details of published projects.",
+          "Usage data: Information about how you interact with the platform, access logs, and applications."
+        ]
+      },
+      {
+        "title": "3. How We Use Information",
+        "paragraphs": ["We use your personal data exclusively to:"],
+        "items": [
+          "Enable the creation and management of your account on the platform.",
+          "Power the \"matching\" tool, connecting FWD Junior profiles with the technical requirements of the projects published by Companies.",
+          "Enable initial communication and applications to projects.",
+          "Send important notifications about the status of your projects, platform updates, or changes to our policies.",
+          "Improve the performance, security, and user experience of the marketplace."
+        ]
+      },
+      {
+        "title": "4. Sharing and Disclosure of Data",
+        "paragraphs": ["The marketplace's core premise is to connect talent with opportunities. Therefore:"],
+        "items": [
+          "For FWD Juniors: When you apply to a project or make your profile public, registered Companies can see your name, skills, project history, and portfolio.",
+          "For Companies: Your company's general information and the details of published projects will be visible to registered Juniors."
+        ],
+        "note": "Commitment: Fundación Forward Costa Rica does not sell, rent, or trade your personal information with third parties outside the FWD Talent ecosystem under any circumstances."
+      },
+      {
+        "title": "5. Data Retention",
+        "paragraphs": ["We will retain your personal information while your account remains active or as needed to provide you with the platform's services. If you decide to delete your account, your personal data will be deleted or anonymized from our systems, except for data we must retain due to legal obligations or for dispute resolution."]
+      },
+      {
+        "title": "6. Information Security",
+        "paragraphs": ["We implement technical and organizational security measures to protect your information against unauthorized access, loss, or alteration. This includes the use of encryption for passwords and secure communications. However, no system on the internet is 100% secure, so we urge you to use strong passwords and keep your credentials confidential."]
+      },
+      {
+        "title": "7. Your Rights",
+        "paragraphs": ["You have the right to access, rectify, update, or request the deletion of your personal information at any time. You can manage most of your data directly from the \"Profile\" section on the platform. If you wish to exercise any additional right or request the complete deletion of your account, you can contact us."]
+      },
+      {
+        "title": "8. Cookies and Similar Technologies",
+        "paragraphs": ["We use essential cookies to keep your session active and ensure safe browsing. We may also use analytics cookies on an anonymized basis to understand how the platform is used and improve our services. You can configure your browser to reject cookies, although this may affect how the site works."]
+      },
+      {
+        "title": "9. Third-Party Services and AI",
+        "paragraphs": ["For the platform's operation and compatibility analysis (matching), we use third-party APIs (such as AI services to process skill matches). The data sent to these services is limited to strictly necessary information and is processed under strict confidentiality and privacy agreements."]
+      },
+      {
+        "title": "10. Changes to This Policy",
+        "paragraphs": ["We reserve the right to update this Privacy Policy periodically to reflect changes in our practices or due to legal requirements. We will notify you of significant updates through a notice on the platform or by email."]
+      },
+      {
+        "title": "11. Contact",
+        "paragraphs": ["If you have questions, queries, or concerns regarding the handling of your personal data or this Privacy Policy, please do not hesitate to contact the technical support team at Fundación Forward Costa Rica."]
+      }
+    ]
+  },
+  "mi_empresa": {
+    "actions": {
+      "save": "Save",
+      "cancel": "Cancel",
+      "edit_section": "Edit section"
+    },
+    "public": {
+      "close": "Close",
+      "participate": "Apply",
+      "days": "{count} days",
+      "uses_ai": "Uses AI",
+      "offers": "{count} applications",
+      "description": "Description",
+      "required_tech": "Required technologies",
+      "projects_tab": "Projects",
+      "no_projects": "This profile has no published projects yet.",
+      "no_sectors": "No areas specified."
+    },
+    "badge": {
+      "empresa": "Company",
+      "emprendedor": "Entrepreneur"
+    },
+    "sections": {
+      "general": "General Information",
+      "culture": "Identity and Culture",
+      "interests": "Hiring Interests",
+      "needs": "Current Needs",
+      "modalities": "Collaboration Modalities",
+      "schedules": "Work Schedules",
+      "business_areas": "Business Areas",
+      "matching": "Matching Algorithm Weights",
+      "contacts": "Recruitment Contacts",
+      "stage": "Project Stage",
+      "tech_support": "Technical Support Needed",
+      "budget": "Estimated Budget",
+      "project_description": "About the Project"
+    },
+    "fields": {
+      "company_name": "Company name",
+      "project_name": "Project name",
+      "cedula": "ID number",
+      "project_description_placeholder": "Describe your project, the problem it solves, and your long-term vision...",
+      "employees": "Employees",
+      "employees_unit": "people",
+      "country": "Country",
+      "country_value": "Costa Rica",
+      "provincia": "Province",
+      "canton": "Canton",
+      "description": "Description",
+      "comercial_name": "Commercial name",
+      "website": "Website",
+      "website_error": "The URL must start with https:// or http://",
+      "location": "Location",
+      "sector": "Sector",
+      "mission": "Mission",
+      "vision": "Vision",
+      "values": "Values",
+      "organization": "Organizational culture"
+    },
+    "sector_labels": {
+      "tech": "Technology & Innovation",
+      "fintech": "Fintech",
+      "health": "Health & Wellness",
+      "logistics": "Logistics & Operations",
+      "education": "Education",
+      "energy": "Energy & Sustainability",
+      "retail": "Retail & Commerce",
+      "manufacturing": "Manufacturing & Industry",
+      "consulting": "Consulting & Services",
+      "other": "Other"
+    },
+    "hero": {
+      "edit_profile": "Edit profile",
+      "save": "Save changes",
+      "saving": "Saving...",
+      "cancel": "Cancel",
+      "save_success": "Changes saved successfully.",
+      "save_error": "An error occurred while saving. Please try again.",
+      "view_projects": "View projects",
+      "editing_hint": "Edit mode active"
+    },
+    "logo": {
+      "alt": "Company logo",
+      "change": "Change logo",
+      "delete": "Delete logo",
+      "invalid_type": "File must be an image.",
+      "too_large": "Image exceeds the 5 MB limit.",
+      "upload_error": "Could not upload logo. Please try again.",
+      "section_title": "Company logo",
+      "upload_hint": "Upload or change your company logo. Accepted formats: JPG, PNG, WebP. Maximum 5 MB."
+    },
+    "contacts": {
+      "add_btn": "Recruiter",
+      "add_title": "Add Recruiter",
+      "edit_title": "Edit Recruiter",
+      "subtitle": "Fill in the recruiter's contact details.",
+      "name_label": "Full Name",
+      "role_label": "Role / Position",
+      "email_label": "Email Address",
+      "delete_btn": "Remove",
+      "cancel_btn": "Cancel",
+      "save_btn": "Save"
+    },
+    "interests": {
+      "add_placeholder": "Add stack..."
+    },
+    "culture": {
+      "add_value_placeholder": "New value...",
+      "add_value": "Add value"
+    },
+    "validation": {
+      "url_invalid": "The URL must start with https:// or http://",
+      "max_255": "Maximum 255 characters",
+      "max_400": "Maximum 400 characters",
+      "max_1000": "Maximum 1000 characters",
+      "email_invalid": "Enter a valid email address",
+      "field_required": "This field is required"
+    },
+    "placeholders": {
+      "company_name": "E.g. Acme Technologies Inc.",
+      "description": "Describe your company's focus, purpose and culture...",
+      "sector": "E.g. Technology, Fintech...",
+      "mission": "Describe the purpose of your company and the impact you aim to create...",
+      "vision": "Where do you see your company in the next 5 years?",
+      "culture": "Describe the environment, values and ways of working that define your team...",
+      "values_example_1": "Innovation",
+      "values_example_2": "Collaboration",
+      "values_example_3": "Excellence",
+      "values_hint": "Add values that represent your company",
+      "contact_example_name": "Ana Ramirez",
+      "contact_example_role": "Talent Recruiter",
+      "contact_example_email": "ana@company.com",
+      "contact_hint": "Add the contacts in charge of recruitment",
+      "loading_areas": "Loading areas...",
+      "website_emprendedor": "https://yourproject.com",
+      "website_empresa": "https://yourcompany.com"
+    },
+    "modalities": {
+      "remote": "Remote",
+      "onsite": "On-site",
+      "hybrid": "Hybrid",
+      "nomad": "Digital Nomad"
+    },
+    "matching_weights": {
+      "skills": "Technical skills",
+      "experience": "Experience",
+      "cultural": "Cultural fit",
+      "availability": "Availability"
+    },
+    "schedules": {
+      "flexible": "Flexible Hours",
+      "fixed": "Fixed Hours",
+      "timezone": "Timezone (GMT-6)"
+    }
+  },
+  "done_page": {
+    "eyebrow": "Request received",
+    "title": "Your account is under review",
+    "description": "The FWD team will review your account and notify you by email once it is approved. This usually takes 24 to 48 hours.",
+    "cta": "Back to home"
+  },
+  "admin": {
+    "title": "Administration Panel",
+    "subtitle": "FWD Marketplace Management",
+    "stats": {
+      "total_students": "Total Students",
+      "active_companies": "Approved Companies",
+      "active_projects": "Active Projects",
+      "pending_approvals": "Pending Approvals"
+    },
+    "tabs": {
+      "applications": "Graduate Requests",
+      "users": "Users",
+      "projects": "Projects",
+      "companies": "Companies",
+      "talent": "Talent",
+      "reports": "Reports",
+      "config": "Settings"
+    },
+    "applications": {
+      "title": "Graduate entry applications",
+      "empty": "No pending applications for review.",
+      "name": "Graduate",
+      "specialization": "Specialization",
+      "date": "Request Date",
+      "status": "Status",
+      "actions": "Actions",
+      "approve": "Approve",
+      "reject": "Reject",
+      "approved": "Approved",
+      "rejected": "Rejected",
+      "pending": "Pending"
+    },
+    "users": {
+      "title": "User Management",
+      "search_placeholder": "Search by name or email...",
+      "filter_role": "All roles",
+      "role_student": "Student",
+      "role_company": "Company",
+      "role_admin": "Admin",
+      "status_active": "Active",
+      "status_suspended": "Suspended",
+      "actions": "Actions",
+      "change_role": "Change Role",
+      "suspend": "Suspend",
+      "activate": "Activate"
+    },
+    "projects": {
+      "title": "Project Management",
+      "company": "Company",
+      "budget": "Budget",
+      "col_project": "Project",
+      "col_applications": "Applications",
+      "search_placeholder": "Search by name or company...",
+      "filter_status": "All statuses",
+      "status": "Status",
+      "status_active": "Active",
+      "status_paused": "Paused",
+      "status_moderation": "Pending Moderation",
+      "status_closed": "Closed",
+      "approve": "Approve",
+      "pause": "Pause",
+      "reactivate": "Reactivate",
+      "delete": "Delete",
+      "delete_confirm_title": "Delete project?",
+      "delete_confirm_desc": "This action cannot be undone. The project and its applications will be permanently deleted.",
+      "delete_cancel": "Cancel",
+      "empty": "No projects registered."
+    },
+    "companies": {
+      "title": "Company Management",
+      "sector": "Sector",
+      "status": "Status",
+      "status_approved": "Approved",
+      "status_pending": "Pending Approval",
+      "status_rejected": "Rejected",
+      "approve": "Approve",
+      "reject": "Reject",
+      "suspend": "Suspend"
+    },
+    "talent": {
+      "title": "Talent Management",
+      "search_placeholder": "Search by name, email or specialization...",
+      "filter_specialty": "All specializations",
+      "filter_status": "All statuses",
+      "col_talent": "Talent",
+      "col_specialty": "Specialization",
+      "col_applications": "Applications",
+      "col_status": "Status",
+      "col_actions": "Actions",
+      "status_active": "Active",
+      "status_suspended": "Suspended",
+      "actions_suspend": "Suspend",
+      "actions_activate": "Activate",
+      "empty": "No graduates registered yet."
+    },
+    "reports": {
+      "title": "Reports & Analytics",
+      "subtitle": "Current cycle metrics",
+      "kpi_new_projects": "Projects this month",
+      "kpi_total_applications": "Total applications",
+      "kpi_acceptance_rate": "Acceptance rate",
+      "kpi_active_talents": "Active talents",
+      "recent_activity": "Recent Activity",
+      "activity_empty": "No recent activity.",
+      "activity_col_event": "Event",
+      "activity_col_actor": "Actor",
+      "activity_col_date": "Date",
+      "breakdown_projects": "Projects by status",
+      "breakdown_applications": "Applications by status",
+      "export_btn": "Export report",
+      "export_success": "Report generated successfully."
+    },
+    "config": {
+      "title": "System Settings",
+      "save_btn": "Save changes",
+      "save_success": "Settings saved successfully.",
+      "section_platform": "Platform",
+      "platform_name_label": "Platform name",
+      "platform_name_placeholder": "FWD Marketplace",
+      "platform_email_label": "Support email",
+      "platform_email_placeholder": "support@fwdcostarica.com",
+      "platform_slogan_label": "Tagline",
+      "platform_slogan_placeholder": "Talent that moves forward.",
+      "section_notifications": "Notifications",
+      "notif_new_request": "Notify on new entry requests",
+      "notif_company_approved": "Notify when a company is approved",
+      "notif_project_moderation": "Notify when a project enters moderation",
+      "section_moderation": "Moderation",
+      "mod_min_match_label": "Minimum match percentage (%)",
+      "mod_max_days_label": "Maximum days to moderate a project",
+      "validation_name_required": "Name is required.",
+      "validation_email_invalid": "Invalid email address.",
+      "validation_slogan_max": "Maximum 60 characters.",
+      "validation_min_match_range": "Must be between 0 and 100.",
+      "validation_max_days_min": "Must be greater than 0."
+    }
+  },
+  "ranking": {
+    "title": "Junior ranking",
+    "subtitle": "Top talent ranked by reputation earned across completed projects.",
+    "filter_label": "Filter by specialty",
+    "filter_all": "All",
+    "filter_frontend": "Frontend",
+    "filter_backend": "Backend",
+    "filter_fullstack": "Fullstack",
+    "filter_ia": "AI",
+    "specialty_frontend": "Frontend",
+    "specialty_backend": "Backend",
+    "specialty_fullstack": "Fullstack",
+    "specialty_ia": "AI",
+    "projects_count": "{count} projects",
+    "availability_immediate": "Available now",
+    "availability_two_weeks": "In 2 weeks",
+    "availability_one_month": "In 1 month",
+    "mock_disclaimer": "Demo data. The real ranking updates with completed projects.",
+    "loading": "Loading ranking..."
+  },
+  "preferencias_notificaciones": {
+    "title": "Notification preferences",
+    "subtitle": "Choose which types of alerts you want to receive. You can change them at any time.",
+    "group_activity": "My application activity",
+    "group_projects": "Available projects",
+    "group_messages": "Messaging",
+    "group_applications": "Received applications",
+    "group_deliverables": "Deliverables",
+    "pref_offer_accepted_label": "Application awarded",
+    "pref_offer_accepted_desc": "When a company selects you for a project.",
+    "pref_offer_reviewed_label": "Application under review",
+    "pref_offer_reviewed_desc": "When a company is evaluating your proposal.",
+    "pref_new_project_label": "New projects",
+    "pref_new_project_desc": "Projects that match your skills and availability.",
+    "pref_deadline_reminder_label": "Deadline reminder",
+    "pref_deadline_reminder_desc": "Alert when 48 h remain before the closing date.",
+    "pref_new_message_label": "New message",
+    "pref_new_message_desc": "When a company sends you a message.",
+    "pref_entregable_sent_label": "Deliverable received",
+    "pref_entregable_sent_desc": "When a junior uploads a new deliverable.",
+    "pref_new_offer_label": "New application",
+    "pref_new_offer_desc": "When a junior applies to one of your projects.",
+    "save_btn": "Save preferences",
+    "saving": "Saving...",
+    "saved_confirmation": "Preferences saved",
+    "save_hint": "Changes are not saved until you click the button.",
+    "mock_disclaimer": "Preferences in demo mode. Real connection in Phase 2.0."
+  },
+  "mensajes": {
+    "title": "Messages",
+    "subtitle": "Conversations with the companies behind your awarded projects.",
+    "threads_label": "Conversations",
+    "empty_title": "No active conversations",
+    "empty_desc": "When a company awards you a project, the conversation will appear here.",
+    "select_prompt": "Select a conversation",
+    "select_desc": "Choose a thread from the list to view messages.",
+    "back": "Back",
+    "compose_placeholder": "Write your message... (Enter to send)",
+    "send_btn": "Send message",
+    "mock_badge": "Demo mode",
+    "mock_disclaimer": "Messaging in demo mode. Real connection in Phase 2.0.",
+    "no_messages": "No messages yet in this conversation.",
+    "unnamed_project": "Untitled project",
+    "empty_desc_open": "You can start a conversation with any published project.",
+    "solo_chat_badge": "Chat only"
+  },
+  "notification_panel": {
+    "aria_open": "Notifications",
+    "aria_close": "Close",
+    "aria_unread": "Unread",
+    "title": "Notifications",
+    "unread_count": "{count} new",
+    "mark_all_read": "Mark all as read",
+    "empty": "No notifications",
+    "view_all": "View all activity",
+    "preferences": "Preferences"
+  },
+  "cosmos_profesional": {
+    "screen_label": "FWD process diagram",
+    "eyebrow": "How it works",
+    "title": "From idea to reality",
+    "description": "Two roles, one shared path: from concept to real project on FWD Talent.",
+    "col_egresado": "FWD Graduate",
+    "col_empresa": "Company",
+    "cta_question": "Ready for your first real project?",
+    "cta_junior": "Join as a graduate",
+    "cta_empresa": "Publish a project",
+    "stars": {
+      "0": {
+        "title": "Create your account",
+        "desc": "Sign up as an FWD graduate, complete your profile, and start exploring available projects."
+      },
+      "1": {
+        "title": "Create your account",
+        "desc": "Sign up as a company, describe your organization, and the kind of talent you need."
+      },
+      "2": {
+        "title": "Publish the project",
+        "desc": "Define the scope, required stack, and budget. The FWD team reviews and activates the project."
+      },
+      "3": {
+        "title": "Submit your proposal",
+        "desc": "Choose the project that best fits your skills and write your cover letter."
+      },
+      "4": {
+        "title": "Receive proposals",
+        "desc": "Review applications, request adjustments if needed, and choose the ideal graduate for your project."
+      },
+      "5": {
+        "title": "Refine your proposal",
+        "desc": "If the company requests changes, polish your proposal and demonstrate your ability to iterate."
+      },
+      "6": {
+        "title": "Project awarded",
+        "desc": "The project is awarded: the graduate gains real experience and the company receives the finished work."
+      }
+    }
+  },
+  "marketplace_preview": {
+    "eyebrow": "Projects available now",
+    "title": "Real projects. Not simulations",
+    "description": "Companies post concrete projects with a defined stack, clear budget, and real scope. You pick what fits your skills, send your proposal, and build your first professional portfolio.",
+    "cta_hint": "But what's the process?",
+    "cta": "Learn how it works",
+    "remote": "Remote",
+    "weeks": "wks",
+    "new_badge": "New",
+    "projects": {
+      "0": {
+        "title": "Landing page for a wellness startup",
+        "company": "BioTech CR",
+        "stack": "React · Tailwind · Framer Motion",
+        "duration": "3",
+        "budget": "$250 – $400",
+        "desc": "Design and build a responsive landing page with an animated hero section and a lead-capture form."
+      },
+      "1": {
+        "title": "REST API for a delivery app",
+        "company": "FoodRush",
+        "stack": "Node.js · Express · Supabase",
+        "duration": "4",
+        "budget": "$300 – $500",
+        "desc": "Build order, user, and notification endpoints for the MVP of a home-delivery application."
+      },
+      "2": {
+        "title": "Sales metrics dashboard",
+        "company": "DataLab",
+        "stack": "Next.js · TypeScript · Chart.js",
+        "duration": "5",
+        "budget": "$400 – $650",
+        "desc": "Control panel with daily sales charts, active users, and real-time conversion rate tracking."
+      }
+    }
+  },
+  "diferenciadores": {
+    "eyebrow": "Why FWD Talent?",
+    "title": "We are not Upwork",
+    "description": "We built a space for junior talent in Costa Rica to prove their worth. Every detail of the process is designed so both sides win.",
+    "items": {
+      "0": {
+        "title": "Validated projects",
+        "desc": "Every listing goes through an FWD team review before appearing in the marketplace. No noise — only real opportunities."
+      },
+      "1": {
+        "title": "Verified talent",
+        "desc": "FWD graduates only, with proven skills and a real portfolio. Zero empty profiles."
+      },
+      "2": {
+        "title": "Guided process",
+        "desc": "Support at every stage: from application to final delivery. You never navigate alone."
+      },
+      "3": {
+        "title": "Direct contact",
+        "desc": "No middlemen between graduate and company. Direct contact from the very first project."
+      }
+    }
+  },
+  "faq": {
+    "eyebrow": "Frequently asked questions",
+    "title": "Everything you want to know",
+    "items": {
+      "0": {
+        "q": "Do I need work experience to apply?",
+        "a": "No. FWD Talent is designed for graduates without formal experience. What matters is what you learned in the program and what you can demonstrate with your portfolio."
+      },
+      "1": {
+        "q": "How does the company pay me?",
+        "a": "Payment is coordinated directly between you and the company. FWD facilitates the contact and the process, but does not process payments. You can agree on bank transfer, PayPal, or other methods with each company."
+      },
+      "2": {
+        "q": "Can I apply to several projects at the same time?",
+        "a": "You can explore as many projects as you like, but you can only have one active application at a time. We recommend personalizing your cover letter to increase your chances."
+      },
+      "3": {
+        "q": "How much does it cost to post a project as a company?",
+        "a": "Access is free during the beta phase. Pricing plans based on posting volume are coming soon."
+      },
+      "4": {
+        "q": "How do I know the graduate has the skills I need?",
+        "a": "Each profile shows completed FWD projects, the stack they've mastered, and their program evaluation. You can review their portfolio before awarding the project."
+      },
+      "5": {
+        "q": "How long does it take for my listing to be reviewed?",
+        "a": "The FWD team reviews each listing within 48 business hours. You receive a notification when the project goes live in the marketplace."
+      },
+      "6": {
+        "q": "What happens if I'm not satisfied with the delivered work?",
+        "a": "The process includes a revision round before closing. You can request corrections through the platform. The FWD team can mediate if needed."
+      },
+      "7": {
+        "q": "In which countries is FWD Talent available?",
+        "a": "We currently operate in Costa Rica. Expansion to other Central American and LATAM countries is on the roadmap for the second half of the year."
+      }
+    }
+  },
+  "proceso_page": {
+    "back": "Back to marketplace",
+    "tab_info": "Info",
+    "tab_chat": "Assistant",
+    "tab_proceso": "Process",
+    "chat_ia_mode": "AI",
+    "chat_directo_mode": "Company",
+    "chat_directo_soon": "You'll be able to write directly to the company once your proposal is awarded.",
+    "chat_placeholder": "Ask about the project...",
+    "chat_suggested": "Common questions",
+    "chat_welcome": "Hi. I'm the FWD assistant and can answer questions about this project or guide you through the application process.",
+    "form_title": "Create application",
+    "form_subtitle": "Tell us why you're the right person for this project.",
+    "form_title_nueva_version": "Submit new version",
+    "form_subtitle_nueva_version": "The company requested changes. Review their comments and send an updated proposal.",
+    "already_applied_title": "You already submitted your proposal",
+    "already_applied_desc": "You can check your process status in the Process tab.",
+    "already_applied_cta": "View my process",
+    "proceso_empty_title": "You haven't applied yet",
+    "proceso_empty_desc": "Fill out the form on the right to submit your proposal and start the process.",
+    "proceso_step_enviada": "Proposal submitted",
+    "proceso_step_revision": "Under review",
+    "proceso_step_decision": "Final decision",
+    "proceso_revision_chat": "Company feedback",
+    "proceso_revision_placeholder": "Message to company...",
+    "proceso_revision_empty": "The company will leave comments here when reviewing your proposal.",
+    "proceso_observacion_empresa": "Review comment",
+    "proceso_title": "Your process",
+    "proceso_proposal_number": "Proposal",
+    "begin_proceso": "Start process",
+    "begin_proceso_applied": "View my process",
+    "empresa_proposals_title": "Received proposals",
+    "empresa_proposals_empty": "No proposals yet for this project.",
+    "empresa_filter_all": "All",
+    "empresa_move_to_review": "Move to review",
+    "empresa_adjudicate": "Award project",
+    "empresa_reject": "Reject",
+    "empresa_view_entregables": "View deliverables",
+    "empresa_entregable_approve": "Approve",
+    "empresa_entregable_changes": "Request changes",
+    "empresa_revision_title": "Revision chat",
+    "empresa_revision_input": "Write a revision comment..."
+  },
+  "project_chat": {
+    "label_junior": "Junior",
+    "label_empresa": "Company",
+    "empty": "No messages yet. Start the conversation.",
+    "send_error": "Couldn't send your message. Try again.",
+    "placeholder": "Write a message... (Enter to send)",
+    "send": "Send message",
+    "hint": "Enter to send · Shift+Enter for new line",
+    "seleccionar_junior": "Conversations",
+    "sin_conversaciones": "No conversations yet",
+    "no_leidos": "{count, plural, one {# unread message} other {# unread messages}}",
+    "cargando": "Loading conversation"
+  },
+  "prototipo_preview": {
+    "preview_btn": "Preview",
+    "open_btn": "Open",
+    "modal_title": "Preview",
+    "open_new_tab": "Open in new tab",
+    "close": "Close",
+    "iframe_error": "Couldn't show the preview here (the site may block embedding). Open it in a new tab.",
+    "sin_url": "No prototype link"
+  },
+  "gestion_page": {
+    "compensation_updated": "Compensation updated on {date}",
+    "paused_no_price_notice": "This project is paused and hidden from the marketplace because it has no compensation. Add one to reactivate and publish it.",
+    "paused_no_price_cta": "Add compensation",
+    "proceso_revision_empty": "The company will leave comments here when reviewing your proposal.",
+    "title": "Project management",
+    "subtitle_junior": "Track the status of your active applications",
+    "subtitle_empresa": "Manage your projects and incoming proposals",
+    "empty_junior": "You have no active applications yet",
+    "empty_empresa": "You have no published projects yet",
+    "ver_proceso": "View process",
+    "section_junior": "My applications",
+    "section_empresa": "My projects",
+    "applied_on": "Applied on",
+    "published_on": "Published on",
+    "proposals_count": "{count} proposals",
+    "all_projects": "All projects",
+    "select_project_prompt": "Select a project to get started",
+    "welcome_desc_empresa": "Select a project from the list to review incoming proposals and manage the process.",
+    "welcome_desc_empresa_empty": "Publish your first project and start receiving proposals from juniors.",
+    "welcome_cta_empresa": "New project",
+    "welcome_state_published": "Published",
+    "analytics_projects": "Projects",
+    "analytics_proposals": "Proposals received",
+    "analytics_active": "Active projects",
+    "analytics_por_revisar": "To review",
+    "por_revisar_badge": "{count} to review",
+    "state_borrador": "Draft",
+    "state_en_evaluacion": "Under evaluation",
+    "state_adjudicado": "Awarded",
+    "state_en_desarrollo": "In progress",
+    "state_cerrado": "Closed",
+    "state_cancelado": "Cancelled",
+    "ai_idea_placeholder": "E.g.: I need a web app to manage appointments for a small clinic...",
+    "ai_reply_placeholder": "Reply to the assistant...",
+    "form_titulo_placeholder": "Project name",
+    "form_descripcion_placeholder": "Describe the project, goals and expected deliverables",
+    "form_condiciones_placeholder": "Optional: clarifications, expectations and common questions about the project. The project assistant uses them to answer juniors.",
+    "form_compensacion_placeholder": "E.g.: 500",
+    "form_otros_placeholder": "Another technology not listed...",
+    "aria_proyectos": "Projects",
+    "aria_nuevo_proyecto": "New project",
+    "aria_eliminar_proyecto": "Delete project",
+    "aria_secciones_proyecto": "Project sections",
+    "aria_cargando_proyecto": "Loading project",
+    "aria_editar_proyecto": "Edit project",
+    "aria_enviar": "Send",
+    "aria_cancelar": "Cancel",
+    "unsaved_title": "Unsaved changes",
+    "unsaved_body": "If you leave now, your form changes will be lost. Are you sure you want to continue?",
+    "unsaved_keep_editing": "Keep editing",
+    "unsaved_leave": "Leave without saving",
+    "delete_aria": "Confirm deletion",
+    "delete_title": "Delete project",
+    "delete_body": "Are you sure you want to delete <strong>{titulo}</strong>? This action cannot be undone.",
+    "delete_cancel": "Cancel",
+    "delete_deleting": "Deleting...",
+    "delete_confirm": "Delete",
+    "analytics_closed": "{count} closed",
+    "analytics_projects_list": "All projects",
+    "junior_dash_total": "Applications",
+    "junior_dash_pending": "Under review",
+    "junior_dash_changes": "Changes requested",
+    "junior_dash_won": "Awarded",
+    "junior_dash_list": "My applications",
+    "junior_dash_explore": "Find more projects",
+    "junior_recent_activity": "Recent activity",
+    "junior_dash_today": "Today",
+    "junior_dash_cal_activity": "Activity",
+    "junior_dash_active_label": "active",
+    "junior_dash_more": "more",
+    "junior_dash_page": "Page {current} of {total}",
+    "junior_dash_prev_page": "Previous page",
+    "junior_dash_next_page": "Next page",
+    "junior_activity_enviada": "You submitted a proposal",
+    "junior_activity_en_revision": "Company is reviewing your proposal",
+    "junior_activity_solicitar_cambios": "Company requested changes",
+    "junior_activity_adjudicada": "Your proposal was awarded",
+    "junior_activity_no_seleccionada": "You were not selected",
+    "junior_activity_calificado": "Project rated",
+    "junior_cal_hint": "Tap a project to see its cycle",
+    "junior_cal_applied": "Start",
+    "junior_cal_end": "Closes",
+    "junior_cal_adjudicated": "Awarded",
+    "procesos_title": "My processes",
+    "procesos_count": "active projects",
+    "procesos_timeline": "Progress",
+    "procesos_in_progress": "In progress",
+    "procesos_open": "Enter project",
+    "procesos_ver_calificacion": "View rating",
+    "project_skills": "Technologies",
+    "project_requirements": "Conditions & FAQ",
+    "proceso_duracion": "{days} days",
+    "proceso_doc_hint": "Add a link or upload a PDF — at least one is required.",
+    "welcome_desc_junior": "Select a project from the list to check your application status and follow the process.",
+    "welcome_desc_junior_empty": "Explore the marketplace, find a project you like and send your proposal.",
+    "welcome_cta_junior": "Explore marketplace",
+    "section_info": "Information",
+    "section_chat": "Chat",
+    "abrir_chat": "Open chat",
+    "mensajes_asistentes": "Chat with company assistants",
+    "mensajes_directos": "Direct company chats",
+    "mensajes_asistente_nombre": "{empresa} assistant",
+    "mensajes_sin_asistentes": "No active projects yet.",
+    "mensajes_sin_directos": "No direct chats yet. When the assistant can't help, you'll be able to write to the company.",
+    "mensajes_vacio_titulo": "Your messages",
+    "mensajes_vacio_desc": "Select a chat from the list to view the conversation.",
+    "mensajes_empresa_titulo": "Conversations",
+    "mensajes_empresa_vacio": "No conversations yet. They'll show up when a junior writes to you.",
+    "mensajes_empresa_n_juniors": "{count, plural, one {# junior} other {# juniors}}",
+    "mensajes_empresa_vacio_titulo": "Pick a conversation",
+    "mensajes_empresa_vacio_desc": "Select a project on the left to read and reply to the juniors' messages.",
+    "aria_nav_principal": "Main navigation",
+    "aria_dashboard": "Dashboard",
+    "aria_procesos": "Processes",
+    "aria_mensajes": "Messages",
+    "aria_guardados": "Saved",
+    "guardados_title": "Saved projects",
+    "guardados_count": "saved projects",
+    "guardados_empty": "You haven't saved any projects yet",
+    "guardados_expired": "Closed",
+    "guardados_view": "View",
+    "guardados_remove": "Remove from saved",
+    "section_proceso": "Process",
+    "section_matches": "Matches",
+    "action_pause_btn": "Pause project",
+    "action_cancel_btn": "Cancel project",
+    "pause_dialog_title": "Pause project",
+    "pause_dialog_body": "The project will stop appearing in the marketplace. The deadline is frozen until you resume it.",
+    "pause_dialog_confirm": "Pause",
+    "pause_dialog_back": "Go back",
+    "cancel_step1_title": "Pause instead of cancel?",
+    "cancel_step1_body": "Pausing hides the project temporarily without notifying anyone. Cancelling is final and notifies all participants.",
+    "cancel_step1_pause": "Pause temporarily",
+    "cancel_step1_cancel": "Cancel definitively",
+    "cancel_step1_back": "Go back",
+    "cancel_step2_title": "This action is irreversible",
+    "cancel_step2_body": "Are you sure you want to cancel the project? All juniors who participated will be notified.",
+    "cancel_step2_confirm": "Yes, cancel project",
+    "cancel_step2_back": "Go back",
+    "state_pausado": "Paused",
+    "action_resume_btn": "Reactivate project",
+    "resume_dialog_title": "Reactivate project",
+    "resume_dialog_body": "The project will reappear in the marketplace and start receiving applications again.",
+    "resume_dialog_confirm": "Reactivate",
+    "resume_dialog_back": "Go back",
+    "action_finalize_btn": "Finish project",
+    "finalize_dialog_title": "Finish project",
+    "finalize_dialog_body": "The project is closed and the awarded junior is released (they can apply to other projects). You can leave them a rating afterwards. This can't be undone.",
+    "finalize_dialog_confirm": "Finish",
+    "finalize_dialog_back": "Go back",
+    "action_reopen_btn": "Reopen (release award)",
+    "reopen_dialog_title": "Reopen the project",
+    "reopen_dialog_body": "This undoes the award: the project starts receiving applications again and all proposals go back to evaluation. Useful if the awarded junior dropped out. Affected juniors are notified.",
+    "reopen_dialog_confirm": "Reopen project",
+    "reopen_dialog_back": "Go back",
+    "state_en_recepcion": "Receiving",
+    "description_label": "Description",
+    "skills_label": "Required technologies",
+    "days": "days",
+    "chat_coming_soon_title": "Direct chat",
+    "chat_coming_soon_desc_junior": "You will be able to write directly to the company once your proposal is awarded.",
+    "chat_coming_soon_desc_empresa": "You will be able to chat with the awarded junior once the project is in development.",
+    "proceso_state_label": "Current status",
+    "proceso_tracker_label": "Process tracker",
+    "proceso_tu_propuesta": "Your proposal",
+    "proceso_entregables_label": "Deliverables",
+    "proceso_entregables_empty": "No deliverables submitted yet for this project.",
+    "proceso_no_offer": "You have no active proposal for this project.",
+    "empresa_proposals_label": "Received proposals",
+    "empresa_proposals_empty": "No proposals yet for this project.",
+    "proceso_propuestas_label": "Proposals",
+    "proceso_propuesta_n": "Proposal {n}",
+    "proceso_propuesta_placeholder": "Enabled when the company requests changes.",
+    "proceso_documentacion_label": "Prototype / Documentation",
+    "proceso_observaciones_label": "Observations & review",
+    "proceso_observaciones_empty": "No observations from the company yet.",
+    "proceso_comentario_label": "Review comments",
+    "proceso_comentario_placeholder": "Write your comments here...",
+    "proceso_version_singular": "version",
+    "proceso_version_plural": "versions",
+    "proceso_accion_revision": "Mark as in review",
+    "proceso_accion_adjudicar": "Award",
+    "proceso_accion_cambios": "Request changes",
+    "proceso_accion_rechazar": "Don't select",
+    "proceso_badge_pendiente": "Pending",
+    "proceso_badge_esperando": "Waiting for review",
+    "proceso_badge_enviada": "Submitted",
+    "proceso_badge_revision": "In review",
+    "proceso_badge_cambios": "Changes requested",
+    "proceso_badge_aceptada": "Accepted",
+    "proceso_badge_nosel": "Not selected",
+    "proceso_badge_adjudicada": "Awarded",
+    "proceso_crear_propuesta": "Create proposal",
+    "proceso_busy_message": "You already have an active project. You can't apply to another one until that project is closed.",
+    "proceso_desc_placeholder": "Describe your approach, relevant experience and how you'll tackle the project...",
+    "proceso_doc_label": "Prototype / Documentation",
+    "proceso_link_placeholder": "https://my-prototype.vercel.app",
+    "proceso_subir_archivo": "Upload file",
+    "proceso_recursos_titulo": "Project resources",
+    "proceso_recursos_subtitulo": "These fields generate the project preview card.",
+    "proceso_recursos_nombre": "Your name",
+    "proceso_recursos_proyecto": "Project name",
+    "proceso_recursos_repo": "GitHub repository",
+    "proceso_subir_propuesta": "Submit proposal",
+    "proceso_negociar_pago": "Negotiate pay",
+    "proceso_menu_postulacion": "Open application",
+    "calc_titulo": "Quote your proposal",
+    "calc_subtitulo": "Estimate how much to charge for this project. The amount is attached to your proposal as a counter-offer; payment is arranged outside the platform.",
+    "calc_alcance_label": "Project scope",
+    "calc_modo_horas": "By hours",
+    "calc_modo_semanas": "By weeks",
+    "calc_horas_label": "Estimated hours",
+    "calc_semanas_label": "Weeks",
+    "calc_horas_semana_label": "Hours per week",
+    "calc_complejidad_label": "Complexity",
+    "calc_complejidad_baja": "Low",
+    "calc_complejidad_media": "Medium",
+    "calc_complejidad_alta": "High",
+    "calc_stack_label": "Tech stack",
+    "calc_stack_seleccionadas": "({count} selected)",
+    "calc_ia_ayuda": "Fill with AI",
+    "calc_ia_descripcion_label": "Describe the project and AI fills the form",
+    "calc_ia_descripcion_placeholder": "E.g. an online store with cart, payments, inventory and an admin panel; built with React and Node.js.",
+    "calc_ia_generar": "Generate quote",
+    "calc_ia_generando": "Generating...",
+    "calc_ia_min": "Tell us a bit more about the project (at least 10 characters).",
+    "calc_ia_nota": "AI suggestion:",
+    "calc_funcionalidades_label": "Project features",
+    "calc_funcionalidades_vacio": "Add each feature and choose its complexity to estimate the effort.",
+    "calc_funcionalidad_agregar": "Add feature",
+    "calc_funcionalidad_nombre_placeholder": "Feature {numero} (optional)",
+    "calc_funcionalidad_cantidad_label": "Quantity of feature {numero}",
+    "calc_funcionalidad_complejidad_label": "Complexity of feature {numero}",
+    "calc_funcionalidad_quitar": "Remove feature",
+    "calc_tamano_muy_pequena": "Very small",
+    "calc_tamano_pequena": "Small",
+    "calc_tamano_media": "Medium",
+    "calc_tamano_grande": "Large",
+    "calc_tarifa_label": "Hourly rate",
+    "calc_tarifa_hint": "Junior reference range: {min}–{max}/h.",
+    "calc_moneda_label": "Rate currency",
+    "calc_moneda_usd": "USD",
+    "calc_moneda_crc": "CRC",
+    "calc_modalidad_label": "Work mode",
+    "calc_modalidad_remoto": "Remote",
+    "calc_modalidad_hibrido": "Hybrid",
+    "calc_modalidad_presencial": "On-site",
+    "calc_iva_label": "Include VAT (13%)",
+    "calc_desglose_titulo": "Breakdown",
+    "calc_desglose_detalle_titulo": "Cost by section",
+    "calc_desglose_alcance": "Scope (base hours)",
+    "calc_desglose_funcionalidades": "Features",
+    "calc_desglose_ajuste_complejidad": "Complexity adjustment ({factor}×)",
+    "calc_desglose_ajuste_modalidad": "Work mode adjustment ({factor}×)",
+    "calc_usar_monto": "Use in proposal",
+    "calc_desglose_horas": "Adjusted hours",
+    "calc_desglose_subtotal": "Subtotal",
+    "calc_desglose_stack": "Stack premium",
+    "calc_desglose_neto": "Net",
+    "calc_desglose_iva": "VAT (13%)",
+    "calc_total_label": "Amount to quote",
+    "calc_acotado_aviso": "The amount was adjusted to the allowed range ({min}–{max}).",
+    "calc_invalida": "Fill in scope and rate to see a quote.",
+    "calc_aplicar": "Get amount",
+    "calc_cancelar": "Cancel",
+    "calc_monto_actual": "Current counter-offer",
+    "calc_sin_monto": "No counter-offer",
+    "calc_quitar": "Remove counter-offer",
+    "calc_guardar_pdf": "Save as PDF",
+    "calc_pdf_titulo": "Proposal quote",
+    "calc_pdf_fecha": "Generated on {fecha}",
+    "calc_pdf_parametros": "Parameters",
+    "calc_pdf_alcance_horas": "{horas} h",
+    "calc_pdf_alcance_semanas": "{semanas} wk × {horas} h/wk",
+    "calc_pdf_si": "Yes",
+    "calc_pdf_no": "No",
+    "calc_pdf_funcionalidad_sin_nombre": "Feature {numero}",
+    "proceso_sin_enlace": "No link provided",
+    "proceso_error_enlace_https": "The link must start with https:// (e.g. https://my-demo.vercel.app)",
+    "proceso_error_adjunto_requerido": "You must attach a documentation link or upload a PDF file before submitting.",
+    "proceso_previsualizacion_label": "Preview",
+    "proceso_preview_sin_nombre": "No name",
+    "proceso_preview_sin_categoria": "No category",
+    "proceso_placeholder_revision": "Enabled when the company requests changes.",
+    "proceso_placeholder_nuevo": "Available if the company requests changes.",
+    "proceso_placeholder_cambios": "Next version, if another revision is needed.",
+    "proceso_cerrado": "Process closed — your proposal was accepted.",
+    "proceso_demo_titulo": "Demo view · company role",
+    "proceso_demo_desc": "Simulate the actions of the role that receives proposals to advance the flow.",
+    "proceso_demo_aceptar": "Accept proposal",
+    "proceso_demo_reiniciar": "Reset",
+    "proceso_propuestas_estudiante": "Student proposals",
+    "proceso_estado_version": "Status of this version",
+    "proceso_comentarios_empresa_placeholder": "Write review comments...",
+    "proceso_comentarios_revision_label": "Review comments",
+    "proceso_cambios_guardados": "Changes saved",
+    "proceso_btn_enviar": "Confirm",
+    "proceso_switch_revision_label": "I am reviewing this proposal",
+    "proceso_switch_revision_activar": "Mark as under review",
+    "proceso_switch_revision_activo": "Under review",
+    "proceso_ver_prototipo": "Prototype",
+    "proceso_observacion_enviada": "Review sent",
+    "proceso_calificar_titulo": "Rate this project",
+    "proceso_calificar_placeholder": "How was the experience working with this junior?",
+    "proceso_calificar_btn": "Submit rating",
+    "proceso_calificar_enviando": "Sending...",
+    "entregables_review_cargando": "Loading deliverables...",
+    "entregables_review_ver": "View deliverable",
+    "entregables_review_aprobar": "Approve",
+    "entregables_review_solicitar_cambios": "Request changes",
+    "entregables_review_enviar_cambios": "Send request",
+    "entregables_review_cancelar": "Cancel",
+    "entregables_review_cambios_placeholder": "Explain what adjustments the deliverable needs...",
+    "entregable_tipo_parcial": "Partial delivery",
+    "entregable_tipo_final": "Final delivery",
+    "entregable_state_enviado": "Submitted",
+    "entregable_state_aprobado": "Approved",
+    "entregable_state_cambios_solicitados": "Changes requested",
+    "proceso_calificacion_enviada": "Rating submitted",
+    "proceso_calificacion_empresa": "Company rating",
+    "proceso_editar": "Edit",
+    "proceso_retirar": "Withdraw proposal",
+    "proceso_retirando": "Withdrawing...",
+    "proceso_retirar_confirmar": "Sure you want to withdraw?",
+    "proceso_retirar_si": "Yes, withdraw",
+    "proceso_cancelar": "Cancel",
+    "junior_nueva_postulacion": "New application",
+    "junior_solo_chat": "Chat open",
+    "chat_label_empresa": "Company",
+    "chat_label_junior": "Junior",
+    "chat_empty": "No messages yet. Start the conversation.",
+    "chat_send_error": "Couldn't send your message. Try again.",
+    "seguimiento_correo_btn": "Email the junior",
+    "seguimiento_correo_subject": "Follow-up on the project «{titulo}»",
+    "chat_loading": "Loading chat",
+    "project_load_failed": "Couldn't load the project.",
+    "back_to_projects": "Back to my projects",
+    "conditions_faq_label": "Conditions and FAQ",
+    "chat_placeholder": "Write a message... (Enter to send)",
+    "chat_send": "Send message",
+    "chat_hint": "Enter to send · Shift+Enter for new line",
+    "chat_seleccionar_junior": "Conversations",
+    "chat_sin_conversaciones": "No conversations yet",
+    "sidebar_chats_label": "Chats",
+    "chat_n_chats": "{count, plural, one {# chat} other {# chats}}",
+    "chat_no_leidos": "{count, plural, one {# unread message} other {# unread messages}}",
+    "chat_overview_empty": "No messages in this project yet",
+    "ai_titulo": "AI assistant",
+    "ai_idea_label": "Tell us your project idea",
+    "ai_completar_btn": "Fill out the form with AI",
+    "ai_intro_hint": "The AI will ask a few questions to better understand your project before filling out the form.",
+    "ai_escribiendo": "Typing...",
+    "ai_error_generico": "Something went wrong. Please try again.",
+    "ai_formulario_completado": "Form completed. Review and adjust whatever you need.",
+    "ai_referencias_diseno": "Suggested design references",
+    "ai_preguntas_pendientes": "Questions you can define later",
+    "ai_generando": "Generating...",
+    "ai_generar_propuesta": "Generate proposal",
+    "ai_reiniciar": "Restart assistant",
+    "ai_continuar_manual": "Continue manually",
+    "form_mode_crear": "New project",
+    "form_mode_editar": "Edit project",
+    "form_o_manual": "or fill it out manually",
+    "form_label_titulo": "Title",
+    "form_condiciones_hint": "Do not include the payment method between the company and the student (not applicable at this stage).",
+    "form_label_area": "Business area",
+    "form_area_placeholder": "Select an area",
+    "form_label_plazo": "Deadline (5–15 days)",
+    "form_label_compensacion": "Compensation (USD)",
+    "form_sugiriendo": "Suggesting...",
+    "form_sugerir_precio": "Suggest price",
+    "form_sugerir_stack": "Suggest stack",
+    "form_compensacion_hint": "Total amount you will pay the junior for the project (between ${min} and ${max}). Required to publish. Payment is coordinated outside the platform.",
+    "form_compensacion_rango": "The amount must be between ${min} and ${max} USD.",
+    "form_agregar": "Add",
+    "form_quitar_tech": "Remove {tech}",
+    "form_usa_ia": "Uses artificial intelligence",
+    "form_publicar": "Publish immediately",
+    "form_guardando": "Saving...",
+    "form_crear": "Create project",
+    "form_guardar_cambios": "Save changes",
+    "form_error_titulo": "The title is required",
+    "form_error_descripcion": "The description is required",
+    "form_error_area": "Select a business area",
+    "form_error_plazo": "The deadline must be between 5 and 15 days",
+    "form_error_compensacion_rango": "Compensation must be a whole amount between ${min} and ${max} USD",
+    "form_error_compensacion_publicar": "Compensation is required to publish the project"
+  },
+  "gestion_usuarios": {
+    "eyebrow": "Administration",
+    "title": "User management",
+    "description": "Manage every account on the platform: create, edit, suspend or delete users from a single place.",
+    "create_user": "Create user",
+    "stats": {
+      "total": "Total users",
+      "active": "Active",
+      "suspended": "Suspended",
+      "pending": "Pending"
+    },
+    "filters": {
+      "title": "Filters",
+      "search_placeholder": "Search by name or email...",
+      "role_all": "Role: All",
+      "status_all": "Status: All"
+    },
+    "roles": {
+      "student": "Junior",
+      "company": "Company",
+      "admin": "Administrator"
+    },
+    "statuses": {
+      "activa": "Active",
+      "pendiente": "Pending",
+      "suspendida": "Suspended",
+      "rechazada": "Rejected"
+    },
+    "table": {
+      "user": "User",
+      "role": "Role",
+      "status": "Status",
+      "joined": "Joined",
+      "actions": "Actions",
+      "empty": "No users match the applied filters."
+    },
+    "row_actions": {
+      "view": "View",
+      "edit": "Edit",
+      "suspend": "Suspend",
+      "reactivate": "Reactivate",
+      "delete": "Delete"
+    },
+    "pagination_summary": "Showing {start}-{end} of {total} users",
+    "detail_modal": {
+      "title": "User information",
+      "subtitle": "Account detail",
+      "close": "Close",
+      "loading": "Loading information...",
+      "field_email": "Email",
+      "field_role": "Role",
+      "field_status": "Status",
+      "field_joined": "Joined on",
+      "field_cedula": "ID number",
+      "section_profile": "Profile",
+      "no_profile": "This user has not completed onboarding yet.",
+      "student_especialidad": "Specialization",
+      "student_titulo": "FWD title",
+      "student_disponibilidad": "Availability",
+      "student_reputacion": "Reputation",
+      "student_verificacion": "Verification",
+      "student_skills": "Skills",
+      "student_bio": "Description",
+      "student_github": "GitHub",
+      "student_linkedin": "LinkedIn",
+      "student_portfolio": "Portfolio",
+      "company_tipo": "Type",
+      "company_nombre": "Trade name",
+      "company_sector": "Sector",
+      "company_etapa": "Stage",
+      "company_sitio": "Website",
+      "company_bio": "Description"
+    },
+    "form_modal": {
+      "create_title": "Create new user",
+      "edit_title": "Edit user",
+      "create_subtitle": "Only the account and role are created. The user completes their profile during onboarding.",
+      "edit_subtitle": "Update the information of the selected account.",
+      "field_name": "First name",
+      "field_name_placeholder": "e.g. Ana",
+      "field_lastname": "Last name",
+      "field_lastname_placeholder": "e.g. Rodriguez",
+      "field_email": "Email",
+      "field_email_placeholder": "name@email.com",
+      "field_password": "Temporary password",
+      "field_password_placeholder": "At least 8 characters",
+      "field_role": "Role",
+      "field_status": "Status",
+      "cancel": "Cancel",
+      "save": "Save changes",
+      "create": "Create user",
+      "creating": "Creating...",
+      "saving": "Saving...",
+      "errors": {
+        "name_required": "The name is required",
+        "email_invalid": "The email is not valid",
+        "password_min": "The password must be at least 8 characters"
+      }
+    },
+    "confirm_suspend": {
+      "title": "Suspend account",
+      "message": "Are you sure you want to suspend this account? The user will not be able to sign in until you reactivate it.",
+      "confirm": "Suspend",
+      "cancel": "Cancel",
+      "working": "Suspending..."
+    },
+    "confirm_delete": {
+      "title": "Delete user",
+      "message": "This permanently deletes the account and its entire profile. It cannot be undone.",
+      "confirm": "Delete",
+      "cancel": "Cancel",
+      "working": "Deleting..."
+    },
+    "messages": {
+      "created": "User created",
+      "updated": "User updated",
+      "deleted": "User deleted",
+      "suspended": "Account suspended",
+      "reactivated": "Account reactivated",
+      "error": "The action could not be completed"
+    }
+  },
+  "admin_dashboard": {
+    "title": "Dashboard",
+    "subtitle": "Operational overview of the FWD Talent ecosystem with live data.",
+    "states": {
+      "borrador": "Draft",
+      "en_recepcion": "Receiving",
+      "en_evaluacion": "Under evaluation",
+      "adjudicado": "Awarded",
+      "en_desarrollo": "In development",
+      "cerrado": "Closed",
+      "cancelado": "Cancelled"
+    },
+    "stats": {
+      "companies_label": "Companies",
+      "companies_caption": "Pending approval",
+      "talent_label": "Talent",
+      "talent_caption": "Pending verification",
+      "projects_label": "Projects",
+      "projects_caption": "Total in the system",
+      "active_label": "Active",
+      "active_caption": "In progress",
+      "requests_label": "Requests",
+      "requests_caption": "Pending review",
+      "cancelled_label": "Cancelled",
+      "cancelled_caption": "Cancelled projects"
+    },
+    "admissions": {
+      "title": "Admission requests",
+      "search_placeholder": "Search...",
+      "view_all": "View all",
+      "th_candidate": "Candidate",
+      "th_type": "Type",
+      "th_date": "Date",
+      "th_status": "Status",
+      "th_action": "Action",
+      "empty": "No pending requests.",
+      "type_company": "Company",
+      "type_student": "Talent",
+      "type_account": "Account",
+      "pending": "Pending",
+      "approve_aria": "Approve request"
+    },
+    "moderation": {
+      "title": "Project moderation",
+      "active_count": "{count} active",
+      "th_project": "Project",
+      "th_company": "Company",
+      "th_status": "Status",
+      "th_actions": "Actions",
+      "empty": "No projects to moderate.",
+      "cancel": "Cancel",
+      "hide": "Hide"
+    },
+    "modules": {
+      "talento_title": "Talent",
+      "talento_desc": "Profile and skill management",
+      "empresas_title": "Companies",
+      "empresas_desc": "Corporate partners and contracts",
+      "proyectos_title": "Projects",
+      "proyectos_desc": "Milestones, payments and moderation",
+      "solicitudes_title": "Requests",
+      "solicitudes_desc": "Admissions and verifications",
+      "reportes_title": "Reports",
+      "reportes_desc": "Advanced statistics and KPIs",
+      "config_title": "Settings",
+      "config_desc": "Global system parameters",
+      "view_module": "View module"
+    },
+    "summary": {
+      "title": "Summary",
+      "pending_requests": "Pending requests",
+      "total_projects": "Total projects",
+      "to_moderate": "To moderate",
+      "pending_companies": "Pending companies",
+      "pending_talent": "Pending talent"
+    },
+    "quick": {
+      "title": "Quick access",
+      "review_requests": "Review requests",
+      "moderate_projects": "Moderate projects",
+      "view_reports": "View reports"
+    },
+    "messages": {
+      "approve_error": "Could not approve",
+      "approved": "Request approved",
+      "cancel_error": "Could not cancel",
+      "cancelled": "Project cancelled",
+      "hidden": "Project hidden"
+    }
+  },
+  "admin_egresados": {
+    "eyebrow": "Administration",
+    "title": "Graduates",
+    "description": "Manage and track FWD graduates: verify, edit or delete student accounts.",
+    "create_student": "Create student",
+    "stats": {
+      "total": "Total graduates",
+      "verified": "Verified",
+      "pending": "Pending verification",
+      "avg_reputation": "Average reputation"
+    },
+    "distribution": {
+      "title": "Verification breakdown",
+      "verificado": "Verified",
+      "pendiente": "Pending",
+      "rechazado": "Rejected"
+    },
+    "filters": {
+      "search_placeholder": "Search by name or email...",
+      "status_all": "Status: All",
+      "specialty_all": "Specialization: All",
+      "skill_all": "Strength: All",
+      "modality_all": "Modality: All",
+      "only_pending": "Only pending verification",
+      "clear": "Clear"
+    },
+    "verification": {
+      "verificado": "Verified",
+      "pendiente": "Pending",
+      "rechazado": "Rejected"
+    },
+    "table": {
+      "profile": "Profile",
+      "titulo": "FWD title",
+      "specialty": "Specialization",
+      "strengths": "Strengths",
+      "modality": "Modality",
+      "availability": "Availability",
+      "status": "Status",
+      "actions": "Actions",
+      "empty": "No graduates match the applied filters.",
+      "summary": "Showing {shown} of {total} graduates",
+      "no_skills": "No skills"
+    },
+    "row_actions": {
+      "view": "View",
+      "edit": "Edit",
+      "verify": "Verify",
+      "reject": "Reject",
+      "delete": "Delete"
+    },
+    "detail_modal": {
+      "title": "Graduate information",
+      "subtitle": "Student detail",
+      "close": "Close",
+      "loading": "Loading information...",
+      "field_email": "Email",
+      "field_status": "Account status",
+      "field_joined": "Joined on",
+      "field_cedula": "ID number",
+      "field_verification": "Verification",
+      "field_especialidad": "Specialization",
+      "field_titulo": "FWD title",
+      "field_disponibilidad": "Availability",
+      "field_modalidad": "Preferred modality",
+      "field_reputacion": "Reputation",
+      "field_skills": "Skills",
+      "field_bio": "Description",
+      "field_github": "GitHub",
+      "field_linkedin": "LinkedIn",
+      "field_portfolio": "Portfolio",
+      "no_profile": "This graduate has not completed onboarding yet."
+    },
+    "form_modal": {
+      "create_title": "Create new student",
+      "edit_title": "Edit student",
+      "create_subtitle": "Only the account with student role is created. The graduate completes their profile during onboarding.",
+      "edit_subtitle": "Update the account data. The academic profile is managed by the student.",
+      "field_name": "First name",
+      "field_name_placeholder": "e.g. Ana",
+      "field_lastname": "Last name",
+      "field_lastname_placeholder": "e.g. Rodriguez",
+      "field_email": "Email",
+      "field_email_placeholder": "name@email.com",
+      "field_password": "Temporary password",
+      "field_password_placeholder": "At least 8 characters",
+      "cancel": "Cancel",
+      "create": "Create student",
+      "save": "Save changes",
+      "creating": "Creating...",
+      "saving": "Saving...",
+      "errors": {
+        "name_required": "The name is required",
+        "email_invalid": "The email is not valid",
+        "password_min": "The password must be at least 8 characters"
+      }
+    },
+    "confirm_delete": {
+      "title": "Delete student",
+      "message": "This permanently deletes the graduate's account and entire profile. It cannot be undone.",
+      "confirm": "Delete",
+      "cancel": "Cancel",
+      "working": "Deleting..."
+    },
+    "messages": {
+      "created": "Student created",
+      "updated": "Student updated",
+      "deleted": "Student deleted",
+      "verified": "Graduate verified",
+      "rejected": "Verification rejected",
+      "error": "The action could not be completed"
+    }
+  },
+  "admin_empresas": {
+    "eyebrow": "Administration",
+    "title": "Companies",
+    "description": "Manage companies and entrepreneurs: create, edit, delete or view their information.",
+    "create_company": "Create company",
+    "stats": {
+      "total": "Total companies",
+      "empresa": "Companies",
+      "emprendedor": "Entrepreneurs",
+      "active": "Active accounts"
+    },
+    "types": {
+      "empresa": "Company",
+      "emprendedor": "Entrepreneur"
+    },
+    "account_states": {
+      "activa": "Active",
+      "pendiente": "Pending",
+      "suspendida": "Suspended",
+      "rechazada": "Rejected"
+    },
+    "filters": {
+      "title": "Filters",
+      "search_placeholder": "Search by name, contact or email...",
+      "type_all": "Type: All",
+      "sector_all": "Sector: All",
+      "stage_all": "Stage: All",
+      "status_all": "Status: All",
+      "clear": "Clear"
+    },
+    "table": {
+      "company": "Company",
+      "type": "Type",
+      "sector": "Sector",
+      "stage": "Stage",
+      "status": "Status",
+      "actions": "Actions",
+      "empty": "No companies match the applied filters.",
+      "summary": "Showing {shown} of {total} companies",
+      "no_name": "No trade name"
+    },
+    "row_actions": {
+      "view": "View",
+      "edit": "Edit",
+      "delete": "Delete"
+    },
+    "detail_modal": {
+      "title": "Company information",
+      "subtitle": "Profile detail",
+      "close": "Close",
+      "field_type": "Type",
+      "field_sector": "Sector",
+      "field_stage": "Stage",
+      "field_employees": "Employees",
+      "field_website": "Website",
+      "field_address": "Address",
+      "field_modality": "Modalities",
+      "field_budget": "Budget",
+      "field_description": "Description",
+      "section_account": "Contact account",
+      "field_contact": "Contact",
+      "field_email": "Email",
+      "field_account_status": "Account status",
+      "field_joined": "Joined on"
+    },
+    "form_modal": {
+      "create_title": "Create new company",
+      "edit_title": "Edit company",
+      "create_subtitle": "The company account and a minimal profile are created. The rest is completed by the company during onboarding.",
+      "edit_subtitle": "Update the company profile data.",
+      "field_contact_name": "Contact name",
+      "field_contact_name_placeholder": "e.g. Ana Rodriguez",
+      "field_email": "Email",
+      "field_email_placeholder": "company@email.com",
+      "field_password": "Temporary password",
+      "field_password_placeholder": "At least 8 characters",
+      "field_type": "Type",
+      "field_commercial_name": "Trade name",
+      "field_commercial_name_placeholder": "e.g. Estudio Norte",
+      "field_sector": "Sector",
+      "field_sector_placeholder": "e.g. Technology",
+      "field_stage": "Stage",
+      "field_stage_placeholder": "e.g. Growth",
+      "field_employees": "Number of employees",
+      "field_employees_placeholder": "e.g. 11-50",
+      "field_website": "Website",
+      "field_website_placeholder": "https://...",
+      "field_address": "Address",
+      "field_address_placeholder": "City, country",
+      "field_description": "Description",
+      "field_description_placeholder": "Brief description of the company",
+      "cancel": "Cancel",
+      "create": "Create company",
+      "save": "Save changes",
+      "creating": "Creating...",
+      "saving": "Saving...",
+      "errors": {
+        "name_required": "The contact name is required",
+        "commercial_required": "The trade name is required",
+        "email_invalid": "The email is not valid",
+        "password_min": "The password must be at least 8 characters"
+      }
+    },
+    "confirm_delete": {
+      "title": "Delete company",
+      "message": "This permanently deletes the company account and entire profile. It cannot be undone.",
+      "confirm": "Delete",
+      "cancel": "Cancel",
+      "working": "Deleting..."
+    },
+    "messages": {
+      "created": "Company created",
+      "updated": "Company updated",
+      "deleted": "Company deleted",
+      "error": "The action could not be completed"
+    }
+  },
+  "admin_solicitudes": {
+    "eyebrow": "Administration",
+    "title": "Requests",
+    "description": "Review and manage the pending admission requests in the FWD Talent ecosystem.",
+    "stats": {
+      "total": "All",
+      "total_badge": "Global",
+      "empresas": "Companies",
+      "empresas_badge": "B2B",
+      "talentos": "Talents",
+      "talentos_badge": "B2C",
+      "proyectos": "Projects",
+      "proyectos_badge": "Active",
+      "reportes": "Reports",
+      "reportes_badge": "Critical"
+    },
+    "types": {
+      "Empresa": "Company",
+      "Emprendedor": "Entrepreneur",
+      "Talento": "Talent",
+      "Otro": "Other"
+    },
+    "filters": {
+      "search_placeholder": "Search by name, email or ID...",
+      "type_aria": "Type",
+      "date_aria": "Date",
+      "type_all": "Type: All",
+      "date_all": "Date: All",
+      "date_today": "Today",
+      "date_week": "This week",
+      "date_month": "This month",
+      "clear": "Clear filters"
+    },
+    "type_meta": {
+      "Empresa": { "title": "New company registered", "origin": "Companies Portal" },
+      "Emprendedor": { "title": "New entrepreneur registered", "origin": "Entrepreneurs Portal" },
+      "Talento": { "title": "Verification request", "origin": "Talent Registration" },
+      "Otro": { "title": "Account request", "origin": "Registration" }
+    },
+    "list": {
+      "empty": "No pending requests match the applied filters.",
+      "pending": "Pending",
+      "id": "ID:",
+      "origin": "Origin:",
+      "summary": "Showing <strong>{start} to {end}</strong> of <strong>{total}</strong> requests"
+    },
+    "actions": {
+      "view": "View detail",
+      "approve": "Approve",
+      "reject": "Reject",
+      "suspend": "Suspend",
+      "close": "Close"
+    },
+    "messages": {
+      "approved": "Request approved",
+      "rejected": "Request rejected",
+      "suspended": "Account suspended",
+      "error": "The action could not be completed"
+    },
+    "modal": {
+      "fallback_title": "Request detail",
+      "subtitle": "Complete applicant information",
+      "loading": "Loading applicant profile...",
+      "no_profile": "This user has no additional profile associated.",
+      "section_account": "Account",
+      "section_talent": "Talent profile",
+      "section_company": "Company profile"
+    },
+    "fields": {
+      "full_name": "Full name",
+      "email": "Email",
+      "cedula": "ID number",
+      "role": "Role",
+      "account_status": "Account status",
+      "registered": "Registration date",
+      "id": "ID",
+      "specialty": "Specialty",
+      "availability": "Availability",
+      "preferred_modality": "Preferred modality",
+      "titulo_fwd": "FWD degree",
+      "verification": "Verification",
+      "reputation": "Reputation",
+      "description": "Description",
+      "skills": "Skills",
+      "commercial_name": "Trade name",
+      "type": "Type",
+      "cedula_juridica": "Business ID",
+      "sector": "Sector",
+      "stage": "Stage",
+      "employees": "Number of employees",
+      "modalities": "Modalities",
+      "schedule": "Schedule",
+      "budget": "Budget",
+      "address": "Address",
+      "project_types": "Project types",
+      "tech_support": "Technical support needed",
+      "mission": "Mission",
+      "vision": "Vision",
+      "culture": "Culture",
+      "values": "Values",
+      "contacts": "Contacts"
+    },
+    "links": {
+      "portfolio": "Portfolio",
+      "website": "Website"
+    },
+    "enum_role": {
+      "student": "Talent",
+      "company": "Company",
+      "admin": "Administrator"
+    },
+    "enum_especialidad": {
+      "frontend": "Frontend",
+      "backend": "Backend",
+      "fullstack": "Fullstack",
+      "ia": "AI"
+    },
+    "enum_disponibilidad": {
+      "immediate": "Immediate",
+      "two_weeks": "In two weeks",
+      "one_month": "In one month",
+      "unavailable": "Unavailable"
+    },
+    "enum_verificacion": {
+      "pendiente": "Pending",
+      "verificado": "Verified",
+      "rechazado": "Rejected"
+    },
+    "enum_etapa": {
+      "idea": "Idea",
+      "mvp": "MVP",
+      "validating": "Validating",
+      "scaling": "Scaling"
+    },
+    "enum_presupuesto": {
+      "under_500": "Under $500",
+      "range_500_1000": "$500 to $1,000",
+      "range_1000_2500": "$1,000 to $2,500",
+      "flexible": "Flexible"
+    },
+    "enum_horario": {
+      "flexible": "Flexible",
+      "fixed": "Fixed"
+    }
+  },
+  "admin_reportes": {
+    "eyebrow": "Analytics",
+    "title": "Reports",
+    "description": "Live overview of the FWD Talent ecosystem, computed from registered users, graduates, companies and projects.",
+    "export_csv": "Export CSV",
+    "export_pdf": "Export PDF",
+    "empty": "Not enough data.",
+    "kpi": {
+      "usuarios": "Users",
+      "egresados": "Graduates",
+      "empresas": "Companies",
+      "proyectos": "Projects",
+      "activos": "Active",
+      "pendientes": "Pending",
+      "verificados": "Verified",
+      "finalizados": "Completed"
+    },
+    "charts": {
+      "projects_by_state_title": "Projects by state",
+      "projects_by_state_subtitle": "Breakdown of all projects by their stage.",
+      "top_companies_title": "Top companies by projects",
+      "top_companies_subtitle": "The companies with the most published projects.",
+      "users_by_role_title": "Users by role",
+      "users_by_role_subtitle": "How accounts are split among juniors, companies and admins.",
+      "companies_by_type_title": "Companies by type",
+      "companies_by_type_subtitle": "Established companies versus entrepreneurs."
+    },
+    "enum_state": {
+      "borrador": "Draft",
+      "en_recepcion": "In intake",
+      "en_evaluacion": "Under review",
+      "adjudicado": "Awarded",
+      "en_desarrollo": "In development",
+      "cerrado": "Closed",
+      "cancelado": "Cancelled",
+      "pausado": "Paused"
+    },
+    "enum_role": {
+      "student": "Juniors",
+      "company": "Companies",
+      "admin": "Admins"
+    },
+    "enum_account": {
+      "activa": "Active",
+      "pendiente": "Pending",
+      "suspendida": "Suspended",
+      "rechazada": "Rejected"
+    },
+    "enum_verification": {
+      "verificado": "Verified",
+      "pendiente": "Pending",
+      "rechazado": "Rejected"
+    },
+    "enum_type": {
+      "empresa": "Companies",
+      "emprendedor": "Entrepreneurs"
+    },
+    "csv": {
+      "report_title": "FWD Talent Report",
+      "header_metric": "Metric",
+      "header_value": "Value",
+      "header_total": "Total",
+      "block_projects_by_state": "Projects by state",
+      "block_top_companies": "Top companies by projects",
+      "block_users_by_role": "Users by role",
+      "block_accounts": "Account status",
+      "block_verification": "Graduate verification",
+      "block_companies_by_type": "Companies by type",
+      "filename": "fwd-report"
+    }
+  },
+  "admin_proyectos": {
+    "view": "View",
+    "detail": {
+      "title": "Project detail",
+      "subtitle": "Full project information",
+      "loading": "Loading project...",
+      "close": "Close",
+      "company": "Company",
+      "type": "Type",
+      "area": "Business area",
+      "description": "Description",
+      "deadline": "Deadline",
+      "deadline_days": "{days, plural, one {# day} other {# days}}",
+      "uses_ai": "Uses AI",
+      "yes": "Yes",
+      "no": "No",
+      "extra_tech": "Extra technologies",
+      "skills": "Skills / Stack",
+      "state": "Status",
+      "published": "Published",
+      "closing": "Closing",
+      "id": "ID",
+      "none": "—",
+      "unpublished": "Unpublished",
+      "no_description": "No description."
+    }
+  },
+  "admin_config": {
+    "eyebrow": "Administration",
+    "title": "Settings",
+    "description": "Manage the general parameters of the FWD Talent ecosystem and personalize your experience.",
+    "appearance": {
+      "title": "Appearance and preferences",
+      "dark_mode": "Dark mode",
+      "dark_mode_desc": "Switch between light and dark theme. The preference is saved in this browser.",
+      "language": "Language",
+      "language_desc": "Choose the interface language.",
+      "spanish": "Español",
+      "english": "English"
+    },
+    "marketplace": {
+      "title": "Marketplace",
+      "registros_label": "Allow sign-ups",
+      "registros_desc": "Enables the creation of new talent accounts.",
+      "empresas_label": "Allow companies",
+      "empresas_desc": "Allows onboarding of corporate profiles.",
+      "postulaciones_label": "Allow applications",
+      "postulaciones_desc": "Enables the apply button on active projects.",
+      "matching_label": "Enable matching",
+      "matching_desc": "Automatic talent suggestion algorithm."
+    },
+    "roles": {
+      "title": "Roles and permissions",
+      "create": "Create role",
+      "th_role": "Role",
+      "th_description": "Description",
+      "th_users": "Users",
+      "th_actions": "Actions",
+      "empty": "No roles defined. Create one with “Create role”.",
+      "users_count": "{count, plural, one {# user} other {# users}}",
+      "edit_aria": "Edit role",
+      "delete_aria": "Delete role",
+      "modal_create_title": "Create role",
+      "modal_edit_title": "Edit role",
+      "field_name": "Role name",
+      "field_description": "Description",
+      "field_users": "Users",
+      "cancel": "Cancel",
+      "submit_create": "Create role",
+      "submit_edit": "Save role"
+    },
+    "save": "Save changes",
+    "saved": "Changes saved"
+  },
+  "project_preview_modal": {
+    "close": "Close",
+    "days": "days",
+    "uses_ia": "Uses AI",
+    "company_type_empresa": "Company",
+    "company_type_emprendedor": "Startup",
+    "view_company_profile": "View profile",
+    "go_to_gestion": "Go to project"
+  },
+  "public_empresa_profile": {
+    "not_found": "Company profile not found.",
+    "back_to_marketplace": "Back to marketplace",
+    "type_empresa": "Company",
+    "type_emprendedor": "Startup",
+    "etapa_idea": "Idea",
+    "etapa_mvp": "MVP",
+    "etapa_validating": "Validating",
+    "etapa_scaling": "Scaling",
+    "no_name": "Company",
+    "website": "Website",
+    "about": "About us",
+    "sectors": "Sectors",
+    "mission_vision": "Mission and vision",
+    "mission": "MISSION",
+    "vision": "VISION",
+    "culture": "Culture",
+    "modalities": "Modalities",
+    "schedule": "Schedule"
+  },
+  "public_junior_profile": {
+    "not_found": "Junior profile not found.",
+    "back": "Back",
+    "about": "About me",
+    "skills": "Technical skills",
+    "knowledge": "Additional knowledge",
+    "availability": "Availability",
+    "availability_label": "AVAILABILITY",
+    "modality_label": "MODALITY",
+    "portfolio_link": "Portfolio",
+    "portfolio": "Project portfolio",
+    "especialidad_frontend": "Frontend",
+    "especialidad_backend": "Backend",
+    "especialidad_fullstack": "Fullstack",
+    "especialidad_ia": "AI",
+    "disponibilidad_immediate": "Available now",
+    "disponibilidad_two_weeks": "Available in 2 weeks",
+    "disponibilidad_one_month": "Available in 1 month",
+    "disponibilidad_unavailable": "Not available"
+  },
+  "project_chatbot": {
+    "title": "Project assistant",
+    "subtitle": "Clear up your questions before applying",
+    "header_hint": "Answers based on this project",
+    "close": "Close",
+    "empty_title": "Questions about this project?",
+    "empty_hint": "For example: which technologies do I need?, is it web or app?, what's in scope?",
+    "thinking": "Thinking…",
+    "input_placeholder": "Type your question…",
+    "send": "Send",
+    "talk_to_company": "Talk to the company",
+    "escalate_title": "Message the company",
+    "escalate_desc": "The company will see it and reply in the project chat.",
+    "escalate_placeholder": "Write your message to the company…",
+    "escalate_send": "Send to the company",
+    "escalate_sending": "Sending…",
+    "escalate_sent_title": "Message sent",
+    "escalate_sent_desc": "The company will see it in the project chat and reply there.",
+    "go_to_chat": "Go to chat",
+    "cancel": "Cancel",
+    "error_generic": "Something went wrong. Try again.",
+    "escalate_default_draft": "Hi, I have a question about the project «{titulo}»: "
+  },
+  "mejorar_mensaje": {
+    "button": "Improve with AI",
+    "loading": "Improving…",
+    "undo": "Undo",
+    "error": "Couldn't improve it. Try again."
+  },
+  "reportar_mensaje": {
+    "button": "Report message",
+    "title": "Report message",
+    "subtitle": "The moderation team will review this message.",
+    "close": "Close",
+    "motivo_label": "Reason",
+    "motivo_falta_respeto": "Disrespect",
+    "motivo_spam": "Spam",
+    "motivo_contenido_inapropiado": "Inappropriate content",
+    "motivo_fuera_de_lugar": "Out of place",
+    "motivo_otro": "Other",
+    "detalle_label": "Details (optional)",
+    "detalle_placeholder": "Tell us what happened…",
+    "submit": "Send report",
+    "sending": "Sending…",
+    "cancel": "Cancel",
+    "sent_title": "Report sent",
+    "sent_desc": "Thanks. The moderation team will review it.",
+    "error": "Couldn't send the report. Try again."
   }
 }

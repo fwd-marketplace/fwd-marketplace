@@ -39,14 +39,14 @@ export function Celebration({ star, area, xpGain, onDone }: CelebrationProps) {
 
   return (
     <div
-      className="sheet-scrim-enter fixed inset-0 z-[60] grid place-items-center bg-[rgba(26,11,46,0.92)] p-6"
+      className="sheet-scrim-enter fixed inset-0 z-[60] grid place-items-center overflow-x-hidden bg-[rgba(26,11,46,0.92)] p-6"
       onClick={onDone}
       role="dialog"
       aria-label={`${t("celeb_eyebrow")}: ${star.label}`}
     >
       <div className="flex flex-col items-center text-center" onClick={(e) => e.stopPropagation()}>
         {/* burst */}
-        <div className="relative w-[320px] h-[240px] grid place-items-center">
+        <div className="relative w-[320px] max-w-full h-[240px] grid place-items-center">
           {/* rayos */}
           <svg
             className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2"

@@ -1,6 +1,7 @@
 import { Router } from "express";
-import { list, detail, create, changeState } from "../controllers/proyecto.controller";
+import { list, listMine, detail, create, changeState, update, cancel, pause, resume, matches, invitar, reabrir } from "../controllers/proyecto.controller";
 import { createForProject, listForProject } from "../controllers/oferta.controller";
+import { listForProject as listEntregablesForProject } from "../controllers/entregable.controller";
 import { authenticate } from "../middlewares/auth.middleware";
 import { asyncHandler } from "../utils/asyncHandler";
 
@@ -8,13 +9,33 @@ const router = Router();
 
 // Protegidas: el RLS necesita la identidad del usuario (auth.uid()).
 router.get("/", authenticate, asyncHandler(list));
+// "/mias" debe ir ANTES de "/:id" para que Express no lo tome como un id.
+router.get("/mias", authenticate, asyncHandler(listMine));
 router.post("/", authenticate, asyncHandler(create));
 router.get("/:id", authenticate, asyncHandler(detail));
+// Candidatos por afinidad (match) para el proyecto. Solo la empresa dueña.
+router.get("/:id/matches", authenticate, asyncHandler(matches));
+// La empresa invita a un estudiante a postular a su proyecto.
+router.post("/:id/invitaciones", authenticate, asyncHandler(invitar));
 // La empresa dueña gestiona el ciclo de vida de su proyecto.
 router.patch("/:id/estado", authenticate, asyncHandler(changeState));
+// La empresa cancela y elimina definitivamente (hard) su proyecto, notificando participantes.
+router.patch("/:id/cancelar", authenticate, asyncHandler(cancel));
+// La empresa deshace la adjudicación y reabre el proyecto a postulaciones.
+router.patch("/:id/reabrir", authenticate, asyncHandler(reabrir));
+// La empresa pausa temporalmente su proyecto (congela plazo, no notifica).
+router.patch("/:id/pausar", authenticate, asyncHandler(pause));
+// La empresa reactiva un proyecto pausado, volviéndolo a en_recepcion.
+router.patch("/:id/reactivar", authenticate, asyncHandler(resume));
+// La empresa edita los datos de su proyecto (solo en borrador o en_recepcion).
+router.patch("/:id", authenticate, asyncHandler(update));
 
 // Postulaciones de un proyecto: el junior postula, la empresa las consulta.
 router.post("/:id/ofertas", authenticate, asyncHandler(createForProject));
 router.get("/:id/ofertas", authenticate, asyncHandler(listForProject));
+
+// Entregables de un proyecto (empresa dueña los consulta).
+// Debe ir ANTES de rutas /:id genéricas (ya están arriba, pero se agrega aquí al final).
+router.get("/:id/entregables", authenticate, asyncHandler(listEntregablesForProject));
 
 export default router;

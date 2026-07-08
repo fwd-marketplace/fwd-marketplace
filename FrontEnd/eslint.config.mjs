@@ -8,6 +8,16 @@ const __dirname = dirname(__filename);
 const compat = new FlatCompat({ baseDirectory: __dirname });
 
 const eslintConfig = [
+  {
+    ignores: [
+      '.next/**',
+      'node_modules/**',
+      'next-env.d.ts',
+      // Material de referencia/diseño (mockups HTML + bundle generado), no es
+      // código fuente ni se importa en la app: no se lintea.
+      'components/Flujo de propuestas y versiones/**',
+    ],
+  },
   ...compat.extends('next/core-web-vitals', 'next/typescript'),
 ];
 

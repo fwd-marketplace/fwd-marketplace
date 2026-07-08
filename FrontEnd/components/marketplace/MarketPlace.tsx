@@ -1,200 +1,708 @@
-'use client';
+﻿'use client';
 
-import { useTranslations } from 'next-intl';
-import { Search, X, ChevronLeft, ChevronRight, ChevronDown, LayoutGrid, Cloud, Cpu, Smartphone } from 'lucide-react';
-import React from 'react';
-import { PageTitle } from '@/components/ui/page-title';
-import { Sparkles } from 'lucide-react';
-function getMatchColor(match: number) {
-    if (match >= 90) return 'text-success bg-success/15'; // 90%+
-    if (match >= 70) return 'text-accent bg-accent/15'; // Good match
-    if (match >= 50) return 'text-warning bg-warning/15'; // 50-69%
-    return 'text-magenta bg-magenta/15'; // <50%
+import { useMemo, useState, type ReactNode } from 'react';
+import Link from 'next/link';
+import { useLocale, useTranslations } from 'next-intl';
+import {
+    LayoutGrid,
+    Cloud,
+    Smartphone,
+    LineChart,
+    GraduationCap,
+    HeartPulse,
+    Truck,
+    Megaphone,
+    ShoppingCart,
+    Briefcase,
+    Search,
+    Bookmark,
+    ChevronDown,
+    ChevronLeft,
+    ChevronRight,
+    Clock,
+    Sparkles,
+} from 'lucide-react';
+import { cn } from '@/lib/utils';
+import { MarketplaceHeroBackdrop } from '@/components/marketplace/MarketplaceHeroBackdrop';
+import { HeroJourneyBadge } from '@/components/ui/HeroJourneyBadge';
+import { buildSparklePoints } from '@/lib/logo-constellation';
+import { ProjectPreviewModal } from '@/components/marketplace/ProjectPreviewModal';
+
+const CONTENT_SPARKLE_POINTS = buildSparklePoints(12, 12, 12);
+import { Button } from '@/components/ui/button';
+import { saveProjectAction, unsaveProjectAction } from '@/lib/actions/marketplace';
+import { formatCompensacion, isInCompensacionBucket, type CompensacionBucket } from '@/lib/marketplace/compensation';
+import type { ApiProject, ApiRoleName, CatalogsResponse } from '@/lib/api/types';
+
+const PAGE_SIZE = 9;
+
+
+// Los proyectos tienen un plazo de 5 a 15 días (CHECK en DB). Los buckets se ajustan a
+// ese rango real; con los valores viejos (0-30/31-60/61+) "medio" y "amplio" quedaban vacíos.
+const DURATION_RANGES = {
+    short: { min: 5, max: 7 },
+    medium: { min: 8, max: 11 },
+    long: { min: 12, max: 15 },
+} as const;
+
+type DurationBucket = keyof typeof DURATION_RANGES;
+type SortOrder = 'sort_recent_desc' | 'sort_duration_asc';
+
+const BRAND_COLORS = [
+    'text-magenta',
+    'text-accent',
+    'text-highlight',
+    'text-warning',
+    'text-primary',
+] as const;
+
+// Mapas de color para el borde superior y el badge por área.
+const COLOR_TO_VAR: Record<string, string> = {
+    'text-magenta':   'var(--magenta)',
+    'text-accent':    'var(--accent)',
+    'text-highlight': 'var(--highlight)',
+    'text-warning':   'var(--warning)',
+    'text-primary':   'var(--primary)',
+};
+const COLOR_TO_BG: Record<string, string> = {
+    'text-magenta':   'bg-magenta/10',
+    'text-accent':    'bg-accent/10',
+    'text-highlight': 'bg-highlight/10',
+    'text-warning':   'bg-warning/10',
+    'text-primary':   'bg-primary/10',
+};
+const COLOR_TO_GLOW: Record<string, string> = {
+    'text-magenta':   '0 0 32px 8px rgba(236,0,140,0.32)',
+    'text-accent':    '0 0 32px 8px rgba(32,190,198,0.32)',
+    'text-highlight': '0 0 32px 8px rgba(255,203,5,0.38)',
+    'text-warning':   '0 0 32px 8px rgba(247,144,30,0.32)',
+    'text-primary':   '0 0 32px 8px rgba(10,108,185,0.32)',
+};
+
+const AREA_ICONS = [LayoutGrid, LineChart, Cloud, Smartphone, GraduationCap, HeartPulse, Truck, Megaphone, ShoppingCart, Briefcase] as const;
+
+interface FilterOption {
+    value: string;
+    label: string;
 }
 
-// Mock data (since no backend is requested)
-const MOCK_PROJECTS = [
-    {
-        id: 1,
-        title: 'Rediseño Sistema de Gestión Fintech',
-        description: 'Buscamos un Product Designer con experiencia en sistemas financieros complejos para iterar nuestra plataforma B2B de créditos escalables.',
-        icon: <LayoutGrid className="w-6 h-6 text-primary" />,
-        badgeType: 'urgent',
-        tags: ['FIGMA', 'STORYBOOK', 'DESIGN SYSTEMS'],
-        footerLabel: 'budget',
-        footerValue: '$4,500 - $6,000 USD',
-        match: 92,
-    },
-    {
-        id: 2,
-        title: 'Arquitectura de Microservicios Cloud',
-        description: 'Implementación de infraestructura resiliente utilizando Kubernetes y AWS para una plataforma e-commerce de alto tráfico internacional.',
-        icon: <Cloud className="w-6 h-6 text-secondary" />,
-        badgeType: 'full_time',
-        tags: ['GO', 'AWS', 'DOCKER'],
-        footerLabel: 'duration',
-        footerValue: '6 meses est.',
-        match: 78,
-    },
-    {
-        id: 3,
-        title: 'Modelado de ML para Predicción de Churn',
-        description: 'Desarrollo de modelos predictivos basados en comportamiento de usuario para optimizar la retención en SaaS de salud mental.',
-        icon: <Cpu className="w-6 h-6 text-warning" />,
-        badgeType: 'project',
-        tags: ['PYTHON', 'PYTORCH', 'SQL'],
-        footerLabel: 'experience',
-        footerValue: 'Senior +5 años',
-        match: 56,
-    },
-    {
-        id: 4,
-        title: 'Desarrollo Mobile App React Native',
-        description: 'Ampliación de funcionalidades core y optimización de performance para aplicación nativa de logística en tiempo real.',
-        icon: <Smartphone className="w-6 h-6 text-primary" />,
-        badgeType: 'part_time',
-        tags: ['REACT NATIVE', 'TYPESCRIPT'],
-        footerLabel: 'hourly_rate',
-        footerValue: '$45 - $65 USD',
-        match: 70,
-    }
-];
+/**
+ * Replica exacta de computeMatchScore del BackEnd (match.service.ts).
+ * Función pura: skills del proyecto vs skills del estudiante + disponibilidad + reputación.
+ */
+function computeMatchScore(
+    projectSkills: string[],
+    studentSkills: string[],
+    disponible: boolean,
+    reputacion: number | null = null,
+): number {
+    const studentSet = new Set(studentSkills.map((s) => s.toLowerCase()));
+    const matched = projectSkills.filter((s) => studentSet.has(s.toLowerCase()));
+    const cobertura = projectSkills.length > 0 ? matched.length / projectSkills.length : 0.5;
+    const base = cobertura * 80 + (disponible ? 20 : 0);
+    const repBonus = reputacion != null ? (reputacion / 5) * 10 : 0;
+    return Math.min(100, Math.round(base + repBonus));
+}
 
-export default function MarketPlace() {
-    const t = useTranslations('marketplace_page');
+
+interface Props {
+    initialProjects: ApiProject[];
+    catalogs: CatalogsResponse;
+    role?: ApiRoleName | null;
+    appliedProjectIds?: string[];
+    initialSavedIds?: string[];
+    studentSkills?: string[];
+    studentDisponible?: boolean;
+    studentReputacion?: number | null;
+}
+
+function isExpired(fechaCierre: string | null): boolean {
+    if (!fechaCierre) return false;
+    return new Date(fechaCierre) < new Date();
+}
+
+const AREA_COLOR_OVERRIDE: Record<string, string> = {
+    'ventas':      'text-magenta',
+    'operaciones': 'text-accent',
+};
+
+function getAreaColor(areaId: string, areas: CatalogsResponse['areas']): string {
+    const index = areas.findIndex((a) => a.id === areaId);
+    const area = areas[index];
+    if (area) {
+        const key = area.nombre.toLowerCase().trim();
+        if (key in AREA_COLOR_OVERRIDE) return AREA_COLOR_OVERRIDE[key]!;
+    }
+    return BRAND_COLORS[index >= 0 ? index % BRAND_COLORS.length : 0] ?? 'text-magenta';
+}
+
+function getAreaIcon(areaId: string, areas: CatalogsResponse['areas'], colorClass: string): ReactNode {
+    const index = areas.findIndex((a) => a.id === areaId);
+    const Icon = AREA_ICONS[index >= 0 ? index % AREA_ICONS.length : 0] ?? Briefcase;
+    return <Icon className={`w-5 h-5 ${colorClass}`} />;
+}
+
+function isNewProject(fechaPublicacion: string | null): boolean {
+    if (!fechaPublicacion) return false;
+    const MS_PER_DAY = 86_400_000;
+    return Date.now() - new Date(fechaPublicacion).getTime() < 7 * MS_PER_DAY;
+}
+
+function FilterDropdown({
+    triggerLabel,
+    value,
+    options,
+    onChange,
+    allLabel,
+}: {
+    triggerLabel: string;
+    value: string | null;
+    options: readonly FilterOption[];
+    onChange: (value: string | null) => void;
+    allLabel?: string;
+}) {
+    const [isOpen, setIsOpen] = useState(false);
+    const selected = options.find((o) => o.value === value) ?? null;
 
     return (
-        <div className="min-h-screen bg-canvas text-ink font-body pb-20">
-            {/* Container */}
-            <div className="max-w-6xl mx-auto px-6 pt-12">
-                {/* Header */}
-                <div className="mb-10">
-                    <PageTitle
-                        eyebrow={t('eyebrow')}
-                        title={t('title')}
+        <div className="relative">
+            <button
+                type="button"
+                aria-haspopup="listbox"
+                aria-expanded={isOpen}
+                onClick={() => setIsOpen((o) => !o)}
+                className={`flex items-center gap-1 rounded-full px-3 py-1.5 text-sm font-semibold transition-colors duration-[var(--duration-fast)] ease-[var(--ease-out)] ${
+                    selected ? 'bg-primary/10 text-primary' : 'text-ink-muted hover:bg-surface-sunken hover:text-ink'
+                }`}
+            >
+                {selected ? selected.label : triggerLabel}
+                <ChevronDown className="h-3.5 w-3.5" />
+            </button>
+
+            {isOpen && (
+                <>
+                    <button
+                        type="button"
+                        aria-hidden="true"
+                        tabIndex={-1}
+                        className="fixed inset-0 z-30 cursor-default"
+                        onClick={() => setIsOpen(false)}
                     />
-                </div>
-
-                {/* Filters Section */}
-                <div className="flex flex-col md:flex-row md:items-center gap-4 mb-8">
-                    <div className="flex-1 w-full max-w-sm">
-                        <label className="block text-xs font-semibold text-ink-muted mb-1.5">{t('search_label')}</label>
-                        <div className="relative">
-                            <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-ink-subtle" />
-                            <input
-                                type="text"
-                                placeholder={t('search_placeholder')}
-                                className="w-full pl-9 pr-4 py-2.5 bg-surface-sunken border border-border rounded-lg text-sm text-ink placeholder:text-ink-subtle focus:outline-none focus:border-primary focus:ring-1 focus:ring-primary transition-all duration-[160ms]"
-                            />
-                        </div>
+                    <div
+                        role="listbox"
+                        className="absolute left-0 z-40 mt-2 min-w-44 max-h-64 overflow-y-auto overflow-hidden rounded-2xl border border-border bg-surface p-1 shadow-elevated"
+                    >
+                        {allLabel && (
+                            <button
+                                type="button"
+                                onClick={() => { onChange(null); setIsOpen(false); }}
+                                className={`block w-full rounded-xl px-3 py-2 text-left text-sm transition-colors duration-[var(--duration-fast)] ease-[var(--ease-out)] hover:bg-surface-sunken ${
+                                    value === null ? 'font-semibold text-primary' : 'text-ink'
+                                }`}
+                            >
+                                {allLabel}
+                            </button>
+                        )}
+                        {options.map((option) => (
+                            <button
+                                key={option.value}
+                                type="button"
+                                onClick={() => { onChange(option.value); setIsOpen(false); }}
+                                className={`block w-full rounded-xl px-3 py-2 text-left text-sm transition-colors duration-[var(--duration-fast)] ease-[var(--ease-out)] hover:bg-surface-sunken ${
+                                    option.value === value ? 'font-semibold text-primary' : 'text-ink'
+                                }`}
+                            >
+                                {option.label}
+                            </button>
+                        ))}
                     </div>
-
-                    <div className="w-full md:w-64">
-                        <label className="block text-xs font-semibold text-ink-muted mb-1.5">{t('specialty_label')}</label>
-                        <div className="relative">
-                            <select className="w-full pl-4 pr-10 py-2.5 bg-surface border border-border rounded-lg text-sm text-ink appearance-none focus:outline-none focus:border-primary focus:ring-1 focus:ring-primary transition-all duration-[160ms]">
-                                <option>{t('specialty_all')}</option>
-                            </select>
-                            <ChevronDown className="absolute right-3 top-1/2 -translate-y-1/2 w-4 h-4 text-ink-subtle pointer-events-none" />
-                        </div>
-                    </div>
-                </div>
-
-                {/* Active Filters */}
-                <div className="flex items-center flex-wrap gap-3 mb-10">
-                    <span className="text-[11px] font-bold text-ink-muted uppercase tracking-wider">
-                        {t('active_filters')}
-                    </span>
-                    <div className="flex items-center gap-1 bg-surface border border-border rounded-md px-2.5 py-1 text-xs text-ink-muted hover:bg-surface-sunken transition-colors cursor-pointer">
-                        {t('filter_remote')} <X className="w-3 h-3 ml-1" />
-                    </div>
-                    <div className="flex items-center gap-1 bg-surface border border-border rounded-md px-2.5 py-1 text-xs text-ink-muted hover:bg-surface-sunken transition-colors cursor-pointer">
-                        {t('filter_senior')} <X className="w-3 h-3 ml-1" />
-                    </div>
-                    <button className="text-xs text-primary font-semibold hover:underline ml-2">
-                        {t('clear_all')}
-                    </button>
-                </div>
-
-                {/* Projects Grid */}
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                    {MOCK_PROJECTS.map((project) => (
-                        <div key={project.id} className="bg-surface rounded-2xl p-6 md:p-8 border border-border flex flex-col hover:shadow-soft hover:border-border-strong transition-all duration-[220ms]">
-
-                            {/* Card Header */}
-                            <div className="flex justify-between items-start mb-5">
-                                <div className="w-14 h-14 rounded-2xl bg-canvas flex items-center justify-center border border-border-strong/10 shadow-sm shrink-0">
-                                    {project.icon}
-                                </div>
-                                <div className={`shrink-0 flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-sm font-bold tracking-wide ${getMatchColor(project.match)}`}>
-                                    <Sparkles className="w-4 h-4" />
-                                    {project.match}% {t('match_suffix')}
-                                </div>
-                            </div>
-
-                            {/* Card Body */}
-                            <div className="flex-1">
-                                <h3 className="font-heading text-xl font-bold text-ink-strong mb-3 leading-tight">{project.title}</h3>
-                                <p className="text-ink-muted text-sm leading-relaxed mb-6">
-                                    {project.description}
-                                </p>
-                                <div className="flex flex-wrap gap-2 mb-6">
-                                    {project.tags.map(tag => (
-                                        <span key={tag} className="bg-surface-sunken text-ink-muted text-xs font-bold px-2.5 py-1 rounded uppercase tracking-wider">
-                                            {tag}
-                                        </span>
-                                    ))}
-                                </div>
-                            </div>
-
-                            {/* Divider */}
-                            <div className="h-px bg-border w-full mb-5" />
-
-                            {/* Card Footer */}
-                            <div className="flex items-center justify-between">
-                                <div>
-                                    <p className="text-[10px] font-bold text-ink-subtle uppercase tracking-wider mb-1">
-                                        {t(project.footerLabel)}
-                                    </p>
-                                    <p className="text-sm font-semibold text-ink-strong">
-                                        {project.footerValue}
-                                    </p>
-                                </div>
-                                <button className="rounded-full border border-primary text-primary px-5 py-1.5 text-sm font-semibold hover:bg-primary hover:text-primary-foreground transition-colors duration-[160ms]">
-                                    {t('view_project')}
-                                </button>
-                            </div>
-
-                        </div>
-                    ))}
-                </div>
-
-                {/* Pagination */}
-                <div className="flex justify-center items-center gap-1.5 mt-16 font-body">
-                    <button className="w-9 h-9 flex items-center justify-center rounded-lg border border-border text-ink-muted bg-surface hover:bg-surface-sunken transition-colors">
-                        <ChevronLeft className="w-4 h-4" />
-                    </button>
-                    <button className="w-9 h-9 flex items-center justify-center rounded-lg bg-primary text-primary-foreground font-semibold text-sm">
-                        1
-                    </button>
-                    <button className="w-9 h-9 flex items-center justify-center rounded-lg border border-border text-ink-muted bg-surface hover:bg-surface-sunken transition-colors text-sm font-medium">
-                        2
-                    </button>
-                    <button className="w-9 h-9 flex items-center justify-center rounded-lg border border-border text-ink-muted bg-surface hover:bg-surface-sunken transition-colors text-sm font-medium">
-                        3
-                    </button>
-                    <span className="w-9 h-9 flex items-center justify-center text-ink-subtle text-sm">
-                        ...
-                    </span>
-                    <button className="w-9 h-9 flex items-center justify-center rounded-lg border border-border text-ink-muted bg-surface hover:bg-surface-sunken transition-colors text-sm font-medium">
-                        12
-                    </button>
-                    <button className="w-9 h-9 flex items-center justify-center rounded-lg border border-border text-ink-muted bg-surface hover:bg-surface-sunken transition-colors">
-                        <ChevronRight className="w-4 h-4" />
-                    </button>
-                </div>
-
-            </div>
+                </>
+            )}
         </div>
     );
 }
+
+export default function MarketPlace({ initialProjects, catalogs, role = 'student', appliedProjectIds = [], initialSavedIds = [], studentSkills = [], studentDisponible = true, studentReputacion = null }: Props) {
+    const t = useTranslations('marketplace_page');
+    const locale = useLocale();
+
+    const projects = initialProjects;
+    const activeCatalogs = catalogs;
+
+    const [searchQuery, setSearchQuery] = useState('');
+    const [activeArea, setActiveArea] = useState<string | null>(null);
+    const [activeDuration, setActiveDuration] = useState<string | null>(null);
+    const [activePrice, setActivePrice] = useState<string | null>(null);
+    const [activeSkill, setActiveSkill] = useState<string | null>(null);
+    const [showAiOnly, setShowAiOnly] = useState(false);
+    const [sortOrder, setSortOrder] = useState<SortOrder>('sort_recent_desc');
+    const [currentPage, setCurrentPage] = useState(1);
+    const [savedProjectIds, setSavedProjectIds] = useState<ReadonlySet<string>>(new Set(initialSavedIds));
+    const [previewProject, setPreviewProject] = useState<ApiProject | null>(null);
+
+    const areaOptions: FilterOption[] = activeCatalogs.areas.map((a) => ({ value: a.id, label: a.nombre }));
+    const skillOptions: FilterOption[] = activeCatalogs.skills
+        .slice()
+        .sort((a, b) => a.nombre.localeCompare(b.nombre))
+        .map((s) => ({ value: s.id, label: s.nombre }));
+
+    const durationOptions: FilterOption[] = [
+        { value: 'short', label: t('duration_short') },
+        { value: 'medium', label: t('duration_medium') },
+        { value: 'long', label: t('duration_long') },
+    ];
+
+    const priceOptions: FilterOption[] = [
+        { value: 'low', label: t('budget_low') },
+        { value: 'mid', label: t('budget_mid') },
+        { value: 'high', label: t('budget_high') },
+    ];
+
+    const sortOptions: FilterOption[] = [
+        { value: 'sort_recent_desc', label: t('sort_recent_desc') },
+        { value: 'sort_duration_asc', label: t('sort_duration_asc') },
+    ];
+
+    const filteredProjects = useMemo(() => {
+        const matching = projects.filter((project) => {
+            if (searchQuery) {
+                const q = searchQuery.trim().toLowerCase();
+                const haystack = [
+                    project.titulo,
+                    project.descripcion,
+                    project.area?.nombre ?? '',
+                    project.empresa?.nombre_comercial ?? '',
+                    ...project.skills.flatMap((s) => (s.skill ? [s.skill.nombre] : [])),
+                ]
+                    .join(' ')
+                    .toLowerCase();
+                if (!haystack.includes(q)) return false;
+            }
+            if (activeArea && project.area?.id !== activeArea) return false;
+            if (activeDuration) {
+                const range = DURATION_RANGES[activeDuration as DurationBucket];
+                if (!range || project.plazo_dias < range.min || project.plazo_dias > range.max) return false;
+            }
+            if (activeSkill && !project.skills.some((s) => s.skill?.id === activeSkill)) return false;
+            if (activePrice && !isInCompensacionBucket(project.compensacion, activePrice as CompensacionBucket)) return false;
+            if (showAiOnly && !project.usa_ia) return false;
+            return true;
+        });
+
+        if (sortOrder === 'sort_duration_asc') {
+            return [...matching].sort((a, b) => a.plazo_dias - b.plazo_dias);
+        }
+        return [...matching].sort((a, b) =>
+            (b.fecha_publicacion ?? '').localeCompare(a.fecha_publicacion ?? ''),
+        );
+    }, [projects, searchQuery, activeArea, activeDuration, activePrice, activeSkill, showAiOnly, sortOrder]);
+
+    const totalResults = filteredProjects.length;
+    const totalPages = Math.max(1, Math.ceil(totalResults / PAGE_SIZE));
+    const safePage = Math.min(currentPage, totalPages);
+    const pageProjects = filteredProjects.slice((safePage - 1) * PAGE_SIZE, safePage * PAGE_SIZE);
+    const hasActiveFilters =
+        searchQuery !== '' ||
+        activeArea !== null ||
+        activeDuration !== null ||
+        activePrice !== null ||
+        activeSkill !== null ||
+        showAiOnly;
+
+    function resetToFirstPage() {
+        setCurrentPage(1);
+    }
+
+    function clearAllFilters() {
+        setSearchQuery('');
+        setActiveArea(null);
+        setActiveDuration(null);
+        setActivePrice(null);
+        setActiveSkill(null);
+        setShowAiOnly(false);
+        resetToFirstPage();
+    }
+
+    async function toggleSaved(projectId: string) {
+        const wasSaved = savedProjectIds.has(projectId);
+        // Optimistic update — apply immediately before API call
+        setSavedProjectIds((current) => {
+            const next = new Set(current);
+            if (wasSaved) {
+                next.delete(projectId);
+            } else {
+                next.add(projectId);
+            }
+            return next;
+        });
+        try {
+            if (wasSaved) {
+                await unsaveProjectAction(projectId);
+            } else {
+                await saveProjectAction(projectId);
+            }
+        } catch {
+            // Rollback on failure
+            setSavedProjectIds((current) => {
+                const next = new Set(current);
+                if (wasSaved) {
+                    next.add(projectId);
+                } else {
+                    next.delete(projectId);
+                }
+                return next;
+            });
+        }
+    }
+
+    return (
+        <>
+        <div className="bg-marketplace-sky relative min-h-screen text-ink font-body pb-20">
+
+            {/* Hero — backdrop is contained here so it never stretches with the cards */}
+            <section className="relative overflow-hidden z-10 px-6 pt-10 pb-24 md:pt-14 md:pb-28">
+                <MarketplaceHeroBackdrop />
+                <div className="relative z-10 max-w-7xl mx-auto px-4 md:px-6 text-left">
+                    <HeroJourneyBadge
+                        stage="desafio"
+                        label={t('hero_journey_label')}
+                        cta={t('hero_journey_cta')}
+                        achievedCta={t('hero_journey_cta_achieved')}
+                        achieved={appliedProjectIds.length > 0}
+                    />
+                    <h1 className="mt-4 font-heading text-4xl md:text-5xl font-bold tracking-tight text-white">
+                        {t('hero_title')}<span className="text-primary" aria-hidden="true">.</span>
+                    </h1>
+                    <p className="mt-3 text-sm md:text-base text-white/80 leading-relaxed">
+                        {t('hero_subtitle')}
+                    </p>
+                </div>
+            </section>
+
+            {/* Decorative stars — posiciones fijas para layout máximo de 9 cards */}
+            <div className="pointer-events-none absolute inset-x-0 bottom-0 z-0 overflow-hidden" style={{ top: '420px' }} aria-hidden="true">
+                {([
+                    { t: '8%',  l: '1%',   s: 10, g: true,  sp: true,  o: 0.6,  d: '3.2s', dl: '0.3s' },
+                    { t: '22%', l: '99%',  s: 10, g: true,  sp: true,  o: 0.65, d: '3.6s', dl: '0.8s' },
+                    { t: '50%', l: '1%',   s: 10, g: false, sp: true,  o: 0.55, d: '3.1s', dl: '1.4s' },
+                    { t: '72%', l: '99%',  s: 10, g: true,  sp: true,  o: 0.7,  d: '2.9s', dl: '0.5s' },
+                    { t: '35%', l: '22%',  s: 4,  g: false, sp: false, o: 0.25, d: '3.0s', dl: '1.0s' },
+                    { t: '45%', l: '62%',  s: 4,  g: false, sp: false, o: 0.2,  d: '3.4s', dl: '0.6s' },
+                    { t: '60%', l: '38%',  s: 10, g: true,  sp: true,  o: 0.3,  d: '3.2s', dl: '1.2s' },
+                    { t: '75%', l: '75%',  s: 4,  g: false, sp: false, o: 0.2,  d: '2.8s', dl: '0.9s' },
+                    { t: '85%', l: '18%',  s: 4,  g: true,  sp: false, o: 0.25, d: '3.5s', dl: '0.4s' },
+                ] as const).map((s, i) => {
+                    const fill = s.g ? 'var(--highlight)' : 'var(--surface)';
+                    if (s.sp) {
+                        return (
+                            <span key={i} className="absolute" style={{ top: s.t, left: s.l, opacity: s.o }}>
+                                <svg width={s.s} height={s.s} viewBox="0 0 24 24" fill="none"
+                                    style={{ display: 'block', filter: `drop-shadow(0 0 3px ${fill})`, animation: `constellation-spark-twinkle ${s.d} ease-in-out ${s.dl} infinite` }}>
+                                    <polygon points={CONTENT_SPARKLE_POINTS} fill={fill} />
+                                </svg>
+                            </span>
+                        );
+                    }
+                    return (
+                        <span key={i} className="absolute rounded-full" style={{
+                            top: s.t, left: s.l, width: s.s, height: s.s, background: fill,
+                            ['--star-opacity' as string]: s.o,
+                            animation: `constellation-twinkle ${s.d} ease-in-out ${s.dl} infinite`,
+                        }} />
+                    );
+                })}
+            </div>
+
+        {/* White panel: filter + cards + pagination */}
+        <div className="relative z-20 mx-4 md:mx-16 lg:mx-28 -mt-7">
+            <div className="bg-white dark:bg-surface rounded-[2rem] shadow-[0_-4px_32px_rgba(0,0,0,0.08)] dark:shadow-[0_-4px_32px_rgba(0,0,0,0.4)] overflow-hidden">
+                <div className="flex flex-col gap-4 px-5 py-5 border-b border-border dark:border-white/10 sm:px-8 md:flex-row md:items-center md:gap-4 md:py-4 md:px-10">
+                    <div className="flex flex-1 items-center gap-3 bg-[#F8F9FC] dark:bg-white/5 rounded-full px-5 h-14 shadow-[0_1px_4px_rgba(0,0,0,0.06)]">
+                        <Search className="w-4 h-4 shrink-0 text-ink-muted" aria-hidden="true" />
+                        <label htmlFor="marketplace-search" className="sr-only">{t('search_label')}</label>
+                        <input
+                            id="marketplace-search"
+                            type="text"
+                            value={searchQuery}
+                            onChange={(e) => { setSearchQuery(e.target.value); resetToFirstPage(); }}
+                            placeholder={t('search_placeholder')}
+                            className="w-full bg-transparent text-sm text-ink placeholder:text-sm placeholder:text-ink-muted focus:outline-none"
+                        />
+                    </div>
+                    <div className="flex flex-wrap items-center gap-1.5">
+                        <FilterDropdown
+                            triggerLabel={t('filter_area')}
+                            value={activeArea}
+                            options={areaOptions}
+                            allLabel={t('filter_all')}
+                            onChange={(v) => { setActiveArea(v); resetToFirstPage(); }}
+                        />
+                        <FilterDropdown
+                            triggerLabel={t('filter_duration')}
+                            value={activeDuration}
+                            options={durationOptions}
+                            allLabel={t('filter_all')}
+                            onChange={(v) => { setActiveDuration(v); resetToFirstPage(); }}
+                        />
+                        <FilterDropdown
+                            triggerLabel={t('filter_budget')}
+                            value={activePrice}
+                            options={priceOptions}
+                            allLabel={t('filter_all')}
+                            onChange={(v) => { setActivePrice(v); resetToFirstPage(); }}
+                        />
+                        <FilterDropdown
+                            triggerLabel={t('filter_skills')}
+                            value={activeSkill}
+                            options={skillOptions}
+                            allLabel={t('filter_all')}
+                            onChange={(v) => { setActiveSkill(v); resetToFirstPage(); }}
+                        />
+                        <button
+                            type="button"
+                            aria-pressed={showAiOnly}
+                            onClick={() => { setShowAiOnly((c) => !c); resetToFirstPage(); }}
+                            className={`rounded-full px-3 py-1.5 text-sm font-semibold transition-colors duration-[var(--duration-fast)] ease-[var(--ease-out)] ${
+                                showAiOnly ? 'bg-primary/10 text-primary' : 'text-ink-muted hover:bg-surface-sunken hover:text-ink'
+                            }`}
+                        >
+                            {t('filter_ai_projects')}
+                        </button>
+                        <FilterDropdown
+                            triggerLabel={t('filter_sort')}
+                            value={sortOrder}
+                            options={sortOptions}
+                            onChange={(v) => { if (v) setSortOrder(v as SortOrder); }}
+                        />
+                    </div>
+                </div>
+
+                {/* Results */}
+                <div className="px-5 pt-8 pb-12 sm:px-8 md:px-10">
+                <div className="flex items-center justify-between gap-4 mb-5">
+                    <p className="text-sm font-semibold text-ink-muted">
+                        {t('results_count', { count: totalResults })}
+                    </p>
+                    {hasActiveFilters && (
+                        <button
+                            type="button"
+                            onClick={clearAllFilters}
+                            className="text-sm font-semibold text-primary hover:underline"
+                        >
+                            {t('clear_filters')}
+                        </button>
+                    )}
+                </div>
+
+                {totalResults === 0 ? (
+                    <div className="rounded-2xl border border-border bg-surface p-12 text-center">
+                        <h2 className="font-heading text-xl font-bold text-ink-strong mb-2">{t('no_results_title')}</h2>
+                        <p className="text-ink-muted text-sm mb-6">{t('no_results_body')}</p>
+                        <Button variant="outline" className="rounded-full px-6" onClick={clearAllFilters}>
+                            {t('clear_filters')}
+                        </Button>
+                    </div>
+                ) : (
+                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                        {pageProjects.map((project) => {
+                            const isSaved = savedProjectIds.has(project.id);
+                            const hasApplied = appliedProjectIds.includes(project.id);
+                            const expired = isExpired(project.fecha_cierre);
+                            const isNew = isNewProject(project.fecha_publicacion);
+                            const colorClass = project.area
+                                ? getAreaColor(project.area.id, activeCatalogs.areas)
+                                : 'text-primary';
+                            const skills = project.skills.flatMap((s) => (s.skill ? [s.skill] : []));
+                            const borderColor = COLOR_TO_VAR[colorClass] ?? 'var(--primary)';
+                            const durationWeeks = Math.ceil(project.plazo_dias / 7);
+
+                            const icon = project.area
+                                ? getAreaIcon(project.area.id, activeCatalogs.areas, colorClass)
+                                : <Briefcase className={`w-5 h-5 ${colorClass}`} />;
+
+                            const projectSkillNames = project.skills.flatMap((s) => s.skill ? [s.skill.nombre] : []);
+                            const matchScore = studentSkills.length > 0
+                                ? computeMatchScore(projectSkillNames, studentSkills, studentDisponible, studentReputacion)
+                                : null;
+
+                            return (
+                                <div
+                                    key={project.id}
+                                    role="article"
+                                    tabIndex={expired ? undefined : 0}
+                                    onClick={() => !expired && setPreviewProject(project)}
+                                    onKeyDown={(e) => {
+                                        if ((e.key === 'Enter' || e.key === ' ') && !expired) {
+                                            e.preventDefault();
+                                            setPreviewProject(project);
+                                        }
+                                    }}
+                                    className={cn(
+                                        'group relative bg-surface rounded-2xl border border-border border-t-[5px] flex flex-col',
+                                        'hover:shadow-[var(--card-glow)] hover:border-border-strong transition-all duration-[var(--duration-base)] ease-[var(--ease-out)]',
+                                        expired ? 'cursor-default opacity-75' : 'cursor-pointer',
+                                    )}
+                                    style={{
+                                        borderTopColor: borderColor,
+                                        ['--card-glow' as string]: COLOR_TO_GLOW[colorClass] ?? '0 0 32px 8px rgba(10,108,185,0.30)',
+                                    }}
+                                >
+                                    {/* Top row: icono + categoría | círculo match */}
+                                    <div className="flex items-center justify-between px-5 pt-5 mb-3">
+                                        <div className="flex items-center gap-2.5 min-w-0">
+                                            <div className={cn('w-9 h-9 rounded-xl flex items-center justify-center border border-border shrink-0', COLOR_TO_BG[colorClass] ?? 'bg-primary/10')}>
+                                                {icon}
+                                            </div>
+                                            <span className={cn('text-[11px] font-bold uppercase tracking-wider truncate', colorClass)}>
+                                                {project.area?.nombre ?? '—'}
+                                            </span>
+                                        </div>
+                                        {matchScore !== null && (
+                                            <div className="flex flex-col items-center shrink-0 ml-3">
+                                                <div className="relative flex h-12 w-12 items-center justify-center rounded-full border-4" style={{ borderColor: borderColor }}>
+                                                    <span className={cn('font-bold text-sm', colorClass)}>
+                                                        {matchScore}%
+                                                    </span>
+                                                </div>
+                                                <span className={cn('text-[10px] mt-1 font-medium', colorClass)}>{t('match_label')}</span>
+                                            </div>
+                                        )}
+                                    </div>
+
+                                    {/* Title + company + description */}
+                                    <div className="px-5 flex-1">
+                                        <h3 className="font-heading text-[17px] font-bold text-ink-strong mb-0.5 leading-tight">
+                                            {project.titulo}
+                                        </h3>
+                                        {project.empresa && (
+                                            <p className="text-xs text-ink-muted mb-2">
+                                                {project.empresa.nombre_comercial}
+                                            </p>
+                                        )}
+                                        <p className="text-sm text-ink-muted leading-relaxed line-clamp-3 mb-4">
+                                            {project.descripcion}
+                                        </p>
+
+                                        {/* Skills como texto separado por puntos */}
+                                        {skills.length > 0 && (
+                                            <p className={cn('text-sm font-semibold mb-5', colorClass)}>
+                                                {skills.slice(0, 4).map((s) => s.nombre).join(' · ')}
+                                                {skills.length > 4 ? ' · …' : ''}
+                                            </p>
+                                        )}
+                                    </div>
+
+                                    {/* Divider */}
+                                    <div className="mx-5 border-t border-border" />
+
+                                    {/* Footer: metadata */}
+                                    <div className="px-5 py-3.5 flex flex-wrap items-center gap-x-4 gap-y-1.5 text-xs text-ink-muted">
+                                        <span className="flex items-center gap-1.5">
+                                            <Clock className="w-3.5 h-3.5 shrink-0" aria-hidden="true" />
+                                            {durationWeeks} {t('weeks_unit')}
+                                        </span>
+                                        {project.compensacion != null && (
+                                            <span className="flex items-center gap-1.5">
+                                                <Briefcase className="w-3.5 h-3.5 shrink-0" aria-hidden="true" />
+                                                {formatCompensacion(project.compensacion, project.moneda)}
+                                            </span>
+                                        )}
+                                        {project.usa_ia && (
+                                            <span className={cn('flex items-center gap-1', colorClass)}>
+                                                <Sparkles className="w-3.5 h-3.5 shrink-0" aria-hidden="true" />
+                                                {t('badge_ia')}
+                                            </span>
+                                        )}
+                                    </div>
+
+                                    {/* Acciones */}
+                                    <div className="px-5 pb-5 flex items-center gap-2">
+                                        <button
+                                            type="button"
+                                            disabled={expired}
+                                            onClick={(e) => { e.stopPropagation(); if (!expired) setPreviewProject(project); }}
+                                            className={cn(
+                                                'flex-1 rounded-full px-5 py-2.5 text-sm font-semibold text-center transition-colors duration-[var(--duration-fast)] ease-[var(--ease-out)]',
+                                                expired
+                                                    ? 'bg-surface-sunken text-ink-muted cursor-not-allowed'
+                                                    : 'bg-secondary text-white hover:bg-secondary/80',
+                                            )}
+                                        >
+                                            {expired ? t('badge_expired') : hasApplied ? t('view_my_offer') : t('view_project')}
+                                        </button>
+                                        <button
+                                            type="button"
+                                            aria-label={isSaved ? t('saved_project') : t('save_project')}
+                                            aria-pressed={isSaved}
+                                            onClick={(e) => { e.stopPropagation(); void toggleSaved(project.id); }}
+                                            className={cn(
+                                                'size-10 shrink-0 flex items-center justify-center rounded-full border transition-colors duration-[var(--duration-fast)] ease-[var(--ease-out)]',
+                                                isSaved
+                                                    ? 'bg-highlight border-highlight text-white'
+                                                    : 'border-border text-ink-muted hover:bg-highlight hover:border-highlight hover:text-white',
+                                            )}
+                                        >
+                                            <Bookmark className={cn('w-4 h-4', isSaved ? 'fill-current' : 'fill-none')} aria-hidden="true" />
+                                        </button>
+                                    </div>
+                                </div>
+                            );
+                        })}
+                    </div>
+                )}
+
+                {/* Pagination */}
+                {totalPages > 1 && (
+                    <nav className="flex justify-center items-center gap-1.5 mt-12" aria-label={t('eyebrow')}>
+                        <button
+                            type="button"
+                            aria-label={t('pagination_prev')}
+                            disabled={safePage === 1}
+                            onClick={() => setCurrentPage((p) => Math.max(1, p - 1))}
+                            className="w-9 h-9 flex items-center justify-center rounded-lg border border-border text-ink-muted bg-transparent hover:bg-surface-sunken transition-colors duration-[var(--duration-fast)] ease-[var(--ease-out)] disabled:opacity-30 disabled:pointer-events-none"
+                        >
+                            <ChevronLeft className="w-4 h-4" />
+                        </button>
+                        {Array.from({ length: totalPages }, (_, i) => i + 1).map((page) => (
+                            <button
+                                key={page}
+                                type="button"
+                                aria-label={t('pagination_page', { page })}
+                                aria-current={page === safePage ? 'page' : undefined}
+                                onClick={() => setCurrentPage(page)}
+                                className={`w-9 h-9 flex items-center justify-center rounded-lg text-sm font-semibold transition-colors duration-[var(--duration-fast)] ease-[var(--ease-out)] ${
+                                    page === safePage
+                                        ? 'bg-primary text-white border border-primary'
+                                        : 'border border-border text-ink-muted bg-transparent hover:bg-surface-sunken'
+                                }`}
+                            >
+                                {page}
+                            </button>
+                        ))}
+                        <button
+                            type="button"
+                            aria-label={t('pagination_next')}
+                            disabled={safePage === totalPages}
+                            onClick={() => setCurrentPage((p) => Math.min(totalPages, p + 1))}
+                            className="w-9 h-9 flex items-center justify-center rounded-lg border border-border text-ink-muted bg-transparent hover:bg-surface-sunken transition-colors duration-[var(--duration-fast)] ease-[var(--ease-out)] disabled:opacity-30 disabled:pointer-events-none"
+                        >
+                            <ChevronRight className="w-4 h-4" />
+                        </button>
+                    </nav>
+                )}
+                </div>
+            </div>
+        </div>
+        </div>
+
+        {previewProject && (
+            <ProjectPreviewModal
+                project={previewProject}
+                onClose={() => setPreviewProject(null)}
+                studentSkills={studentSkills}
+            />
+        )}
+        </>
+    );
+}
+

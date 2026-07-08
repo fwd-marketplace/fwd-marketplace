@@ -2,6 +2,7 @@ import Link from "next/link";
 import { getTranslations } from "next-intl/server";
 import { Clock } from "lucide-react";
 import { FwdGeoBackdrop } from "@/components/ui/fwd-geo-backdrop";
+import { CosmicBackdrop } from "@/components/ui/cosmic-backdrop";
 
 interface EmpresaDoneProps {
   locale: string;
@@ -13,13 +14,9 @@ export async function EmpresaDone({ locale }: EmpresaDoneProps) {
   return (
     <div className="relative flex min-h-[100dvh] flex-col bg-secondary">
       <FwdGeoBackdrop />
+      <CosmicBackdrop />
 
-      <header className="relative flex items-center px-4 py-5 sm:px-8 sm:py-6">
-        <span className="font-heading text-base font-extrabold text-secondary-foreground">
-          {t("brand")}
-          <span className="text-highlight">{t("brand_suffix")}</span>
-        </span>
-      </header>
+
 
       <div className="relative flex flex-1 items-center justify-center px-4">
         <div className="w-full max-w-md rounded-[2rem] bg-surface px-6 py-8 text-center shadow-elevated sm:px-10 sm:py-12">
@@ -40,7 +37,7 @@ export async function EmpresaDone({ locale }: EmpresaDoneProps) {
           </p>
 
           <Link
-            href={`/${locale}`}
+            href={`/${locale}/home`}
             className="inline-flex items-center justify-center rounded-full border border-border bg-surface px-8 py-3 font-body text-sm font-semibold text-ink transition-colors duration-[--duration-fast] hover:bg-surface-sunken"
           >
             {t("empresa.done.cta")}

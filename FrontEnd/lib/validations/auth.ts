@@ -43,12 +43,33 @@ export const EmpresaProfileSchema = z.object({
 
 export const EmprendedorProfileSchema = z.object({
   projectName:   z.string().min(2).max(100),
+  cedula:        z.string().min(5).max(20),
   stage:         z.enum(["idea", "mvp", "validating", "scaling"]),
   neededSupport: z.array(z.enum(["web", "mobile", "backend", "ai", "ux", "data", "automation", "other"])).min(1),
   budget:        z.enum(["under_500", "range_500_1000", "range_1000_2500", "flexible"]),
   description:   z.string().max(400).optional(),
 });
 
+export const MIN_PASSWORD_LENGTH = 8;
+
+/** Paso 1 de recuperación: solo el correo (se envía el enlace). */
+export const ResetPasswordSchema = z.object({
+  email: z.string().min(1).email(),
+});
+
+/** Paso 2 de recuperación: la contraseña nueva (el token viene del enlace). */
+export const NewPasswordSchema = z
+  .object({
+    password: z.string().min(MIN_PASSWORD_LENGTH),
+    confirmPassword: z.string().min(1),
+  })
+  .refine((data) => data.password === data.confirmPassword, {
+    path: ["confirmPassword"],
+    message: "Las contraseñas no coinciden",
+  });
+
 export type JuniorProfile      = z.infer<typeof JuniorProfileSchema>;
 export type EmpresaProfile     = z.infer<typeof EmpresaProfileSchema>;
 export type EmprendedorProfile = z.infer<typeof EmprendedorProfileSchema>;
+export type ResetPasswordInput = z.infer<typeof ResetPasswordSchema>;
+export type NewPasswordInput   = z.infer<typeof NewPasswordSchema>;

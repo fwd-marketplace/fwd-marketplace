@@ -1,11 +1,16 @@
 "use client";
 
-import { useState, useTransition } from "react";
+import React, { useState, useTransition } from "react";
 import { useTranslations } from "next-intl";
+import { useApiErrorText } from "@/lib/i18n/api-error";
 import { useParams, useRouter } from "next/navigation";
-import { Eye, EyeOff } from "lucide-react";
+import Link from "next/link";
+import { ArrowLeft, Eye, EyeOff } from "lucide-react";
 import { FwdGeoBackdrop } from "@/components/ui/fwd-geo-backdrop";
-import { registerUser } from "@/lib/actions/auth";
+import { PublicNavControls } from "@/components/layout/public-nav-controls";
+import { CosmicBackdrop } from "@/components/ui/cosmic-backdrop";
+import { AuthFooterLinks } from "@/components/auth/AuthFooterLinks";
+import { registerUser, startOAuth } from "@/lib/actions/auth";
 
 function GoogleIcon() {
   return (
@@ -38,28 +43,13 @@ function GitHubIcon() {
   );
 }
 
-function AmchamBadge() {
-  return (
-    /* SVG brand asset — colors are fixed per AMCHAM branding, not design tokens */
-    <svg width="52" height="52" viewBox="0 0 52 52" aria-hidden="true" fill="none">
-      <circle cx="26" cy="26" r="25" stroke="#FFCB05" strokeWidth="1.5" opacity="0.6" />
-      <circle cx="26" cy="26" r="19" stroke="#FFCB05" strokeWidth="1" opacity="0.4" />
-      <path d="M14 26 Q11 22 13 18 Q15 22 14 26Z" fill="#FFCB05" opacity="0.8" />
-      <path d="M15 29 Q11 26 12 22 Q15 25 15 29Z" fill="#FFCB05" opacity="0.8" />
-      <path d="M17 32 Q13 30 13 26 Q16 28 17 32Z" fill="#FFCB05" opacity="0.8" />
-      <path d="M38 26 Q41 22 39 18 Q37 22 38 26Z" fill="#FFCB05" opacity="0.8" />
-      <path d="M37 29 Q41 26 40 22 Q37 25 37 29Z" fill="#FFCB05" opacity="0.8" />
-      <path d="M35 32 Q39 30 39 26 Q36 28 35 32Z" fill="#FFCB05" opacity="0.8" />
-      <path
-        d="M26 16 L27.2 20.4 L31.8 20.4 L28.3 23 L29.5 27.4 L26 24.8 L22.5 27.4 L23.7 23 L20.2 20.4 L24.8 20.4Z"
-        fill="#FFCB05"
-      />
-    </svg>
-  );
+interface RegisterFormProps {
+  badge?: React.ReactNode;
 }
 
-export function RegisterForm() {
+export function RegisterForm({ badge }: RegisterFormProps) {
   const t = useTranslations("register.auth");
+  const errorText = useApiErrorText();
   const params = useParams();
   const router = useRouter();
   const locale = params.locale as string;
@@ -75,6 +65,18 @@ export function RegisterForm() {
   function togglePasswordVisibility() { setIsPasswordVisible((p) => !p); }
   function toggleConfirmPasswordVisibility() { setIsConfirmPasswordVisible((p) => !p); }
 
+  function handleOAuth(provider: "google" | "github") {
+    setError(null);
+    startTransition(async () => {
+      const result = await startOAuth(provider, locale);
+      if (!result.ok) {
+        setError(errorText(result.error));
+        return;
+      }
+      window.location.href = result.data.url;
+    });
+  }
+
   function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
     setError(null);
@@ -87,17 +89,30 @@ export function RegisterForm() {
       if (result.ok) {
         router.push(`/${locale}/register/role`);
       } else {
-        setError(result.error);
+        setError(errorText(result.error));
       }
     });
   }
 
   return (
-    <div className="bg-secondary">
+    <div className="bg-secondary relative overflow-hidden min-h-screen w-full">
       <FwdGeoBackdrop />
+      <CosmicBackdrop />
 
-      <div className="relative flex min-h-[100dvh] flex-col items-center justify-center px-4 py-10">
-        <div className="w-full max-w-md rounded-[2rem] bg-surface px-6 py-8 shadow-elevated sm:px-10 sm:py-12">
+      <div className="absolute left-6 top-6 z-10 flex items-center gap-2">
+        <Link
+          href={`/${locale}/home`}
+          className="inline-flex items-center gap-2 rounded-full bg-white/10 px-4 py-2 font-body text-sm font-medium text-white/75 backdrop-blur-sm transition-colors duration-[var(--duration-fast)] ease-[var(--ease-out)] hover:bg-white/15 hover:text-white"
+        >
+          <ArrowLeft size={14} aria-hidden="true" />
+          {t("back_home")}
+        </Link>
+        <PublicNavControls tone="onDark" />
+      </div>
+
+      <div className="relative flex min-h-[100dvh] flex-col items-center justify-center px-6 py-16">
+        {badge && <div className="absolute top-6 right-6">{badge}</div>}
+        <div className="w-full max-w-xl rounded-[2rem] bg-surface px-8 py-10 shadow-elevated sm:px-14 sm:py-12">
           <p className="mb-3 text-center font-heading text-[0.65rem] font-bold uppercase tracking-[0.2em] text-ink-muted">
             {t("eyebrow")}
           </p>
@@ -114,7 +129,9 @@ export function RegisterForm() {
           <div className="space-y-3">
             <button
               type="button"
-              className="flex w-full items-center justify-center gap-3 rounded-full border border-border-strong bg-surface px-6 py-3 font-body text-sm font-medium text-ink-strong transition-colors duration-[--duration-fast] hover:bg-surface-sunken"
+              onClick={() => handleOAuth("google")}
+              disabled={isPending}
+              className="flex w-full items-center justify-center gap-3 rounded-full border border-border-strong bg-surface px-6 py-3 font-body text-sm font-medium text-ink-strong transition-colors duration-[--duration-fast] hover:bg-surface-sunken disabled:opacity-60"
             >
               <GoogleIcon />
               {t("continue_google")}
@@ -122,7 +139,9 @@ export function RegisterForm() {
 
             <button
               type="button"
-              className="flex w-full items-center justify-center gap-3 rounded-full bg-ink-strong px-6 py-3 font-body text-sm font-medium text-white transition-opacity duration-[--duration-fast] hover:opacity-90"
+              onClick={() => handleOAuth("github")}
+              disabled={isPending}
+              className="flex w-full items-center justify-center gap-3 rounded-full bg-ink-strong px-6 py-3 font-body text-sm font-medium text-surface transition-opacity duration-[--duration-fast] hover:opacity-90 disabled:opacity-60"
             >
               <GitHubIcon />
               {t("continue_github")}
@@ -205,6 +224,7 @@ export function RegisterForm() {
             >
               {isPending ? t("submitting") : t("submit")}
             </button>
+
           </form>
 
           <p className="mt-6 text-center font-body text-xs text-ink-subtle">
@@ -220,12 +240,16 @@ export function RegisterForm() {
           </p>
         </div>
 
-        <div className="mt-10 flex flex-col items-center gap-2">
-          <AmchamBadge />
-          <p className="font-body text-xs tracking-wide text-secondary-foreground/50">
-            {t("amcham_badge")}
-          </p>
-        </div>
+        <p className="mt-5 text-center font-body text-sm text-white/60">
+          {t("already_account")}{" "}
+          <Link
+            href={`/${locale}/login`}
+            className="font-semibold text-white/90 underline underline-offset-2 hover:text-white"
+          >
+            {t("login_link")}
+          </Link>
+        </p>
+        <AuthFooterLinks />
       </div>
     </div>
   );

@@ -2,12 +2,22 @@ import { describe, it, expect } from "vitest";
 import { CreateOfertaSchema, DecideOfertaSchema } from "../oferta";
 
 describe("CreateOfertaSchema", () => {
-  it("acepta una propuesta con texto", () => {
-    expect(CreateOfertaSchema.safeParse({ propuesta: "Me interesa este proyecto" }).success).toBe(true);
+  it("acepta una propuesta con texto y enlace de documentación", () => {
+    // El esquema exige adjuntar un prototipo o un enlace de documentación (refine).
+    expect(
+      CreateOfertaSchema.safeParse({
+        propuesta: "Me interesa este proyecto",
+        documentacion_url: "https://docs.com",
+      }).success,
+    ).toBe(true);
+  });
+
+  it("rechaza una propuesta sin prototipo ni documentación", () => {
+    expect(CreateOfertaSchema.safeParse({ propuesta: "Me interesa este proyecto" }).success).toBe(false);
   });
 
   it("rechaza una propuesta vacía", () => {
-    expect(CreateOfertaSchema.safeParse({ propuesta: "" }).success).toBe(false);
+    expect(CreateOfertaSchema.safeParse({ propuesta: "", prototipo_url: "https://demo.com" }).success).toBe(false);
   });
 
   it("acepta un prototipo_url válido", () => {
