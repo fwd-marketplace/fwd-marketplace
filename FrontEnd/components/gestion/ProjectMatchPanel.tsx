@@ -34,6 +34,7 @@ export function ProjectMatchPanel({ project, className }: Props) {
   const locale = useLocale();
   const [candidates, setCandidates] = useState<MatchCandidate[]>([]);
   const [enabled, setEnabled] = useState(true);
+  const [puedeInvitar, setPuedeInvitar] = useState(true);
   const [loading, setLoading] = useState(false);
   const [minMatch, setMinMatch] = useState(0);
   const [soloDisponibles, setSoloDisponibles] = useState(false);
@@ -67,7 +68,16 @@ export function ProjectMatchPanel({ project, className }: Props) {
       if (!active) return;
       if (r.ok) {
         setEnabled(r.data.enabled);
+        setPuedeInvitar(r.data.puedeInvitar);
         setCandidates(r.data.candidates);
+        // Sembramos las invitaciones ya emitidas (persistidas), no solo las de esta sesión.
+        setInvitedIds(
+          new Set(
+            r.data.candidates
+              .filter((c) => c.yaInvitado && c.usuario)
+              .map((c) => c.usuario!.id),
+          ),
+        );
       }
       setLoading(false);
     });
@@ -154,6 +164,11 @@ export function ProjectMatchPanel({ project, className }: Props) {
 
           {/* Resultados */}
           <section className="space-y-5 lg:col-span-9">
+            {!puedeInvitar && (
+              <p className="rounded-xl border border-border bg-surface-sunken px-4 py-2.5 font-body text-xs text-ink-muted">
+                {t("not_receiving")}
+              </p>
+            )}
             <div className="flex items-center gap-2 font-body text-xs font-bold uppercase tracking-wider text-ink-muted">
               {loading && <Loader2 className="size-3.5 animate-spin text-primary" aria-hidden="true" />}
               <span>{t("results_count", { count: visibles.length })}</span>
@@ -252,12 +267,19 @@ export function ProjectMatchPanel({ project, className }: Props) {
                               {t("view_profile")}
                               <ArrowUpRight className="size-3.5" aria-hidden="true" />
                             </Link>
-                            {invitedIds.has(c.usuario.id) ? (
+                            {c.yaPostulo ? (
+                              // Ya postuló: el mejor resultado posible; no se invita de nuevo.
+                              <span className="inline-flex items-center gap-1 font-body text-xs font-bold text-accent">
+                                <Check className="size-3.5" aria-hidden="true" />
+                                {t("already_applied")}
+                              </span>
+                            ) : invitedIds.has(c.usuario.id) ? (
                               <span className="inline-flex items-center gap-1 font-body text-xs font-bold text-accent">
                                 <Check className="size-3.5" aria-hidden="true" />
                                 {t("invited")}
                               </span>
-                            ) : (
+                            ) : puedeInvitar && c.disponible ? (
+                              // Solo se invita a quien puede aceptar: proyecto recibiendo y junior disponible.
                               <button
                                 type="button"
                                 onClick={() => handleInvite(c.usuario!.id)}
@@ -271,7 +293,7 @@ export function ProjectMatchPanel({ project, className }: Props) {
                                 )}
                                 {t("invite")}
                               </button>
-                            )}
+                            ) : null}
                           </div>
                         )}
                       </div>

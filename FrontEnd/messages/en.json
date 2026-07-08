@@ -1411,7 +1411,9 @@
     "busy": "Busy",
     "view_profile": "View profile",
     "invite": "Invite",
-    "invited": "Invited"
+    "invited": "Invited",
+    "already_applied": "Applied",
+    "not_receiving": "This project is no longer receiving proposals. Candidates are shown for reference only."
   },
   "talento": {
     "view_profile": "View profile",
