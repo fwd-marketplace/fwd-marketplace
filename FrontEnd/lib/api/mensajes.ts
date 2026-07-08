@@ -10,9 +10,14 @@ async function asResult<T>(operation: () => Promise<T>): Promise<Result<T>> {
   }
 }
 
-export function getProjectMensajes(projectId: string): Promise<Result<ApiMensaje[]>> {
+export function getProjectMensajes(
+  projectId: string,
+  remitenteId?: string,
+): Promise<Result<ApiMensaje[]>> {
   return asResult(async () => {
-    const res = await apiAuth<MensajesResponse>(`/mensajes/proyecto/${projectId}`);
+    // `remitente` marca como leídos solo los mensajes de ese junior (empresa multi-tab).
+    const query = remitenteId ? `?remitente=${remitenteId}` : "";
+    const res = await apiAuth<MensajesResponse>(`/mensajes/proyecto/${projectId}${query}`);
     return res.mensajes;
   });
 }

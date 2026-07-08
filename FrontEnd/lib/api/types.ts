@@ -782,6 +782,8 @@ export type ApiMensaje = {
   contenido_traducido?: string | null;
   fecha_envio: string;
   es_publico: boolean;
+  /** true si el destinatario ya lo vio; sirve para marcar chats "sin ver" en gestión. */
+  leida?: boolean;
   remitente: ApiMensajeUser | null;
   destinatario_info: ApiMensajeUser | null;
   id_destinatario: string | null;

@@ -313,7 +313,7 @@ export function ProyectosView({ initialProjects }: { initialProjects: AdminProje
                       <img src={project.empresa.url_logo} alt={company} className="size-full object-cover" />
                     </span>
                   ) : (
-                    <span className="flex size-14 shrink-0 items-center justify-center rounded-xl bg-ink-strong font-heading text-sm font-bold text-white">{initials(company)}</span>
+                    <span className="flex size-14 shrink-0 items-center justify-center rounded-xl bg-ink-strong font-heading text-sm font-bold text-surface">{initials(company)}</span>
                   )}
                   <div className="min-w-0 flex-1">
                     <div className="flex items-center gap-2">

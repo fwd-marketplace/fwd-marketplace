@@ -9,13 +9,17 @@ import {
   type MockCalificacion,
   type StudentProfile,
 } from "@/app/[locale]/(public)/perfil-estudiante/types";
-import { getCatalogs, getMyCalificaciones, getMyOffers, getSavedProjects } from "@/lib/api/marketplace";
+import { getCatalogs, getMyCalificaciones, getMyOffers } from "@/lib/api/marketplace";
 import { getMyPortafolio } from "@/lib/api/profile";
 import { requireActiveAccount } from "@/lib/auth/require-access";
 import { SiteFooter } from "@/components/layout/site-footer";
 import { getNotificaciones } from "@/lib/api/notificaciones";
 import { parseJsonStringArray } from "@/lib/api/safe-json";
 import type { ApiCalificacion, ApiMeProfile, ApiNotificacion, MyOffer, OfferState, PortafolioItem } from "@/lib/api/types";
+import { getHeroJourney } from "@/lib/api/viaje";
+import { getDashboardData } from "@/lib/api/dashboard";
+import { MOCK_HERO_JOURNEY, type HeroJourneyData } from "@/lib/hero-journey/mock";
+
 import type { ActivityTipo } from "@/app/[locale]/(public)/perfil-estudiante/types";
 
 interface Props {
@@ -186,13 +190,14 @@ export default async function EstudianteProfile({ params }: Props) {
   // Ruta privada: solo el estudiante con cuenta activa ve su propio perfil. Sin sesion,
   // rol distinto o cuenta no aprobada, la guarda redirige (login / home / revision).
   const account = await requireActiveAccount(locale, ["student"]);
-  const [offersResult, calResult, catalogsResult, notifsResult, portafolioResult, savedResult] = await Promise.all([
+  const [offersResult, calResult, catalogsResult, notifsResult, portafolioResult, journeyResult, dashboardResult] = await Promise.all([
     getMyOffers(),
     getMyCalificaciones(),
     getCatalogs(),
     getNotificaciones(),
     getMyPortafolio(),
-    getSavedProjects(),
+    getHeroJourney(),
+    getDashboardData(),
   ]);
   const profile = mapProfile(account);
   const offers = offersResult.ok ? offersResult.data.ofertas : [];
@@ -207,8 +212,8 @@ export default async function EstudianteProfile({ params }: Props) {
   const catalogSkills = catalogsResult.ok
     ? catalogsResult.data.skills.map((s) => s.nombre)
     : [];
-  const initialSavedProjects = savedResult.ok ? savedResult.data.proyectos : [];
-
+  const heroJourney: HeroJourneyData = journeyResult.ok ? journeyResult.data : MOCK_HERO_JOURNEY;
+  const rachaDias: number = dashboardResult.ok ? dashboardResult.data.rachaDias : 0;
   return (
     <div className="flex min-h-[100dvh] flex-col bg-canvas">
       <AppHeader userName={fullName(profile)} avatarUrl={profile.avatarUrl} role="student" tone="public" />
@@ -219,10 +224,11 @@ export default async function EstudianteProfile({ params }: Props) {
         initialCalificaciones={calificaciones}
         initialNotificaciones={notifs}
         initialPortafolio={initialPortafolio}
-        initialSavedProjects={initialSavedProjects}
         stats={buildStats(applications)}
         knowledgeSuggestions={knowledgeSuggestions}
         catalogSkills={catalogSkills}
+        heroJourney={heroJourney}
+        rachaDias={rachaDias}
       />
       <SiteFooter />
     </div>

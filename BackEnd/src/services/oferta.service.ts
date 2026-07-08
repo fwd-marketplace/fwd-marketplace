@@ -1,4 +1,4 @@
-import { supabaseForToken, supabaseAdmin } from "../config/supabase";
+import { supabaseForToken } from "../config/supabase";
 import { ApiError } from "../utils/ApiError";
 import { crearNotificacion, crearNotificaciones, MENSAJES_NOTIFICACION, TIPO_POR_MENSAJE } from "./notificacion.service";
 import { triggerNuevaCalificacion } from "./notificacionTriggers.service";
@@ -81,6 +81,79 @@ async function cerrarProyectoAdjudicado(
     MENSAJES_NOTIFICACION.postulacionRechazada(tituloProyecto),
     TIPO_POR_MENSAJE.postulacionRechazada,
   );
+}
+
+/**
+ * La empresa reabre un proyecto adjudicado: DESHACE la adjudicación (p. ej. el junior adjudicado
+ * abandonó, o fue un error). El proyecto vuelve a 'en_recepcion' (vuelve al marketplace y acepta
+ * postulaciones) y TODAS las ofertas que estaban 'adjudicada' o 'no_seleccionada' vuelven a
+ * 'enviada', para que la empresa vuelva a evaluar el pool completo. Al dejar de estar 'adjudicada',
+ * el junior queda libre para postular a otros proyectos. Solo el dueño; solo desde adjudicado/en
+ * desarrollo.
+ */
+export async function reabrirAdjudicacion(accessToken: string, userId: string, projectId: string) {
+  const client = supabaseForToken(accessToken);
+
+  const { data: proyecto, error: projError } = await client
+    .from("proyecto")
+    .select("id, titulo, estado:estado_proyecto(nombre), empresa:empresario(id_usuario)")
+    .eq("id", projectId)
+    .maybeSingle();
+  if (projError) throw new ApiError(500, projError.message);
+  if (!proyecto) throw new ApiError(404, "Proyecto no encontrado");
+  if (proyecto.empresa?.id_usuario !== userId) throw new ApiError(403, "Este proyecto no es tuyo");
+
+  const estadoActual = proyecto.estado?.nombre;
+  if (estadoActual !== "adjudicado" && estadoActual !== "en_desarrollo" && estadoActual !== "cerrado") {
+    throw new ApiError(409, "Solo se puede reabrir un proyecto adjudicado, en desarrollo o cerrado");
+  }
+
+  const { data: ofertas, error: ofertasError } = await client
+    .from("oferta")
+    .select("id, id_usuario, estado:estado_oferta(nombre)")
+    .eq("id_proyecto", projectId);
+  if (ofertasError) throw new ApiError(500, ofertasError.message);
+
+  // Todas las que estaban adjudicada o rechazada vuelven a 'enviada' (pool reabierto). Se limpia
+  // cualquier calificación previa: al reabrir, el proceso empieza de nuevo.
+  const afectadas = (ofertas ?? []).filter((o) =>
+    o.estado?.nombre === "adjudicada" || o.estado?.nombre === "no_seleccionada",
+  );
+  if (afectadas.length > 0) {
+    const enviadaId = await getEstadoOfertaId(client, "enviada");
+    const { error: updOfertasError } = await client
+      .from("oferta")
+      .update({
+        id_estado: enviadaId,
+        calificacion: null,
+        comentario_calificacion: null,
+        updated_at: new Date().toISOString(),
+      })
+      .in("id", afectadas.map((o) => o.id));
+    if (updOfertasError) throw new ApiError(400, updOfertasError.message);
+  }
+
+  // Proyecto -> en_recepcion.
+  const recepcionId = await getEstadoProyectoId(client, "en_recepcion");
+  const { data: updated, error: updError } = await client
+    .from("proyecto")
+    .update({ id_estado: recepcionId })
+    .eq("id", projectId)
+    .select("id, estado:estado_proyecto(nombre)")
+    .single();
+  if (updError) throw new ApiError(400, updError.message);
+
+  // Notificar a los juniors afectados (best-effort).
+  if (afectadas.length > 0) {
+    await crearNotificaciones(
+      accessToken,
+      afectadas.map((o) => o.id_usuario),
+      MENSAJES_NOTIFICACION.proyectoReabierto(proyecto.titulo ?? ""),
+      TIPO_POR_MENSAJE.proyectoReabierto,
+    );
+  }
+
+  return updated;
 }
 
 /** Estados de proyecto en los que una adjudicación ya NO ocupa al estudiante. */
@@ -573,8 +646,9 @@ export async function withdrawOferta(
 }
 
 /**
- * La empresa califica la oferta adjudicada del junior tras cerrar el proyecto.
- * Solo se puede calificar si el proyecto está en estado "cerrado".
+ * La empresa califica la oferta adjudicada del junior. Es feedback opcional y NO cambia el estado
+ * del proyecto (cerrar es una acción explícita aparte). Se puede calificar mientras esté adjudicado,
+ * en desarrollo o cerrado.
  */
 export async function calificarOferta(
   accessToken: string,
@@ -614,23 +688,9 @@ export async function calificarOferta(
     .single();
   if (error) throw new ApiError(400, error.message);
 
-  // Cerrar el proyecto automáticamente al calificar (fin del ciclo de vida).
-  // Usa el cliente admin (service_role) para bypassar RLS: es una operación de
-  // sistema, no una acción directa del usuario.
-  const admin = supabaseAdmin();
-  const { data: estadoCerrado, error: estadoCerradoError } = await admin
-    .from("estado_proyecto")
-    .select("id")
-    .eq("nombre", "cerrado")
-    .maybeSingle();
-  if (estadoCerradoError) throw new ApiError(500, estadoCerradoError.message);
-  if (!estadoCerrado) throw new ApiError(500, "Falta el estado 'cerrado' (seeds no aplicados)");
-
-  const { error: closeError } = await admin
-    .from("proyecto")
-    .update({ id_estado: estadoCerrado.id })
-    .eq("id", oferta.id_proyecto);
-  if (closeError) throw new ApiError(500, `No se pudo cerrar el proyecto: ${closeError.message}`);
+  // La calificación NO cierra el proyecto: es feedback opcional. El cierre es una acción
+  // explícita de la empresa ("Finalizar proyecto"). Antes calificar auto-cerraba, lo que
+  // hacía que el proyecto pareciera cerrarse y "no continuar" apenas se adjudicaba/calificaba.
 
   // Notificar al junior que recibió una calificación (best-effort).
   if (oferta.id_usuario && proyecto?.titulo) {

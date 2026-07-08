@@ -1,5 +1,5 @@
 import { Router } from "express";
-import { list, listMine, detail, create, changeState, update, cancel, pause, resume, matches, invitar } from "../controllers/proyecto.controller";
+import { list, listMine, detail, create, changeState, update, cancel, pause, resume, matches, invitar, reabrir } from "../controllers/proyecto.controller";
 import { createForProject, listForProject } from "../controllers/oferta.controller";
 import { listForProject as listEntregablesForProject } from "../controllers/entregable.controller";
 import { authenticate } from "../middlewares/auth.middleware";
@@ -21,6 +21,8 @@ router.post("/:id/invitaciones", authenticate, asyncHandler(invitar));
 router.patch("/:id/estado", authenticate, asyncHandler(changeState));
 // La empresa cancela y elimina definitivamente (hard) su proyecto, notificando participantes.
 router.patch("/:id/cancelar", authenticate, asyncHandler(cancel));
+// La empresa deshace la adjudicación y reabre el proyecto a postulaciones.
+router.patch("/:id/reabrir", authenticate, asyncHandler(reabrir));
 // La empresa pausa temporalmente su proyecto (congela plazo, no notifica).
 router.patch("/:id/pausar", authenticate, asyncHandler(pause));
 // La empresa reactiva un proyecto pausado, volviéndolo a en_recepcion.

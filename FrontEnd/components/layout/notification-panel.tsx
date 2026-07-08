@@ -68,7 +68,13 @@ function linkFor(notif: ApiNotificacion, role: ApiRoleName | undefined, locale: 
   if (tipo === "visita_perfil") {
     return `/${locale}/perfil-estudiante`;
   }
-  if (role === "company") return `/${locale}/gestion`;
+  // Empresa: si la notificación referencia un proyecto (p. ej. nueva propuesta), abrir directo
+  // su sección de propuestas (Proceso). Sin referencia, cae al panel de gestión.
+  if (role === "company") {
+    return id_referencia
+      ? `/${locale}/gestion?proyecto=${id_referencia}&seccion=proceso`
+      : `/${locale}/gestion`;
+  }
   if (role === "admin") return `/${locale}/admin`;
   // student y fallback
   if (tipo === "nuevo_mensaje") return `/${locale}/gestion`;

@@ -9,14 +9,16 @@ import type { ApiProject } from '@/lib/api/types';
 interface Props {
   project: ApiProject;
   onClose: () => void;
+  studentSkills?: string[];
 }
 
-export function ProjectPreviewModal({ project, onClose }: Props) {
+export function ProjectPreviewModal({ project, onClose, studentSkills = [] }: Props) {
   const t = useTranslations('project_preview_modal');
   const locale = useLocale();
   const router = useRouter();
 
   const skills = project.skills.flatMap((s) => (s.skill ? [s.skill] : []));
+  const studentSkillSet = new Set(studentSkills.map((s) => s.toLowerCase()));
 
   function handleGoToGestion() {
     onClose();
@@ -91,14 +93,20 @@ export function ProjectPreviewModal({ project, onClose }: Props) {
           {/* Skills */}
           {skills.length > 0 && (
             <div className="flex flex-wrap gap-2">
-              {skills.map((skill) => (
-                <span
-                  key={skill.id}
-                  className="border border-primary text-primary text-[11px] font-bold px-3 py-1 rounded-full uppercase tracking-wider"
-                >
-                  {skill.nombre}
-                </span>
-              ))}
+              {skills.map((skill) => {
+                const matched = studentSkillSet.has(skill.nombre.toLowerCase());
+                return (
+                  <span
+                    key={skill.id}
+                    className={matched
+                      ? 'bg-primary text-white text-[11px] font-bold px-3 py-1 rounded-full uppercase tracking-wider'
+                      : 'border border-primary text-primary text-[11px] font-bold px-3 py-1 rounded-full uppercase tracking-wider'
+                    }
+                  >
+                    {skill.nombre}
+                  </span>
+                );
+              })}
             </div>
           )}
 

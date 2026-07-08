@@ -73,15 +73,15 @@ export function HeaderBar({ progress, xp, streak, userName, avatarUrl, role }: H
             <p className="font-heading font-bold text-[9.5px] tracking-[0.2em] uppercase text-white/55 m-0 mb-[1px] truncate">
               {t("eyebrow")}
             </p>
-            <h1 className="font-heading font-extrabold text-[20px] tracking-[-0.02em] text-white leading-none m-0">
+            <h1 className="font-heading font-extrabold text-[16px] sm:text-[20px] tracking-[-0.02em] text-white leading-none m-0">
               {t("title")}
               <span className="text-highlight" aria-hidden="true">.</span>
             </h1>
           </div>
         </div>
 
-        {/* ── Centro: chips de stats ─────────────────────────────────── */}
-        <div className="flex gap-[6px] items-center">
+        {/* ── Centro: chips de stats (ocultos en móvil para no amontonar) ── */}
+        <div className="hidden sm:flex gap-[6px] items-center">
           <StatChip
             icon={<Star size={13} aria-hidden="true" />}
             value={`${progress.lit}/${progress.total}`}

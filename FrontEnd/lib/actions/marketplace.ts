@@ -26,6 +26,7 @@ import {
   getSavedProjects,
   getSavedProjectIds,
   pauseProject,
+  reabrirProyecto,
   resumeProject,
   saveProject,
   unsaveProject,
@@ -82,6 +83,14 @@ export async function changeProjectStateAction(projectId: string, estado: Compan
 
 export async function cancelProjectAction(projectId: string) {
   const result = await cancelProject(projectId);
+  if (result.ok) {
+    revalidatePath("/");
+  }
+  return result;
+}
+
+export async function reabrirProyectoAction(projectId: string) {
+  const result = await reabrirProyecto(projectId);
   if (result.ok) {
     revalidatePath("/");
   }

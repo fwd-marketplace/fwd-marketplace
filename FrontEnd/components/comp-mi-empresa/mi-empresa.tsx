@@ -506,10 +506,13 @@ export function CompanyProfile({
                       <div>
                         <label className="font-body text-xs font-bold tracking-wide text-ink-muted">{t('fields.project_name')}</label>
                         {isEditing('general') ? (
-                          <input type="text" value={company.name}
-                            onChange={(e) => setCompany({ ...company, name: e.target.value })}
-                            className="w-full border-b border-border bg-transparent py-1 text-sm font-medium text-ink focus:border-primary focus:outline-none"
-                          />
+                          <>
+                            <input type="text" value={company.name}
+                              onChange={(e) => setCompany({ ...company, name: e.target.value })}
+                              className="w-full border-b border-border bg-transparent py-1 text-sm font-medium text-ink focus:border-primary focus:outline-none"
+                            />
+                            {fieldErrors['name'] && <p className="mt-1 flex items-center gap-1 text-[11px] text-magenta"><AlertCircle className="size-3 shrink-0" />{fieldErrors['name']}</p>}
+                          </>
                         ) : (
                           <p className="text-sm font-medium text-ink">{company.name}</p>
                         )}
@@ -585,13 +588,17 @@ export function CompanyProfile({
                   />
                   <Card className="border-border bg-surface p-5">
                     {isEditing('project_desc') ? (
-                      <textarea
-                        rows={6}
-                        value={company.projectDescription}
-                        onChange={(e) => setCompany({ ...company, projectDescription: e.target.value })}
-                        placeholder={t('fields.project_description_placeholder')}
-                        className="w-full resize-none rounded-lg border border-border bg-surface-sunken px-3 py-2 text-sm leading-relaxed text-ink focus:border-primary focus:outline-none"
-                      />
+                      <>
+                        <textarea
+                          rows={6}
+                          value={company.projectDescription}
+                          onChange={(e) => setCompany({ ...company, projectDescription: e.target.value })}
+                          placeholder={t('fields.project_description_placeholder')}
+                          className="w-full resize-none rounded-lg border border-border bg-surface-sunken px-3 py-2 text-sm leading-relaxed text-ink focus:border-primary focus:outline-none"
+                        />
+                        <p className="mt-1 text-right text-[11px] text-ink-muted/60">{company.projectDescription.length}/400</p>
+                        {fieldErrors['projectDescription'] && <p className="flex items-center gap-1 text-[11px] text-magenta"><AlertCircle className="size-3 shrink-0" />{fieldErrors['projectDescription']}</p>}
+                      </>
                     ) : (
                       <p className="text-sm leading-relaxed text-ink">
                         {company.projectDescription || <span className="italic text-ink-muted/60">{t('fields.project_description_placeholder')}</span>}
@@ -836,11 +843,19 @@ export function CompanyProfile({
                           </>
                         )}
                         {isEditing('culture') && (
-                          <form onSubmit={handleAddValue} className="inline-flex items-center">
+                          <form onSubmit={handleAddValue} className="inline-flex items-center gap-1">
                             <input type="text" placeholder={t('culture.add_value_placeholder')}
                               value={newValueInput} onChange={(e) => setNewValueInput(e.target.value)}
                               className="w-32 rounded border border-border bg-surface-sunken px-2 py-1 text-xs text-ink focus:border-primary focus:outline-none"
                             />
+                            <button
+                              type="submit"
+                              disabled={!newValueInput.trim()}
+                              aria-label={t('culture.add_value')}
+                              className="flex size-6 shrink-0 items-center justify-center rounded-full bg-secondary text-white transition-opacity hover:opacity-90 disabled:opacity-40"
+                            >
+                              <Plus className="size-3.5" />
+                            </button>
                           </form>
                         )}
                       </div>

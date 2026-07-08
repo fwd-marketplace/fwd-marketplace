@@ -255,6 +255,13 @@ export function cancelProject(projectId: string): Promise<Result<void>> {
   });
 }
 
+/** Deshace la adjudicación y reabre el proyecto a postulaciones (vuelve a en_recepcion). */
+export function reabrirProyecto(projectId: string): Promise<Result<void>> {
+  return asResult(async () => {
+    await apiAuth(`/projects/${projectId}/reabrir`, { method: "PATCH" });
+  });
+}
+
 /** Pausa temporalmente el proyecto propio: congela el plazo y lo oculta del marketplace. */
 export function pauseProject(projectId: string): Promise<Result<void>> {
   return asResult(async () => {

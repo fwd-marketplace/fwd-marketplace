@@ -1,4 +1,4 @@
-"use client";
+﻿"use client";
 
 import React, { useEffect, useRef, useState, useTransition } from "react";
 import { useTranslations, useLocale } from "next-intl";
@@ -14,18 +14,9 @@ import {
   History,
   Edit2,
   Check,
-  Sparkles,
   ArrowUpRight,
   Clock,
   ChevronRight,
-  TrendingUp,
-  Zap,
-  Calendar,
-  Building2,
-  Layers,
-  BarChart2,
-  Code2,
-  Palette,
   Camera,
   ChevronDown,
   Loader2,
@@ -35,7 +26,12 @@ import {
   Pencil,
   Trash2,
   GitBranch,
-  Bookmark,
+  Flame,
+  Compass,
+  BookOpen,
+  Mountain,
+  Sparkles,
+  Trophy,
 } from "lucide-react";
 import {
   fullName,
@@ -57,7 +53,6 @@ type WorkProject = {
 
 import type {
   ApiNotificacion,
-  ApiProject,
   StudentAvailability,
   StudentProfileUpdate,
   StudentSpecialty,
@@ -65,8 +60,9 @@ import type {
 import { marcarNotificacionLeidaAction, marcarTodasLeidasAction } from "@/lib/actions/notificaciones";
 import { updateStudentProfile, uploadStudentAvatar, deleteStudentAvatar, createPortafolioItemAction, updatePortafolioItemAction, deletePortafolioItemAction } from "@/lib/actions/perfil";
 import { FwdGeoBackdrop } from "@/components/ui/fwd-geo-backdrop";
-import { replicarCalificacionAction, unsaveProjectAction } from "@/lib/actions/marketplace";
+import { replicarCalificacionAction } from "@/lib/actions/marketplace";
 import { getInitials } from "@/lib/api/safe-json";
+import type { HeroJourneyData } from "@/lib/hero-journey/mock";
 
 // ── Inline SVG icons ───────────────────────────────────────────────────────────
 
@@ -207,24 +203,6 @@ function CalificacionesSection({
   );
 }
 
-function getCategoryIcon(category: Application["category"]) {
-  switch (category) {
-    case "ux": return <Layers className="w-5 h-5 text-primary" />;
-    case "data": return <BarChart2 className="w-5 h-5 text-warning" />;
-    case "dev": return <Code2 className="w-5 h-5 text-accent" />;
-    case "design": return <Palette className="w-5 h-5 text-magenta" />;
-  }
-}
-
-function getCategoryBg(category: Application["category"]): string {
-  switch (category) {
-    case "ux": return "bg-primary/10";
-    case "data": return "bg-warning/10";
-    case "dev": return "bg-accent/10";
-    case "design": return "bg-magenta/10";
-  }
-}
-
 function toHref(url: string): string {
   return /^https?:\/\//i.test(url) ? url : `https://${url}`;
 }
@@ -237,11 +215,7 @@ function stripProtocol(url: string): string {
 
 // ── Tab and filter types ───────────────────────────────────────────────────────
 
-type TabId = "perfil" | "trabajo" | "postulaciones" | "notificaciones" | "sugeridos";
-type FilterStatus = "todas" | Application["status"];
-
-const TAB_IDS: TabId[] = ["perfil", "trabajo", "postulaciones", "notificaciones", "sugeridos"];
-const FILTER_VALUES: FilterStatus[] = ["todas", "enviada", "vista", "en_proceso", "aceptada", "rechazada"];
+type TabId = "perfil" | "trabajo" | "notificaciones";
 
 const SPECIALTY_VALUES: StudentSpecialty[] = ["frontend", "backend", "fullstack", "ia"];
 const AVAILABILITY_VALUES: StudentAvailability[] = [
@@ -251,6 +225,8 @@ const AVAILABILITY_VALUES: StudentAvailability[] = [
   "unavailable",
 ];
 const MODALITY_VALUES = ["remote", "hybrid", "onsite"] as const;
+
+const TAB_IDS: TabId[] = ["perfil", "trabajo", "notificaciones"];
 
 const MAX_AVATAR_BYTES = 5 * 1024 * 1024;
 
@@ -263,12 +239,13 @@ export interface PerfilUsuarioProps {
   initialCalificaciones: MockCalificacion[];
   initialNotificaciones?: ApiNotificacion[];
   initialPortafolio?: WorkProject[];
-  initialSavedProjects?: ApiProject[];
   stats: ApplicationStats;
   /** Sugerencias de conocimientos no técnicos (catálogo) para autocompletar. */
   knowledgeSuggestions: string[];
   /** Nombres del catálogo de skills para autocompletar y distinguir catalog vs custom. */
   catalogSkills: string[];
+  heroJourney: HeroJourneyData;
+  rachaDias: number;
 }
 
 /**
@@ -508,12 +485,14 @@ export default function PerfilUsuario({
   initialCalificaciones,
   initialNotificaciones,
   initialPortafolio,
-  initialSavedProjects = [],
   stats,
   knowledgeSuggestions,
   catalogSkills,
+  heroJourney,
+  rachaDias,
 }: PerfilUsuarioProps) {
   const t = useTranslations("perfil_junior");
+  const tEstrella = useTranslations("bienvenida.estrella");
   const locale = useLocale();
 
   // ── State ──────────────────────────────────────────────────────────────────
@@ -533,14 +512,11 @@ export default function PerfilUsuario({
       setActiveTab(param as TabId);
     }
   }, [searchParams]);
-  const [filterStatus, setFilterStatus] = useState<FilterStatus>("todas");
   const [profile, setProfile] = useState<StudentProfile>(initialProfile);
   const [activities, setActivities] = useState<Activity[]>(initialActivities);
   const [applications] = useState<Application[]>(initialApplications);
-  const [savedProjects, setSavedProjects] = useState<ApiProject[]>(initialSavedProjects);
   const [notificaciones, setNotificaciones] = useState<ApiNotificacion[]>(initialNotificaciones ?? []);
   const [notifPage, setNotifPage] = useState(1);
-  const [appPage, setAppPage] = useState(1);
   const [showAllPortafolio, setShowAllPortafolio] = useState(false);
   const [previewProject, setPreviewProject] = useState<WorkProject | null>(null);
   const [projectToDelete, setProjectToDelete] = useState<WorkProject | null>(null);
@@ -653,18 +629,7 @@ export default function PerfilUsuario({
   const TAB_LABELS: Record<TabId, string> = {
     perfil: t("tabs.perfil"),
     trabajo: t("tabs.trabajo"),
-    postulaciones: t("tabs.postulaciones"),
     notificaciones: t("tabs.notificaciones"),
-    sugeridos: t("tabs.sugeridos"),
-  };
-
-  const FILTER_LABELS: Record<FilterStatus, string> = {
-    todas: t("applications.filter.all"),
-    enviada: t("applications.filter.sent"),
-    vista: t("applications.filter.seen"),
-    en_proceso: t("applications.filter.in_process"),
-    aceptada: t("applications.filter.accepted"),
-    rechazada: t("applications.filter.rejected"),
   };
 
   const SPECIALTY_LABELS: Record<StudentSpecialty, string> = {
@@ -951,9 +916,6 @@ export default function PerfilUsuario({
   // ── Derived values ─────────────────────────────────────────────────────────
 
   const unreadCount = notificaciones.filter((n) => !n.leida).length;
-  const filteredApplications = applications.filter(
-    (app) => filterStatus === "todas" || app.status === filterStatus
-  );
 
   // ── Render ─────────────────────────────────────────────────────────────────
 
@@ -1252,7 +1214,6 @@ export default function PerfilUsuario({
             const isActive = activeTab === tabId;
             let badge: number | null = null;
             if (tabId === "notificaciones" && unreadCount > 0) badge = unreadCount;
-            if (tabId === "sugeridos") badge = 0;
 
             return (
               <button
@@ -1886,53 +1847,95 @@ export default function PerfilUsuario({
                 </button>
               </section>
 
-              {/* Applications sidebar widget */}
-              <section className="bg-surface rounded-2xl border border-border shadow-soft p-6 space-y-4">
-                <div className="flex items-center gap-2">
-                  <Briefcase className="w-5 h-5 text-primary" />
-                  <h2 className="text-xl font-bold text-ink-strong">{t("applications_sidebar.title")}</h2>
-                </div>
-                {applications.length === 0 ? (
-                  <p className="text-sm text-ink-muted italic">{t("applications_sidebar.empty")}</p>
-                ) : (
-                  <div className="space-y-3">
-                    {[...applications]
-                      .sort((a, b) => new Date(b.relativeTime).getTime() - new Date(a.relativeTime).getTime())
-                      .slice(0, 3)
-                      .map((app) => {
-                        const sidebarStyles = getStatusStyles(app.status);
-                        const fecha = new Date(app.relativeTime);
-                        const fechaLabel = isNaN(fecha.getTime())
-                          ? ""
-                          : fecha.toLocaleDateString(intlLocale(locale), { day: "numeric", month: "short" });
-                        return (
-                          <div
-                            key={app.id}
-                            className="flex justify-between items-start gap-3 p-3 rounded-xl border border-border bg-surface-sunken"
-                          >
-                            <div className="space-y-1 min-w-0">
-                              <h3 className="text-sm font-bold text-ink-strong leading-tight truncate">{app.projectName}</h3>
-                              {fechaLabel && <span className="block text-xs text-ink-muted">{fechaLabel}</span>}
-                            </div>
-                            <span
-                              className={`text-[10px] uppercase tracking-wider font-bold px-2 py-0.5 rounded-md border shrink-0 ${sidebarStyles.badge}`}
+              {/* Gamification widget */}
+              {(() => {
+                type MilestoneKey = keyof HeroJourneyData;
+                const MILESTONES: { id: MilestoneKey; Icon: React.ElementType; doneCls: string }[] = [
+                  { id: "llamado",        Icon: Compass,  doneCls: "bg-primary/15 border-primary/50 text-primary" },
+                  { id: "preparacion",    Icon: BookOpen, doneCls: "bg-secondary/15 border-secondary/50 text-secondary" },
+                  { id: "desafio",        Icon: Mountain, doneCls: "bg-highlight/15 border-highlight/50 text-highlight" },
+                  { id: "transformacion", Icon: Sparkles, doneCls: "bg-accent/15 border-accent/50 text-accent" },
+                  { id: "reconocimiento", Icon: Trophy,   doneCls: "bg-magenta/15 border-magenta/50 text-magenta" },
+                ];
+
+                const doneCount = MILESTONES.filter((m) => heroJourney[m.id].status === "done").length;
+                const journeyPct = Math.round((doneCount / MILESTONES.length) * 100);
+
+                return (
+                  <section className="bg-surface rounded-2xl border border-border shadow-soft p-5 space-y-5">
+                    {/* Racha */}
+                    <div className="flex items-center gap-3 rounded-xl border border-warning/30 bg-warning/8 px-4 py-3">
+                      <span className="flex size-10 shrink-0 items-center justify-center rounded-lg bg-warning/15 text-warning">
+                        <Flame className="size-5" aria-hidden="true" />
+                      </span>
+                      <div>
+                        <p className="font-body text-[10px] font-bold uppercase tracking-widest text-ink-muted">
+                          {t("gamification.streak_label")}
+                        </p>
+                        <p className="font-heading text-2xl font-extrabold text-ink-strong leading-none">
+                          {rachaDias}
+                          <span className="ml-1 font-body text-xs font-semibold text-ink-muted">
+                            {tEstrella("racha_days", { count: rachaDias })}
+                          </span>
+                        </p>
+                      </div>
+                    </div>
+
+                    {/* Insignias */}
+                    <div className="space-y-2.5">
+                      <p className="font-body text-[10px] font-bold uppercase tracking-widest text-ink-muted">
+                        {t("gamification.badges_label")}
+                      </p>
+                      <div className="flex items-center gap-2">
+                        {MILESTONES.map((m) => {
+                          const status = heroJourney[m.id].status;
+                          const Icon = m.Icon;
+                          const isDone = status === "done";
+                          const isProgress = status === "progress";
+                          return (
+                            <div
+                              key={m.id}
+                              title={tEstrella(`items.${m.id}.name`)}
+                              aria-label={tEstrella(`items.${m.id}.name`)}
+                              className={[
+                                "relative flex size-11 items-center justify-center rounded-full border-2 transition-colors duration-[var(--duration-fast)]",
+                                isDone ? m.doneCls : isProgress ? "bg-warning/10 border-warning/40 text-warning" : "bg-canvas border-border text-ink-muted/40",
+                              ].join(" ")}
                             >
-                              {sidebarStyles.label}
-                            </span>
-                          </div>
-                        );
-                      })}
-                  </div>
-                )}
-                <button
-                  type="button"
-                  onClick={() => setActiveTab("postulaciones")}
-                  className="inline-flex items-center gap-1 text-xs font-semibold text-primary hover:underline"
-                >
-                  {t("applications_sidebar.manage")}
-                  <ChevronRight className="w-3 h-3" />
-                </button>
-              </section>
+                              <Icon className="h-[18px] w-[18px]" aria-hidden="true" />
+                              {isDone && (
+                                <span className="absolute -top-0.5 -right-0.5 flex size-4 items-center justify-center rounded-full bg-accent border-2 border-surface">
+                                  <Check className="h-2.5 w-2.5 text-white" strokeWidth={3} aria-hidden="true" />
+                                </span>
+                              )}
+                            </div>
+                          );
+                        })}
+                      </div>
+                    </div>
+
+                    {/* Viaje del heroe */}
+                    <div className="space-y-2">
+                      <div className="flex items-center justify-between">
+                        <p className="font-body text-[10px] font-bold uppercase tracking-widest text-ink-muted">
+                          {t("gamification.journey_label")}
+                        </p>
+                        <span className="font-heading text-sm font-extrabold text-primary">{journeyPct}%</span>
+                      </div>
+                      <div className="h-2.5 w-full overflow-hidden rounded-full bg-canvas border border-border">
+                        <div
+                          className="h-full rounded-full transition-all duration-[var(--duration-slow)] ease-[var(--ease-out)]"
+                          style={{
+                            width: `${journeyPct}%`,
+                            background: "linear-gradient(90deg, var(--accent), var(--primary))",
+                          }}
+                        />
+                      </div>
+                      <p className="font-body text-xs text-ink-muted">{doneCount} / {MILESTONES.length}</p>
+                    </div>
+                  </section>
+                );
+              })()}
             </div>
           </div>
         )}
@@ -2033,213 +2036,6 @@ export default function PerfilUsuario({
             project={previewProject}
             onClose={() => setPreviewProject(null)}
           />
-        )}
-
-        {/* ── TAB: POSTULACIONES ───────────────────────────────────────────────── */}
-        {activeTab === "postulaciones" && (
-          <section className="space-y-6">
-            <div className="space-y-2">
-              <h1 className="text-3xl md:text-4xl font-heading font-extrabold tracking-tight text-ink-strong">
-                {t("applications.title")}<span className="text-primary">.</span>
-              </h1>
-              <p className="text-sm text-ink-muted leading-relaxed">{t("applications.description")}</p>
-            </div>
-
-            {/* Filter pills */}
-            <div
-              role="group"
-              aria-label={t("applications.filter_label")}
-              className="flex items-center flex-wrap gap-2 text-xs font-semibold py-2"
-            >
-              <span className="text-ink-muted mr-1">{t("applications.filter_label")}</span>
-              {FILTER_VALUES.map((value) => {
-                const isActive = filterStatus === value;
-                return (
-                  <button
-                    key={value}
-                    type="button"
-                    onClick={() => { setFilterStatus(value); setAppPage(1); }}
-                    className={`px-4 py-1.5 rounded-full text-xs font-medium border transition-colors cursor-pointer ${isActive
-                        ? "bg-primary border-primary text-white"
-                        : "bg-surface-sunken border-border text-ink-muted hover:bg-border/30 hover:text-ink"
-                      }`}
-                  >
-                    {FILTER_LABELS[value]}
-                  </button>
-                );
-              })}
-            </div>
-
-            {/* Ir a gestión */}
-            <div className="flex justify-end">
-              <Link
-                href={`/${locale}/gestion`}
-                className="inline-flex items-center gap-2 rounded-xl bg-primary px-5 py-2.5 text-sm font-semibold text-white hover:opacity-90 transition-opacity"
-              >
-                <ArrowUpRight className="w-4 h-4" />
-                {t("applications.go_to_marketplace")}
-              </Link>
-            </div>
-
-            {/* Stats compactas */}
-            {(() => {
-              const enProceso = applications.filter((a) => ["enviada", "vista", "en_proceso"].includes(a.status)).length;
-              const adjudicados = applications.filter((a) => a.status === "aceptada").length;
-              return (
-                <div className="flex flex-wrap gap-3">
-                  <div className="flex items-center gap-3 rounded-xl border border-primary/20 bg-primary/5 px-4 py-3 min-w-[160px]">
-                    <TrendingUp className="w-5 h-5 text-primary shrink-0" />
-                    <div>
-                      <div className="text-2xl font-extrabold font-heading tracking-tight text-primary leading-none">{enProceso}</div>
-                      <div className="text-[10px] font-semibold uppercase tracking-wider text-primary/70 mt-0.5">{t("applications.stats.in_progress")}</div>
-                    </div>
-                  </div>
-                  <div className="flex items-center gap-3 rounded-xl border border-accent/20 bg-accent/5 px-4 py-3 min-w-[160px]">
-                    <Zap className="w-5 h-5 text-accent shrink-0" />
-                    <div>
-                      <div className="text-2xl font-extrabold font-heading tracking-tight text-accent leading-none">{adjudicados}</div>
-                      <div className="text-[10px] font-semibold uppercase tracking-wider text-accent/70 mt-0.5">{t("applications.stats.awarded")}</div>
-                    </div>
-                  </div>
-                </div>
-              );
-            })()}
-
-            {/* Application list paginada */}
-            {(() => {
-              const appTotalPages = Math.max(1, Math.ceil(filteredApplications.length / APP_PAGE_SIZE));
-              const paginated = filteredApplications.slice((appPage - 1) * APP_PAGE_SIZE, appPage * APP_PAGE_SIZE);
-              return (
-                <div className="space-y-4">
-                  {paginated.map((app) => {
-                    const styles = getStatusStyles(app.status);
-                    const fecha = new Date(app.relativeTime);
-                    const fechaLabel = isNaN(fecha.getTime()) ? app.relativeTime : fecha.toLocaleDateString(intlLocale(locale), { day: "numeric", month: "short", year: "numeric" });
-                    return (
-                      <Link
-                        key={app.id}
-                        href={app.projectId ? `/${locale}/gestion?proyecto=${app.projectId}` : "#"}
-                        className="relative rounded-2xl bg-surface border border-border p-5 flex items-center justify-between shadow-soft hover:shadow-md hover:border-primary/20 transition-all duration-200 overflow-hidden pl-7 block"
-                      >
-                        <div className={`absolute left-0 top-0 bottom-0 w-2.5 ${styles.strip}`} />
-                        <div className="flex items-center gap-4">
-                          <div className={`w-12 h-12 rounded-xl flex items-center justify-center shrink-0 ${getCategoryBg(app.category)}`}>
-                            {getCategoryIcon(app.category)}
-                          </div>
-                          <div className="space-y-1">
-                            <h3 className="text-base font-bold text-ink-strong leading-tight">{app.projectName}</h3>
-                            <div className="flex flex-wrap items-center gap-x-4 gap-y-1 text-xs text-ink-muted">
-                              {app.companyName && (
-                                <span className="flex items-center gap-1">
-                                  <Building2 className="w-3.5 h-3.5 shrink-0" />
-                                  {app.companyName}
-                                </span>
-                              )}
-                              <span className="flex items-center gap-1">
-                                <Clock className="w-3.5 h-3.5 shrink-0" />
-                                {fechaLabel}
-                              </span>
-                            </div>
-                          </div>
-                        </div>
-                        <div className="flex items-center gap-4">
-                          <span className={`text-[10px] uppercase tracking-wider font-extrabold px-2.5 py-1 rounded-md border shrink-0 ${styles.badge}`}>
-                            {styles.label}
-                          </span>
-                          <ChevronRight className="w-5 h-5 text-ink-subtle hover:text-primary transition-colors shrink-0" />
-                        </div>
-                      </Link>
-                    );
-                  })}
-                  {paginated.length === 0 && (
-                    <div className="text-center py-12 bg-surface rounded-2xl border border-border">
-                      <p className="text-sm text-ink-muted italic">{t("applications.empty")}</p>
-                    </div>
-                  )}
-                  {appTotalPages > 1 && (
-                    <div className="flex items-center justify-center gap-3 pt-2">
-                      <button
-                        type="button"
-                        disabled={appPage === 1}
-                        onClick={() => setAppPage((p) => p - 1)}
-                        className="rounded-lg border border-border bg-surface px-3 py-1.5 font-body text-xs font-semibold text-ink transition-colors hover:border-primary/30 hover:text-primary disabled:cursor-not-allowed disabled:opacity-40"
-                      >
-                        {t("notifications.prev")}
-                      </button>
-                      <span className="font-body text-xs text-ink-muted">{appPage} / {appTotalPages}</span>
-                      <button
-                        type="button"
-                        disabled={appPage === appTotalPages}
-                        onClick={() => setAppPage((p) => p + 1)}
-                        className="rounded-lg border border-border bg-surface px-3 py-1.5 font-body text-xs font-semibold text-ink transition-colors hover:border-primary/30 hover:text-primary disabled:cursor-not-allowed disabled:opacity-40"
-                      >
-                        {t("notifications.next")}
-                      </button>
-                    </div>
-                  )}
-                </div>
-              );
-            })()}
-
-            {/* ── Proyectos guardados ─────────────────────────────────────── */}
-            <div className="space-y-3 pt-4">
-              <div className="flex items-center gap-2">
-                <Bookmark className="w-4 h-4 text-highlight" />
-                <h2 className="text-base font-bold text-ink-strong">{t("applications.saved_title")}</h2>
-                <span className="ml-auto text-xs font-semibold text-ink-muted">{savedProjects.length}</span>
-              </div>
-              {savedProjects.length === 0 ? (
-                <div className="rounded-2xl border border-border bg-surface px-5 py-8 text-center">
-                  <p className="text-sm text-ink-muted italic">{t("applications.saved_empty")}</p>
-                </div>
-              ) : (
-                <div className="space-y-3">
-                  {savedProjects.map((project) => {
-                    const isExpired = project.fecha_cierre ? new Date(project.fecha_cierre) < new Date() : false;
-                    return (
-                      <div
-                        key={project.id}
-                        className="flex items-center gap-4 rounded-2xl border border-border bg-surface px-5 py-4 shadow-soft"
-                      >
-                        <div className="min-w-0 flex-1 space-y-0.5">
-                          <p className="text-sm font-bold text-ink-strong leading-tight truncate">{project.titulo}</p>
-                          {project.empresa && (
-                            <p className="text-xs text-ink-muted truncate">{project.empresa.nombre_comercial}</p>
-                          )}
-                          {isExpired && (
-                            <span className="inline-flex items-center gap-1 text-[10px] font-bold uppercase tracking-wider text-magenta">
-                              <Clock className="w-3 h-3" />
-                              {t("applications.saved_expired")}
-                            </span>
-                          )}
-                        </div>
-                        <div className="flex items-center gap-2 shrink-0">
-                          <Link
-                            href={`/${locale}/gestion?proyecto=${project.id}`}
-                            className="rounded-full bg-secondary px-4 py-1.5 text-xs font-semibold text-white hover:opacity-80 transition-opacity"
-                          >
-                            {t("applications.saved_view")}
-                          </Link>
-                          <button
-                            type="button"
-                            aria-label={t("applications.saved_remove")}
-                            onClick={async () => {
-                              setSavedProjects((prev) => prev.filter((p) => p.id !== project.id));
-                              await unsaveProjectAction(project.id);
-                            }}
-                            className="flex size-8 items-center justify-center rounded-full border border-border text-ink-muted hover:border-magenta hover:text-magenta transition-colors"
-                          >
-                            <Bookmark className="w-3.5 h-3.5 fill-current" />
-                          </button>
-                        </div>
-                      </div>
-                    );
-                  })}
-                </div>
-              )}
-            </div>
-
-          </section>
         )}
 
         {/* ── TAB: NOTIFICACIONES ──────────────────────────────────────────────── */}
@@ -2361,32 +2157,6 @@ export default function PerfilUsuario({
             </section>
           );
         })()}
-
-        {/* ── TAB: SUGERIDOS ───────────────────────────────────────────────────── */}
-        {activeTab === "sugeridos" && (
-          <section className="bg-surface rounded-2xl border border-border shadow-soft p-6 md:p-8 space-y-6">
-            <div className="flex justify-between items-center">
-              <h2 className="text-xl font-bold text-ink-strong flex items-center gap-2">
-                <Sparkles className="w-6 h-6 text-primary" />
-                {t("suggested.title")}
-              </h2>
-              <span className="text-xs bg-primary/10 text-primary font-bold px-2.5 py-1 rounded-full border border-primary/20">
-                {t("suggested.badge")}
-              </span>
-            </div>
-            <p className="text-sm text-ink-muted">{t("suggested.description")}</p>
-
-            <div className="pt-8 border-t border-border/60">
-              <div className="rounded-2xl border border-dashed border-border bg-surface p-8 text-center">
-                <Sparkles className="mx-auto mb-3 w-7 h-7 text-primary" />
-                <h2 className="text-xl md:text-2xl font-heading font-extrabold tracking-tight text-ink-strong">
-                  {t("two_point_zero.title")}<span className="text-primary">.</span>
-                </h2>
-                <p className="mt-2 text-sm text-ink-muted">{t("two_point_zero.suggested")}</p>
-              </div>
-            </div>
-          </section>
-        )}
 
       </main>
     </div>

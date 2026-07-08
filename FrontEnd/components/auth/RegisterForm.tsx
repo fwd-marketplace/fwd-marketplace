@@ -141,7 +141,7 @@ export function RegisterForm({ badge }: RegisterFormProps) {
               type="button"
               onClick={() => handleOAuth("github")}
               disabled={isPending}
-              className="flex w-full items-center justify-center gap-3 rounded-full bg-ink-strong px-6 py-3 font-body text-sm font-medium text-white transition-opacity duration-[--duration-fast] hover:opacity-90 disabled:opacity-60"
+              className="flex w-full items-center justify-center gap-3 rounded-full bg-ink-strong px-6 py-3 font-body text-sm font-medium text-surface transition-opacity duration-[--duration-fast] hover:opacity-90 disabled:opacity-60"
             >
               <GitHubIcon />
               {t("continue_github")}
