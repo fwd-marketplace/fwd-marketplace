@@ -27,13 +27,18 @@ function juniorDisplayName(u: { nombre: string; apellido1: string | null } | nul
  * GestionPage; se extrajo para poder reutilizarlo desde el dashboard de empresa (consolidación B1).
  * Estado y polling internos; i18n propio (namespace `project_chat`), sin depender del `t` del padre.
  */
+// El chat solo necesita id/título (y, para el junior, el nombre de la empresa). Aceptar esta forma
+// mínima permite que la bandeja de empresa pase un proyecto inmediato desde la conversación, sin
+// esperar la carga asíncrona del proyecto completo (que causaba un parpadeo al abrir el chat).
+export type ChatPanelProject = Pick<ApiProject, "id" | "titulo" | "empresa">;
+
 export function ChatPanel({
   isEmpresa,
   project,
   userId,
 }: {
   isEmpresa: boolean;
-  project: ApiProject | null;
+  project: ChatPanelProject | null;
   userId: string | null;
 }) {
   const t = useTranslations("project_chat");

@@ -1018,8 +1018,6 @@ export function GestionPage({ role, userId, initialProjectId, initialSection: in
           <EmpresaMensajesView
             myConversaciones={myConversaciones}
             selectedProjectId={selectedId}
-            selectedProject={selectedProject}
-            projectLoading={projectLoading && !!selectedId && !selectedProject}
             t={t}
             userId={userId}
             onSelectProject={(id) => handleSelect(id, "chat")}
@@ -1095,6 +1093,7 @@ export function GestionPage({ role, userId, initialProjectId, initialSection: in
             {section === "chat" && (
               isEmpresa ? (
                 <ChatPanel
+                  key={selectedId}
                   isEmpresa={isEmpresa}
                   project={selectedProject}
                   userId={userId}
@@ -5422,16 +5421,12 @@ function MensajesView({
 function EmpresaMensajesView({
   myConversaciones,
   selectedProjectId,
-  selectedProject,
-  projectLoading,
   t,
   userId,
   onSelectProject,
 }: {
   myConversaciones: ConversacionItem[];
   selectedProjectId: string | null;
-  selectedProject: ApiProject | null;
-  projectLoading: boolean;
   t: T;
   userId: string | null;
   onSelectProject: (id: string) => void;
@@ -5443,6 +5438,13 @@ function EmpresaMensajesView({
     }
     return (b.ultimo_mensaje ?? "").localeCompare(a.ultimo_mensaje ?? "");
   });
+
+  // Proyecto del chat activo, construido AL INSTANTE desde la conversación (ya está en memoria).
+  // Así el ChatPanel nunca recibe el proyecto de otra conversación mientras carga (parpadeo).
+  const activeConv = myConversaciones.find((c) => c.proyecto.id === selectedProjectId);
+  const chatProject = activeConv
+    ? { id: activeConv.proyecto.id, titulo: activeConv.proyecto.titulo, empresa: null }
+    : null;
 
   return (
     <div className="flex overflow-hidden" style={{ height: "calc(100vh - 8rem)" }}>
@@ -5501,14 +5503,8 @@ function EmpresaMensajesView({
 
       {/* Chat del proyecto elegido */}
       <div className="min-w-0 flex-1 bg-canvas">
-        {selectedProjectId ? (
-          projectLoading && !selectedProject ? (
-            <div className="flex h-full items-center justify-center py-20">
-              <Loader2 className="size-6 animate-spin text-primary" aria-hidden="true" />
-            </div>
-          ) : (
-            <ChatPanel key={selectedProjectId} isEmpresa project={selectedProject} userId={userId} />
-          )
+        {selectedProjectId && chatProject ? (
+          <ChatPanel key={selectedProjectId} isEmpresa project={chatProject} userId={userId} />
         ) : (
           <div className="flex h-full flex-col items-center justify-center gap-4 px-8 py-20 text-center">
             <div className="flex size-14 items-center justify-center rounded-2xl bg-primary/10">
