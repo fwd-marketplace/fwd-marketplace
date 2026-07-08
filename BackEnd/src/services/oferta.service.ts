@@ -1,4 +1,4 @@
-import { supabaseForToken, supabaseAdmin } from "../config/supabase";
+import { supabaseForToken } from "../config/supabase";
 import { ApiError } from "../utils/ApiError";
 import { crearNotificacion, crearNotificaciones, MENSAJES_NOTIFICACION, TIPO_POR_MENSAJE } from "./notificacion.service";
 import { triggerNuevaCalificacion } from "./notificacionTriggers.service";
@@ -640,8 +640,9 @@ export async function withdrawOferta(
 }
 
 /**
- * La empresa califica la oferta adjudicada del junior tras cerrar el proyecto.
- * Solo se puede calificar si el proyecto está en estado "cerrado".
+ * La empresa califica la oferta adjudicada del junior. Es feedback opcional y NO cambia el estado
+ * del proyecto (cerrar es una acción explícita aparte). Se puede calificar mientras esté adjudicado,
+ * en desarrollo o cerrado.
  */
 export async function calificarOferta(
   accessToken: string,
@@ -681,23 +682,9 @@ export async function calificarOferta(
     .single();
   if (error) throw new ApiError(400, error.message);
 
-  // Cerrar el proyecto automáticamente al calificar (fin del ciclo de vida).
-  // Usa el cliente admin (service_role) para bypassar RLS: es una operación de
-  // sistema, no una acción directa del usuario.
-  const admin = supabaseAdmin();
-  const { data: estadoCerrado, error: estadoCerradoError } = await admin
-    .from("estado_proyecto")
-    .select("id")
-    .eq("nombre", "cerrado")
-    .maybeSingle();
-  if (estadoCerradoError) throw new ApiError(500, estadoCerradoError.message);
-  if (!estadoCerrado) throw new ApiError(500, "Falta el estado 'cerrado' (seeds no aplicados)");
-
-  const { error: closeError } = await admin
-    .from("proyecto")
-    .update({ id_estado: estadoCerrado.id })
-    .eq("id", oferta.id_proyecto);
-  if (closeError) throw new ApiError(500, `No se pudo cerrar el proyecto: ${closeError.message}`);
+  // La calificación NO cierra el proyecto: es feedback opcional. El cierre es una acción
+  // explícita de la empresa ("Finalizar proyecto"). Antes calificar auto-cerraba, lo que
+  // hacía que el proyecto pareciera cerrarse y "no continuar" apenas se adjudicaba/calificaba.
 
   // Notificar al junior que recibió una calificación (best-effort).
   if (oferta.id_usuario && proyecto?.titulo) {

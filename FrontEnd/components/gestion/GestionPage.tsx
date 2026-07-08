@@ -683,7 +683,7 @@ export function GestionPage({ role, userId, initialProjectId, initialSection: in
           >
             <LayoutDashboard className="size-[18px]" aria-hidden="true" />
           </button>
-          <span role="tooltip" className="pointer-events-none absolute left-[calc(100%+12px)] top-1/2 z-50 -translate-y-1/2 whitespace-nowrap rounded-xl bg-ink-strong px-3 py-1.5 font-body text-xs font-semibold text-white opacity-0 shadow-lg transition-opacity duration-[var(--duration-fast)] group-hover:opacity-100">
+          <span role="tooltip" className="pointer-events-none absolute left-[calc(100%+12px)] top-1/2 z-50 -translate-y-1/2 whitespace-nowrap rounded-xl bg-ink-strong px-3 py-1.5 font-body text-xs font-semibold text-surface opacity-0 shadow-lg transition-opacity duration-[var(--duration-fast)] group-hover:opacity-100">
             {t("aria_dashboard")}
           </span>
         </div>
@@ -706,7 +706,7 @@ export function GestionPage({ role, userId, initialProjectId, initialSection: in
             >
               <GitBranch className="size-[18px]" aria-hidden="true" />
             </button>
-            <span role="tooltip" className="pointer-events-none absolute left-[calc(100%+12px)] top-1/2 z-50 -translate-y-1/2 whitespace-nowrap rounded-xl bg-ink-strong px-3 py-1.5 font-body text-xs font-semibold text-white opacity-0 shadow-lg transition-opacity duration-[var(--duration-fast)] group-hover:opacity-100">
+            <span role="tooltip" className="pointer-events-none absolute left-[calc(100%+12px)] top-1/2 z-50 -translate-y-1/2 whitespace-nowrap rounded-xl bg-ink-strong px-3 py-1.5 font-body text-xs font-semibold text-surface opacity-0 shadow-lg transition-opacity duration-[var(--duration-fast)] group-hover:opacity-100">
               {t("aria_procesos")}
             </span>
           </div>
@@ -736,7 +736,7 @@ export function GestionPage({ role, userId, initialProjectId, initialSection: in
               {totalNoLeidos > 9 ? "9+" : totalNoLeidos}
             </span>
           )}
-          <span role="tooltip" className="pointer-events-none absolute left-[calc(100%+12px)] top-1/2 z-50 -translate-y-1/2 whitespace-nowrap rounded-xl bg-ink-strong px-3 py-1.5 font-body text-xs font-semibold text-white opacity-0 shadow-lg transition-opacity duration-[var(--duration-fast)] group-hover:opacity-100">
+          <span role="tooltip" className="pointer-events-none absolute left-[calc(100%+12px)] top-1/2 z-50 -translate-y-1/2 whitespace-nowrap rounded-xl bg-ink-strong px-3 py-1.5 font-body text-xs font-semibold text-surface opacity-0 shadow-lg transition-opacity duration-[var(--duration-fast)] group-hover:opacity-100">
             {t("aria_mensajes")}
           </span>
         </div>
