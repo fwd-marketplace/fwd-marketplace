@@ -6,9 +6,10 @@ import { usePathname } from "next/navigation";
 import { useLocale, useTranslations } from "next-intl";
 import { cn } from "@/lib/utils";
 
+// "Mis proyectos" (/gestion) se quitó: ya está como "Gestión" en la barra superior. "Matches"
+// aquí es el directorio GLOBAL de talento (distinto al "Matches" por-proyecto de gestión).
 const NAV_HREFS = [
   { key: "mi_empresa", href: "/perfil-empresa" },
-  { key: "mis_proyectos", href: "/gestion" },
   { key: "matches", href: "/matches" },
 ] as const;
 
@@ -26,7 +27,7 @@ export function EmpresaSubnav({
   return (
     <nav
       role="tablist"
-      className="sticky top-16 z-40 border-b border-border bg-surface/90 backdrop-blur-sm"
+      className="border-b border-border bg-surface"
     >
       <div className="mx-auto flex max-w-7xl items-end gap-6 overflow-x-auto px-4 pb-px md:gap-8 md:px-6">
         {NAV_HREFS.map((item) => {
