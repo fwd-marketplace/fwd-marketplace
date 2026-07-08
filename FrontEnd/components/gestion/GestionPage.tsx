@@ -1348,9 +1348,11 @@ function WelcomePanel({
           </div>
           {projects.map((p) => {
             // La empresa entra directo a "Proceso" (propuestas) si el proyecto tiene propuestas;
-            // si no (o es borrador), a "Info". Toda la tarjeta es clickeable.
+            // si es final (cerrado/cancelado) o no tiene propuestas, a "Info" (donde están las
+            // acciones de ciclo de vida como Reabrir/Finalizar). Toda la tarjeta es clickeable.
+            const esFinal = p.estado.nombre === "cerrado" || p.estado.nombre === "cancelado";
             const tieneProps = (p.n_por_revisar ?? 0) > 0 || (p.n_ofertas ?? 0) > 0;
-            const targetSection: Section = tieneProps ? "proceso" : "info";
+            const targetSection: Section = !esFinal && tieneProps ? "proceso" : "info";
             return (
               <div
                 key={p.id}
@@ -2318,7 +2320,8 @@ function InfoPanel({
   const canPause = isEmpresa && !isFinal && !isPaused;
   const canCancel = isEmpresa && !isFinal;
   const canFinalize = isEmpresa && isAdjudicado;
-  const canReopen = isEmpresa && isAdjudicado;
+  // Reabrir también sirve para recuperar un proyecto ya cerrado (deshace el cierre y la adjudicación).
+  const canReopen = isEmpresa && (isAdjudicado || project.estado.nombre === "cerrado");
   return (
     <div className="px-6 py-10 md:px-10">
       <div className="mb-6">

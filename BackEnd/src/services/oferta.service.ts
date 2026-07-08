@@ -104,8 +104,8 @@ export async function reabrirAdjudicacion(accessToken: string, userId: string, p
   if (proyecto.empresa?.id_usuario !== userId) throw new ApiError(403, "Este proyecto no es tuyo");
 
   const estadoActual = proyecto.estado?.nombre;
-  if (estadoActual !== "adjudicado" && estadoActual !== "en_desarrollo") {
-    throw new ApiError(409, "Solo se puede reabrir un proyecto adjudicado o en desarrollo");
+  if (estadoActual !== "adjudicado" && estadoActual !== "en_desarrollo" && estadoActual !== "cerrado") {
+    throw new ApiError(409, "Solo se puede reabrir un proyecto adjudicado, en desarrollo o cerrado");
   }
 
   const { data: ofertas, error: ofertasError } = await client
@@ -114,7 +114,8 @@ export async function reabrirAdjudicacion(accessToken: string, userId: string, p
     .eq("id_proyecto", projectId);
   if (ofertasError) throw new ApiError(500, ofertasError.message);
 
-  // Todas las que estaban adjudicada o rechazada vuelven a 'enviada' (pool reabierto).
+  // Todas las que estaban adjudicada o rechazada vuelven a 'enviada' (pool reabierto). Se limpia
+  // cualquier calificación previa: al reabrir, el proceso empieza de nuevo.
   const afectadas = (ofertas ?? []).filter((o) =>
     o.estado?.nombre === "adjudicada" || o.estado?.nombre === "no_seleccionada",
   );
@@ -122,7 +123,12 @@ export async function reabrirAdjudicacion(accessToken: string, userId: string, p
     const enviadaId = await getEstadoOfertaId(client, "enviada");
     const { error: updOfertasError } = await client
       .from("oferta")
-      .update({ id_estado: enviadaId, updated_at: new Date().toISOString() })
+      .update({
+        id_estado: enviadaId,
+        calificacion: null,
+        comentario_calificacion: null,
+        updated_at: new Date().toISOString(),
+      })
       .in("id", afectadas.map((o) => o.id));
     if (updOfertasError) throw new ApiError(400, updOfertasError.message);
   }
