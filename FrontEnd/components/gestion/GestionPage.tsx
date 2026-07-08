@@ -11,6 +11,7 @@ import {
   ArrowLeft,
   ArrowRight,
   Ban,
+  Bookmark,
   Briefcase,
   Calendar,
   Check,
@@ -66,6 +67,7 @@ import {
   editOfferAction,
   getMyProjectsAction,
   getMyOffersAction,
+  unsaveProjectAction,
   uploadDocumentoAction,
   getProjectEntregablesAction,
   reviewEntregableAction,
@@ -325,9 +327,9 @@ function buildEmpresaStudents(
 
 // ── Main component ────────────────────────────────────────────────────────────
 
-interface Props { role: ApiRoleName | null; userId: string | null; initialProjectId?: string | null; initialSection?: Section | null; disponible?: boolean; initialOffers?: MyOffer[]; initialProject?: ApiProject | null }
+interface Props { role: ApiRoleName | null; userId: string | null; initialProjectId?: string | null; initialSection?: Section | null; disponible?: boolean; initialOffers?: MyOffer[]; initialProject?: ApiProject | null; initialSavedProjects?: ApiProject[] }
 
-export function GestionPage({ role, userId, initialProjectId, initialSection: initialSectionProp = null, disponible = true, initialOffers = [], initialProject = null }: Props) {
+export function GestionPage({ role, userId, initialProjectId, initialSection: initialSectionProp = null, disponible = true, initialOffers = [], initialProject = null, initialSavedProjects = [] }: Props) {
   const t      = useTranslations("gestion_page");
   const locale = useLocale();
   const isEmpresa = role === "company";
@@ -335,6 +337,11 @@ export function GestionPage({ role, userId, initialProjectId, initialSection: in
   // Sidebar data — starts empty, replaced by real API data on mount
   const [sidebarProjects, setSidebarProjects] = useState<ApiProject[]>([]);
   const [myOffers, setMyOffers] = useState<MyOffer[]>(initialOffers);
+  const [savedProjects, setSavedProjects] = useState<ApiProject[]>(initialSavedProjects);
+  const handleUnsaveProject = useCallback(async (projectId: string) => {
+    setSavedProjects((prev) => prev.filter((p) => p.id !== projectId));
+    await unsaveProjectAction(projectId);
+  }, []);
   const [myConversaciones, setMyConversaciones] = useState<ConversacionItem[]>([]);
 
   // Catalogs for create/edit form (empresa only)
@@ -373,7 +380,7 @@ export function GestionPage({ role, userId, initialProjectId, initialSection: in
   const [section, setSection]               = useState<Section>(initialSection);
 
   // Sidebar navigation — pure presentation state (which top-level view is active)
-  const [sidebarView, setSidebarView] = useState<"dashboard" | "procesos" | "mensajes">("dashboard");
+  const [sidebarView, setSidebarView] = useState<"dashboard" | "procesos" | "mensajes" | "guardados">("dashboard");
 
   // Clean ?proyecto= from URL once used to pre-select
   useEffect(() => {
@@ -712,6 +719,29 @@ export function GestionPage({ role, userId, initialProjectId, initialSection: in
             </button>
             <span role="tooltip" className="pointer-events-none absolute left-[calc(100%+12px)] top-1/2 z-50 -translate-y-1/2 whitespace-nowrap rounded-xl bg-ink-strong px-3 py-1.5 font-body text-xs font-semibold text-surface opacity-0 shadow-lg transition-opacity duration-[var(--duration-fast)] group-hover:opacity-100">
               {t("aria_procesos")}
+            </span>
+          </div>
+        )}
+
+        {/* Guardados (solo junior): proyectos que guardó del marketplace para revisar luego */}
+        {!isEmpresa && (
+          <div className="group relative">
+            <button
+              type="button"
+              onClick={() => { setSidebarView("guardados"); handleBack(); }}
+              aria-current={sidebarView === "guardados" && !selectedId ? "page" : undefined}
+              aria-label={t("aria_guardados")}
+              className={cn(
+                "flex size-10 items-center justify-center rounded-[14px] transition-all duration-[var(--duration-fast)] ease-[var(--ease-out)]",
+                sidebarView === "guardados" && !selectedId
+                  ? "bg-secondary text-white shadow-sm"
+                  : "text-ink-muted hover:bg-secondary/10 hover:text-secondary",
+              )}
+            >
+              <Bookmark className="size-[18px]" aria-hidden="true" />
+            </button>
+            <span role="tooltip" className="pointer-events-none absolute left-[calc(100%+12px)] top-1/2 z-50 -translate-y-1/2 whitespace-nowrap rounded-xl bg-ink-strong px-3 py-1.5 font-body text-xs font-semibold text-surface opacity-0 shadow-lg transition-opacity duration-[var(--duration-fast)] group-hover:opacity-100">
+              {t("aria_guardados")}
             </span>
           </div>
         )}
@@ -1074,6 +1104,13 @@ export function GestionPage({ role, userId, initialProjectId, initialSection: in
             t={t}
             userId={userId}
             onSelectProject={(id) => handleSelect(id, "chat")}
+          />
+        ) : !isEmpresa && sidebarView === "guardados" ? (
+          <GuardadosView
+            savedProjects={savedProjects}
+            locale={locale}
+            t={t}
+            onRemove={handleUnsaveProject}
           />
         ) : !selectedId ? (
           !isEmpresa && sidebarView === "procesos" ? (
@@ -1961,6 +1998,102 @@ function SidebarEmpty({ text }: { text: string }) {
 }
 
 // ── Procesos view (junior) ────────────────────────────────────────────────────
+
+function GuardadosView({
+  savedProjects,
+  locale,
+  t,
+  onRemove,
+}: {
+  savedProjects: ApiProject[];
+  locale: string;
+  t: T;
+  onRemove: (id: string) => void;
+}) {
+  if (savedProjects.length === 0) {
+    return (
+      <div className="flex flex-col items-center justify-center gap-4 px-8 py-24 text-center">
+        <Bookmark className="size-12 text-ink-muted/30" aria-hidden="true" />
+        <p className="font-heading text-xl font-bold text-ink-strong">{t("guardados_empty")}</p>
+        <a
+          href={`/${locale}/marketplace`}
+          className="inline-flex items-center gap-2 rounded-full bg-primary px-5 py-2.5 font-body text-sm font-semibold text-white transition-colors duration-[var(--duration-fast)] hover:bg-secondary"
+        >
+          <ExternalLink className="size-4" aria-hidden="true" />
+          {t("junior_dash_explore")}
+        </a>
+      </div>
+    );
+  }
+
+  return (
+    <div className="px-8 pb-12 pt-0">
+      {/* Header */}
+      <div className="mb-8 flex items-end justify-between">
+        <div>
+          <p className="mb-1 font-body text-xs font-bold uppercase tracking-widest text-primary">
+            {t("section_junior")}
+          </p>
+          <h1 className="font-heading text-4xl font-extrabold tracking-tight text-ink-strong">
+            {t("guardados_title")}<span className="text-primary" aria-hidden="true">.</span>
+          </h1>
+          <p className="mt-1 font-body text-sm text-ink-muted">
+            {savedProjects.length} {t("guardados_count")}
+          </p>
+        </div>
+        <a
+          href={`/${locale}/marketplace`}
+          className="inline-flex items-center gap-2 rounded-full bg-primary px-5 py-2.5 font-body text-sm font-semibold text-white transition-colors duration-[var(--duration-fast)] hover:bg-secondary"
+        >
+          <ExternalLink className="size-4" aria-hidden="true" />
+          {t("junior_dash_explore")}
+        </a>
+      </div>
+
+      {/* Cards */}
+      <div className="flex flex-col gap-3">
+        {savedProjects.map((project) => {
+          const isExpired = project.fecha_cierre ? new Date(project.fecha_cierre) < new Date() : false;
+          return (
+            <div
+              key={project.id}
+              className="flex items-center gap-4 rounded-2xl border border-border bg-surface px-5 py-4 shadow-soft"
+            >
+              <div className="min-w-0 flex-1 space-y-0.5">
+                <p className="truncate font-heading text-sm font-bold leading-tight text-ink-strong">{project.titulo}</p>
+                {project.empresa && (
+                  <p className="truncate font-body text-xs text-ink-muted">{project.empresa.nombre_comercial}</p>
+                )}
+                {isExpired && (
+                  <span className="inline-flex items-center gap-1 font-body text-[10px] font-bold uppercase tracking-wider text-magenta">
+                    <Clock className="size-3" aria-hidden="true" />
+                    {t("guardados_expired")}
+                  </span>
+                )}
+              </div>
+              <div className="flex shrink-0 items-center gap-2">
+                <a
+                  href={`/${locale}/marketplace/${project.id}`}
+                  className="rounded-full bg-secondary px-4 py-1.5 font-body text-xs font-semibold text-white transition-opacity hover:opacity-80"
+                >
+                  {t("guardados_view")}
+                </a>
+                <button
+                  type="button"
+                  aria-label={t("guardados_remove")}
+                  onClick={() => onRemove(project.id)}
+                  className="flex size-8 items-center justify-center rounded-full border border-border text-ink-muted transition-colors hover:border-magenta hover:text-magenta"
+                >
+                  <Bookmark className="size-3.5 fill-current" aria-hidden="true" />
+                </button>
+              </div>
+            </div>
+          );
+        })}
+      </div>
+    </div>
+  );
+}
 
 function ProcesosView({
   myOffers,
