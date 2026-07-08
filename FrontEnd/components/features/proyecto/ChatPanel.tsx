@@ -79,12 +79,44 @@ export function ChatPanel({
     return [...map.values()];
   })();
 
+  // Mensajes sin leer por junior (empresa): recibidos por mí y aún sin marcar como leídos.
+  // Alimenta el badge "sin ver" del selector de juniors para saber a quién responder.
+  const unreadByJunior = (() => {
+    const counts = new Map<string, number>();
+    if (!isEmpresa || !userId) return counts;
+    rawMsgs.forEach((m) => {
+      const fromJunior = m.remitente?.id && m.remitente.id !== userId;
+      const toMe = m.id_destinatario === userId || m.destinatario_info?.id === userId;
+      if (fromJunior && toMe && m.leida === false) {
+        const jid = m.remitente!.id;
+        counts.set(jid, (counts.get(jid) ?? 0) + 1);
+      }
+    });
+    return counts;
+  })();
+
   // (no auto-select — empresa must pick a junior from the list)
 
   // Reset junior selection when project changes
   useEffect(() => {
     setSelectedJuniorId(null);
   }, [project?.id]);
+
+  // Al abrir el hilo de un junior, marcar como leídos SOLO sus mensajes (backend con `?remitente=`).
+  // Optimista primero para que el badge desaparezca al instante; luego re-sincroniza con el servidor.
+  useEffect(() => {
+    if (!isEmpresa || !selectedJuniorId || !project?.id || !userId) return;
+    setRawMsgs((prev) =>
+      prev.map((m) =>
+        m.remitente?.id === selectedJuniorId && m.id_destinatario === userId && m.leida === false
+          ? { ...m, leida: true }
+          : m,
+      ),
+    );
+    void getProjectMensajesAction(project.id, selectedJuniorId).then((r) => {
+      if (r.ok) setRawMsgs(r.data);
+    });
+  }, [isEmpresa, selectedJuniorId, project?.id, userId]);
 
   // Filter messages for the selected junior (empresa) or all (junior)
   const visibleMsgs = isEmpresa && selectedJuniorId
@@ -168,20 +200,44 @@ export function ChatPanel({
                 (m) => m.remitente?.id === j.id || m.destinatario_info?.id === j.id,
               );
               const lastMsg = jMsgs[jMsgs.length - 1];
+              const unread = unreadByJunior.get(j.id) ?? 0;
               return (
                 <button
                   key={j.id}
                   type="button"
                   onClick={() => setSelectedJuniorId(j.id)}
-                  className="flex items-center gap-3 rounded-xl border border-border bg-surface p-4 text-left transition-colors duration-[var(--duration-fast)] ease-[var(--ease-out)] hover:border-secondary/30 hover:bg-secondary/5"
+                  className={cn(
+                    "flex items-center gap-3 rounded-xl border bg-surface p-4 text-left transition-colors duration-[var(--duration-fast)] ease-[var(--ease-out)] hover:border-secondary/30 hover:bg-secondary/5",
+                    unread > 0 ? "border-secondary/40 bg-secondary/5" : "border-border",
+                  )}
                 >
                   <div className="flex size-10 shrink-0 items-center justify-center rounded-full bg-secondary/15 font-heading text-sm font-bold text-secondary">
                     {j.nombre[0]?.toUpperCase() ?? "J"}
                   </div>
                   <div className="min-w-0 flex-1">
-                    <p className="truncate font-body text-sm font-bold text-ink-strong">{juniorDisplayName(j)}</p>
+                    <div className="flex items-center gap-2">
+                      <p className={cn(
+                        "min-w-0 flex-1 truncate font-body text-sm text-ink-strong",
+                        unread > 0 ? "font-extrabold" : "font-bold",
+                      )}>
+                        {juniorDisplayName(j)}
+                      </p>
+                      {unread > 0 && (
+                        <span
+                          className="flex min-w-5 shrink-0 items-center justify-center rounded-full bg-magenta px-1.5 py-0.5 font-body text-[10px] font-bold text-white"
+                          aria-label={t("no_leidos", { count: unread })}
+                        >
+                          {unread > 9 ? "9+" : unread}
+                        </span>
+                      )}
+                    </div>
                     {lastMsg && (
-                      <p className="truncate font-body text-xs text-ink-muted">{lastMsg.contenido}</p>
+                      <p className={cn(
+                        "truncate font-body text-xs",
+                        unread > 0 ? "font-semibold text-ink" : "text-ink-muted",
+                      )}>
+                        {lastMsg.contenido}
+                      </p>
                     )}
                   </div>
                   <ChevronRight className="size-4 shrink-0 text-ink-muted" aria-hidden="true" />
@@ -202,21 +258,27 @@ export function ChatPanel({
           >
             ←
           </button>
-          {juniors.map((j) => (
-            <button
-              key={j.id}
-              type="button"
-              onClick={() => setSelectedJuniorId(j.id)}
-              className={cn(
-                "shrink-0 px-4 py-3 font-body text-sm font-semibold transition-colors duration-[var(--duration-fast)] ease-[var(--ease-out)] border-b-2",
-                selectedJuniorId === j.id
-                  ? "border-secondary text-secondary"
-                  : "border-transparent text-ink-muted hover:text-ink hover:border-border",
-              )}
-            >
-              {juniorDisplayName(j)}
-            </button>
-          ))}
+          {juniors.map((j) => {
+            const unread = unreadByJunior.get(j.id) ?? 0;
+            return (
+              <button
+                key={j.id}
+                type="button"
+                onClick={() => setSelectedJuniorId(j.id)}
+                className={cn(
+                  "shrink-0 inline-flex items-center gap-1.5 px-4 py-3 font-body text-sm font-semibold transition-colors duration-[var(--duration-fast)] ease-[var(--ease-out)] border-b-2",
+                  selectedJuniorId === j.id
+                    ? "border-secondary text-secondary"
+                    : "border-transparent text-ink-muted hover:text-ink hover:border-border",
+                )}
+              >
+                {juniorDisplayName(j)}
+                {unread > 0 && selectedJuniorId !== j.id && (
+                  <span className="size-2 shrink-0 rounded-full bg-magenta" aria-label={t("no_leidos", { count: unread })} />
+                )}
+              </button>
+            );
+          })}
         </div>
       )}
 

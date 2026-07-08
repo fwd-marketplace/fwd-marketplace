@@ -439,11 +439,13 @@ export function GestionPage({ role, userId, initialProjectId, initialSection: in
     if (r.ok) setMyConversaciones(r.data);
   }, []);
 
-  // Mientras la vista de mensajes está activa, refrescar conversaciones cada 5 s.
-  // Esto garantiza que los chats directos aparezcan aunque el callback de escalada
-  // no llegue correctamente a través de la cadena de componentes.
+  // Refresca conversaciones cada 5 s para mantener vivos los indicadores "sin ver" y los chats
+  // nuevos. Junior: solo mientras mira "Mensajes" (ahí vive su lista de Directos). Empresa:
+  // siempre, porque su badge de pendientes vive en el sidebar de proyectos (visible en toda la
+  // vista de gestión). Antes la empresa nunca refrescaba y el badge quedaba congelado al montar.
   useEffect(() => {
-    if (sidebarView !== "mensajes" || isEmpresa) return;
+    const debePollear = isEmpresa || sidebarView === "mensajes";
+    if (!debePollear) return;
     void refreshConversaciones();
     let active = true;
     const timer = setInterval(() => { if (active) void refreshConversaciones(); }, 5000);

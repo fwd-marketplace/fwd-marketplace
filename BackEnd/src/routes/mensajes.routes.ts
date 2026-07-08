@@ -26,7 +26,7 @@ const enviarMensajeSchema = z.object({
 
 /** Campos que se retornan en cada mensaje (incluye info del destinatario para multi-tab empresa). */
 const MSG_SELECT =
-  "id, contenido, contenido_traducido, idioma_original, es_publico, fecha_envio, " +
+  "id, contenido, contenido_traducido, idioma_original, es_publico, fecha_envio, leida, id_destinatario, " +
   "remitente:users!mensaje_id_remitente_fkey(id, nombre, apellido1), " +
   "destinatario_info:users!mensaje_id_destinatario_fkey(id, nombre, apellido1)";
 
@@ -146,6 +146,13 @@ async function listMensajes(req: Request, res: Response) {
   const idParsed = idParamSchema.safeParse(req.params.id);
   if (!idParsed.success) throw new ApiError(400, "El id del proyecto no es válido");
 
+  // `remitente` (opcional): al leer el hilo de UN junior concreto (empresa multi-tab), solo se
+  // marcan como leídos los mensajes de ESE remitente. Así el badge "sin ver" del resto de juniors
+  // se conserva hasta que la empresa abra cada conversación.
+  const remitenteParsed = z.string().uuid().optional().safeParse(req.query.remitente);
+  if (!remitenteParsed.success) throw new ApiError(400, "El remitente no es válido");
+  const remitenteFiltro = remitenteParsed.data;
+
   const client = supabaseForToken(req.accessToken);
   const userId = req.user.id;
 
@@ -163,20 +170,27 @@ async function listMensajes(req: Request, res: Response) {
     .order("fecha_envio", { ascending: true });
   if (error) throw new ApiError(500, error.message);
 
-  // Al abrir el chat, marcar como leídos los mensajes que recibió el usuario
-  // (limpia el indicador de "pendiente" en gestión). Se usa service role porque
-  // mensaje no tiene política RLS de UPDATE. Best-effort: no bloquea la respuesta.
-  void supabaseAdmin()
-    .from("mensaje")
-    .update({ leida: true })
-    .eq("id_proyecto", idParsed.data)
-    .eq("id_destinatario", userId)
-    .eq("leida", false)
-    .then(({ error: updateError }) => {
+  // Marcar como leídos los mensajes que recibió el usuario (limpia el indicador "pendiente").
+  // La empresa tiene varios interlocutores por proyecto: NO se marca todo al abrir el proyecto,
+  // solo cuando entra al hilo de un junior concreto (`?remitente=<id>`). El junior tiene un único
+  // interlocutor (la empresa), así que al abrir su chat se marcan todos. Service role porque
+  // `mensaje` no tiene política RLS de UPDATE. Best-effort: no bloquea la respuesta.
+  const esEmpresa = userId === empresaUserId;
+  const debeMarcarLeidos = !esEmpresa || !!remitenteFiltro;
+  if (debeMarcarLeidos) {
+    let marcar = supabaseAdmin()
+      .from("mensaje")
+      .update({ leida: true })
+      .eq("id_proyecto", idParsed.data)
+      .eq("id_destinatario", userId)
+      .eq("leida", false);
+    if (remitenteFiltro) marcar = marcar.eq("id_remitente", remitenteFiltro);
+    void marcar.then(({ error: updateError }) => {
       if (updateError) {
         logger.warn("marcar mensajes leidos fallo (best-effort)", { error: updateError.message });
       }
     });
+  }
 
   res.status(200).json({ mensajes: data });
 }

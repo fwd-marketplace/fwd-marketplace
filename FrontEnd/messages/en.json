@@ -2099,7 +2099,8 @@
     "send": "Send message",
     "hint": "Enter to send · Shift+Enter for new line",
     "seleccionar_junior": "Conversations",
-    "sin_conversaciones": "No conversations yet"
+    "sin_conversaciones": "No conversations yet",
+    "no_leidos": "{count, plural, one {# unread message} other {# unread messages}}"
   },
   "gestion_page": {
     "compensation_updated": "Compensation updated on {date}",

@@ -2090,7 +2090,8 @@
     "send": "Enviar mensaje",
     "hint": "Enter para enviar · Shift+Enter para nueva línea",
     "seleccionar_junior": "Conversaciones",
-    "sin_conversaciones": "Sin conversaciones aún"
+    "sin_conversaciones": "Sin conversaciones aún",
+    "no_leidos": "{count, plural, one {# mensaje sin leer} other {# mensajes sin leer}}"
   },
   "gestion_page": {
     "compensation_updated": "Compensación actualizada el {date}",
