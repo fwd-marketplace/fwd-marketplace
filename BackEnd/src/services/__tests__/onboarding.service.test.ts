@@ -70,6 +70,7 @@ const empresaInput: EmpresaOnboarding = {
 const emprendedorInput: EmprendedorOnboarding = {
   tipo: "emprendedor",
   nombre_proyecto: "MiApp",
+  cedula: "1-2345-6789",
   etapa: "mvp",
   soporte_tecnico: ["web"],
   presupuesto: "range_500_1000",

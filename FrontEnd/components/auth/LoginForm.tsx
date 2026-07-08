@@ -4,8 +4,10 @@ import React, { useState, useTransition } from "react";
 import { useParams, useRouter } from "next/navigation";
 import Link from "next/link";
 import { useTranslations } from "next-intl";
+import { useApiErrorText } from "@/lib/i18n/api-error";
 import { ArrowLeft, Eye, EyeOff } from "lucide-react";
 import { FwdGeoBackdrop } from "@/components/ui/fwd-geo-backdrop";
+import { PublicNavControls } from "@/components/layout/public-nav-controls";
 import { CosmicBackdrop } from "@/components/ui/cosmic-backdrop";
 import { AuthFooterLinks } from "@/components/auth/AuthFooterLinks";
 import { loginUser, startOAuth, verifyLoginOtp } from "@/lib/actions/auth";
@@ -47,6 +49,7 @@ interface LoginFormProps {
 
 export function LoginForm({ badge }: LoginFormProps) {
   const t = useTranslations("login");
+  const errorText = useApiErrorText();
   const params = useParams();
   const router = useRouter();
   const locale = params.locale as string;
@@ -94,7 +97,7 @@ export function LoginForm({ badge }: LoginFormProps) {
     startTransition(async () => {
       const result = await startOAuth(provider, locale);
       if (!result.ok) {
-        setError(result.error);
+        setError(errorText(result.error));
         return;
       }
       // Redirige el navegador al provider; el flujo vuelve por /auth/callback.
@@ -110,7 +113,7 @@ export function LoginForm({ badge }: LoginFormProps) {
     startTransition(async () => {
       const result = await loginUser({ email, password });
       if (!result.ok) {
-        setError(result.error);
+        setError(errorText(result.error));
         return;
       }
       setTicket(result.data.ticket);
@@ -127,7 +130,7 @@ export function LoginForm({ badge }: LoginFormProps) {
     startTransition(async () => {
       const result = await verifyLoginOtp({ ticket, code });
       if (!result.ok) {
-        setError(result.error);
+        setError(errorText(result.error));
         return;
       }
       routeByResult(result.data.role, result.data.estado_cuenta);
@@ -146,7 +149,7 @@ export function LoginForm({ badge }: LoginFormProps) {
       <FwdGeoBackdrop />
       <CosmicBackdrop />
 
-      <div className="absolute left-6 top-6 z-10">
+      <div className="absolute left-6 top-6 z-10 flex items-center gap-2">
         <Link
           href={`/${locale}/home`}
           className="inline-flex items-center gap-2 rounded-full bg-white/10 px-4 py-2 font-body text-sm font-medium text-white/75 backdrop-blur-sm transition-colors duration-[var(--duration-fast)] ease-[var(--ease-out)] hover:bg-white/15 hover:text-white"
@@ -154,6 +157,7 @@ export function LoginForm({ badge }: LoginFormProps) {
           <ArrowLeft size={14} aria-hidden="true" />
           {t("back_home")}
         </Link>
+        <PublicNavControls tone="onDark" />
       </div>
 
       <div className="relative flex min-h-[100dvh] flex-col items-center justify-center px-6 py-16">

@@ -68,6 +68,7 @@ import {
 } from "@/lib/actions/marketplace";
 import { generateProposalAction, suggestStackAction, suggestCompensacionAction } from "@/lib/actions/ai";
 import { formatCompensacion, compensacionUpdatedAfterPublish, COMPENSACION_MIN, COMPENSACION_MAX } from "@/lib/marketplace/compensation";
+import { intlLocale } from "@/lib/i18n/date-locale";
 import { streamAssistant, toAiLocale } from "@/lib/api/ai-client";
 import { getProjectMensajesAction, sendMensajeAction, getMyConversacionesAction } from "@/lib/actions/mensajes";
 import { MejorarMensajeButton } from "@/components/gestion/MejorarMensajeButton";
@@ -2355,8 +2356,8 @@ function InfoPanel({
 
 // ── Chat panel ────────────────────────────────────────────────────────────────
 
-function formatChatTime(iso: string) {
-  return new Date(iso).toLocaleTimeString("es-CR", { hour: "2-digit", minute: "2-digit" });
+function formatChatTime(iso: string, locale: string) {
+  return new Date(iso).toLocaleTimeString(intlLocale(locale), { hour: "2-digit", minute: "2-digit" });
 }
 
 // ── Junior: asistente del proyecto + chat humano gateado ────────────────────────
@@ -2374,6 +2375,7 @@ function JuniorContactoPanel({
   onConversationActivity?: () => void;
   hideBotFallback?: boolean;
 }) {
+  const locale = useLocale();
   const [rawMsgs, setRawMsgs] = useState<ApiMensaje[]>([]);
   const [draft, setDraft] = useState("");
   const [sending, setSending] = useState(false);
@@ -2491,7 +2493,7 @@ function JuniorContactoPanel({
                         {msg.contenido}
                       </div>
                       <span className="flex items-center gap-1.5 px-1 font-body text-[11px] text-ink-muted">
-                        {formatChatTime(msg.fecha_envio)}
+                        {formatChatTime(msg.fecha_envio, locale)}
                         {!isMine && <ReportarMensajeButton mensajeId={msg.id} />}
                       </span>
                     </div>
@@ -2730,13 +2732,13 @@ function JuniorProcesoView({
 
     if (p.link) {
       try { new URL(p.link); } catch {
-        setSubmitError("El enlace debe comenzar con https:// (ej: https://mi-demo.vercel.app)");
+        setSubmitError(t("proceso_error_enlace_https"));
         return;
       }
     }
 
     if (!p.link && !p.docUrl) {
-      setSubmitError("Tenés que adjuntar un enlace de documentación o subir un archivo PDF antes de enviar.");
+      setSubmitError(t("proceso_error_adjunto_requerido"));
       return;
     }
 
@@ -3812,8 +3814,11 @@ function EmpresaProcesoView({
             return (
               <div
                 key={s.id}
-                className={cn("transition-opacity duration-[var(--duration-fast)]", isRej && !s.expanded && "opacity-50")}
-                style={{ background: s.expanded ? "#FAFAFC" : "#fff" }}
+                className={cn(
+                  "transition-opacity duration-[var(--duration-fast)]",
+                  s.expanded ? "bg-surface-sunken" : "bg-surface",
+                  isRej && !s.expanded && "opacity-50",
+                )}
               >
                 {/* Student row */}
                 <div
@@ -3834,7 +3839,7 @@ function EmpresaProcesoView({
                       <span className={cn("font-heading text-base font-bold", isRej ? "text-ink-muted" : "text-ink-strong")}>
                         {s.name}
                       </span>
-                      <span className="rounded-full bg-surface px-2.5 py-0.5 font-body text-xs font-semibold text-ink-muted" style={{ border: "1px solid #E7E3EF" }}>
+                      <span className="rounded-full border border-border bg-surface px-2.5 py-0.5 font-body text-xs font-semibold text-ink-muted">
                         {nVer} {nVer === 1 ? t("proceso_version_singular") : t("proceso_version_plural")}
                       </span>
                     </div>
@@ -4190,7 +4195,7 @@ function AiAssistant({ onApply }: { onApply: (proposal: ProjectProposal) => void
     if (accumulated.trim()) {
       setMessages((prev) => [...prev, { role: "assistant", content: accumulated.trim() }]);
     } else if (!failed) {
-      setError("Ocurrió un error. Intentá de nuevo.");
+      setError(t("ai_error_generico"));
     }
   }
 
@@ -4247,7 +4252,7 @@ function AiAssistant({ onApply }: { onApply: (proposal: ProjectProposal) => void
     <div className="rounded-xl border border-primary/20 bg-primary/5 p-4">
       <div className="mb-3 flex items-center gap-2">
         <Sparkles className="size-4 text-primary" aria-hidden="true" />
-        <span className="font-body text-sm font-bold text-primary">Asistente de IA</span>
+        <span className="font-body text-sm font-bold text-primary">{t("ai_titulo")}</span>
         <span className="rounded-full bg-highlight px-2 py-0.5 font-body text-[10px] font-bold uppercase tracking-wide text-secondary">
           Beta
         </span>
@@ -4257,7 +4262,7 @@ function AiAssistant({ onApply }: { onApply: (proposal: ProjectProposal) => void
         <div className="space-y-3">
           <div className="space-y-1">
             <label htmlFor="ai-idea" className="block font-body text-xs font-bold uppercase tracking-wider text-ink-muted">
-              Contanos la idea de tu proyecto
+              {t("ai_idea_label")}
             </label>
             <textarea
               id="ai-idea"
@@ -4275,10 +4280,10 @@ function AiAssistant({ onApply }: { onApply: (proposal: ProjectProposal) => void
             className="flex w-full items-center justify-center gap-2 rounded-xl bg-primary px-4 py-2 font-body text-sm font-bold text-white transition-colors duration-[var(--duration-fast)] ease-[var(--ease-out)] hover:bg-secondary disabled:cursor-not-allowed disabled:opacity-50"
           >
             <Sparkles className="size-4" aria-hidden="true" />
-            Completar formulario con IA
+            {t("ai_completar_btn")}
           </button>
           <p className="font-body text-xs text-ink-muted">
-            La IA hará algunas preguntas para entender mejor tu proyecto antes de completar el formulario.
+            {t("ai_intro_hint")}
           </p>
         </div>
       ) : (
@@ -4290,7 +4295,7 @@ function AiAssistant({ onApply }: { onApply: (proposal: ProjectProposal) => void
             {isStreaming && (
               streamingText
                 ? <ChatBubble role="assistant" content={streamingText} />
-                : <TypingIndicator label="Escribiendo..." />
+                : <TypingIndicator label={t("ai_escribiendo")} />
             )}
           </div>
 
@@ -4298,11 +4303,11 @@ function AiAssistant({ onApply }: { onApply: (proposal: ProjectProposal) => void
             <div className="space-y-2 rounded-xl border border-accent/30 bg-accent/10 p-3">
               <div className="flex items-center gap-2">
                 <CheckCircle2 className="size-4 shrink-0 text-accent" aria-hidden="true" />
-                <p className="font-body text-xs font-semibold text-ink-strong">Formulario completado. Revisá y ajustá lo que necesites.</p>
+                <p className="font-body text-xs font-semibold text-ink-strong">{t("ai_formulario_completado")}</p>
               </div>
               {disenos.length > 0 && (
                 <div className="space-y-1 pl-6">
-                  <p className="font-body text-[11px] font-bold uppercase tracking-wider text-ink-muted">Referencias de diseño sugeridas</p>
+                  <p className="font-body text-[11px] font-bold uppercase tracking-wider text-ink-muted">{t("ai_referencias_diseno")}</p>
                   <ul className="list-disc space-y-0.5 pl-4 font-body text-xs text-ink-muted">
                     {disenos.map((d, i) => <li key={i}>{d}</li>)}
                   </ul>
@@ -4310,7 +4315,7 @@ function AiAssistant({ onApply }: { onApply: (proposal: ProjectProposal) => void
               )}
               {pendingQuestions.length > 0 && (
                 <div className="space-y-1 pl-6">
-                  <p className="font-body text-[11px] font-bold uppercase tracking-wider text-ink-muted">Preguntas que podés definir después</p>
+                  <p className="font-body text-[11px] font-bold uppercase tracking-wider text-ink-muted">{t("ai_preguntas_pendientes")}</p>
                   <ul className="list-disc space-y-0.5 pl-4 font-body text-xs text-ink-muted">
                     {pendingQuestions.map((q, i) => <li key={i}>{q}</li>)}
                   </ul>
@@ -4346,11 +4351,11 @@ function AiAssistant({ onApply }: { onApply: (proposal: ProjectProposal) => void
             {!applied && (
               <Button type="button" variant="accent" onClick={() => void generate()} disabled={!canGenerate} className="gap-2">
                 {isGenerating ? <Loader2 className="size-4 animate-spin" /> : <Wand2 className="size-4" />}
-                {isGenerating ? "Generando..." : "Generar propuesta"}
+                {isGenerating ? t("ai_generando") : t("ai_generar_propuesta")}
               </Button>
             )}
             <button type="button" onClick={restart} className="font-body text-xs font-semibold text-ink-muted underline-offset-2 hover:text-primary hover:underline">
-              {applied ? "Reiniciar asistente" : "Continuar manualmente"}
+              {applied ? t("ai_reiniciar") : t("ai_continuar_manual")}
             </button>
           </div>
         </div>
@@ -4508,25 +4513,28 @@ function ProjectFormContent({
   }
 
   async function handleSubmit() {
-    if (!form.titulo.trim()) { setError("El título es obligatorio"); return; }
-    if (!form.descripcion.trim()) { setError("La descripción es obligatoria"); return; }
-    if (!form.id_area_negocio) { setError("Seleccioná un área de negocio"); return; }
+    if (!form.titulo.trim()) { setError(t("form_error_titulo")); return; }
+    if (!form.descripcion.trim()) { setError(t("form_error_descripcion")); return; }
+    if (!form.id_area_negocio) { setError(t("form_error_area")); return; }
     const plazo = parseInt(form.plazo_dias, 10);
-    if (!plazo || plazo < 5 || plazo > 15) { setError("El plazo debe ser entre 5 y 15 días"); return; }
+    if (!plazo || plazo < 5 || plazo > 15) { setError(t("form_error_plazo")); return; }
     const compRaw = form.compensacion.trim();
     let compensacion: number | undefined;
     if (compRaw) {
       const parsed = Number(compRaw);
       if (!Number.isInteger(parsed) || parsed < COMPENSACION_MIN || parsed > COMPENSACION_MAX) {
         setError(
-          `La compensación debe ser un monto entero entre $${COMPENSACION_MIN.toLocaleString("en-US")} y $${COMPENSACION_MAX.toLocaleString("en-US")} USD`,
+          t("form_error_compensacion_rango", {
+            min: COMPENSACION_MIN.toLocaleString("en-US"),
+            max: COMPENSACION_MAX.toLocaleString("en-US"),
+          }),
         );
         return;
       }
       compensacion = parsed;
     }
     if (mode === "create" && form.publicar && compensacion == null) {
-      setError("La compensación es obligatoria para publicar el proyecto");
+      setError(t("form_error_compensacion_publicar"));
       return;
     }
     setError(null);
@@ -4562,7 +4570,7 @@ function ProjectFormContent({
       {/* Header */}
       <div className="sticky top-0 z-10 flex items-center justify-between gap-4 border-b border-border bg-canvas/95 px-6 py-4 backdrop-blur-sm">
         <h2 className="font-heading text-lg font-extrabold tracking-tight text-ink-strong">
-          {mode === "create" ? "Nuevo proyecto" : "Editar proyecto"}
+          {mode === "create" ? t("form_mode_crear") : t("form_mode_editar")}
           <span className="text-primary" aria-hidden="true">.</span>
         </h2>
         <button
@@ -4586,7 +4594,7 @@ function ProjectFormContent({
             <div className="relative flex items-center gap-3 py-1">
               <div className="h-px flex-1 bg-border" />
               <span className="font-body text-[11px] font-semibold uppercase tracking-wider text-ink-muted">
-                o completá manualmente
+                {t("form_o_manual")}
               </span>
               <div className="h-px flex-1 bg-border" />
             </div>
@@ -4600,7 +4608,7 @@ function ProjectFormContent({
 
           <div className="space-y-1">
             <label htmlFor="pf-titulo" className="block font-body text-xs font-bold uppercase tracking-wider text-ink-muted">
-              Título
+              {t("form_label_titulo")}
             </label>
             <input
               id="pf-titulo"
@@ -4614,7 +4622,7 @@ function ProjectFormContent({
 
           <div className="space-y-1">
             <label htmlFor="pf-desc" className="block font-body text-xs font-bold uppercase tracking-wider text-ink-muted">
-              Descripción
+              {t("description_label")}
             </label>
             <textarea
               id="pf-desc"
@@ -4628,7 +4636,7 @@ function ProjectFormContent({
 
           <div className="space-y-1">
             <label htmlFor="pf-condiciones" className="block font-body text-xs font-bold uppercase tracking-wider text-ink-muted">
-              Condiciones y preguntas frecuentes
+              {t("conditions_faq_label")}
             </label>
             <textarea
               id="pf-condiciones"
@@ -4639,14 +4647,14 @@ function ProjectFormContent({
               className="min-h-24 w-full resize-none rounded-xl border border-border bg-surface-sunken px-3.5 py-2 font-body text-sm text-ink-strong outline-none focus:ring-2 focus:ring-primary/20"
             />
             <p className="font-body text-[11px] text-ink-muted">
-              No incluyas el método de pago entre la empresa y el estudiante (no aplica en esta etapa).
+              {t("form_condiciones_hint")}
             </p>
           </div>
 
           <div className="grid gap-4 md:grid-cols-2">
             <div className="space-y-1">
               <label htmlFor="pf-area" className="block font-body text-xs font-bold uppercase tracking-wider text-ink-muted">
-                Área de negocio
+                {t("form_label_area")}
               </label>
               <select
                 id="pf-area"
@@ -4654,7 +4662,7 @@ function ProjectFormContent({
                 onChange={(e) => setForm((p) => ({ ...p, id_area_negocio: e.target.value }))}
                 className="w-full rounded-xl border border-border bg-surface-sunken px-3.5 py-2 font-body text-sm text-ink-strong outline-none focus:ring-2 focus:ring-primary/20"
               >
-                <option value="">Seleccioná un área</option>
+                <option value="">{t("form_area_placeholder")}</option>
                 {catalogs.areas.map((a) => (
                   <option key={a.id} value={a.id}>{a.nombre}</option>
                 ))}
@@ -4662,7 +4670,7 @@ function ProjectFormContent({
             </div>
             <div className="space-y-1">
               <label htmlFor="pf-plazo" className="block font-body text-xs font-bold uppercase tracking-wider text-ink-muted">
-                Plazo (5–15 días)
+                {t("form_label_plazo")}
               </label>
               <input
                 id="pf-plazo"
@@ -4680,7 +4688,7 @@ function ProjectFormContent({
           <div className="space-y-1">
             <div className="flex flex-wrap items-center justify-between gap-2">
               <label htmlFor="pf-compensacion" className="block font-body text-xs font-bold uppercase tracking-wider text-ink-muted">
-                Compensación (USD)
+                {t("form_label_compensacion")}
               </label>
               <Button
                 type="button"
@@ -4691,7 +4699,7 @@ function ProjectFormContent({
                 className="gap-1.5"
               >
                 {isSuggestingPrice ? <Loader2 className="size-3.5 animate-spin" /> : <Wand2 className="size-3.5" />}
-                {isSuggestingPrice ? "Sugiriendo..." : "Sugerir precio"}
+                {isSuggestingPrice ? t("form_sugiriendo") : t("form_sugerir_precio")}
               </Button>
             </div>
             <div className="relative">
@@ -4717,12 +4725,18 @@ function ProjectFormContent({
               <span className="pointer-events-none absolute right-3.5 top-1/2 -translate-y-1/2 font-body text-xs font-semibold text-ink-muted" aria-hidden="true">USD</span>
             </div>
             <p className="font-body text-[11px] text-ink-muted">
-              Monto total que pagarás al junior por el proyecto (entre ${COMPENSACION_MIN.toLocaleString("en-US")} y ${COMPENSACION_MAX.toLocaleString("en-US")}). Obligatorio para publicar. El pago se coordina por fuera de la plataforma.
+              {t("form_compensacion_hint", {
+                min: COMPENSACION_MIN.toLocaleString("en-US"),
+                max: COMPENSACION_MAX.toLocaleString("en-US"),
+              })}
             </p>
             {form.compensacion.trim() !== "" &&
               (Number(form.compensacion) < COMPENSACION_MIN || Number(form.compensacion) > COMPENSACION_MAX) && (
                 <p className="font-body text-[11px] font-semibold text-magenta">
-                  El monto debe estar entre ${COMPENSACION_MIN.toLocaleString("en-US")} y ${COMPENSACION_MAX.toLocaleString("en-US")} USD.
+                  {t("form_compensacion_rango", {
+                    min: COMPENSACION_MIN.toLocaleString("en-US"),
+                    max: COMPENSACION_MAX.toLocaleString("en-US"),
+                  })}
                 </p>
               )}
             {priceSuggestion && (
@@ -4735,7 +4749,7 @@ function ProjectFormContent({
             <fieldset className="space-y-2">
               <div className="flex flex-wrap items-center justify-between gap-2">
                 <legend className="font-body text-xs font-bold uppercase tracking-wider text-ink-muted">
-                  Tecnologías requeridas
+                  {t("skills_label")}
                 </legend>
                 <Button
                   type="button"
@@ -4746,7 +4760,7 @@ function ProjectFormContent({
                   className="gap-1.5"
                 >
                   {isSuggestingStack ? <Loader2 className="size-3.5 animate-spin" /> : <Wand2 className="size-3.5" />}
-                  {isSuggestingStack ? "Sugiriendo..." : "Sugerir stack"}
+                  {isSuggestingStack ? t("form_sugiriendo") : t("form_sugerir_stack")}
                 </Button>
               </div>
               <div className="flex max-h-36 flex-wrap gap-2 overflow-y-auto rounded-xl border border-border bg-surface-sunken p-3">
@@ -4778,7 +4792,7 @@ function ProjectFormContent({
                     className="w-full rounded-xl border border-border bg-surface-sunken px-3.5 py-2 font-body text-sm text-ink-strong placeholder:text-ink-muted outline-none focus:ring-2 focus:ring-primary/20"
                   />
                   <Button type="button" variant="outline" size="sm" onClick={addOtraTecnologia} disabled={!otrosInput.trim()}>
-                    Agregar
+                    {t("form_agregar")}
                   </Button>
                 </div>
                 {form.tecnologias_extra.length > 0 && (
@@ -4786,7 +4800,7 @@ function ProjectFormContent({
                     {form.tecnologias_extra.map((tech) => (
                       <span key={tech} className="inline-flex items-center gap-1.5 rounded-full bg-primary/10 px-3 py-1 font-body text-xs font-semibold text-primary">
                         {tech}
-                        <button type="button" onClick={() => removeOtraTecnologia(tech)} aria-label={`Quitar ${tech}`} className="rounded-full p-0.5 hover:bg-primary/20">
+                        <button type="button" onClick={() => removeOtraTecnologia(tech)} aria-label={t("form_quitar_tech", { tech })} className="rounded-full p-0.5 hover:bg-primary/20">
                           <X className="size-3" />
                         </button>
                       </span>
@@ -4806,7 +4820,7 @@ function ProjectFormContent({
                 onChange={(e) => setForm((c) => ({ ...c, usa_ia: e.target.checked }))}
                 className="accent-primary"
               />
-              Usa inteligencia artificial
+              {t("form_usa_ia")}
             </label>
             {mode === "create" && (
               <label className="inline-flex cursor-pointer items-center gap-2 font-body text-sm font-semibold text-ink">
@@ -4816,7 +4830,7 @@ function ProjectFormContent({
                   onChange={(e) => setForm((c) => ({ ...c, publicar: e.target.checked }))}
                   className="accent-primary"
                 />
-                Publicar inmediatamente
+                {t("form_publicar")}
               </label>
             )}
           </div>
@@ -4830,7 +4844,7 @@ function ProjectFormContent({
           onClick={onClose}
           className="flex-1 rounded-full border border-border px-4 py-2.5 font-body text-sm font-semibold text-ink-muted transition-colors hover:bg-surface-sunken"
         >
-          Cancelar
+          {t("aria_cancelar")}
         </button>
         <button
           type="button"
@@ -4838,7 +4852,7 @@ function ProjectFormContent({
           disabled={saving}
           className="flex-1 rounded-full bg-primary px-4 py-2.5 font-body text-sm font-semibold text-white transition-colors hover:bg-secondary disabled:opacity-60"
         >
-          {saving ? "Guardando..." : mode === "create" ? "Crear proyecto" : "Guardar cambios"}
+          {saving ? t("form_guardando") : mode === "create" ? t("form_crear") : t("form_guardar_cambios")}
         </button>
       </div>
     </div>

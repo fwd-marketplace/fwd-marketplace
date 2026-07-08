@@ -114,6 +114,7 @@ function ProjectModal({
   locale: string;
   onClose: () => void;
 }) {
+  const t = useTranslations('mi_empresa');
   const skills = project.skills.map((s) => s.skill?.nombre).filter(Boolean);
   const extras = project.tecnologias_extra ?? [];
 
@@ -143,7 +144,7 @@ function ProjectModal({
           <button
             onClick={onClose}
             className="shrink-0 p-1.5 text-ink-muted hover:text-ink hover:bg-surface-sunken rounded-lg transition-colors"
-            aria-label="Cerrar"
+            aria-label={t('public.close')}
           >
             <X className="size-5" />
           </button>
@@ -155,31 +156,31 @@ function ProjectModal({
           <div className="flex flex-wrap gap-2">
             <span className="flex items-center gap-1.5 rounded-full bg-surface-sunken border border-border px-3 py-1 text-xs font-semibold text-ink">
               <Calendar className="size-3.5 text-primary" />
-              {project.plazo_dias} días
+              {t('public.days', { count: project.plazo_dias })}
             </span>
             {project.usa_ia && (
               <span className="flex items-center gap-1.5 rounded-full bg-accent/10 border border-accent/20 px-3 py-1 text-xs font-semibold text-accent">
                 <Brain className="size-3.5" />
-                Usa IA
+                {t('public.uses_ai')}
               </span>
             )}
             {project.n_ofertas !== undefined && (
               <span className="rounded-full bg-secondary/10 border border-secondary/20 px-3 py-1 text-xs font-semibold text-secondary">
-                {project.n_ofertas} postulaciones
+                {t('public.offers', { count: project.n_ofertas })}
               </span>
             )}
           </div>
 
           {/* Descripcion */}
           <div>
-            <p className="text-sm font-bold text-ink-strong mb-1">Descripción</p>
+            <p className="text-sm font-bold text-ink-strong mb-1">{t('public.description')}</p>
             <p className="text-sm leading-relaxed text-ink">{project.descripcion}</p>
           </div>
 
           {/* Skills */}
           {skills.length > 0 && (
             <div>
-              <p className="text-sm font-bold text-ink-strong mb-2">Tecnologías requeridas</p>
+              <p className="text-sm font-bold text-ink-strong mb-2">{t('public.required_tech')}</p>
               <div className="flex flex-wrap gap-1.5">
                 {skills.map((s) => (
                   <span key={s} className="rounded-full bg-primary/10 px-2.5 py-0.5 text-xs font-semibold text-primary">
@@ -202,13 +203,13 @@ function ProjectModal({
             onClick={onClose}
             className="px-4 py-2 rounded-full border border-border text-sm font-semibold text-ink-muted hover:text-ink hover:border-border-strong transition-colors"
           >
-            Cerrar
+            {t('public.close')}
           </button>
           <Link
             href={`/${locale}/marketplace/${project.id}`}
             className="flex items-center gap-1.5 px-5 py-2 rounded-full bg-primary text-white text-sm font-bold hover:opacity-90 transition-opacity"
           >
-            Participar
+            {t('public.participate')}
             <ExternalLink className="size-3.5" />
           </Link>
         </div>
@@ -315,7 +316,7 @@ export function PublicEmpresaProfile({
               {(canton || provincia) && (
                 <span className="flex items-center gap-1">
                   <MapPin className="size-4" />
-                  {canton}{canton && provincia ? ', ' : ''}{provincia}{provincia ? ', Costa Rica' : ''}
+                  {canton}{canton && provincia ? ', ' : ''}{provincia}{provincia ? `, ${t('fields.country_value')}` : ''}
                 </span>
               )}
               {tipo === 'empresa' && empleados && (
@@ -346,7 +347,9 @@ export function PublicEmpresaProfile({
                     : 'border-transparent text-ink-muted hover:text-ink',
                 )}
               >
-                {tab === 'empresa' ? t('badge.empresa') : `Proyectos${projects.length > 0 ? ` (${projects.length})` : ''}`}
+                {tab === 'empresa'
+                  ? t(`badge.${tipo}`)
+                  : `${t('public.projects_tab')}${projects.length > 0 ? ` (${projects.length})` : ''}`}
               </button>
             ))}
           </nav>
@@ -379,7 +382,7 @@ export function PublicEmpresaProfile({
                         </div>
                         <div>
                           <label className="font-body text-xs font-bold tracking-wide text-ink-muted">{t('fields.country')}</label>
-                          <p className="text-sm font-medium text-ink">Costa Rica</p>
+                          <p className="text-sm font-medium text-ink">{t('fields.country_value')}</p>
                         </div>
                         <div>
                           <label className="font-body text-xs font-bold tracking-wide text-ink-muted">{t('fields.provincia')}</label>
@@ -430,7 +433,7 @@ export function PublicEmpresaProfile({
                         </div>
                         <div>
                           <label className="font-body text-xs font-bold tracking-wide text-ink-muted">{t('fields.country')}</label>
-                          <p className="text-sm font-medium text-ink">Costa Rica</p>
+                          <p className="text-sm font-medium text-ink">{t('fields.country_value')}</p>
                         </div>
                         <div>
                           <label className="font-body text-xs font-bold tracking-wide text-ink-muted">{t('fields.website')}</label>
@@ -451,14 +454,14 @@ export function PublicEmpresaProfile({
                         <p className="mb-3 font-body text-xs font-bold tracking-wide text-ink-muted">{t('sections.business_areas')}</p>
                         <div className="flex flex-wrap gap-2">
                           {sectors.map((area) => (
-                            <button key={area} type="button" disabled
-                              className="rounded-full border border-secondary bg-secondary px-3 py-1 text-xs font-semibold text-white disabled:cursor-default"
+                            <span key={area}
+                              className="rounded-full border border-secondary bg-secondary px-3 py-1 text-xs font-semibold text-white"
                             >
                               {area}
-                            </button>
+                            </span>
                           ))}
                           {sectors.length === 0 && (
-                            <p className="text-xs text-ink-muted/60 italic">{t('placeholders.loading_areas')}</p>
+                            <p className="text-xs text-ink-muted/60 italic">{t('public.no_sectors')}</p>
                           )}
                         </div>
                       </div>
@@ -522,14 +525,14 @@ export function PublicEmpresaProfile({
                       {ALL_PROJECT_TYPES.map((pt) => {
                         const isSelected = projectTypes.includes(pt);
                         return (
-                          <button key={pt} type="button" disabled
+                          <span key={pt}
                             className={cn(
-                              'rounded-full border px-3 py-1.5 text-xs font-semibold disabled:cursor-default',
+                              'rounded-full border px-3 py-1.5 text-xs font-semibold',
                               isSelected ? 'border-primary bg-primary text-white' : 'border-border bg-canvas text-ink-muted',
                             )}
                           >
                             {tPT(pt)}
-                          </button>
+                          </span>
                         );
                       })}
                     </div>
@@ -566,11 +569,11 @@ export function PublicEmpresaProfile({
                         {(['web', 'mobile', 'backend', 'ai', 'ux', 'data', 'automation', 'other'] as TechSupport[]).map((ts) => {
                           const isSelected = neededSupport.includes(ts);
                           return (
-                            <button key={ts} type="button" disabled
-                              className={cn('rounded-full border px-3 py-1.5 text-xs font-semibold disabled:cursor-default', isSelected ? 'border-primary bg-primary text-white' : 'border-border bg-canvas text-ink-muted')}
+                            <span key={ts}
+                              className={cn('rounded-full border px-3 py-1.5 text-xs font-semibold', isSelected ? 'border-primary bg-primary text-white' : 'border-border bg-canvas text-ink-muted')}
                             >
                               {tTechSupport(ts)}
-                            </button>
+                            </span>
                           );
                         })}
                       </div>
@@ -659,7 +662,7 @@ export function PublicEmpresaProfile({
           {projects.length === 0 ? (
             <div className="rounded-2xl border border-dashed border-border bg-surface p-16 text-center">
               <Building2 className="mx-auto mb-3 size-10 text-ink-muted/30" />
-              <p className="text-sm italic text-ink-muted">Esta empresa aún no tiene proyectos publicados.</p>
+              <p className="text-sm italic text-ink-muted">{t('public.no_projects')}</p>
             </div>
           ) : (
             <div className="grid grid-cols-1 gap-5 md:grid-cols-2 lg:grid-cols-3">
@@ -694,9 +697,9 @@ export function PublicEmpresaProfile({
                       ))}
                     </div>
                     <div className="flex items-center gap-3 pt-1 border-t border-border/50 text-[11px] text-ink-muted">
-                      <span className="flex items-center gap-1"><Calendar className="size-3" /> {project.plazo_dias} días</span>
+                      <span className="flex items-center gap-1"><Calendar className="size-3" /> {t('public.days', { count: project.plazo_dias })}</span>
                       {project.n_ofertas !== undefined && (
-                        <span>{project.n_ofertas} postulaciones</span>
+                        <span>{t('public.offers', { count: project.n_ofertas })}</span>
                       )}
                     </div>
                   </button>
