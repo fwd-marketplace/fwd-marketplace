@@ -936,7 +936,7 @@ export function GestionPage({ role, userId, initialProjectId, initialSection: in
       </aside>
 
       {/* ── Main column ── */}
-      <div className="flex flex-1 flex-col">
+      <div className="flex min-w-0 flex-1 flex-col">
 
         {/* Project header + horizontal section tabs (desktop only — empresa only when junior) */}
         {selectedId && isEmpresa && (
@@ -1483,7 +1483,7 @@ function WelcomePanel({
           </div>
 
           {/* ── Top widgets: Calendar (1/3) + Active projects (2/3) ───────── */}
-          <div className="mb-8 grid gap-6 lg:grid-cols-3">
+          <div className="mb-8 grid min-w-0 gap-6 lg:grid-cols-3 [&>*]:min-w-0">
 
             {/* Widget 1 — Calendario interactivo */}
             {(() => {
