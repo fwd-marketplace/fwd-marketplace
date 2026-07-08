@@ -534,7 +534,7 @@ export function EgresadosView({ initialStudents, locale }: { initialStudents: Ad
   ];
 
   return (
-    <div className="mx-auto max-w-7xl space-y-6 px-6 py-8 md:px-10">
+    <div className="mx-auto max-w-7xl space-y-6 px-6 pb-8 pt-20 md:px-10 md:py-8">
       {message && (
         <div className="fixed bottom-5 right-5 z-[60] rounded-xl border border-border-strong bg-surface px-4 py-3 font-body text-sm font-semibold text-ink-strong shadow-elevated">
           {message}

@@ -1140,19 +1140,19 @@ export function CompanyProfile({
                   className="w-full rounded border border-border bg-canvas px-3 py-2 text-sm text-ink-strong focus:border-primary focus:outline-none"
                 />
               </div>
-              <div className="flex gap-3 border-t border-border pt-4">
+              <div className="flex flex-col-reverse gap-2 border-t border-border pt-4 sm:flex-row sm:items-center sm:gap-3">
                 {editingContactIndex !== null && (
                   <Button type="button" variant="ghost" onClick={handleDeleteContact}
-                    className="gap-1 border border-transparent font-bold text-magenta hover:border-magenta/20 hover:bg-magenta/5"
+                    className="w-full gap-1 border border-transparent font-bold text-magenta hover:border-magenta/20 hover:bg-magenta/5 sm:w-auto"
                   >
                     <Trash2 className="size-4" /> {t('contacts.delete_btn')}
                   </Button>
                 )}
-                <div className="flex-1" />
-                <Button type="button" variant="outline" onClick={() => setIsModalOpen(false)} className="border-border text-ink-strong">
+                <div className="hidden sm:block sm:flex-1" />
+                <Button type="button" variant="outline" onClick={() => setIsModalOpen(false)} className="w-full border-border text-ink-strong sm:w-auto">
                   {t('contacts.cancel_btn')}
                 </Button>
-                <Button type="submit" className="bg-primary text-white hover:bg-primary/90">
+                <Button type="submit" className="w-full bg-primary text-white hover:bg-primary/90 sm:w-auto">
                   {t('contacts.save_btn')}
                 </Button>
               </div>

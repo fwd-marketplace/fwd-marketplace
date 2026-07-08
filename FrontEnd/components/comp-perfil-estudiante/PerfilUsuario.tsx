@@ -1361,9 +1361,9 @@ export default function PerfilUsuario({
                       </div>
                       <div className="flex items-center gap-3 bg-surface-sunken p-3.5 rounded-xl border border-border">
                         <Mail className="w-5 h-5 text-primary shrink-0" />
-                        <div>
+                        <div className="min-w-0">
                           <span className="block text-xs text-ink-muted">{t("personal.email_display")}</span>
-                          <span className="font-semibold text-ink-strong">{profile.email}</span>
+                          <span className="block font-semibold text-ink-strong break-all">{profile.email}</span>
                         </div>
                       </div>
                     </div>
@@ -1886,7 +1886,7 @@ export default function PerfilUsuario({
                       <p className="font-body text-[10px] font-bold uppercase tracking-widest text-ink-muted">
                         {t("gamification.badges_label")}
                       </p>
-                      <div className="flex items-center gap-2">
+                      <div className="flex flex-wrap items-center gap-2">
                         {MILESTONES.map((m) => {
                           const status = heroJourney[m.id].status;
                           const Icon = m.Icon;

@@ -91,7 +91,7 @@ export function ModeracionView({ initialReportes }: { initialReportes: AdminRepo
   }
 
   return (
-    <div className="mx-auto max-w-5xl space-y-6 px-6 py-8 md:px-10">
+    <div className="mx-auto max-w-5xl space-y-6 px-6 pb-8 pt-20 md:px-10 md:py-8">
       <header className="space-y-2">
         <p className="font-body text-xs font-semibold uppercase tracking-[0.18em] text-primary">
           Gestión

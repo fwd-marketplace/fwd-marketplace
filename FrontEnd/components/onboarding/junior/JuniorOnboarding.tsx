@@ -626,7 +626,7 @@ export function JuniorOnboarding() {
             type="button"
             onClick={handleNext}
             disabled={isSubmitting}
-            className="flex items-center gap-2 rounded-full bg-primary px-5 py-2.5 font-body text-sm font-semibold text-white transition-opacity duration-[--duration-fast] hover:opacity-90 disabled:cursor-not-allowed disabled:opacity-40 sm:px-6"
+            className="flex items-center gap-2 rounded-full bg-primary px-4 py-2.5 font-body text-sm font-semibold text-white transition-opacity duration-[--duration-fast] hover:opacity-90 disabled:cursor-not-allowed disabled:opacity-40 sm:px-6"
           >
             {isSubmitting ? t("nav.finishing") : currentStep === TOTAL_STEPS ? t("nav.finish") : t("nav.next")}
             {!isSubmitting && <ArrowRight size={15} strokeWidth={2.5} />}

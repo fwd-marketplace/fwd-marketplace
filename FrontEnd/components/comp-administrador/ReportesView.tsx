@@ -288,7 +288,7 @@ export function ReportesView({
   }
 
   return (
-    <div className="mx-auto max-w-7xl space-y-6 px-6 py-8 md:px-10">
+    <div className="mx-auto max-w-7xl space-y-6 px-6 pb-8 pt-20 md:px-10 md:py-8">
       <header className="flex flex-col gap-4 lg:flex-row lg:items-start lg:justify-between">
         <div className="space-y-2">
           <p className="font-body text-xs font-semibold uppercase tracking-[0.18em] text-primary">{t("eyebrow")}</p>

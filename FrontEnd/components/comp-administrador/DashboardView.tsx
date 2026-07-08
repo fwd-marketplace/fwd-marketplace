@@ -138,7 +138,7 @@ export function DashboardView({
   }
 
   return (
-    <div className="mx-auto max-w-7xl space-y-8 px-6 py-8 md:px-10">
+    <div className="mx-auto max-w-7xl space-y-8 px-6 pb-8 pt-20 md:px-10 md:py-8">
       {message && (
         <div className="fixed bottom-5 right-5 z-50 rounded-xl border border-border-strong bg-surface px-4 py-3 font-body text-sm font-semibold text-ink-strong shadow-elevated">
           {message}
@@ -169,7 +169,7 @@ export function DashboardView({
           <section className="rounded-2xl bg-surface p-6 shadow-soft ring-1 ring-border">
             <div className="mb-5 flex flex-wrap items-center justify-between gap-3">
               <h2 className="font-heading text-lg font-bold text-ink-strong">{t("admissions.title")}</h2>
-              <div className="flex items-center gap-4">
+              <div className="flex flex-wrap items-center gap-3">
                 <div className="relative">
                   <Search className="absolute left-3 top-1/2 size-4 -translate-y-1/2 text-ink-subtle" aria-hidden="true" />
                   <input type="text" value={admissionQuery} onChange={(e) => setAdmissionQuery(e.target.value)} placeholder={t("admissions.search_placeholder")} aria-label={t("admissions.search_placeholder")} className="w-44 rounded-lg bg-surface-sunken py-2 pl-9 pr-3 font-body text-sm text-ink-strong placeholder:text-ink-subtle outline-none focus:ring-2 focus:ring-primary/40" />

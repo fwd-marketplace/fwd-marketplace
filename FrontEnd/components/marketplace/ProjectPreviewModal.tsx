@@ -66,7 +66,7 @@ export function ProjectPreviewModal({ project, onClose, studentSkills = [] }: Pr
 
         <div className="overflow-y-auto flex-1 px-6 pb-6 space-y-5">
           {/* Meta */}
-          <div className="flex items-center gap-4 text-sm text-ink-muted">
+          <div className="flex flex-wrap items-center gap-x-4 gap-y-2 text-sm text-ink-muted">
             {project.compensacion != null && (
               <span className="flex items-center gap-1.5 font-semibold text-accent">
                 <Wallet className="size-3.5" />
