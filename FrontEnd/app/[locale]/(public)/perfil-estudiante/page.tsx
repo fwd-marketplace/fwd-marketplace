@@ -10,7 +10,8 @@ import {
   type StudentProfile,
 } from "@/app/[locale]/(public)/perfil-estudiante/types";
 import { getCatalogs, getMyCalificaciones, getMyOffers, getSavedProjects } from "@/lib/api/marketplace";
-import { getMe, getMyPortafolio } from "@/lib/api/profile";
+import { getMyPortafolio } from "@/lib/api/profile";
+import { requireActiveAccount } from "@/lib/auth/require-access";
 import { SiteFooter } from "@/components/layout/site-footer";
 import { getNotificaciones } from "@/lib/api/notificaciones";
 import { parseJsonStringArray } from "@/lib/api/safe-json";
@@ -182,8 +183,10 @@ function mapCalificacion(cal: ApiCalificacion): MockCalificacion {
 export default async function EstudianteProfile({ params }: Props) {
   const { locale } = await params;
   setRequestLocale(locale);
-  const [meResult, offersResult, calResult, catalogsResult, notifsResult, portafolioResult, savedResult] = await Promise.all([
-    getMe(),
+  // Ruta privada: solo el estudiante con cuenta activa ve su propio perfil. Sin sesion,
+  // rol distinto o cuenta no aprobada, la guarda redirige (login / home / revision).
+  const account = await requireActiveAccount(locale, ["student"]);
+  const [offersResult, calResult, catalogsResult, notifsResult, portafolioResult, savedResult] = await Promise.all([
     getMyOffers(),
     getMyCalificaciones(),
     getCatalogs(),
@@ -191,7 +194,7 @@ export default async function EstudianteProfile({ params }: Props) {
     getMyPortafolio(),
     getSavedProjects(),
   ]);
-  const profile = mapProfile(meResult.ok ? meResult.data.profile : null);
+  const profile = mapProfile(account);
   const offers = offersResult.ok ? offersResult.data.ofertas : [];
   const applications = offers.map(mapOffer);
   const calificaciones = calResult.ok ? calResult.data.map(mapCalificacion) : [];
