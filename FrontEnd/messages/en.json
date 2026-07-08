@@ -752,6 +752,11 @@
       "manage": "Manage applications",
       "empty": "You haven't applied to any project yet."
     },
+    "gamification": {
+      "streak_label": "Streak",
+      "badges_label": "Badges",
+      "journey_label": "Hero journey"
+    },
     "work": {
       "title": "My portfolio",
       "description": "Manage and showcase your most impactful developments. Visualize your finished products and add new pieces to your professional portfolio.",
