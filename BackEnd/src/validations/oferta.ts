@@ -1,5 +1,12 @@
 import { z } from "zod";
 
+/**
+ * Contraoferta del junior: monto entero en USD que propone cobrar por el proyecto.
+ * Mismo rango que proyecto.compensacion (0047) y que el CHECK de la migración 0052.
+ * `null` = el junior no envió contraoferta.
+ */
+const MontoPropuestoSchema = z.number().int().min(50).max(10000).optional().nullable();
+
 /** El junior postula: su carta (propuesta) y, opcional, un prototipo y docs. */
 export const CreateOfertaSchema = z.object({
   propuesta: z.string().min(1).max(5000),
@@ -7,6 +14,7 @@ export const CreateOfertaSchema = z.object({
   url_repositorio: z.union([z.string().url(), z.literal("")]).optional().nullable(),
   documentacion_tecnica: z.string().optional().nullable(),
   documentacion_url: z.union([z.string().url(), z.literal("")]).optional().nullable(),
+  monto_propuesto: MontoPropuestoSchema,
 }).refine(
   (d) => !!(d.prototipo_url || d.documentacion_url),
   { message: "Debés adjuntar un enlace de documentación o subir un archivo PDF" },
@@ -41,6 +49,7 @@ export const EditOfertaSchema = z.object({
   url_repositorio: z.union([z.string().url(), z.literal("")]).optional().nullable(),
   documentacion_tecnica: z.string().optional().nullable(),
   documentacion_url: z.union([z.string().url(), z.literal("")]).optional().nullable(),
+  monto_propuesto: MontoPropuestoSchema,
 });
 
 export type CreateOfertaInput = z.infer<typeof CreateOfertaSchema>;

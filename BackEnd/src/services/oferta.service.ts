@@ -273,6 +273,7 @@ export async function createOferta(
       url_repositorio: input.url_repositorio || null,
       documentacion_tecnica: input.documentacion_tecnica ?? null,
       documentacion_url: input.documentacion_url ?? null,
+      monto_propuesto: input.monto_propuesto ?? null,
     })
     .select("id, fecha_envio")
     .single();
@@ -313,7 +314,7 @@ export async function listMyOfertas(accessToken: string, userId: string) {
   const { data, error } = await client
     .from("oferta")
     .select(
-      "id, propuesta, prototipo_url, url_repositorio, documentacion_tecnica, documentacion_url, fecha_envio, comentario_revision, calificacion, comentario_calificacion, estado:estado_oferta(nombre), proyecto:proyecto(id, titulo, fecha_cierre)",
+      "id, propuesta, prototipo_url, url_repositorio, documentacion_tecnica, documentacion_url, monto_propuesto, moneda_propuesta, fecha_envio, comentario_revision, calificacion, comentario_calificacion, estado:estado_oferta(nombre), proyecto:proyecto(id, titulo, fecha_cierre)",
     )
     .eq("id_usuario", userId)
     .order("fecha_envio", { ascending: false });
@@ -380,7 +381,7 @@ export async function listProjectOfertas(accessToken: string, userId: string, pr
   const { data, error } = await client
     .from("oferta")
     .select(
-      "id, propuesta, prototipo_url, url_repositorio, documentacion_tecnica, documentacion_url, fecha_envio, comentario_revision, calificacion, comentario_calificacion, estado:estado_oferta(nombre), junior:users(id, nombre, apellido1)",
+      "id, propuesta, prototipo_url, url_repositorio, documentacion_tecnica, documentacion_url, monto_propuesto, moneda_propuesta, fecha_envio, comentario_revision, calificacion, comentario_calificacion, estado:estado_oferta(nombre), junior:users(id, nombre, apellido1)",
     )
     .eq("id_proyecto", projectId)
     .order("fecha_envio", { ascending: false });
@@ -603,11 +604,12 @@ export async function editOferta(
       ...(input.url_repositorio !== undefined ? { url_repositorio: input.url_repositorio ?? null }    : {}),
       ...(input.documentacion_tecnica !== undefined ? { documentacion_tecnica: input.documentacion_tecnica ?? null } : {}),
       ...(input.documentacion_url !== undefined ? { documentacion_url: input.documentacion_url ?? null } : {}),
+      ...(input.monto_propuesto !== undefined ? { monto_propuesto: input.monto_propuesto ?? null } : {}),
       updated_at: new Date().toISOString(),
     })
     .eq("id", ofertaId)
     .eq("id_usuario", userId)
-    .select("id, propuesta, prototipo_url, url_repositorio, documentacion_tecnica, documentacion_url")
+    .select("id, propuesta, prototipo_url, url_repositorio, documentacion_tecnica, documentacion_url, monto_propuesto")
     .single();
   if (error) throw new ApiError(400, error.message);
   return data;

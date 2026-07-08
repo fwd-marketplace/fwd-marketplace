@@ -908,6 +908,8 @@ export type Database = {
           id_estado: string
           id_proyecto: string
           id_usuario: string
+          moneda_propuesta: string
+          monto_propuesto: number | null
           propuesta: string
           prototipo_url: string | null
           replica_calificacion: string | null
@@ -925,6 +927,8 @@ export type Database = {
           id_estado: string
           id_proyecto: string
           id_usuario: string
+          moneda_propuesta?: string
+          monto_propuesto?: number | null
           propuesta: string
           prototipo_url?: string | null
           replica_calificacion?: string | null
@@ -942,6 +946,8 @@ export type Database = {
           id_estado?: string
           id_proyecto?: string
           id_usuario?: string
+          moneda_propuesta?: string
+          monto_propuesto?: number | null
           propuesta?: string
           prototipo_url?: string | null
           replica_calificacion?: string | null

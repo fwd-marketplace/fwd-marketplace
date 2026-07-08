@@ -75,6 +75,7 @@ import { formatCompensacion, compensacionUpdatedAfterPublish, COMPENSACION_MIN, 
 import { intlLocale } from "@/lib/i18n/date-locale";
 import { streamAssistant, toAiLocale } from "@/lib/api/ai-client";
 import { getProjectMensajesAction, sendMensajeAction, getMyConversacionesAction } from "@/lib/actions/mensajes";
+import { PricingCalculator } from "@/components/gestion/PricingCalculator";
 import { MejorarMensajeButton } from "@/components/gestion/MejorarMensajeButton";
 import { ReportarMensajeButton } from "@/components/gestion/ReportarMensajeButton";
 import { ProjectChatbot } from "@/components/marketplace/ProjectChatbot";
@@ -125,6 +126,8 @@ interface JuniorProposal {
   observaciones: string;
   calificacion: number | null;
   comentario_calificacion: string | null;
+  /** Contraoferta del junior calculada con la calculadora de cotización (USD). null = sin contraoferta. */
+  montoPropuesto: number | null;
 }
 
 interface EmpresaProposal {
@@ -209,7 +212,7 @@ const EMPRESA_BADGE: Record<EmpresaStatus, string> = {
 
 
 function blankProposal(v: number): JuniorProposal {
-  return { v, offerId: null, status: "nuevo", expanded: false, desc: "", link: "", fileName: "", docUrl: "", previewName: "", previewProject: "", repo: "", observaciones: "", calificacion: null, comentario_calificacion: null };
+  return { v, offerId: null, status: "nuevo", expanded: false, desc: "", link: "", fileName: "", docUrl: "", previewName: "", previewProject: "", repo: "", observaciones: "", calificacion: null, comentario_calificacion: null, montoPropuesto: null };
 }
 
 function initJuniorProposals(offers: MyOffer[], project: ApiProject | null): JuniorProposal[] {
@@ -236,6 +239,7 @@ function initJuniorProposals(offers: MyOffer[], project: ApiProject | null): Jun
     observaciones: offer.comentario_revision ?? "",
     calificacion: offer.calificacion ?? null,
     comentario_calificacion: offer.comentario_calificacion ?? null,
+    montoPropuesto: offer.monto_propuesto ?? null,
   }));
   const latest = offers[offers.length - 1];
   if (latest?.estado.nombre === "solicitar_cambios") {
@@ -2751,6 +2755,10 @@ function JuniorProcesoView({
 
   const [withdrawConfirmIdx, setWithdrawConfirmIdx] = useState<number | null>(null);
   const [isUploading, setIsUploading] = useState(false);
+  // Índice de la propuesta cuyo menú (el que despliega la flecha) está abierto.
+  const [menuOpenIdx, setMenuOpenIdx] = useState<number | null>(null);
+  // Qué interfaz muestra la columna derecha: la postulación completa o la calculadora de "negociar pago".
+  const [viewMode, setViewMode] = useState<"postulacion" | "negociar">("postulacion");
 
   const handleFileChange = async (e: React.ChangeEvent<HTMLInputElement>, i: number) => {
     const file = e.target.files?.[0];
@@ -2835,6 +2843,7 @@ function JuniorProcesoView({
         prototipo_url: p.link || null,
         documentacion_url: p.docUrl || null,
         url_repositorio: p.repo || null,
+        monto_propuesto: p.montoPropuesto,
       });
       if (result.ok) {
         patch(i, { status: "enviada", expanded: false });
@@ -2850,12 +2859,19 @@ function JuniorProcesoView({
       ...(p.link ? { prototipo_url: p.link } : {}),
       ...(p.docUrl ? { documentacion_url: p.docUrl } : {}),
       ...(p.repo ? { url_repositorio: p.repo } : {}),
+      ...(p.montoPropuesto != null ? { monto_propuesto: p.montoPropuesto } : {}),
     });
     if (result.ok) {
       patch(i, { status: "enviada", expanded: false, offerId: result.data.id });
     } else {
       setSubmitError(result.error);
     }
+  };
+
+  // Persiste solo el monto de la contraoferta en una propuesta ya enviada (editable).
+  const persistMontoPropuesto = async (offerId: string, monto: number) => {
+    const result = await editOfferAction(offerId, { monto_propuesto: monto });
+    if (!result.ok) setSubmitError(result.error);
   };
 
   // ── Derived values ───────────────────────────────────────────────────────
@@ -3086,27 +3102,68 @@ function JuniorProcesoView({
                   )}
                 </div>
 
-                {/* Label */}
-                <button
-                  type="button"
-                  onClick={() => { setSelectedIdx(i); if (p.status === "nuevo") startCreate(i); }}
-                  className={cn(
-                    "mb-1 flex min-w-0 flex-1 items-center gap-2 rounded-[10px] px-3 py-2.5 text-left transition-all duration-[var(--duration-fast)] ease-[var(--ease-out)]",
-                    isSelected ? "bg-secondary/8 ring-1 ring-secondary/20 shadow-sm" : "hover:bg-canvas",
-                  )}
-                >
-                  <div className="min-w-0 flex-1">
-                    <p className="font-body text-[13px] font-semibold text-ink-strong">
-                      {t("proceso_propuesta_n", { n: p.v })}
-                    </p>
-                    {propMeta(p.status) && (
-                      <p className="mt-0.5 font-body text-[11px] text-ink-muted">
-                        {propMeta(p.status)?.label}
-                      </p>
+                {/* Label + flecha que despliega dos opciones */}
+                <div className="mb-1 min-w-0 flex-1">
+                  <div
+                    className={cn(
+                      "flex items-center rounded-[10px] transition-all duration-[var(--duration-fast)] ease-[var(--ease-out)]",
+                      isSelected ? "bg-secondary/8 ring-1 ring-secondary/20 shadow-sm" : "hover:bg-canvas",
                     )}
+                  >
+                    <button
+                      type="button"
+                      onClick={() => { setSelectedIdx(i); setViewMode("postulacion"); if (p.status === "nuevo") startCreate(i); }}
+                      className="flex min-w-0 flex-1 items-center gap-2 px-3 py-2.5 text-left"
+                    >
+                      <div className="min-w-0 flex-1">
+                        <p className="font-body text-[13px] font-semibold text-ink-strong">
+                          {t("proceso_propuesta_n", { n: p.v })}
+                        </p>
+                        {propMeta(p.status) && (
+                          <p className="mt-0.5 font-body text-[11px] text-ink-muted">
+                            {propMeta(p.status)?.label}
+                          </p>
+                        )}
+                      </div>
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => { setSelectedIdx(i); setMenuOpenIdx(menuOpenIdx === i ? null : i); }}
+                      aria-expanded={menuOpenIdx === i}
+                      aria-label={t("proceso_propuesta_n", { n: p.v })}
+                      className="shrink-0 px-2.5 py-2.5"
+                    >
+                      <ArrowRight
+                        className={cn(
+                          "size-3.5 text-ink-muted transition-transform duration-[var(--duration-fast)]",
+                          menuOpenIdx === i && "rotate-90",
+                        )}
+                        aria-hidden="true"
+                      />
+                    </button>
                   </div>
-                  {isSelected && <ArrowRight className="size-3.5 shrink-0 text-ink-muted" aria-hidden="true" />}
-                </button>
+
+                  {menuOpenIdx === i && (
+                    <div className="mt-1 flex flex-col gap-1 pl-1">
+                      <button
+                        type="button"
+                        onClick={() => { setSelectedIdx(i); setViewMode("postulacion"); if (p.status === "nuevo") startCreate(i); setMenuOpenIdx(null); }}
+                        className="flex items-center gap-2 rounded-lg px-3 py-2 text-left font-body text-[12px] font-semibold text-ink transition-colors duration-[var(--duration-fast)] ease-[var(--ease-out)] hover:bg-secondary/10 hover:text-secondary"
+                      >
+                        <FileText className="size-3.5 shrink-0" aria-hidden="true" />
+                        {t("proceso_menu_postulacion")}
+                      </button>
+                      <button
+                        type="button"
+                        onClick={() => { setSelectedIdx(i); setViewMode("negociar"); setMenuOpenIdx(null); }}
+                        className="flex items-center gap-2 rounded-lg px-3 py-2 text-left font-body text-[12px] font-semibold text-ink transition-colors duration-[var(--duration-fast)] ease-[var(--ease-out)] hover:bg-primary/10 hover:text-primary"
+                      >
+                        <Wallet className="size-3.5 shrink-0" aria-hidden="true" />
+                        {t("proceso_negociar_pago")}
+                      </button>
+                    </div>
+                  )}
+                </div>
               </div>
             );
           })}
@@ -3158,6 +3215,23 @@ function JuniorProcesoView({
           const isEditing = p.status === "editando";
           const pm = propMeta(p.status);
           const submitOk = p.desc.trim().length > 0;
+
+          /* ── Negociar pago: calculadora de cotización ── */
+          if (viewMode === "negociar") {
+            return (
+              <div className="px-8 pb-7">
+                <PricingCalculator
+                  initialMonto={p.montoPropuesto}
+                  onApply={(monto) => {
+                    patch(i, { montoPropuesto: monto });
+                    if (p.offerId && p.status === "enviada") { void persistMontoPropuesto(p.offerId, monto); }
+                    setViewMode("postulacion");
+                  }}
+                  onCancel={() => setViewMode("postulacion")}
+                />
+              </div>
+            );
+          }
 
           /* ── Nuevo: call-to-action ── */
           if (p.status === "nuevo") {
@@ -3265,6 +3339,28 @@ function JuniorProcesoView({
                   <label className="font-body text-[13px] font-semibold leading-snug text-ink">{t("proceso_recursos_repo")}</label>
                   <input value={p.repo} onChange={(e) => setField(i, "repo", e.target.value)}
                     className="w-full rounded-[10px] border border-border bg-surface px-[14px] py-[11px] font-body text-[14px] text-ink focus:border-secondary focus:outline-none focus:ring-2 focus:ring-secondary/20" />
+                </div>
+
+                <div className="my-[22px] h-px bg-border" />
+
+                {/* Contraoferta calculada — se edita desde "Negociar pago" (menú de la flecha de la propuesta) */}
+                <div className="flex flex-wrap items-center gap-2">
+                  <Wallet className="size-[15px] shrink-0 text-primary" aria-hidden="true" />
+                  {p.montoPropuesto != null ? (
+                    <span className="inline-flex items-center gap-2 font-body text-[13px] text-ink">
+                      <span className="text-ink-muted">{t("calc_monto_actual")}:</span>
+                      <span className="font-heading font-bold text-primary">{formatCompensacion(p.montoPropuesto)}</span>
+                      <button
+                        type="button"
+                        onClick={() => patch(i, { montoPropuesto: null })}
+                        className="text-ink-muted underline transition-colors hover:text-magenta"
+                      >
+                        {t("calc_quitar")}
+                      </button>
+                    </span>
+                  ) : (
+                    <span className="font-body text-[13px] text-ink-muted">{t("calc_sin_monto")}</span>
+                  )}
                 </div>
 
                 {submitError && (
