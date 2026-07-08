@@ -1668,7 +1668,7 @@ function WelcomePanel({
                         <div
                           key={day}
                           className={cn(
-                            "relative mx-auto mb-0.5 flex size-7 items-center justify-center font-body text-xs transition-colors",
+                            "relative mx-auto mb-0.5 flex aspect-square w-full max-w-[1.75rem] items-center justify-center font-body text-xs transition-colors",
                             isEndpoint   && "rounded-full font-bold text-white",
                             role === "range" && "text-ink-strong font-medium",
                             !role && isToday && "rounded-full bg-ink-strong/10 font-semibold text-ink-strong",
@@ -2219,9 +2219,9 @@ function ProcesosView({
   }
 
   return (
-    <div className="px-8 pb-12 pt-0">
+    <div className="px-4 pb-12 pt-0 sm:px-8">
       {/* Header */}
-      <div className="mb-8 flex items-end justify-between">
+      <div className="mb-8 flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
         <div>
           <p className="mb-1 font-body text-xs font-bold uppercase tracking-widest text-primary">
             {t("section_junior")}
@@ -2235,7 +2235,7 @@ function ProcesosView({
         </div>
         <a
           href={`/${locale}/marketplace`}
-          className="inline-flex items-center gap-2 rounded-full bg-primary px-5 py-2.5 font-body text-sm font-semibold text-white transition-colors duration-[var(--duration-fast)] hover:bg-secondary"
+          className="inline-flex items-center gap-2 self-start rounded-full bg-primary px-5 py-2.5 font-body text-sm font-semibold text-white transition-colors duration-[var(--duration-fast)] hover:bg-secondary sm:self-auto"
         >
           <ExternalLink className="size-4" aria-hidden="true" />
           {t("junior_dash_explore")}
@@ -3462,7 +3462,7 @@ function JuniorProcesoView({
                 <p className="font-body text-[13px] font-bold text-ink">{t("proceso_recursos_titulo")}</p>
                 <p className="mb-4 mt-[3px] font-body text-[13px] text-secondary">{t("proceso_recursos_subtitulo")}</p>
 
-                <div className="grid gap-[14px]" style={{ gridTemplateColumns: "130px 1fr", alignItems: "center", columnGap: 16 }}>
+                <div className="grid items-center gap-x-4 gap-y-[14px] sm:grid-cols-[130px_1fr]">
                   <label className="font-body text-[13px] font-semibold text-ink">{t("proceso_recursos_nombre")}</label>
                   <input value={p.previewName} onChange={(e) => setField(i, "previewName", e.target.value)}
                     className="w-full rounded-[10px] border border-border bg-surface px-[14px] py-[11px] font-body text-[14px] text-ink focus:border-secondary focus:outline-none focus:ring-2 focus:ring-secondary/20" />
@@ -3589,7 +3589,7 @@ function JuniorProcesoView({
                   {t("proceso_doc_label")}
                 </label>
                 <div className="flex flex-wrap items-center gap-3">
-                  <div className="min-w-[200px] flex-1 truncate rounded-xl border border-border px-[15px] py-3 font-body text-[14px] text-primary" style={{ background: "#FBFAFD" }}>
+                  <div className="min-w-0 flex-1 truncate rounded-xl border border-border px-[15px] py-3 font-body text-[14px] text-primary sm:min-w-[200px]" style={{ background: "#FBFAFD" }}>
                     {p.link || t("proceso_sin_enlace")}
                   </div>
                   {p.fileName && (
@@ -5618,7 +5618,10 @@ function MensajesView({
     <div className="flex" style={{ minHeight: "calc(100vh - 8rem)" }}>
 
       {/* Left panel — chat list */}
-      <div className="w-[280px] shrink-0 overflow-y-auto border-r border-border">
+      <div className={cn(
+        "w-full shrink-0 overflow-y-auto border-r border-border lg:w-[280px]",
+        activePanelId ? "hidden lg:block" : "block",
+      )}>
 
         {/* Asistentes */}
         <div className="px-4 pt-5 pb-3">
@@ -5714,7 +5717,23 @@ function MensajesView({
       </div>
 
       {/* Right panel */}
-      <div className="min-w-0 flex-1 bg-canvas">
+      <div className={cn(
+        "min-w-0 flex-1 bg-canvas lg:flex lg:flex-col",
+        activePanelId ? "flex flex-col" : "hidden lg:flex",
+      )}>
+        {activePanelId && (
+          <div className="flex shrink-0 items-center border-b border-border bg-surface px-4 py-3 lg:hidden">
+            <button
+              type="button"
+              onClick={() => setActivePanelId(null)}
+              className="inline-flex items-center gap-1.5 font-body text-sm font-semibold text-ink-muted transition-colors duration-[var(--duration-fast)] hover:text-ink"
+            >
+              <ArrowLeft className="size-4" aria-hidden="true" />
+              {t("mensajes_vacio_titulo")}
+            </button>
+          </div>
+        )}
+        <div className="min-h-0 flex-1">
         {activePanelId ? (
           projectLoading ? (
             <div className="flex h-full items-center justify-center py-20">
@@ -5759,6 +5778,7 @@ function MensajesView({
             </div>
           </div>
         )}
+        </div>
       </div>
     </div>
   );
@@ -5782,6 +5802,10 @@ function EmpresaMensajesView({
   userId: string | null;
   onSelectProject: (id: string) => void;
 }) {
+  // En móvil solo cabe un panel a la vez: "list" muestra las conversaciones, "chat" el ChatPanel.
+  // En lg+ ambos conviven (el estado no afecta al layout de escritorio).
+  const [mobileView, setMobileView] = useState<"list" | "chat">(selectedProjectId ? "chat" : "list");
+
   // Sin leer primero; dentro de cada grupo, la conversación más reciente arriba.
   const conversacionesOrdenadas = [...myConversaciones].sort((a, b) => {
     if ((b.no_leidos > 0 ? 1 : 0) !== (a.no_leidos > 0 ? 1 : 0)) {
@@ -5800,7 +5824,10 @@ function EmpresaMensajesView({
   return (
     <div className="flex overflow-hidden" style={{ height: "calc(100vh - 8rem)" }}>
       {/* Lista de conversaciones */}
-      <div className="w-[280px] shrink-0 overflow-y-auto border-r border-border">
+      <div className={cn(
+        "w-full shrink-0 overflow-y-auto border-r border-border lg:w-[280px]",
+        mobileView === "chat" ? "hidden lg:block" : "block",
+      )}>
         <div className="px-4 pt-5 pb-3">
           <p className="mb-2 font-body text-[10px] font-bold uppercase tracking-widest text-ink-muted">
             {t("mensajes_empresa_titulo")}
@@ -5817,7 +5844,7 @@ function EmpresaMensajesView({
                 <li key={conv.proyecto.id}>
                   <button
                     type="button"
-                    onClick={() => onSelectProject(conv.proyecto.id)}
+                    onClick={() => { onSelectProject(conv.proyecto.id); setMobileView("chat"); }}
                     className={cn(
                       "flex w-full items-center gap-3 rounded-xl px-3 py-2.5 text-left transition-all duration-[var(--duration-fast)] ease-[var(--ease-out)]",
                       isSelected ? "bg-primary/10 ring-1 ring-primary/20" : "hover:bg-canvas",
@@ -5853,7 +5880,21 @@ function EmpresaMensajesView({
       </div>
 
       {/* Chat del proyecto elegido */}
-      <div className="min-w-0 flex-1 bg-canvas">
+      <div className={cn(
+        "min-w-0 flex-1 bg-canvas lg:flex lg:flex-col",
+        mobileView === "chat" ? "flex flex-col" : "hidden lg:flex",
+      )}>
+        <div className="flex shrink-0 items-center border-b border-border bg-surface px-4 py-3 lg:hidden">
+          <button
+            type="button"
+            onClick={() => setMobileView("list")}
+            className="inline-flex items-center gap-1.5 font-body text-sm font-semibold text-ink-muted transition-colors duration-[var(--duration-fast)] hover:text-ink"
+          >
+            <ArrowLeft className="size-4" aria-hidden="true" />
+            {t("mensajes_empresa_titulo")}
+          </button>
+        </div>
+        <div className="min-h-0 flex-1">
         {selectedProjectId && chatProject ? (
           <ChatPanel key={selectedProjectId} isEmpresa project={chatProject} userId={userId} />
         ) : (
@@ -5871,6 +5912,7 @@ function EmpresaMensajesView({
             </div>
           </div>
         )}
+        </div>
       </div>
     </div>
   );

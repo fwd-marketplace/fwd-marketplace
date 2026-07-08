@@ -581,7 +581,7 @@ export function GestionUsuariosView({ users }: { users: AdminUser[] }) {
   ];
 
   return (
-    <div className="mx-auto flex min-h-full max-w-7xl flex-col gap-6 px-6 py-8 md:px-10">
+    <div className="mx-auto flex min-h-full max-w-7xl flex-col gap-6 px-6 pb-8 pt-20 md:px-10 md:py-8">
       {message && (
         <div className="fixed bottom-5 right-5 z-[60] rounded-xl border border-border-strong bg-surface px-4 py-3 font-body text-sm font-semibold text-ink-strong shadow-elevated">
           {message}
@@ -610,7 +610,7 @@ export function GestionUsuariosView({ users }: { users: AdminUser[] }) {
       <section className="rounded-2xl bg-surface-sunken p-6 ring-1 ring-border">
         <h2 className="mb-4 font-heading text-lg font-bold text-ink-strong">{t("filters.title")}</h2>
         <div className="flex flex-wrap items-center gap-3">
-          <div className="relative min-w-[16rem] flex-1">
+          <div className="relative min-w-[12rem] flex-1">
             <Search className="absolute left-3 top-1/2 size-4 -translate-y-1/2 text-ink-subtle" aria-hidden="true" />
             <input
               type="text"

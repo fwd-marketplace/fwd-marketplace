@@ -188,7 +188,7 @@ export function NotificationPanel({
 
       {/* ── Panel dropdown ── */}
       {open && (
-        <div className="absolute right-0 top-full z-[60] mt-2 w-80 overflow-hidden rounded-2xl border border-border bg-surface shadow-[var(--shadow-elevated)]">
+        <div className="absolute right-0 top-full z-[60] mt-2 w-80 max-w-[calc(100vw-2rem)] overflow-hidden rounded-2xl border border-border bg-surface shadow-[var(--shadow-elevated)]">
           {/* Header del panel */}
           <div className="flex items-center justify-between border-b border-border px-4 py-3">
             <h2 className="font-heading text-sm font-bold text-ink-strong">

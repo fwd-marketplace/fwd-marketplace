@@ -380,7 +380,7 @@ export default function MarketPlace({ initialProjects, catalogs, role = 'student
             </section>
 
             {/* Decorative stars — posiciones fijas para layout máximo de 9 cards */}
-            <div className="pointer-events-none absolute inset-x-0 bottom-0 z-0" style={{ top: '420px' }} aria-hidden="true">
+            <div className="pointer-events-none absolute inset-x-0 bottom-0 z-0 overflow-hidden" style={{ top: '420px' }} aria-hidden="true">
                 {([
                     { t: '8%',  l: '1%',   s: 10, g: true,  sp: true,  o: 0.6,  d: '3.2s', dl: '0.3s' },
                     { t: '22%', l: '99%',  s: 10, g: true,  sp: true,  o: 0.65, d: '3.6s', dl: '0.8s' },
@@ -416,7 +416,7 @@ export default function MarketPlace({ initialProjects, catalogs, role = 'student
         {/* White panel: filter + cards + pagination */}
         <div className="relative z-20 mx-4 md:mx-16 lg:mx-28 -mt-7">
             <div className="bg-white dark:bg-surface rounded-[2rem] shadow-[0_-4px_32px_rgba(0,0,0,0.08)] dark:shadow-[0_-4px_32px_rgba(0,0,0,0.4)] overflow-hidden">
-                <div className="flex flex-col gap-4 px-8 py-5 border-b border-border dark:border-white/10 md:flex-row md:items-center md:gap-4 md:py-4 md:px-10">
+                <div className="flex flex-col gap-4 px-5 py-5 border-b border-border dark:border-white/10 sm:px-8 md:flex-row md:items-center md:gap-4 md:py-4 md:px-10">
                     <div className="flex flex-1 items-center gap-3 bg-[#F8F9FC] dark:bg-white/5 rounded-full px-5 h-14 shadow-[0_1px_4px_rgba(0,0,0,0.06)]">
                         <Search className="w-4 h-4 shrink-0 text-ink-muted" aria-hidden="true" />
                         <label htmlFor="marketplace-search" className="sr-only">{t('search_label')}</label>
@@ -478,7 +478,7 @@ export default function MarketPlace({ initialProjects, catalogs, role = 'student
                 </div>
 
                 {/* Results */}
-                <div className="px-8 pt-8 pb-12 md:px-10">
+                <div className="px-5 pt-8 pb-12 sm:px-8 md:px-10">
                 <div className="flex items-center justify-between gap-4 mb-5">
                     <p className="text-sm font-semibold text-ink-muted">
                         {t('results_count', { count: totalResults })}
@@ -596,7 +596,7 @@ export default function MarketPlace({ initialProjects, catalogs, role = 'student
                                     <div className="mx-5 border-t border-border" />
 
                                     {/* Footer: metadata */}
-                                    <div className="px-5 py-3.5 flex items-center gap-4 text-xs text-ink-muted">
+                                    <div className="px-5 py-3.5 flex flex-wrap items-center gap-x-4 gap-y-1.5 text-xs text-ink-muted">
                                         <span className="flex items-center gap-1.5">
                                             <Clock className="w-3.5 h-3.5 shrink-0" aria-hidden="true" />
                                             {durationWeeks} {t('weeks_unit')}

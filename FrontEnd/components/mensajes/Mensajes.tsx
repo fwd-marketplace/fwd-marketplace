@@ -67,7 +67,7 @@ function MessageBubble({ msg, isMine }: { msg: ApiMensaje; isMine: boolean }) {
             {msg.remitente.apellido1 ? ` ${msg.remitente.apellido1}` : ""}
           </p>
         )}
-        <p className="whitespace-pre-line">{texto}</p>
+        <p className="whitespace-pre-line break-words">{texto}</p>
         {msg.contenido_traducido && (
           <button
             type="button"

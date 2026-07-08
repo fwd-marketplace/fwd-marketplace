@@ -248,7 +248,7 @@ export function ProyectosView({ initialProjects }: { initialProjects: AdminProje
   ];
 
   return (
-    <div className="mx-auto max-w-7xl space-y-7 px-6 py-8 md:px-10">
+    <div className="mx-auto max-w-7xl space-y-7 px-6 pb-8 pt-20 md:px-10 md:py-8">
       {message && (
         <div className="fixed bottom-5 right-5 z-50 rounded-xl border border-border-strong bg-surface px-4 py-3 font-body text-sm font-semibold text-ink-strong shadow-elevated">
           {message}
@@ -282,7 +282,7 @@ export function ProyectosView({ initialProjects }: { initialProjects: AdminProje
       {/* Filters */}
       <section className="rounded-2xl bg-surface p-5 shadow-soft ring-1 ring-border">
         <div className="flex flex-wrap items-end gap-4">
-          <div className="min-w-[16rem] flex-1">
+          <div className="min-w-[12rem] flex-1">
             <label className="mb-1.5 block font-body text-[11px] font-semibold uppercase tracking-wider text-ink-muted">Búsqueda</label>
             <div className="relative">
               <Search className="absolute left-3 top-1/2 size-4 -translate-y-1/2 text-ink-subtle" aria-hidden="true" />

@@ -133,7 +133,7 @@ export function ConfiguracionView({ initialSettings }: { initialSettings: AdminS
   }
 
   return (
-    <div className="mx-auto max-w-5xl space-y-10 px-6 py-8 md:px-10">
+    <div className="mx-auto max-w-5xl space-y-10 px-6 pb-8 pt-20 md:px-10 md:py-8">
       <PageTitle eyebrow={t("eyebrow")} title={t("title")} description={t("description")} />
 
       {/* Apariencia y preferencias */}
