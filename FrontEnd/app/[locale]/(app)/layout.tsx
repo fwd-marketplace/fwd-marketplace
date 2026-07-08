@@ -1,5 +1,5 @@
 import { AppHeader } from "@/components/layout/app-header";
-import { SiteFooter } from "@/components/layout/site-footer";
+import { AppFooter } from "@/components/layout/app-footer";
 import { requireActiveAccount } from "@/lib/auth/require-access";
 
 export default async function AppLayout({
@@ -22,7 +22,7 @@ export default async function AppLayout({
     <div className="flex min-h-[100dvh] flex-col bg-canvas">
       <AppHeader userName={userName} avatarUrl={avatarUrl} role={role} tone="student" />
       <main className="flex-1">{children}</main>
-      <SiteFooter />
+      <AppFooter />
     </div>
   );
 }

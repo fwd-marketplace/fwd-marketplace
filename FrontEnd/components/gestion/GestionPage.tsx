@@ -5207,10 +5207,12 @@ function MensajesView({
     onSelectProject(id);
   }
 
-  // After escalation: refresh conversaciones so the project appears in Directos
-  // (stay in bot view — user can switch to Directos when ready)
-  function handleEscalated() {
-    void onConversationActivity();
+  // Al iniciarse la conversación (escalada del bot): refresca "Directos" para que aparezca
+  // listada Y abre de una el chat humano con la empresa. Antes se quedaba en el bot y la
+  // conversación solo era accesible desde la notificación.
+  async function handleEscalated() {
+    await onConversationActivity();
+    if (activePanelId) selectDirecto(activePanelId);
   }
 
   const activeProject = selectedProject ?? null;
